@@ -2,6 +2,7 @@
 
 import StatusChip from '@/components/shell/StatusChip'
 import { formatTime } from '@/lib/format'
+import { cn } from '@/lib/utils'
 import { STALE_AFTER_HOURS } from '@/shared/constants'
 import { hoursBetween } from '@/shared/time'
 import { useLocale, useTranslations } from 'next-intl'
@@ -26,7 +27,7 @@ export default function UpdatedChip({ issueTime, fetchedAt, timeZone, now, class
     return (
         <StatusChip
             tone={isStale ? 'warn' : 'ok'}
-            className={className}
+            className={cn('h-7', className)}
             title={t('updatedTitle', { utc: `${utc} UTC`, local, fetched: fetchedAt ?? '' })}
         >
             {isStale ? t('stale') : t('updated')} {utc} UTC · {local} {t('local')}

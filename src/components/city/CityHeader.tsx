@@ -71,12 +71,14 @@ export default function CityHeader({ city }: IProps) {
                     </div>
                     <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
                         {city.isPreviewOnly && (
-                            <StatusChip tone="info" title={t('previewTitle')}>
+                            <StatusChip tone="info" title={t('previewTitle')} className="h-7">
                                 {t('preview')}
                             </StatusChip>
                         )}
                         {city.status !== CityStatus.Active && (
-                            <StatusChip tone="warn">{t(`status.${city.status}`)}</StatusChip>
+                            <StatusChip tone="warn" className="h-7">
+                                {t(`status.${city.status}`)}
+                            </StatusChip>
                         )}
                         {latest && (
                             <UpdatedChip

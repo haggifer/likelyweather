@@ -39,7 +39,7 @@ export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
                 <span className="text-sm">{status}</span>
             </CardTitle>
             <CardAction className="flex items-center gap-2">
-                <Skeleton className="hidden h-5.25 w-53 rounded-full lg:block" />
+                <Skeleton className="hidden h-7 w-53 rounded-full lg:block" />
                 <Skeleton className="h-7 w-22" />
                 <Skeleton className="h-7 w-30" />
             </CardAction>
