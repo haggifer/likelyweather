@@ -174,7 +174,7 @@ Decided by the author. The chart card's title is the variable name alone ("Tempe
 
 Decided by the author: the current design stays. That is preset A (Sky) in light and dark, comfortable density, elevated cards, filled status chips, Inter with JetBrains Mono, and the legend beside the dashboard chart. `globals.css` now states these directly instead of switching them on `<html>` data attributes, and the eight candidate fonts are gone from the layout.
 
-Removed: `src/theme` (tokens, presets, the lab panel and provider), `/theme-lab` and its gallery, `src/fixtures/lab-dump.json`, `pnpm theme:export`, `pnpm lab:dump`, `pnpm check:no-lab`, `NEXT_PUBLIC_THEME_LAB`, the Redux `layout` slice (legend placement and the lab's open state), and the hidden source line under charts. The color-mode helpers moved to `src/lib/colorMode.ts`. The lab is in the history (last present at `47b6bc5`) if a redesign needs it.
+Removed: `src/theme` (tokens, presets, the lab panel and provider), `/theme-lab` and its gallery, `src/fixtures/lab-dump.json`, `pnpm theme:export`, `pnpm lab:dump`, `pnpm check:no-lab`, `NEXT_PUBLIC_THEME_LAB`, the Redux `layout` slice (legend placement and the lab's open state), and the hidden source line under charts. The color-mode helpers moved to `src/lib/colorMode.ts`. The lab is in the history (up to the parent of the commit "refactor(theme): freeze the current design and remove the theme lab") if a redesign needs it.
 
 ## P26. One hourly grid per run; no past hours (2026-09-24)
 
