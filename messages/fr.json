@@ -56,7 +56,6 @@
         "stale": "Périmé",
         "local": "heure locale",
         "updatedTitle": "Exécution émise {utc} ({local} heure locale). Récupérée {fetched}.",
-        "trackedSince": "suivie depuis le {date}",
         "preview": "Aperçu",
         "previewTitle": "Seulement des exécutions à la demande pour l’instant ; les exécutions programmées toutes les 6 heures commencent à la prochaine collecte.",
         "status": {
@@ -69,7 +68,8 @@
         "trackingBanner": "Le suivi de {name} a commencé le {date}. La ville rejoint désormais la collecte toutes les 6 heures.",
         "medianTotal": "Total médian",
         "chanceOfRain": "Probabilité de pluie",
-        "back": "Retour à l’aperçu"
+        "back": "Retour à l’aperçu",
+        "change": "Changer de ville"
     },
     "dashboard": {
         "fetching": "Récupération de dix modèles pour {name}…",

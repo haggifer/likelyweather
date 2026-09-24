@@ -56,7 +56,6 @@
         "stale": "Stale",
         "local": "local",
         "updatedTitle": "Run issued {utc} ({local} city time). Fetched {fetched}.",
-        "trackedSince": "tracked since {date}",
         "preview": "Preview",
         "previewTitle": "Only on-demand preview runs so far; scheduled 6-hourly runs start with the next collection.",
         "status": {
@@ -69,7 +68,8 @@
         "trackingBanner": "Tracking of {name} started on {date}. It now joins the 6-hourly collection.",
         "medianTotal": "Median total",
         "chanceOfRain": "Chance of rain",
-        "back": "Back to overview"
+        "back": "Back to overview",
+        "change": "Change city"
     },
     "dashboard": {
         "fetching": "Fetching ten models for {name}…",

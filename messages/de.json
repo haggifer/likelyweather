@@ -56,7 +56,6 @@
         "stale": "Veraltet",
         "local": "Ortszeit",
         "updatedTitle": "Lauf vom {utc} ({local} Ortszeit). Abgerufen {fetched}.",
-        "trackedSince": "verfolgt seit {date}",
         "preview": "Vorschau",
         "previewTitle": "Bisher nur Läufe auf Abruf; die geplanten Läufe alle 6 Stunden beginnen mit der nächsten Sammlung.",
         "status": {
@@ -69,7 +68,8 @@
         "trackingBanner": "Die Verfolgung von {name} begann am {date}. Die Stadt ist jetzt Teil der Sammlung alle 6 Stunden.",
         "medianTotal": "Median-Summe",
         "chanceOfRain": "Regenwahrscheinlichkeit",
-        "back": "Zurück zur Übersicht"
+        "back": "Zurück zur Übersicht",
+        "change": "Stadt wechseln"
     },
     "dashboard": {
         "fetching": "Zehn Modelle für {name} werden abgerufen…",

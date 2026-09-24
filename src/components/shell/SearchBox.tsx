@@ -15,7 +15,10 @@ import { toast } from 'sonner'
 
 interface IProps {
     enableShortcut?: boolean
+    initialQuery?: string
+    autoFocus?: boolean
     onSelectCity?: (slug: string) => void
+    onDismiss?: () => void
     className?: string
 }
 
@@ -29,20 +32,36 @@ const getShortcutLabel = () =>
 const getServerShortcutLabel = () => null
 
 // Selecting a place tracks it (guide §2.3) and then hands the slug to `onSelectCity`; without a handler the
-// box navigates to the city dashboard.
-export default function SearchBox({ enableShortcut = false, onSelectCity, className }: IProps) {
+// box navigates to the city dashboard. With an `initialQuery` (the current city) the text starts selected, so
+// typing replaces it, and results only appear once it has been edited. `onDismiss` fires on Escape and on blur.
+export default function SearchBox({
+    enableShortcut = false,
+    initialQuery = '',
+    autoFocus = false,
+    onSelectCity,
+    onDismiss,
+    className,
+}: IProps) {
     const t = useTranslations('search')
     const locale = useLocale() as Locale
     const router = useRouter()
     const inputRef = useRef<HTMLInputElement>(null)
-    const [query, setQuery] = useState('')
+    const [query, setQuery] = useState(initialQuery)
     const [isOpen, setIsOpen] = useState(false)
-    const debounced = useDebouncedValue(query.trim(), 200)
+    const isEdited = query !== initialQuery
+    const debounced = useDebouncedValue(isEdited ? query.trim() : '', 200)
     const { data, isFetching, isError } = useGeocode(debounced, locale)
     const track = useTrackCity()
     const results = [...(data?.results ?? [])].sort((a, b) => (b.population ?? 0) - (a.population ?? 0))
     const isQueryReady = query.trim().length >= MIN_QUERY
     const shortcutLabel = useSyncExternalStore(subscribeToNothing, getShortcutLabel, getServerShortcutLabel)
+
+    useEffect(() => {
+        if (!autoFocus) return
+
+        inputRef.current?.focus()
+        inputRef.current?.select()
+    }, [autoFocus])
 
     useEffect(() => {
         if (!enableShortcut) return
@@ -80,7 +99,12 @@ export default function SearchBox({ enableShortcut = false, onSelectCity, classN
         <CommandPrimitive
             shouldFilter={false}
             className={cn('relative w-full max-w-xl', className)}
-            onKeyDown={(e) => e.key === 'Escape' && setIsOpen(false)}
+            onKeyDown={(e) => {
+                if (e.key !== 'Escape') return
+
+                setIsOpen(false)
+                onDismiss?.()
+            }}
         >
             <div className="flex h-12 items-center gap-2.5 rounded-lg border bg-card px-3.5 shadow-sm transition-shadow focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/25">
                 <Search className="size-4.5 shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -92,7 +116,12 @@ export default function SearchBox({ enableShortcut = false, onSelectCity, classN
                         setIsOpen(true)
                     }}
                     onFocus={() => setIsOpen(true)}
-                    onBlur={() => setTimeout(() => setIsOpen(false), 150)}
+                    onBlur={() =>
+                        setTimeout(() => {
+                            setIsOpen(false)
+                            onDismiss?.()
+                        }, 150)
+                    }
                     placeholder={t('placeholder')}
                     aria-label={t('label')}
                     className="h-full min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground"
@@ -104,7 +133,7 @@ export default function SearchBox({ enableShortcut = false, onSelectCity, classN
                     </kbd>
                 )}
             </div>
-            {isOpen && query.trim().length > 0 && (
+            {isOpen && isEdited && query.trim().length > 0 && (
                 <div className="absolute top-full right-0 left-0 z-50 mt-1.5 overflow-hidden rounded-lg border bg-popover text-left shadow-lg">
                     <CommandList>
                         {!isQueryReady && <div className="px-3 py-2 text-xs text-muted-foreground">{t('hint')}</div>}
