@@ -58,7 +58,7 @@ export default function ModelLegend({ series, median, readoutIndex, readoutLabel
 
     return (
         <div className={cn('flex flex-col gap-2', placement === 'under' && 'mt-2')}>
-            <div className="flex items-baseline justify-between gap-2 text-xs">
+            <div className="flex min-h-4.5 items-center justify-between gap-2 text-xs">
                 <span className="font-medium">{readoutLabel}</span>
                 {(hidden.length > 0 || pinned.length > 0) && (
                     <Button
