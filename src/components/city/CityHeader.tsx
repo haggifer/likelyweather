@@ -5,9 +5,14 @@ import FlagIcon from '@/components/shell/FlagIcon'
 import SearchBox from '@/components/shell/SearchBox'
 import StatusChip from '@/components/shell/StatusChip'
 import { Button } from '@/components/ui/button'
+import { useLatest } from '@/hooks/queries'
+import useNow from '@/hooks/useNow'
 import { getCityName, getCountryName } from '@/lib/format'
+import { cn } from '@/lib/utils'
 import { CityDetail, CityStatus } from '@/shared/api'
-import { ArrowLeft, Pencil } from 'lucide-react'
+import { Variable } from '@/shared/variables'
+import { useIsFetching, useQueryClient } from '@tanstack/react-query'
+import { ArrowLeft, Pencil, RefreshCw } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useState } from 'react'
@@ -21,9 +26,18 @@ interface IProps {
 export default function CityHeader({ city }: IProps) {
     const t = useTranslations('city')
     const locale = useLocale()
+    const now = useNow()
+    const queryClient = useQueryClient()
     const [isEditing, setIsEditing] = useState(false)
+    // The dashboard anchors its chart to the precipitation query, so that query also dates the run shown here.
+    const { data: latest } = useLatest(city.slug, Variable.Precip)
+    const isFetching = useIsFetching({ queryKey: ['latest', city.slug] }) > 0
     const name = getCityName(city, locale)
     const region = [city.admin1, getCountryName(city.countryCode, city.country, locale)].filter(Boolean).join(', ')
+
+    // Refetching re-anchors the dashboard chart at the current slot. The server only calls the upstream sources when
+    // a newer run exists, so unlike the landing card the button is not gated on the chart being stale.
+    const handleRefresh = () => void queryClient.refetchQueries({ queryKey: ['latest', city.slug], type: 'active' })
 
     return (
         <div className="mb-(--card-gap) flex flex-col gap-3">
@@ -55,7 +69,7 @@ export default function CityHeader({ city }: IProps) {
                             <Pencil />
                         </Button>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
                         {city.isPreviewOnly && (
                             <StatusChip tone="info" title={t('previewTitle')}>
                                 {t('preview')}
@@ -64,7 +78,23 @@ export default function CityHeader({ city }: IProps) {
                         {city.status !== CityStatus.Active && (
                             <StatusChip tone="warn">{t(`status.${city.status}`)}</StatusChip>
                         )}
-                        <UpdatedChip slug={city.slug} className="lg:hidden" />
+                        {latest && (
+                            <UpdatedChip
+                                issueTime={latest.issueTime}
+                                fetchedAt={latest.fetchedAt}
+                                timeZone={city.timezone}
+                                now={now}
+                            />
+                        )}
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleRefresh}
+                            disabled={isFetching}
+                            title={t('refreshTitle')}
+                        >
+                            <RefreshCw className={cn(isFetching && 'animate-spin')} /> {t('refresh')}
+                        </Button>
                     </div>
                 </div>
             )}

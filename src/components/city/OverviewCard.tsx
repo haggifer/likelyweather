@@ -1,6 +1,7 @@
 'use client'
 
 import MedianOverview, { MedianOverviewSkeleton, MedianSeries } from '@/charts/MedianOverview'
+import UpdatedChip from '@/components/city/UpdatedChip'
 import FlagIcon from '@/components/shell/FlagIcon'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -38,6 +39,7 @@ export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
                 <span className="text-sm">{status}</span>
             </CardTitle>
             <CardAction className="flex items-center gap-2">
+                <Skeleton className="hidden h-5.25 w-53 rounded-full lg:block" />
                 <Skeleton className="h-7 w-22" />
                 <Skeleton className="h-7 w-30" />
             </CardAction>
@@ -97,6 +99,13 @@ export default function OverviewCard({ city, hourly, anchor, now, isFetching, on
                     </span>
                 </CardTitle>
                 <CardAction className="flex items-center gap-2">
+                    <UpdatedChip
+                        issueTime={hourly[Variable.Temp].issueTime}
+                        fetchedAt={hourly[Variable.Temp].fetchedAt}
+                        timeZone={city.timezone}
+                        now={now}
+                        className="hidden lg:inline-flex"
+                    />
                     <Button
                         variant="outline"
                         size="sm"

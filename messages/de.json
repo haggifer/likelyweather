@@ -55,6 +55,8 @@
         "updated": "Aktualisiert",
         "stale": "Veraltet",
         "local": "Ortszeit",
+        "refresh": "Aktualisieren",
+        "refreshTitle": "Nach einem neueren Lauf suchen und das Diagramm ab jetzt beginnen",
         "updatedTitle": "Lauf vom {utc} ({local} Ortszeit). Abgerufen {fetched}.",
         "preview": "Vorschau",
         "previewTitle": "Bisher nur Läufe auf Abruf; die geplanten Läufe alle 6 Stunden beginnen mit der nächsten Sammlung.",

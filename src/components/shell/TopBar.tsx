@@ -1,19 +1,10 @@
-'use client'
-
-import UpdatedChip from '@/components/city/UpdatedChip'
 import LanguageSwitch from '@/components/shell/LanguageSwitch'
 import MoreMenu from '@/components/shell/MoreMenu'
 import ThemeToggle from '@/components/shell/ThemeToggle'
 import { CloudSun } from 'lucide-react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-
-const CITY_ROUTE = /^\/city\/([^/]+)/
 
 export default function TopBar() {
-    const pathname = usePathname()
-    const slug = pathname.match(CITY_ROUTE)?.[1]
-
     return (
         <header className="sticky top-0 z-30 border-b bg-background/90 backdrop-blur supports-backdrop-filter:bg-background/75">
             <div className="mx-auto flex h-(--topbar-h) max-w-[1400px] items-center gap-4 px-4 sm:px-(--pane-padding)">
@@ -25,7 +16,6 @@ export default function TopBar() {
                     </span>
                 </Link>
                 <div className="ml-auto flex items-center gap-2">
-                    {slug && <UpdatedChip slug={slug} className="hidden lg:inline-flex" />}
                     <LanguageSwitch />
                     <ThemeToggle />
                     <MoreMenu />

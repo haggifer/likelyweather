@@ -55,6 +55,8 @@
         "updated": "Mis à jour",
         "stale": "Périmé",
         "local": "heure locale",
+        "refresh": "Actualiser",
+        "refreshTitle": "Chercher une émission plus récente et faire commencer le graphique maintenant",
         "updatedTitle": "Exécution émise {utc} ({local} heure locale). Récupérée {fetched}.",
         "preview": "Aperçu",
         "previewTitle": "Seulement des exécutions à la demande pour l’instant ; les exécutions programmées toutes les 6 heures commencent à la prochaine collecte.",

@@ -55,6 +55,8 @@
         "updated": "Actualizado",
         "stale": "Desactualizado",
         "local": "local",
+        "refresh": "Actualizar",
+        "refreshTitle": "Buscar una emisión más reciente y empezar el gráfico en la hora actual",
         "updatedTitle": "Ejecución emitida {utc} ({local} hora de la ciudad). Obtenida {fetched}.",
         "preview": "Vista previa",
         "previewTitle": "Por ahora solo hay ejecuciones bajo demanda; las ejecuciones programadas cada 6 horas empiezan con la próxima recogida.",

@@ -55,6 +55,8 @@
         "updated": "Updated",
         "stale": "Stale",
         "local": "local",
+        "refresh": "Refresh",
+        "refreshTitle": "Check for a newer run and restart the chart at the current time",
         "updatedTitle": "Run issued {utc} ({local} city time). Fetched {fetched}.",
         "preview": "Preview",
         "previewTitle": "Only on-demand preview runs so far; scheduled 6-hourly runs start with the next collection.",

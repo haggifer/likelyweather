@@ -151,6 +151,14 @@ Decided by the author.
 - **Header.** A "Back to overview" link returns to `/?city=<slug>`. The name line carries the region and country dimmed, like the landing card; the coordinates and "tracked since" line is gone. A pencil button swaps it for a full-width `SearchBox` holding the current name, selected so typing replaces it. Results appear only once the text changes, so no geocoding request is made for the unchanged name. Picking one opens that city; Escape or blur keeps the current one.
 - **Performance.** Switching variables blocked the main thread for 370 to 600 ms in the dev build (long tasks measured with a `PerformanceObserver`). Two causes: the y-axis tween between unrelated domains re-rendered the whole spaghetti chart on every frame for 180 ms, and the Recharts precipitation panel re-rendered although its data does not depend on the variable. `useAnimatedDomain` now jumps when its `resetKey` (the variable) changes. The panel is a memoized element, loaded with `next/dynamic` so Recharts leaves the dashboard's first bundle. After the fix, the same switches produced no long tasks (one of 54 ms for precipitation).
 
+## P22. Run time and Refresh sit with the city, not in the top bar (2026-09-24)
+
+Decided by the author.
+
+- **Landing.** The "Updated 12:00 UTC · 08:00 local" chip sits left of Refresh in the overview card header, from 1024 px (`lg`) up; at tablet width it would squeeze the city name to a few words. The skeleton has a matching block. The chip is presentational (`issueTime`, `timeZone`, `now` as props), so the Theme Lab gallery shows it from the dump.
+- **Dashboard.** The chip moved from the top bar to the right end of the city name line, followed by a Refresh button; on phones the pair wraps under the name, right-aligned. The top bar no longer carries anything city-specific.
+- **Dashboard Refresh is never gated.** It refetches the city's active `latest` queries, which re-anchors the chart at the current slot. Unlike the landing card, the dashboard already refetches every 15 minutes, so a button enabled only on a stale chart would almost always be disabled. The server only calls the upstream sources when a newer run exists (P19), so an ungated button costs nothing upstream.
+
 ## Open: the design decision (guide phase 2.5)
 
 Not made yet. Base tokens are preset A (Sky). To decide: run `pnpm dev`, open the Lab (Ctrl/Cmd+Shift+T) on `/theme-lab`, a live city dashboard and the landing overview, star favourites, then `Copy CSS` into `globals.css` and record the choice and the runners-up with screenshots here.
