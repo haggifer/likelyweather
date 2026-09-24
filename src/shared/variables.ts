@@ -78,7 +78,7 @@ export const VARIABLES: VariableInfo[] = [
         aggregation: 'sum',
         disagreement: { agree: 2, split: 8 },
         // Both sources report 0.1 mm amounts, so the finest readable step is 0.5 mm.
-        tickSteps: [0.5, 1, 2, 5, 10, 20, 50],
+        tickSteps: [0.5, 1, 2, 5, 10, 20, 25, 50],
         nonNegative: true,
     },
 ]

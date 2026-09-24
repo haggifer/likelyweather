@@ -45,7 +45,7 @@ For each step, over the models with a value: median, quartiles (linear interpola
 
 ## Axes
 
-Temperature gridlines are every 5 °C and wind every 2 m/s, with the domain snapped outward to the step. Pressure uses automatic ticks. Precipitation starts at 0 and uses the smallest step from 0.5, 1, 2, 5, 10, 20, 50 mm that reaches the maximum in at most three segments; both sources report 0.1 mm amounts, so a dry forecast shows only 0 and 0.5.
+Temperature gridlines are every 5 °C and wind every 2 m/s, with the domain snapped outward to the step. Pressure uses automatic ticks. Precipitation starts at 0 and uses the smallest step from 0.5, 1, 2, 5, 10, 20, 25, 50 mm that reaches the maximum in at most three segments; both sources report 0.1 mm amounts, so a dry forecast shows only 0 and 0.5.
 
 ## Limits
 

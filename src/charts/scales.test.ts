@@ -21,6 +21,12 @@ describe('precipitation axis', () => {
         expect(precipTicks([2.4])).toEqual([0, 1, 2, 3])
         expect(precipTicks([11])).toEqual([0, 5, 10, 15])
     })
+
+    it('uses 25 mm steps for an outlier between 60 and 75 mm instead of an axis to 100', () => {
+        expect(precipTicks([0, 3.6, 61.7])).toEqual([0, 25, 50, 75])
+        expect(precipTicks([48.8])).toEqual([0, 20, 40, 60])
+        expect(precipTicks([80])).toEqual([0, 50, 100])
+    })
 })
 
 describe('temperature axis', () => {
