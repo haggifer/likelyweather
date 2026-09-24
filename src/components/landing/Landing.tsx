@@ -65,8 +65,8 @@ export default function Landing() {
                     {tiles.map(({ key, icon: Icon, href }) => (
                         <Link key={key} href={href} className="group">
                             <Card className="h-full gap-2 transition-colors group-hover:border-primary">
-                                <CardHeader>
-                                    <Icon className="size-5 text-primary" aria-hidden="true" />
+                                <CardHeader className="flex items-center gap-2">
+                                    <Icon className="size-5 shrink-0 text-primary" aria-hidden="true" />
                                     <CardTitle className="font-semibold">{t(`tiles.${key}.title`)}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="text-sm text-muted-foreground">
