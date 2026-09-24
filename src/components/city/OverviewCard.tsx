@@ -125,7 +125,7 @@ export default function OverviewCard({ city, hourly, anchor, now, isFetching, on
                                     {refreshButton}
                                 </span>
                             </TooltipTrigger>
-                            <TooltipContent>{t('upToDate')}</TooltipContent>
+                            <TooltipContent side="bottom">{t('upToDate')}</TooltipContent>
                         </Tooltip>
                     )}
                     <Button asChild size="sm">
