@@ -4,13 +4,11 @@ import {
     CityDetail,
     CityStatus,
     CompareResponse,
-    EvolutionResponse,
     GeocodeResponse,
     LatestResponse,
     Locale,
     Resolution,
     RunsResponse,
-    StepsResponse,
     TimelineResponse,
     TrackResponse,
 } from '@/shared/api'
@@ -60,26 +58,6 @@ export const useHourlyAll = (slug: string, enabled = true): UseQueryResult<Lates
             staleTime: Infinity,
             refetchOnWindowFocus: false,
         })),
-    })
-
-export const useSteps = (slug: string): UseQueryResult<StepsResponse, Error> =>
-    useQuery({
-        queryKey: ['steps', slug],
-        queryFn: () => apiGet<StepsResponse>(`/cities/${slug}/steps`),
-        staleTime: 30 * MINUTE,
-    })
-
-export const useEvolution = (
-    slug: string,
-    variable: Variable,
-    validTime: string | null,
-): UseQueryResult<EvolutionResponse, Error> =>
-    useQuery({
-        queryKey: ['evolution', slug, variable, validTime],
-        queryFn: () => apiGet<EvolutionResponse>(`/cities/${slug}/evolution`, { variable, validTime }),
-        enabled: Boolean(slug && validTime),
-        staleTime: 30 * MINUTE,
-        placeholderData: keepPreviousData,
     })
 
 export const useGeocode = (q: string, locale: Locale): UseQueryResult<GeocodeResponse, Error> =>

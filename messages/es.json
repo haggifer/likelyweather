@@ -16,10 +16,7 @@
         "compare": "Comparar",
         "runs": "Ejecuciones",
         "methodology": "Metodología",
-        "themeLab": "Galería de Theme Lab",
-        "dashboard": "Panel",
-        "evolution": "Evolución",
-        "cityTabs": "Secciones de la ciudad"
+        "themeLab": "Galería de Theme Lab"
     },
     "footer": {
         "attribution": "Datos meteorológicos de <openMeteo>Open-Meteo.com</openMeteo> (CC BY 4.0) y <metno>MET Norway</metno>. Geocodificación de Open-Meteo.",
@@ -110,20 +107,6 @@
         "split": "División",
         "empty": "Esta ejecución no tiene pasos futuros."
     },
-    "evolution": {
-        "validTime": "Hora válida",
-        "pick": "Elige una hora",
-        "past": "Pasado",
-        "future": "Próximas",
-        "title": "Cómo evolucionó el pronóstico de {variable} para {time}",
-        "description": "Cada línea es un modelo: su pronóstico para esta hora en ejecuciones emitidas hasta 7 días antes. La franja inferior muestra la dispersión entre modelos en cada antelación.",
-        "summary": "La dispersión entre modelos pasó de {first} {unit} en la mayor antelación a {last} {unit} en la última ejecución.",
-        "latest": "última",
-        "daysBefore": "{days} d antes",
-        "convergence": "Dispersión entre modelos (desviación estándar)",
-        "model": "Modelo",
-        "empty": "Ninguna ejecución archivada cubre esta hora."
-    },
     "compare": {
         "title": "Comparar ciudades",
         "description": "Hasta cuatro ciudades lado a lado en un eje común.",
@@ -190,13 +173,13 @@
                 "title": "Mira dónde discrepan",
                 "body": "Todos los modelos en un gráfico, con la mediana, la dispersión y un indicador diario de discrepancia."
             },
-            "converge": {
-                "title": "Mira cómo convergen",
-                "body": "Elige una hora y mira cómo cambió el pronóstico de cada modelo para ella durante la semana anterior."
-            },
             "compare": {
                 "title": "Compara ciudades",
                 "body": "Hasta cuatro ciudades lado a lado con un eje común."
+            },
+            "method": {
+                "title": "Cómo funciona",
+                "body": "De dónde salen los diez pronósticos y cómo se calculan la mediana y la discrepancia."
             }
         }
     },
@@ -215,10 +198,6 @@
         "disagreement": {
             "title": "Discrepancia",
             "body": "Para la temperatura, el viento y la presión, la discrepancia diaria es la media, sobre los pasos futuros del día, de la diferencia entre el modelo más alto y el más bajo. Para la precipitación es el rango de los totales diarios de los modelos. Los días son en hora local de la ciudad. Umbrales:"
-        },
-        "evolution": {
-            "title": "Evolución",
-            "body": "La vista de evolución toma una hora y muestra lo que cada modelo pronosticó para ella en ejecuciones emitidas hasta {days} días antes, a partir del archivo de ejecuciones anteriores de Open-Meteo. La dispersión entre modelos suele reducirse a medida que se acerca la hora. MET Norway no guarda archivo, así que no aparece ahí."
         },
         "limits": {
             "title": "Límites",

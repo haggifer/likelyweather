@@ -1,7 +1,6 @@
 'use client'
 
 import ChartFrame from '@/charts/ChartFrame'
-import EvolutionChart from '@/charts/EvolutionChart'
 import PrecipPanel from '@/charts/PrecipPanel'
 import SpaghettiChart from '@/charts/SpaghettiChart'
 import DisagreementTiles from '@/components/city/DisagreementTiles'
@@ -322,15 +321,6 @@ export default function Gallery() {
                         />
                     </ChartFrame>
                 </div>
-            </Section>
-            <Section title="Evolution and convergence">
-                <ChartFrame title={`Temperature for ${LAB_DUMP.evolution.validTime}`}>
-                    <EvolutionChart
-                        points={LAB_DUMP.evolution.points}
-                        variable={Variable.Temp}
-                        ariaLabel="Gallery evolution chart"
-                    />
-                </ChartFrame>
             </Section>
         </div>
     )

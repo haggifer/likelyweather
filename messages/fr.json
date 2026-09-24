@@ -16,10 +16,7 @@
         "compare": "Comparer",
         "runs": "Exécutions",
         "methodology": "Méthodologie",
-        "themeLab": "Galerie du Theme Lab",
-        "dashboard": "Tableau de bord",
-        "evolution": "Évolution",
-        "cityTabs": "Sections de la ville"
+        "themeLab": "Galerie du Theme Lab"
     },
     "footer": {
         "attribution": "Données météo : <openMeteo>Open-Meteo.com</openMeteo> (CC BY 4.0) et <metno>MET Norway</metno>. Géocodage : Open-Meteo.",
@@ -110,20 +107,6 @@
         "split": "Division",
         "empty": "Cette exécution n’a aucun pas futur."
     },
-    "evolution": {
-        "validTime": "Heure de validité",
-        "pick": "Choisir une heure",
-        "past": "Passé",
-        "future": "À venir",
-        "title": "Comment la prévision ({variable}) pour {time} a évolué",
-        "description": "Chaque ligne est un modèle : sa prévision pour cette heure issue d’exécutions émises jusqu’à 7 jours plus tôt. La bande du bas montre l’écart entre les modèles à chaque échéance.",
-        "summary": "L’écart entre les modèles est passé de {first} {unit} à l’échéance la plus longue à {last} {unit} dans la dernière exécution.",
-        "latest": "dernière",
-        "daysBefore": "{days} j avant",
-        "convergence": "Écart entre les modèles (écart type)",
-        "model": "Modèle",
-        "empty": "Aucune exécution archivée ne couvre cette heure."
-    },
     "compare": {
         "title": "Comparer des villes",
         "description": "Jusqu’à quatre villes côte à côte sur un axe commun.",
@@ -190,13 +173,13 @@
                 "title": "Voir où ils divergent",
                 "body": "Tous les modèles sur un même graphique, avec la médiane, l’écart et un indicateur quotidien de désaccord."
             },
-            "converge": {
-                "title": "Voir la convergence",
-                "body": "Choisissez une heure et voyez comment la prévision de chaque modèle pour elle a changé au cours de la semaine précédente."
-            },
             "compare": {
                 "title": "Comparer des villes",
                 "body": "Jusqu’à quatre villes côte à côte sur un axe commun."
+            },
+            "method": {
+                "title": "Comment ça marche",
+                "body": "D’où viennent les dix prévisions et comment la médiane et le désaccord sont calculés."
             }
         }
     },
@@ -215,10 +198,6 @@
         "disagreement": {
             "title": "Désaccord",
             "body": "Pour la température, le vent et la pression, le désaccord journalier est la moyenne, sur les pas futurs de la journée, de l’écart entre le modèle le plus haut et le plus bas. Pour les précipitations, c’est l’écart entre les cumuls journaliers des modèles. Les jours sont en heure locale de la ville. Seuils :"
-        },
-        "evolution": {
-            "title": "Évolution",
-            "body": "La vue d’évolution prend une heure et montre ce que chaque modèle prévoyait pour elle dans les exécutions émises jusqu’à {days} jours plus tôt, à partir de l’archive des exécutions précédentes d’Open-Meteo. L’écart entre les modèles se réduit généralement à l’approche de l’heure. MET Norway ne conserve pas d’archive et n’y figure donc pas."
         },
         "limits": {
             "title": "Limites",

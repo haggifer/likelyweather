@@ -94,7 +94,7 @@ export default function Dashboard({ slug }: IProps) {
     const locale = useLocale()
     const dispatch = useAppDispatch()
     const now = useNow()
-    const { isHydrated } = useUrlSync(['variable'])
+    const { isHydrated } = useUrlSync()
     const variable = useAppSelector((s) => s.dashboard.variable)
     const hoverStep = useAppSelector((s) => s.dashboard.hoverStep)
     const highlighted = useAppSelector((s) => s.dashboard.highlightedModel)

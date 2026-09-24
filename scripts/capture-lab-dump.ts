@@ -19,12 +19,11 @@ const { values } = parseArgs({
 
 const main = async () => {
     const { fetchModels, getWindowGrids } = await import('@/server/collector')
-    const { getEvolution, getEvolutionSteps } = await import('@/server/evolution')
     const { toLatestResponse } = await import('@/server/latest')
     const { getCityBySlug } = await import('@/server/store')
     const { MODELS } = await import('@/shared/models')
     const { floorToStep, toIsoMinute } = await import('@/shared/time')
-    const { Variable, VARIABLES } = await import('@/shared/variables')
+    const { VARIABLES } = await import('@/shared/variables')
 
     const city = await getCityBySlug(values.city!)
 
@@ -49,17 +48,11 @@ const main = async () => {
     const toLatest = (resolution: 'step' | 'hourly') =>
         Object.fromEntries(VARIABLES.map((v) => [v.id, toLatestResponse(snapshot, v.id, resolution)]))
 
-    console.log('Fetching the evolution of the latest past step…')
-    const validTime = getEvolutionSteps(now)
-        .filter((s) => new Date(s) <= now)
-        .at(-1)!
-    const evolution = await getEvolution(city, Variable.Temp, validTime)
     const dump = {
         capturedAt: now.toISOString(),
         city: { ...city, availableModels: MODELS.map((m) => m.id).filter((id) => snapshot.models[id]) },
         latest: toLatest('step'),
         hourly: toLatest('hourly'),
-        evolution,
     }
 
     writeFileSync(DUMP_PATH, `${JSON.stringify(dump)}\n`)

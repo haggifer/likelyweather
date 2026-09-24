@@ -1,4 +1,4 @@
-import { EVOLUTION_MAX_DAYS, MAX_COMPARE_CITIES } from '@/shared/constants'
+import { MAX_COMPARE_CITIES } from '@/shared/constants'
 import { ModelId } from '@/shared/models'
 import { Variable } from '@/shared/variables'
 import { z } from 'zod'
@@ -27,7 +27,6 @@ const NumberList = z.array(z.number().nullable())
 export const VariableSchema = z.enum(Variable)
 export const ModelIdSchema = z.enum(ModelId)
 export const LocaleSchema = z.enum(Locale)
-const IsoTime = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?Z$/)
 
 export const GeocodeQuerySchema = z.strictObject({
     q: z.string().trim().min(3).max(64),
@@ -118,27 +117,6 @@ export const LatestResponseSchema = z.object({
     directions: z.array(SeriesSchema).optional(),
 })
 export type LatestResponse = z.infer<typeof LatestResponseSchema>
-
-export const EvolutionQuerySchema = z.strictObject({
-    variable: VariableSchema.default(Variable.Temp),
-    validTime: IsoTime,
-})
-
-export const EvolutionPointSchema = z.object({
-    modelId: ModelIdSchema,
-    leadDays: z.number().int().min(0).max(EVOLUTION_MAX_DAYS),
-    value: z.number(),
-})
-export type EvolutionPoint = z.infer<typeof EvolutionPointSchema>
-
-export const EvolutionResponseSchema = z.object({
-    validTime: z.string(),
-    points: z.array(EvolutionPointSchema),
-})
-export type EvolutionResponse = z.infer<typeof EvolutionResponseSchema>
-
-export const StepsResponseSchema = z.object({ steps: z.array(z.string()) })
-export type StepsResponse = z.infer<typeof StepsResponseSchema>
 
 export const CompareQuerySchema = z.strictObject({
     cities: z

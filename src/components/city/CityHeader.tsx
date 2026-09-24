@@ -1,6 +1,5 @@
 'use client'
 
-import CityTabs from '@/components/city/CityTabs'
 import UpdatedChip from '@/components/city/UpdatedChip'
 import VariableSwitch from '@/components/city/VariableSwitch'
 import FlagIcon from '@/components/shell/FlagIcon'
@@ -52,7 +51,6 @@ export default function CityHeader({ city }: IProps) {
                 </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 lg:hidden">
-                <CityTabs slug={city.slug} className="flex" />
                 <VariableSwitch />
             </div>
             <VariableSwitch className="hidden lg:flex xl:hidden" />

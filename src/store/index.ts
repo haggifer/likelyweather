@@ -1,10 +1,9 @@
 import dashboard from '@/store/dashboardSlice'
-import filters from '@/store/filtersSlice'
 import layout from '@/store/layoutSlice'
 import { configureStore } from '@reduxjs/toolkit'
 import { useDispatch, useSelector } from 'react-redux'
 
-export const makeStore = () => configureStore({ reducer: { dashboard, filters, layout } })
+export const makeStore = () => configureStore({ reducer: { dashboard, layout } })
 
 export type AppStore = ReturnType<typeof makeStore>
 export type RootState = ReturnType<AppStore['getState']>

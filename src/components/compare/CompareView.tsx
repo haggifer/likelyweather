@@ -24,7 +24,7 @@ const citiesParser = parseAsArrayOf(parseAsString).withDefault([])
 export default function CompareView() {
     const t = useTranslations('compare')
     const locale = useLocale()
-    const { isHydrated } = useUrlSync(['variable'])
+    const { isHydrated } = useUrlSync()
     const variable = useAppSelector((s) => s.dashboard.variable)
     const [slugs, setSlugs] = useQueryState('cities', citiesParser)
     const { data: cities } = useCities()

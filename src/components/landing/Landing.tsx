@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getCityName } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { SEEDS, slugify, START_WITH_IDS } from '@/shared/seeds'
-import { Columns3, LineChart, Split } from 'lucide-react'
+import { BookOpen, Columns3, Split } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { parseAsString, useQueryState } from 'nuqs'
@@ -25,7 +25,7 @@ export default function Landing() {
     const [slug, setSlug] = useQueryState('city', cityParser)
     const tiles = [
         { key: 'disagree', icon: Split, href: `/city/${slug}` },
-        { key: 'converge', icon: LineChart, href: `/city/${slug}/evolution` },
+        { key: 'method', icon: BookOpen, href: '/methodology' },
         { key: 'compare', icon: Columns3, href: '/compare' },
     ] as const
 

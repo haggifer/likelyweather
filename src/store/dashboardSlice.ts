@@ -8,6 +8,7 @@ export interface DashboardState {
     highlightedModel: ModelId | null
     pinnedModels: ModelId[]
     hiddenModels: ModelId[]
+    isUrlHydrated: boolean
 }
 
 const initialState: DashboardState = {
@@ -16,6 +17,7 @@ const initialState: DashboardState = {
     highlightedModel: null,
     pinnedModels: [],
     hiddenModels: [],
+    isUrlHydrated: false,
 }
 
 const toggle = (list: ModelId[], id: ModelId) => (list.includes(id) ? list.filter((m) => m !== id) : [...list, id])
@@ -44,10 +46,20 @@ const dashboardSlice = createSlice({
             state.hiddenModels = []
             state.pinnedModels = []
         },
+        markUrlHydrated: (state) => {
+            state.isUrlHydrated = true
+        },
     },
 })
 
-export const { setVariable, setHoverStep, setHighlightedModel, togglePinnedModel, toggleHiddenModel, showAllModels } =
-    dashboardSlice.actions
+export const {
+    setVariable,
+    setHoverStep,
+    setHighlightedModel,
+    togglePinnedModel,
+    toggleHiddenModel,
+    showAllModels,
+    markUrlHydrated,
+} = dashboardSlice.actions
 
 export default dashboardSlice.reducer

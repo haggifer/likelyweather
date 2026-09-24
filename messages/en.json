@@ -16,10 +16,7 @@
         "compare": "Compare",
         "runs": "Runs",
         "methodology": "Methodology",
-        "themeLab": "Theme Lab gallery",
-        "dashboard": "Dashboard",
-        "evolution": "Evolution",
-        "cityTabs": "City sections"
+        "themeLab": "Theme Lab gallery"
     },
     "footer": {
         "attribution": "Weather data by <openMeteo>Open-Meteo.com</openMeteo> (CC BY 4.0) and <metno>MET Norway</metno>. Geocoding by Open-Meteo.",
@@ -110,20 +107,6 @@
         "split": "Split",
         "empty": "No future steps in this run."
     },
-    "evolution": {
-        "validTime": "Valid time",
-        "pick": "Pick a time",
-        "past": "Past",
-        "future": "Upcoming",
-        "title": "How the {variable} forecast for {time} evolved",
-        "description": "Each line is one model: its forecast for this hour from runs issued up to 7 days earlier. The strip below shows the spread between models at each lead.",
-        "summary": "Spread between models went from {first} {unit} at the longest lead to {last} {unit} in the latest run.",
-        "latest": "latest",
-        "daysBefore": "{days} d before",
-        "convergence": "Spread between models (standard deviation)",
-        "model": "Model",
-        "empty": "No archived runs cover this time."
-    },
     "compare": {
         "title": "Compare cities",
         "description": "Up to four cities side by side on a shared axis.",
@@ -190,13 +173,13 @@
                 "title": "See where they disagree",
                 "body": "Every model on one chart, with the median, the spread, and a day-by-day disagreement meter."
             },
-            "converge": {
-                "title": "Watch it converge",
-                "body": "Pick an hour and see how every model’s forecast for it changed over the previous week."
-            },
             "compare": {
                 "title": "Compare cities",
                 "body": "Up to four cities side by side on a shared axis."
+            },
+            "method": {
+                "title": "How it works",
+                "body": "Where the ten forecasts come from and how the median and the disagreement are computed."
             }
         }
     },
@@ -215,10 +198,6 @@
         "disagreement": {
             "title": "Disagreement",
             "body": "For temperature, wind and pressure the daily disagreement is the average, over the day’s future steps, of the spread between the highest and the lowest model. For precipitation it is the range of the models’ daily totals. Days are in the city’s local time. Thresholds:"
-        },
-        "evolution": {
-            "title": "Evolution",
-            "body": "The evolution view takes one hour and shows what each model forecast for it in runs issued up to {days} days earlier, from Open-Meteo’s archive of previous runs. The spread between models usually shrinks as the hour approaches. MET Norway keeps no archive, so it does not appear there."
         },
         "limits": {
             "title": "Limits",

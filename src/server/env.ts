@@ -3,7 +3,6 @@ import { z } from 'zod'
 
 const EnvSchema = z.object({
     OPEN_METEO_FORECAST_BASE: z.url().default('https://api.open-meteo.com'),
-    OPEN_METEO_PREVIOUS_RUNS_BASE: z.url().default('https://previous-runs-api.open-meteo.com'),
     OPEN_METEO_GEOCODING_BASE: z.url().default('https://geocoding-api.open-meteo.com'),
     METNO_BASE: z.url().default('https://api.met.no'),
     METNO_USER_AGENT: z.string().min(8).default('forecast-arena/0.1 (prototype)'),

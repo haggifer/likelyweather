@@ -1,56 +1,38 @@
 import { Variable } from '@/shared/variables'
 import { useAppDispatch, useAppSelector } from '@/store'
-import { setVariable } from '@/store/dashboardSlice'
-import { FiltersState, hydrateFilters } from '@/store/filtersSlice'
-import { parseAsString, parseAsStringEnum, useQueryStates } from 'nuqs'
+import { markUrlHydrated, setVariable } from '@/store/dashboardSlice'
+import { parseAsStringEnum, useQueryState } from 'nuqs'
 import { useEffect } from 'react'
-
-export type SyncKey = 'variable' | 'validTime'
 
 export interface UseUrlSyncResult {
     isHydrated: boolean
 }
 
-const PARSERS = {
-    v: parseAsStringEnum<Variable>(Object.values(Variable)),
-    t: parseAsString,
-}
+const variableParser = parseAsStringEnum<Variable>(Object.values(Variable))
 
-const DEFAULTS = { v: Variable.Temp, t: null }
-
-const orNull = <T>(value: T, fallback: unknown, enabled: boolean) => (enabled && value !== fallback ? value : null)
-
-// Redux owns the filter state; the URL mirrors it so any dashboard or evolution view is linkable. On mount the
-// page's keys are read from the URL once, then Redux writes back. Queries wait for `isHydrated` so a deep link
-// never fires a wasted request with the default filters first.
-export default function useUrlSync(keys: SyncKey[]): UseUrlSyncResult {
+// Redux owns the chosen variable; the URL mirrors it (`?v=`) so a dashboard or compare view is linkable. On mount
+// the URL is read once, then Redux writes back. Queries wait for `isHydrated` so a deep link never fires a wasted
+// request with the default variable first.
+export default function useUrlSync(): UseUrlSyncResult {
     const dispatch = useAppDispatch()
     const variable = useAppSelector((s) => s.dashboard.variable)
-    const filters = useAppSelector((s) => s.filters)
-    const [params, setParams] = useQueryStates(PARSERS, { history: 'replace' })
-    const has = (key: SyncKey) => keys.includes(key)
+    const isHydrated = useAppSelector((s) => s.dashboard.isUrlHydrated)
+    const [param, setParam] = useQueryState('v', variableParser.withOptions({ history: 'replace' }))
 
     useEffect(() => {
-        const patch: Partial<Omit<FiltersState, 'hydrated'>> = {}
+        if (param) dispatch(setVariable(param))
 
-        if (has('validTime') && params.t) patch.validTime = params.t
-
-        if (has('variable') && params.v) dispatch(setVariable(params.v))
-
-        dispatch(hydrateFilters(patch))
+        dispatch(markUrlHydrated())
         // Runs once per page mount: later URL writes come from Redux, not the other way round.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
-        if (!filters.hydrated) return
+        if (!isHydrated) return
 
-        void setParams({
-            v: orNull(variable, DEFAULTS.v, has('variable')),
-            t: orNull(filters.validTime, DEFAULTS.t, has('validTime')),
-        })
+        void setParam(variable === Variable.Temp ? null : variable)
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [variable, filters])
+    }, [variable, isHydrated])
 
-    return { isHydrated: filters.hydrated }
+    return { isHydrated }
 }

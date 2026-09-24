@@ -16,10 +16,7 @@
         "compare": "Vergleich",
         "runs": "Läufe",
         "methodology": "Methodik",
-        "themeLab": "Theme-Lab-Galerie",
-        "dashboard": "Übersicht",
-        "evolution": "Entwicklung",
-        "cityTabs": "Bereiche der Stadt"
+        "themeLab": "Theme-Lab-Galerie"
     },
     "footer": {
         "attribution": "Wetterdaten von <openMeteo>Open-Meteo.com</openMeteo> (CC BY 4.0) und <metno>MET Norway</metno>. Geokodierung von Open-Meteo.",
@@ -110,20 +107,6 @@
         "split": "Gespalten",
         "empty": "Dieser Lauf hat keine künftigen Schritte."
     },
-    "evolution": {
-        "validTime": "Gültigkeitszeit",
-        "pick": "Zeitpunkt wählen",
-        "past": "Vergangen",
-        "future": "Kommend",
-        "title": "Wie sich die Vorhersage ({variable}) für {time} entwickelt hat",
-        "description": "Jede Linie ist ein Modell: seine Vorhersage für diese Stunde aus Läufen, die bis zu 7 Tage vorher ausgegeben wurden. Der Streifen darunter zeigt die Streuung zwischen den Modellen je Vorlauf.",
-        "summary": "Die Streuung zwischen den Modellen ging von {first} {unit} beim längsten Vorlauf auf {last} {unit} im letzten Lauf zurück.",
-        "latest": "zuletzt",
-        "daysBefore": "{days} T vorher",
-        "convergence": "Streuung zwischen den Modellen (Standardabweichung)",
-        "model": "Modell",
-        "empty": "Kein archivierter Lauf deckt diesen Zeitpunkt ab."
-    },
     "compare": {
         "title": "Städte vergleichen",
         "description": "Bis zu vier Städte nebeneinander auf einer gemeinsamen Achse.",
@@ -190,13 +173,13 @@
                 "title": "Sieh, wo sie abweichen",
                 "body": "Alle Modelle in einem Diagramm, mit Median, Streuung und einer täglichen Anzeige der Uneinigkeit."
             },
-            "converge": {
-                "title": "Konvergenz verfolgen",
-                "body": "Wähle eine Stunde und sieh, wie sich die Vorhersage jedes Modells dafür in der Woche davor verändert hat."
-            },
             "compare": {
                 "title": "Städte vergleichen",
                 "body": "Bis zu vier Städte nebeneinander auf einer gemeinsamen Achse."
+            },
+            "method": {
+                "title": "So funktioniert es",
+                "body": "Woher die zehn Vorhersagen kommen und wie Median und Uneinigkeit berechnet werden."
             }
         }
     },
@@ -215,10 +198,6 @@
         "disagreement": {
             "title": "Uneinigkeit",
             "body": "Für Temperatur, Wind und Luftdruck ist die tägliche Uneinigkeit der Mittelwert, über die künftigen Schritte des Tages, des Abstands zwischen höchstem und niedrigstem Modell. Beim Niederschlag ist es die Spanne der täglichen Summen der Modelle. Tage gelten in der Ortszeit der Stadt. Schwellen:"
-        },
-        "evolution": {
-            "title": "Entwicklung",
-            "body": "Die Entwicklungsansicht nimmt eine Stunde und zeigt, was jedes Modell dafür in Läufen vorhergesagt hat, die bis zu {days} Tage vorher ausgegeben wurden, aus dem Archiv früherer Läufe von Open-Meteo. Die Streuung zwischen den Modellen nimmt meist ab, je näher die Stunde rückt. MET Norway hat kein Archiv und erscheint dort daher nicht."
         },
         "limits": {
             "title": "Grenzen",

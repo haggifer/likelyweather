@@ -1,6 +1,5 @@
 'use client'
 
-import CityTabs from '@/components/city/CityTabs'
 import UpdatedChip from '@/components/city/UpdatedChip'
 import VariableSwitch from '@/components/city/VariableSwitch'
 import LanguageSwitch from '@/components/shell/LanguageSwitch'
@@ -26,7 +25,6 @@ export default function TopBar() {
                         <span>Arena</span>
                     </span>
                 </Link>
-                {slug && <CityTabs slug={slug} className="hidden lg:flex" />}
                 <div className="ml-auto flex items-center gap-2">
                     {slug && <VariableSwitch className="hidden xl:flex" />}
                     {slug && <UpdatedChip slug={slug} className="hidden lg:inline-flex" />}
