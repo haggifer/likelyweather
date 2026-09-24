@@ -14,7 +14,7 @@ const RATE_LIMITS: Record<RateBucket, { limit: number; windowSeconds: number }> 
 
 const PUBLIC_CACHE = 'public, max-age=300'
 
-const getClientIp = (req: NextRequest) => req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'local'
+export const getClientIp = (req: NextRequest) => req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'local'
 
 export const enforceRateLimit = (req: NextRequest, bucket: RateBucket) => {
     const { limit, windowSeconds } = RATE_LIMITS[bucket]

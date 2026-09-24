@@ -2,6 +2,7 @@ import { dedupe } from '@/server/cache'
 import { collect, getRunId, getWindowSteps, isHourlyGrid } from '@/server/collector'
 import { env } from '@/server/env'
 import { HttpError } from '@/server/errors'
+import { quotaExceeded, trySpendQuota } from '@/server/quota'
 import { getPlace } from '@/server/sources/geocoding'
 import { getCities, getCityBySlug, getLatestSnapshot, Snapshot, updateCities } from '@/server/store'
 import { City, CityDetail, CityStatus, Locale, LOCALES } from '@/shared/api'
@@ -114,13 +115,20 @@ const hasFullGrid = (snapshot: Snapshot) => {
 
 // A city whose newest snapshot predates the current 6-hour run, or whose grid is not the current hourly window, is
 // refreshed through the collector's preview path. This stands in for the scheduler locally:
-// views never wait more than one upstream round trip.
-export const ensureFreshSnapshot = (city: City) =>
+// views never wait more than one upstream round trip. A refresh on behalf of a `client` spends its daily quota; with
+// none left the stored snapshot is served as it is. Concurrent views share one refresh, paid by the first.
+export const ensureFreshSnapshot = (city: City, client?: string) =>
     dedupe(`refresh:${city.id}`, async () => {
         const snapshot = await getLatestSnapshot(city.id)
         const currentIssue = toIsoMinute(floorToStep(new Date()))
 
         if (snapshot && hasFullGrid(snapshot) && snapshot.issueTime >= currentIssue) return snapshot
+
+        if (client && !trySpendQuota(client)) {
+            if (snapshot) return snapshot
+
+            throw quotaExceeded()
+        }
 
         try {
             const { snapshots } = await collect({ origin: 'PREVIEW', cities: [city] })

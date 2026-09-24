@@ -1,0 +1,62 @@
+'use client'
+
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useQuota } from '@/hooks/queries'
+import { formatTime } from '@/lib/format'
+import { cn } from '@/lib/utils'
+import { useLocale, useTranslations } from 'next-intl'
+
+const LOW_SHARE = 0.2
+
+// Requests left today out of the daily quota. The reset time is shown in the viewer's own time zone.
+export default function QuotaMeter() {
+    const t = useTranslations('shell.quota')
+    const locale = useLocale()
+    const { data } = useQuota()
+
+    if (!data) return null
+
+    const left = Math.max(0, data.limit - data.used)
+    const share = left / data.limit
+    const resetsAt = formatTime(data.resetsAt, Intl.DateTimeFormat().resolvedOptions().timeZone, locale, {
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23',
+    })
+
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <div
+                    role="meter"
+                    tabIndex={0}
+                    aria-label={t('label')}
+                    aria-valuemin={0}
+                    aria-valuemax={data.limit}
+                    aria-valuenow={left}
+                    aria-valuetext={t('value', { left, limit: data.limit })}
+                    className="flex items-center gap-2 rounded-md px-1.5 py-1 text-xs text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                    <span className="hidden sm:inline">{t('short')}</span>
+                    <span className="h-1.5 w-12 overflow-hidden rounded-full bg-muted sm:w-16">
+                        <span
+                            className={cn(
+                                'block h-full rounded-full transition-[width]',
+                                share <= LOW_SHARE ? 'bg-warning' : 'bg-primary',
+                            )}
+                            style={{ width: `${share * 100}%` }}
+                        />
+                    </span>
+                    <span className="font-medium text-foreground tabular-nums">
+                        {left}/{data.limit}
+                    </span>
+                </div>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="max-w-72">
+                <p className="font-semibold">{t('value', { left, limit: data.limit })}</p>
+                <p>{t('explain')}</p>
+                <p>{t('resets', { time: resetsAt })}</p>
+            </TooltipContent>
+        </Tooltip>
+    )
+}

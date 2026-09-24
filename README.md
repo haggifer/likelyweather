@@ -35,6 +35,8 @@ pnpm collect -- --loop                        # run now, then every 6 hours
 | Cities         | `/cities`             | Tracked cities with status, views, scheduled runs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Methodology    | `/methodology`        | Sources, grids, median and spread, disagreement, limits, attribution                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
+A daily quota per user (60 new forecast requests, see DECISIONS P27) is shown as a meter in the top bar.
+
 Ukrainian, English, Spanish, German and French (language menu in the top bar; the non-English catalogs are machine-drafted and need a native review), light and dark mode.
 
 ## Scripts
@@ -54,6 +56,7 @@ Ukrainian, English, Spanish, German and French (language menu in the top bar; th
 ```
 Browser ── TanStack Query ──▶ /api/* (Next route handlers, zod-validated, rate-limited)
                                  │
+                                 ├─ quota ─────────────▶ per-client daily counters (in-process)
                                  ├─ geocode ───────────▶ Open-Meteo Geocoding (cached 24 h)
                                  ├─ latest / compare ──▶ snapshot store (one hourly grid per run); stale → collector preview path ─▶ Open-Meteo + met.no
                                  └─ runs / cities / health ─▶ JSON store (data/)

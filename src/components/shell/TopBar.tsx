@@ -1,5 +1,6 @@
 import LanguageSwitch from '@/components/shell/LanguageSwitch'
 import MoreMenu from '@/components/shell/MoreMenu'
+import QuotaMeter from '@/components/shell/QuotaMeter'
 import ThemeToggle from '@/components/shell/ThemeToggle'
 import { CloudSun } from 'lucide-react'
 import Link from 'next/link'
@@ -16,6 +17,7 @@ export default function TopBar() {
                     </span>
                 </Link>
                 <div className="ml-auto flex items-center gap-2">
+                    <QuotaMeter />
                     <LanguageSwitch />
                     <ThemeToggle />
                     <MoreMenu />

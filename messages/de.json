@@ -8,7 +8,14 @@
             "light": "hellen",
             "dark": "dunklen"
         },
-        "language": "Sprache"
+        "language": "Sprache",
+        "quota": {
+            "short": "Anfragen",
+            "label": "Verbleibende Prognoseanfragen heute",
+            "value": "Heute noch {left} von {limit} Anfragen",
+            "explain": "Eine Anfrage zählt, wenn der Server für dich neue Daten von den Wetterdiensten holt: eine Stadt nach einem neuen Modelllauf oder eine neue Suche. Bereits gespeicherte Prognosen sind kostenlos.",
+            "resets": "Wird um {time} zurückgesetzt."
+        }
     },
     "nav": {
         "more": "Weitere Seiten",

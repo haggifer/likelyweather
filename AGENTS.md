@@ -30,7 +30,7 @@ pnpm build
 - **UI kit.** Tailwind v4 and shadcn/ui only; no other component library. Colors, fonts and radii come from token-backed utilities (`src/app/globals.css`), never literals in components. Dark mode is the `.dark` class on `<html>` (`src/lib/colorMode.ts`); charts re-read their colors when it changes.
 - **Model palette.** `src/shared/models.ts` fixes one color per model; never reassign it. ECMWF AIFS and met.no keep their dash patterns as a second encoding.
 - **API contract.** The zod schemas in `src/shared/api.ts` are the contract; change them first. The server returns stored data; the client derives medians, slots, labels and formatting with `src/shared`.
-- **Upstream calls.** The browser never calls Open-Meteo or met.no. The API proxies geocoding and performs preview fetches, and only calls upstream when a newer 6-hour run exists.
+- **Upstream calls.** The browser never calls Open-Meteo or met.no. The API proxies geocoding and performs preview fetches, and only calls upstream when a newer 6-hour run exists. Every upstream request made for a client spends its daily quota first (`src/server/quota.ts`, DECISIONS P27).
 - **Time.** Timestamps are UTC in storage and the API, and displayed in the city's local time.
 - **Precipitation** is always present in the schema and the UI.
 - **State.** Redux holds UI state only; TanStack Query holds server state. The landing overview's queries never refetch in the background, because a refetch re-anchors the chart; only Refresh does.

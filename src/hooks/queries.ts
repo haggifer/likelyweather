@@ -7,6 +7,7 @@ import {
     GeocodeResponse,
     LatestResponse,
     Locale,
+    QuotaResponse,
     RunsResponse,
     TimelineResponse,
     TrackResponse,
@@ -60,6 +61,10 @@ export const useHourlyAll = (slug: string, enabled = true): UseQueryResult<Lates
             refetchOnWindowFocus: false,
         })),
     })
+
+// Refetched whenever a request that can spend quota settles (see `makeQueryClient`).
+export const useQuota = (): UseQueryResult<QuotaResponse, Error> =>
+    useQuery({ queryKey: ['quota'], queryFn: () => apiGet<QuotaResponse>('/quota'), staleTime: 5 * MINUTE })
 
 export const useGeocode = (q: string, locale: Locale): UseQueryResult<GeocodeResponse, Error> =>
     useQuery({

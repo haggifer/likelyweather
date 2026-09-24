@@ -8,7 +8,14 @@
             "light": "clair",
             "dark": "sombre"
         },
-        "language": "Langue"
+        "language": "Langue",
+        "quota": {
+            "short": "Requêtes",
+            "label": "Requêtes de prévision restantes aujourd’hui",
+            "value": "Encore {left} requêtes sur {limit} aujourd’hui",
+            "explain": "Une requête est comptée quand le serveur récupère pour vous de nouvelles données auprès des services météo : une ville après une nouvelle émission des modèles, ou une nouvelle recherche. Les prévisions déjà enregistrées sont gratuites.",
+            "resets": "Remise à zéro à {time}."
+        }
     },
     "nav": {
         "more": "Autres pages",

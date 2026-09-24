@@ -186,3 +186,13 @@ Decided by the author: no chart uses a 6-hour grid or the past 24 hours any more
 - **Charts** draw a precipitation bar over the 3 hours after its slot only; the alternative alignment for sums ending at a 6-hour step is gone.
 - **Where 6 hours remain.** Runs are still issued every 6 hours (00, 06, 12, 18 UTC), and the dashboard's precipitation panel still shows 6-hour totals counted from the chart start, because 3-hour bars leave no room for its hour and chance-of-rain labels.
 - **Nothing needs the past hours.** The truth, skill and evolution features that used analysis hours were removed with P17 and P20; post-MVP accuracy would score stored future hours against later observations.
+
+## P27. A daily quota per user, shown in the header (2026-09-24)
+
+Asked by the author: a strict daily limit per user, visible in the header, sized for about ten users.
+
+- **What counts.** One unit per upstream request the server makes on a client's behalf: refreshing a city when a newer run exists (or fetching a new city), and a geocoding search the 24-hour cache cannot answer. Reading stored forecasts is free, and concurrent views of one city share a single refresh, paid by the first. The scheduled collector does not spend user quota.
+- **Limits.** 60 per client per UTC day, and 600 per day for the whole app. Worst case, if Open-Meteo counts every model as its own variable (8 variables × 9 models ≈ 7 calls per city), 600 refreshes are about 4,300 calls, under the free tier's 10,000 per day and 5,000 per hour, with room for the collector. The per-client limit covers browsing ten cities after each of the four daily runs plus some searches.
+- **When it runs out.** A city with a stored snapshot is served as stored (the Updated chip shows its age); a city with none, or a new search, gets a 429 `quota_exceeded` that says when it resets.
+- **Who a client is.** The first `x-forwarded-for` address, the key the rate limits already use. A client can forge that header, so in the target it must come from the CDN (CloudFront's viewer address); without accounts, IP is the only identity. Counters live in `src/server/cache.ts`, so they reset when the prototype's process restarts; in the target they are Redis keys with a TTL to midnight UTC.
+- **Header meter.** `GET /api/quota` returns `{limit, used, resetsAt}`; the meter shows requests left as a bar and a count (the label hides on phones), turns amber at 20 percent, and its tooltip explains what counts and when it resets in the viewer's time. The client refetches it whenever a `latest`, `compare` or `geocode` query or a mutation settles (`makeQueryClient`).

@@ -100,6 +100,9 @@ export const VariableQuerySchema = z.strictObject({
 
 export const LatestQuerySchema = VariableQuerySchema
 
+export const QuotaResponseSchema = z.object({ limit: z.number(), used: z.number(), resetsAt: z.string() })
+export type QuotaResponse = z.infer<typeof QuotaResponseSchema>
+
 export const SeriesSchema = z.object({ modelId: ModelIdSchema, values: NumberList })
 export type Series = z.infer<typeof SeriesSchema>
 
