@@ -1,6 +1,6 @@
 # Decisions
 
-Decisions already made in the project guide are listed in `PROJECT_GUIDE.md` §17. This file records the choices made while building the prototype (from 2026-09-23), including every place it deliberately departs from the guide, and what it would take to converge. Guide v3.0 (2026-09-24) absorbed P17 to P19, and v3.1 P20.
+Decisions already made in the project guide are listed in `PROJECT_GUIDE.md` §17. This file records the choices made while building the prototype (from 2026-09-23), including every place it deliberately departs from the guide, and what it would take to converge. Guide v3.0 (2026-09-24) absorbed P17 to P19, v3.1 P20, and v3.2 P21.
 
 ## P1. One Next.js app instead of the pnpm + Turborepo monorepo
 
@@ -140,6 +140,16 @@ Decided by the author, checked before removing.
 - **No section tabs on city pages.** With only the dashboard left, the Dashboard/Evolution control in the top bar and the city header is gone.
 - **Variable switch in the body.** It moved from the top bar and city header to the top of the dashboard body, where it has room for labels (hidden on phones only).
 - **Landing tiles.** "Watch it converge" gave way to "How it works" (methodology), keeping three tiles. From 1600 px (`3xl`, 100rem, defined in `globals.css` because Tailwind cannot order an arbitrary `min-[1600px]` against its rem breakpoints) the tiles stack in a column beside the 1024 px overview card, stretched to its height. Measured: at 1600 px the column is 312 px wide with three 166 px tiles; at 1920 px the block stays centered under the hero; below 1600 px the row of three under the card is unchanged.
+
+## P21. The dashboard adopts the overview's time model; city switcher; performance (2026-09-24)
+
+Decided by the author.
+
+- **Time model.** The dashboard chart shows 96 hours in local 3-hour slots from the slot the data arrived in, built from the hourly grid (`useLatest` now reads it, sharing the cache with the landing overview and the Updated chip). The past 24 hours of analysis are gone. The now line appears only once the chart is a slot old; the 15-minute background refetch re-anchors it. The precipitation query's arrival time is the anchor because that query is shared by every variable. The hovered time sits above the crosshair.
+- **Precipitation as bars.** Precipitation totals are drawn as median bars with a tick per model instead of smoothed lines, which suggested a continuous rate and could overshoot between points. On the 3-hour slots a bar covers the 3 hours after its slot; on the 6-hour grid (compare) the 6 hours before its step (`getSumBarCenter`). The disagreement tiles file each slot's total under the day it ends. The precipitation panel stays at 6-hour totals, which its hour labels and chance-of-rain row need to fit, now counted from the chart start and labelled by the hour each ends; its y-axis uses the shared 0.5 / 1 / 2 / 5 mm steps and covers every model's tick.
+- **Longer hourly grid.** It now runs to 108 hours after each run (`HOURLY_FORECAST_HOURS`, Open-Meteo `forecast_days=6`), so a 96-hour chart from any later slot is covered. Snapshots with a shorter grid are refreshed once on the next view.
+- **Header.** A "Back to overview" link returns to `/?city=<slug>`. The name line carries the region and country dimmed, like the landing card; the coordinates and "tracked since" line is gone. A pencil button swaps it for a full-width `SearchBox` holding the current name, selected so typing replaces it. Results appear only once the text changes, so no geocoding request is made for the unchanged name. Picking one opens that city; Escape or blur keeps the current one.
+- **Performance.** Switching variables blocked the main thread for 370 to 600 ms in the dev build (long tasks measured with a `PerformanceObserver`). Two causes: the y-axis tween between unrelated domains re-rendered the whole spaghetti chart on every frame for 180 ms, and the Recharts precipitation panel re-rendered although its data does not depend on the variable. `useAnimatedDomain` now jumps when its `resetKey` (the variable) changes. The panel is a memoized element, loaded with `next/dynamic` so Recharts leaves the dashboard's first bundle. After the fix, the same switches produced no long tasks (one of 54 ms for precipitation).
 
 ## Open: the design decision (guide phase 2.5)
 
