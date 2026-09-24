@@ -1,4 +1,4 @@
-// In-process stand-in for Redis (guide §22). The key names and TTLs match the Redis plan so the swap is
+// In-process stand-in for Redis (DECISIONS P4). The key names and TTLs match the Redis plan so the swap is
 // mechanical; state lives on globalThis so Next.js route bundles in one process share it.
 interface Entry {
     value: unknown

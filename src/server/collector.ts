@@ -149,7 +149,7 @@ export const fetchModels = async (
     return { models, hourly, metnoLastModified, warnings }
 }
 
-// One code path for scheduled runs, CLI runs, and on-demand previews (guide §2.5, §6). FAILED only means no rows.
+// One code path for scheduled runs, CLI runs, and on-demand previews (DECISIONS P7). FAILED only means no rows.
 export const collect = async ({
     origin,
     cities,

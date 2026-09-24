@@ -31,7 +31,7 @@ const getShortcutLabel = () =>
 
 const getServerShortcutLabel = () => null
 
-// Selecting a place tracks it (guide §2.3) and then hands the slug to `onSelectCity`; without a handler the
+// Selecting a place tracks it and then hands the slug to `onSelectCity`; without a handler the
 // box navigates to the city dashboard. With an `initialQuery` (the current city) the text starts selected, so
 // typing replaces it, and results only appear once it has been edited. `onDismiss` fires on Escape and on blur.
 export default function SearchBox({

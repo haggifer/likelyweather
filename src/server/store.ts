@@ -1,5 +1,5 @@
 // JSON-file stand-in for Postgres (City, CollectionRun, Forecast) and S3 (raw archive). The prototype keeps
-// the guide's table shapes so the Prisma port replaces these functions, not their callers.
+// the target's table shapes (DECISIONS P3) so the Prisma port replaces these functions, not their callers.
 import { env } from '@/server/env'
 import { mergeSeeds } from '@/server/seed'
 import { City, Run, RunOrigin } from '@/shared/api'

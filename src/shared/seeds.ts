@@ -24,7 +24,8 @@ export const slugify = (name: string, countryCode: string, id: number) =>
             .replace(/^-+|-+$/g, '') || 'city'
     }-${countryCode.toLowerCase()}-${id}`
 
-// Guide §2.3 seed cities plus Paris. Localized names come from the Open-Meteo geocoder (fetched 2026-09-23).
+// Starter cities: ten from the original plan (four in Ukraine) plus Paris. Localized names come from the Open-Meteo
+// geocoder (fetched 2026-09-23).
 export const SEEDS: SeedCity[] = [
     {
         id: 706483,

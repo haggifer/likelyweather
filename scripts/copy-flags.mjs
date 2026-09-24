@@ -1,4 +1,5 @@
-// Copies the MIT-licensed country-flag-icons 3x2 SVGs into public/flags (guide §4.6: flags are SVG assets, not emoji).
+// Copies the MIT-licensed country-flag-icons 3x2 SVGs into public/flags. SVG assets rather than emoji, so flags look
+// the same on every platform.
 import { cpSync, mkdirSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'

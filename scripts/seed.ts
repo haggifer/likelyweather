@@ -1,4 +1,4 @@
-// Seeds the ten cities from guide §2.3 into the local store. --force replaces the tracked-city list.
+// Seeds the starter cities (src/shared/seeds.ts) into the local store. --force replaces the tracked-city list.
 import { rm } from 'node:fs/promises'
 import path from 'node:path'
 import { parseArgs } from 'node:util'

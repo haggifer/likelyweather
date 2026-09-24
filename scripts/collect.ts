@@ -1,4 +1,4 @@
-// Local entry for the scheduled collector (guide §2.5). The Lambda handler would wrap the same `collect` call.
+// Local entry for the scheduled collector. The Lambda handler would wrap the same `collect` call.
 // Usage: pnpm collect [--cities kharkiv-ua-706483,kyiv-ua-703448] [--loop]
 import { parseArgs } from 'node:util'
 

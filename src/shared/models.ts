@@ -24,7 +24,7 @@ export interface ModelInfo {
     dash?: string
 }
 
-// Fixed categorical palette (guide §4.6). Never reassigned by a theme preset. IFS/AIFS and the gray met.no fail
+// Fixed categorical palette (DECISIONS P9). Never reassigned by a theme preset. IFS/AIFS and the gray met.no fail
 // CVD separation, so AIFS and met.no also carry a dash pattern as secondary encoding.
 export const MODELS: ModelInfo[] = [
     {

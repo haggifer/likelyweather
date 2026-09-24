@@ -1,4 +1,4 @@
-// Prints the frozen :root/.dark CSS for a Theme Lab combination (guide §4.6 freeze step).
+// Prints the frozen :root/.dark CSS for a Theme Lab combination, to freeze a chosen design into globals.css.
 // Usage: pnpm theme:export [--preset sky|console|civic|swiss|metro] [--state combination.json]
 import { buildFrozenCss } from '@/theme/freeze'
 import { DEFAULT_STATE, getPresetState } from '@/theme/state'

@@ -1,4 +1,4 @@
-// CI assertion from guide §12: a production build (NEXT_PUBLIC_THEME_LAB=0) must not ship the Theme Lab panel,
+// CI assertion: a production build (NEXT_PUBLIC_THEME_LAB=0) must not ship the Theme Lab panel,
 // its gallery, or the gallery's static data dump. Run after `next build`.
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import path from 'node:path'
