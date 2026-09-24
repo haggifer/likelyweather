@@ -92,7 +92,7 @@ export default function SpaghettiChart({
             ),
         [yDomain, series, variable],
     )
-    const domain = useAnimatedDomain(target)
+    const domain = useAnimatedDomain(target, variable)
 
     const geometry = useMemo(
         () => buildSpaghettiGeometry({ steps, series, stats, width, height, domain, margin }),

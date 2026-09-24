@@ -1,7 +1,6 @@
 'use client'
 
 import ChartFrame from '@/charts/ChartFrame'
-import PrecipPanel from '@/charts/PrecipPanel'
 import SpaghettiChart from '@/charts/SpaghettiChart'
 import { getNearestIndex } from '@/charts/spaghettiGeometry'
 import DisagreementTiles from '@/components/city/DisagreementTiles'
@@ -31,6 +30,7 @@ import { useAppDispatch, useAppSelector } from '@/store'
 import { setHoverStep, toggleHiddenModel } from '@/store/dashboardSlice'
 import { Loader2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
+import dynamic from 'next/dynamic'
 import { useEffect, useMemo } from 'react'
 
 interface IProps {
@@ -49,6 +49,12 @@ interface SeriesTableProps {
 }
 
 const PRECIP_WINDOW_HOURS = 6
+
+// Recharts is the heaviest chart library here and the panel sits below the fold, so it loads after the main chart.
+const PrecipPanel = dynamic(() => import('@/charts/PrecipPanel'), {
+    ssr: false,
+    loading: () => <Skeleton className="h-[230px]" />,
+})
 
 const toSlotSeriesList = (response: LatestResponse, list: Series[], slots: string[], aggregation: Aggregation) =>
     list.map((s) => ({ modelId: s.modelId, values: toSlotSeries(response.steps, s.values, slots, aggregation) }))
@@ -184,6 +190,25 @@ export default function Dashboard({ slug }: IProps) {
             chance: computeChanceOfRain(values, steps.length),
         }
     }, [precipQuery.data, anchor])
+
+    // The precipitation panel does not depend on the selected variable; a stable element keeps a variable switch
+    // from re-rendering the Recharts tree.
+    const precipChart = useMemo(
+        () =>
+            precip ? (
+                <PrecipPanel
+                    steps={precip.steps}
+                    series={precip.series}
+                    median={precip.median}
+                    chance={precip.chance}
+                    timeZone={timeZone}
+                    locale={locale}
+                />
+            ) : (
+                <Skeleton className="h-[230px]" />
+            ),
+        [precip, timeZone, locale],
+    )
 
     useEffect(() => {
         const available = new Set(latest?.series.map((s) => s.modelId))
@@ -330,18 +355,7 @@ export default function Dashboard({ slug }: IProps) {
                             : undefined
                     }
                 >
-                    {precip ? (
-                        <PrecipPanel
-                            steps={precip.steps}
-                            series={precip.series}
-                            median={precip.median}
-                            chance={precip.chance}
-                            timeZone={timeZone}
-                            locale={locale}
-                        />
-                    ) : (
-                        <Skeleton className="h-[230px]" />
-                    )}
+                    {precipChart}
                 </ChartFrame>
             </div>
         </div>
