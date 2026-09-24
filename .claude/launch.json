@@ -1,0 +1,11 @@
+{
+    "version": "0.0.1",
+    "configurations": [
+        {
+            "name": "forecast-arena",
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": ["dev", "--port", "3222"],
+            "port": 3222
+        }
+    ]
+}
