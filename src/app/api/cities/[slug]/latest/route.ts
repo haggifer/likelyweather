@@ -1,0 +1,12 @@
+import { ensureFreshSnapshot, requireCity } from '@/server/cities'
+import { handle, json, parseQuery } from '@/server/http'
+import { toLatestResponse } from '@/server/latest'
+import { VariableQuerySchema } from '@/shared/api'
+
+export const GET = handle('read', async (req, ctx: RouteContext<'/api/cities/[slug]/latest'>) => {
+    const { slug } = await ctx.params
+    const { variable } = parseQuery(req, VariableQuerySchema)
+    const snapshot = await ensureFreshSnapshot(await requireCity(slug))
+
+    return json(toLatestResponse(snapshot, variable))
+})
