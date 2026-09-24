@@ -34,24 +34,6 @@ interface GeometryInput {
 
 type Point = [number, number | null]
 
-const PAD_RATIO = 0.08
-
-export const getYDomain = (series: Series[], zeroBased: boolean): [number, number] => {
-    const values = series.flatMap((s) => s.values).filter((v): v is number => v !== null)
-
-    if (!values.length) return [0, 1]
-
-    const lo = zeroBased ? 0 : Math.min(...values)
-    const hi = Math.max(...values)
-    const pad = (hi - lo || 1) * PAD_RATIO
-    const nice = scaleLinear()
-        .domain([zeroBased ? 0 : lo - pad, hi + pad])
-        .nice(8)
-        .domain()
-
-    return [nice[0], nice[1]]
-}
-
 const isDefined = (p: Point) => p[1] !== null
 
 export const buildSpaghettiGeometry = ({

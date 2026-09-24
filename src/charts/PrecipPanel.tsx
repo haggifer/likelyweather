@@ -4,8 +4,19 @@ import useChartTheme from '@/charts/useChartTheme'
 import { formatNumber, formatPercent, formatStepLabel, formatTime } from '@/lib/format'
 import { Series } from '@/shared/api'
 import { MODEL_BY_ID, ModelId } from '@/shared/models'
+import { getLocalDateKey } from '@/shared/time'
 import { useTranslations } from 'next-intl'
-import { Bar, CartesianGrid, ComposedChart, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from 'recharts'
+import {
+    Bar,
+    CartesianGrid,
+    ComposedChart,
+    ReferenceLine,
+    ResponsiveContainer,
+    Scatter,
+    Tooltip,
+    XAxis,
+    YAxis,
+} from 'recharts'
 
 interface IProps {
     steps: string[]
@@ -55,6 +66,10 @@ export default function PrecipPanel({ steps, series, median, chance, timeZone, l
         chance: chance[i],
         ...Object.fromEntries(series.map((s) => [s.modelId, s.values[i]])),
     }))
+
+    // A 6-hour total belongs to the day of its last hour; a new day starts where that day changes.
+    const dayKeys = steps.map((step) => getLocalDateKey(new Date(new Date(step).getTime() - 1).toISOString(), timeZone))
+    const dayStarts = steps.filter((_, i) => i > 0 && dayKeys[i] !== dayKeys[i - 1])
 
     const TimeAndChanceTick = ({ x = 0, y = 0, index = 0 }: TickProps) => (
         <g transform={`translate(${x},${y})`}>
@@ -112,6 +127,15 @@ export default function PrecipPanel({ steps, series, median, chance, timeZone, l
                     axisLine={false}
                     allowDecimals
                 />
+                {dayStarts.map((step) => (
+                    <ReferenceLine
+                        key={step}
+                        x={step}
+                        position="start"
+                        stroke={theme.border}
+                        ifOverflow="extendDomain"
+                    />
+                ))}
                 <Tooltip content={renderTooltip} cursor={{ fill: theme.grid, opacity: 0.6 }} />
                 <Bar
                     dataKey="median"

@@ -1,7 +1,9 @@
-import { buildSpaghettiGeometry, getNearestIndex, getYDomain } from '@/charts/spaghettiGeometry'
+import { getYDomain, getYTicks } from '@/charts/scales'
+import { buildSpaghettiGeometry, getNearestIndex } from '@/charts/spaghettiGeometry'
 import snapshot from '@/fixtures/snapshot-kharkiv.json'
 import { computeEnsemble } from '@/shared/ensemble'
 import { ModelId } from '@/shared/models'
+import { Variable } from '@/shared/variables'
 
 // A real collector snapshot (Kharkiv, 2026-09-23 12:00 UTC) keeps the path data honest.
 const series = Object.entries(snapshot.models).map(([modelId, s]) => ({ modelId: modelId as ModelId, values: s.temp }))
@@ -12,9 +14,14 @@ const stats = computeEnsemble(
 const margin = { top: 10, right: 10, bottom: 20, left: 40 }
 
 describe('spaghetti geometry', () => {
-    it('pads and rounds the y domain', () => {
-        expect(getYDomain(series, false)).toMatchSnapshot()
-        expect(getYDomain([{ modelId: ModelId.Gfs, values: [0.4, 3.1] }], true)[0]).toBe(0)
+    it('snaps the y domain to the variable gridline step', () => {
+        const values = series.flatMap((s) => s.values)
+
+        expect(getYDomain(values, Variable.Temp)).toEqual([5, 25])
+        expect(getYTicks([5, 25], Variable.Temp, 5)).toEqual([5, 10, 15, 20, 25])
+        expect(getYDomain([0.4, 7.1], Variable.Wind)).toEqual([0, 8])
+        expect(getYTicks([0, 8], Variable.Wind, 5)).toEqual([0, 2, 4, 6, 8])
+        expect(getYDomain([0.4, 3.1], Variable.Precip)[0]).toBe(0)
     })
 
     it('produces stable path data for lines, median and bands', () => {
@@ -24,7 +31,10 @@ describe('spaghetti geometry', () => {
             stats,
             width: 600,
             height: 300,
-            domain: getYDomain(series, false),
+            domain: getYDomain(
+                series.flatMap((s) => s.values),
+                Variable.Temp,
+            ),
             margin,
         })
 

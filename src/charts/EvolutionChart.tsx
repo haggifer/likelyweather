@@ -1,6 +1,6 @@
 'use client'
 
-import { getYDomain } from '@/charts/spaghettiGeometry'
+import { getYDomain, getYTicks } from '@/charts/scales'
 import useAnimatedDomain from '@/charts/useAnimatedDomain'
 import useChartTheme from '@/charts/useChartTheme'
 import useElementWidth from '@/charts/useElementWidth'
@@ -8,7 +8,7 @@ import { formatNumber } from '@/lib/format'
 import { EvolutionPoint } from '@/shared/api'
 import { EVOLUTION_MAX_DAYS } from '@/shared/constants'
 import { getStandardDeviation } from '@/shared/ensemble'
-import { MODEL_BY_ID, ModelId } from '@/shared/models'
+import { MODEL_BY_ID } from '@/shared/models'
 import { Variable, VARIABLE_BY_ID } from '@/shared/variables'
 import { groups } from 'd3-array'
 import { scaleLinear } from 'd3-scale'
@@ -18,7 +18,6 @@ import { PointerEvent, useMemo, useState } from 'react'
 
 interface IProps {
     points: EvolutionPoint[]
-    truth: number | null
     variable: Variable
     ariaLabel: string
     height?: number
@@ -28,7 +27,7 @@ const MARGIN = { top: 16, right: 20, bottom: 34, left: 48 }
 const STRIP_HEIGHT = 34
 const LEAD_DAYS = Array.from({ length: EVOLUTION_MAX_DAYS + 1 }, (_, i) => EVOLUTION_MAX_DAYS - i)
 
-export default function EvolutionChart({ points, truth, variable, ariaLabel, height = 320 }: IProps) {
+export default function EvolutionChart({ points, variable, ariaLabel, height = 320 }: IProps) {
     const t = useTranslations('evolution')
     const theme = useChartTheme()
     const { ref, width } = useElementWidth<HTMLDivElement>()
@@ -38,10 +37,10 @@ export default function EvolutionChart({ points, truth, variable, ariaLabel, hei
     const target = useMemo(
         () =>
             getYDomain(
-                [{ modelId: ModelId.EcmwfIfs, values: [...points.map((p) => p.value), truth] }],
-                variable === Variable.Precip,
+                points.map((p) => p.value),
+                variable,
             ),
-        [points, truth, variable],
+        [points, variable],
     )
     const domain = useAnimatedDomain(target)
     const plotBottom = height - MARGIN.bottom - STRIP_HEIGHT
@@ -71,7 +70,7 @@ export default function EvolutionChart({ points, truth, variable, ariaLabel, hei
     return (
         <div ref={ref} className="relative w-full">
             <svg width={width} height={height} role="img" aria-label={ariaLabel} className="block">
-                {y.ticks(5).map((tick) => (
+                {getYTicks(domain, variable, 5).map((tick) => (
                     <g key={tick}>
                         <line
                             x1={MARGIN.left}
@@ -97,29 +96,6 @@ export default function EvolutionChart({ points, truth, variable, ariaLabel, hei
                         {d === 0 ? t('latest') : t('daysBefore', { days: d })}
                     </text>
                 ))}
-                {truth !== null && (
-                    <g>
-                        <line
-                            x1={MARGIN.left}
-                            x2={width - MARGIN.right}
-                            y1={y(truth)}
-                            y2={y(truth)}
-                            stroke={theme.foreground}
-                            strokeWidth={1.5}
-                            strokeDasharray="6 4"
-                        />
-                        <text
-                            x={width - MARGIN.right}
-                            y={y(truth) - 5}
-                            textAnchor="end"
-                            fontSize={11}
-                            fontWeight={600}
-                            fill={theme.foreground}
-                        >
-                            {t('truthLabel', { value: formatNumber(truth, info.decimals) })}
-                        </text>
-                    </g>
-                )}
                 {byModel.map(([modelId, modelPoints]) => {
                     const sorted = [...modelPoints].sort((a, b) => b.leadDays - a.leadDays)
                     const model = MODEL_BY_ID[modelId]

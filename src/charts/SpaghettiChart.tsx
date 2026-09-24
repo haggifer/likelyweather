@@ -1,12 +1,14 @@
 'use client'
 
-import { buildSpaghettiGeometry, getNearestIndex, getYDomain, Margin } from '@/charts/spaghettiGeometry'
+import DayGrid from '@/charts/DayGrid'
+import { getYDomain, getYTicks } from '@/charts/scales'
+import { buildSpaghettiGeometry, getNearestIndex, Margin } from '@/charts/spaghettiGeometry'
 import useAnimatedDomain from '@/charts/useAnimatedDomain'
 import useChartTheme from '@/charts/useChartTheme'
 import useElementWidth from '@/charts/useElementWidth'
 import WindArrows from '@/charts/WindArrows'
 import useNow from '@/hooks/useNow'
-import { formatDayLabel, formatNumber, formatStepLabel, getLocalMidnights } from '@/lib/format'
+import { formatNumber, formatStepLabel } from '@/lib/format'
 import { Series } from '@/shared/api'
 import { EnsembleStats } from '@/shared/ensemble'
 import { MODEL_BY_ID, ModelId } from '@/shared/models'
@@ -69,7 +71,12 @@ export default function SpaghettiChart({
     const hasArrows = Boolean(directions)
     const margin = useMemo(() => getMargin(compact, hasArrows), [compact, hasArrows])
     const target = useMemo(
-        () => yDomain ?? getYDomain(series, variable === Variable.Precip),
+        () =>
+            yDomain ??
+            getYDomain(
+                series.flatMap((s) => s.values),
+                variable,
+            ),
         [yDomain, series, variable],
     )
     const domain = useAnimatedDomain(target)
@@ -81,19 +88,7 @@ export default function SpaghettiChart({
     const { x, y, times } = geometry
     const plotBottom = height - margin.bottom
     const nowX = now ? Math.max(margin.left, Math.min(width - margin.right, x(now))) : null
-    const midnights = useMemo(() => getLocalMidnights(times[0], times[times.length - 1], timeZone), [times, timeZone])
-    const dayLabels = [times[0], ...midnights]
-        .map((start, i, all) => {
-            const end = all[i + 1] ?? times[times.length - 1]
-            return {
-                key: start.toISOString(),
-                x: (x(start) + x(end)) / 2,
-                width: x(end) - x(start),
-                label: formatDayLabel(start.toISOString(), timeZone, locale),
-            }
-        })
-        .filter((d) => d.width > (compact ? 44 : 64))
-    const yTicks = y.ticks(compact ? 3 : 5)
+    const yTicks = getYTicks(domain, variable, compact ? 3 : 5)
     const isDimmed = (id: ModelId) => emphasized.length > 0 && !emphasized.includes(id)
     const showOuter = theme.bands === 'minmax-iqr'
     const showInner = theme.bands !== 'none'
@@ -164,29 +159,19 @@ export default function SpaghettiChart({
                         </text>
                     </g>
                 ))}
-                {midnights.map((m) => (
-                    <line
-                        key={m.toISOString()}
-                        x1={x(m)}
-                        x2={x(m)}
-                        y1={margin.top}
-                        y2={plotBottom}
-                        stroke={theme.border}
-                        strokeDasharray="2 3"
-                    />
-                ))}
-                {dayLabels.map((d) => (
-                    <text
-                        key={d.key}
-                        x={d.x}
-                        y={plotBottom + (compact ? 15 : 18)}
-                        textAnchor="middle"
-                        fontSize={compact ? 10 : 11}
-                        fill={theme.muted}
-                    >
-                        {d.label}
-                    </text>
-                ))}
+                <DayGrid
+                    x={x}
+                    start={times[0]}
+                    end={times[times.length - 1]}
+                    timeZone={timeZone}
+                    locale={locale}
+                    spans={[{ top: margin.top, bottom: plotBottom }]}
+                    labelYs={[plotBottom + (compact ? 15 : 18)]}
+                    lineColor={theme.border}
+                    labelColor={theme.muted}
+                    minLabelWidth={compact ? 44 : 64}
+                    fontSize={compact ? 10 : 11}
+                />
                 {!compact && (
                     <text x={margin.left} y={margin.top - 4} fontSize={10} fill={theme.muted}>
                         {info.unit}
