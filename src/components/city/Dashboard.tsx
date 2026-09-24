@@ -8,7 +8,7 @@ import DisagreementTiles from '@/components/city/DisagreementTiles'
 import ModelLegend from '@/components/city/ModelLegend'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useCity, useLatest, useScoreboard } from '@/hooks/queries'
+import { useCity, useLatest } from '@/hooks/queries'
 import useNow from '@/hooks/useNow'
 import useUrlSync from '@/hooks/useUrlSync'
 import { formatNumber, formatStepLabel, formatTime, formatUtc, getCityName } from '@/lib/format'
@@ -104,7 +104,6 @@ export default function Dashboard({ slug }: IProps) {
     const { data: city } = useCity(slug)
     const latestQuery = useLatest(slug, variable, isHydrated)
     const precipQuery = useLatest(slug, Variable.Precip, isHydrated)
-    const skillQuery = useScoreboard(slug, { variable, window: 30, mode: 'consensus' }, isHydrated)
     const latest = latestQuery.data
     const info = VARIABLE_BY_ID[variable]
     const timeZone = city?.timezone ?? 'UTC'
@@ -144,13 +143,6 @@ export default function Dashboard({ slug }: IProps) {
             chance: computeChanceOfRain(values, steps.length),
         }
     }, [precipQuery.data, now])
-
-    const mae = useMemo(() => {
-        const cells = skillQuery.data?.cells.filter((c) => c.leadBucket === 24) ?? []
-        const minN = skillQuery.data?.minN ?? Infinity
-
-        return new Map(cells.map((c) => [c.modelId, c.n >= minN ? c.mae : null]))
-    }, [skillQuery.data])
 
     useEffect(() => {
         const available = new Set(latest?.series.map((s) => s.modelId))
@@ -221,7 +213,6 @@ export default function Dashboard({ slug }: IProps) {
             readoutIndex={readoutIndex}
             readoutLabel={formatStepLabel(latest.steps[readoutIndex], timeZone, locale)}
             variable={variable}
-            mae={mae}
             placement={legendPlacement}
         />
     )

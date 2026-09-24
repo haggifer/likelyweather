@@ -1,11 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { MIN_SAMPLES, MIN_TRUTH_CONTRIBUTORS, PRECIP_HIT_MM } from '@/shared/constants'
+import { EVOLUTION_MAX_DAYS, RAIN_THRESHOLD_MM } from '@/shared/constants'
 import { MODELS } from '@/shared/models'
 import { VARIABLES } from '@/shared/variables'
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 
-const SECTIONS = ['sources', 'truth', 'skill', 'disagreement', 'limits'] as const
+const SECTIONS = ['sources', 'median', 'disagreement', 'evolution', 'limits'] as const
 
 export const generateMetadata = async (): Promise<Metadata> => ({
     title: (await getTranslations('nav'))('methodology'),
@@ -14,7 +14,7 @@ export const generateMetadata = async (): Promise<Metadata> => ({
 export default async function MethodologyPage() {
     const t = await getTranslations('methodology')
     const tv = await getTranslations('variables')
-    const values = { minN: MIN_SAMPLES, contributors: MIN_TRUTH_CONTRIBUTORS, hit: PRECIP_HIT_MM }
+    const values = { rain: RAIN_THRESHOLD_MM, days: EVOLUTION_MAX_DAYS }
 
     return (
         <article className="mx-auto flex max-w-3xl flex-col gap-(--card-gap)">

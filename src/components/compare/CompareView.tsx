@@ -1,6 +1,6 @@
 'use client'
 
-import { getYDomain } from '@/charts/spaghettiGeometry'
+import { getYDomain } from '@/charts/scales'
 import ForecastPreview from '@/components/city/ForecastPreview'
 import VariableSwitch from '@/components/city/VariableSwitch'
 import FlagIcon from '@/components/shell/FlagIcon'
@@ -12,7 +12,6 @@ import { useCities, useCompare } from '@/hooks/queries'
 import useUrlSync from '@/hooks/useUrlSync'
 import { getCityLabel, getCityName } from '@/lib/format'
 import { MAX_COMPARE_CITIES, SEED_CITY_IDS } from '@/shared/constants'
-import { Variable } from '@/shared/variables'
 import { useAppSelector } from '@/store'
 import { Plus, X } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
@@ -35,8 +34,8 @@ export default function CompareView() {
         () =>
             data?.items.length
                 ? getYDomain(
-                      data.items.flatMap((i) => i.latest?.series ?? []),
-                      variable === Variable.Precip,
+                      data.items.flatMap((i) => i.latest?.series.flatMap((s) => s.values) ?? []),
+                      variable,
                   )
                 : undefined,
         [data, variable],

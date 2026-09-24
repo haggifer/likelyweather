@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { formatNumber } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { Series } from '@/shared/api'
-import { MODEL_BY_ID, ModelId } from '@/shared/models'
+import { MODEL_BY_ID } from '@/shared/models'
 import { Variable, VARIABLE_BY_ID } from '@/shared/variables'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { setHighlightedModel, showAllModels, toggleHiddenModel, togglePinnedModel } from '@/store/dashboardSlice'
@@ -18,7 +18,6 @@ interface IProps {
     readoutIndex: number
     readoutLabel: string
     variable: Variable
-    mae: Map<ModelId, number | null>
     placement: LegendPlacement
 }
 
@@ -43,7 +42,7 @@ export const LineSwatch = ({ color, dash, width = 18 }: SwatchProps) => (
     </svg>
 )
 
-export default function ModelLegend({ series, median, readoutIndex, readoutLabel, variable, mae, placement }: IProps) {
+export default function ModelLegend({ series, median, readoutIndex, readoutLabel, variable, placement }: IProps) {
     const t = useTranslations('legend')
     const dispatch = useAppDispatch()
     const hidden = useAppSelector((s) => s.dashboard.hiddenModels)
@@ -101,7 +100,6 @@ export default function ModelLegend({ series, median, readoutIndex, readoutLabel
                 {rows.map(({ modelId, value, isHidden }) => {
                     const model = MODEL_BY_ID[modelId]
                     const isPinned = pinned.includes(modelId)
-                    const modelMae = mae.get(modelId)
 
                     return (
                         <li
@@ -132,11 +130,6 @@ export default function ModelLegend({ series, median, readoutIndex, readoutLabel
                             </button>
                             <span className="w-14 text-right font-medium">
                                 {isHidden ? '' : formatNumber(value, decimals)}
-                            </span>
-                            <span className="w-14 text-right text-[11px] text-muted-foreground" title={t('maeTitle')}>
-                                {modelMae !== undefined && modelMae !== null
-                                    ? `±${formatNumber(modelMae, decimals === 0 ? 1 : decimals)}`
-                                    : ''}
                             </span>
                             <Button
                                 variant="ghost"

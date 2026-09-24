@@ -99,10 +99,6 @@ export default function EvolutionView({ slug }: IProps) {
                         first: formatNumber(firstSpread, info.decimals === 0 ? 1 : info.decimals),
                         last: formatNumber(lastSpread, info.decimals === 0 ? 1 : info.decimals),
                         unit: info.unit,
-                        truth:
-                            data.truth === null
-                                ? t('noTruth')
-                                : `${formatNumber(data.truth, info.decimals)} ${info.unit}`,
                     })}
                     table={
                         <Table className="text-xs">
@@ -138,7 +134,6 @@ export default function EvolutionView({ slug }: IProps) {
                     {data.points.length ? (
                         <EvolutionChart
                             points={data.points}
-                            truth={data.truth}
                             variable={variable}
                             ariaLabel={t('title', {
                                 variable: tv(variable),

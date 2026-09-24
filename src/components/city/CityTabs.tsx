@@ -16,7 +16,6 @@ export default function CityTabs({ slug, className }: IProps) {
     const base = `/city/${slug}`
     const tabs = [
         { href: base, label: t('dashboard') },
-        { href: `${base}/scoreboard`, label: t('scoreboard') },
         { href: `${base}/evolution`, label: t('evolution') },
     ]
 
