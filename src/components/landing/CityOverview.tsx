@@ -1,15 +1,13 @@
 'use client'
 
-import { MedianOverviewSkeleton } from '@/charts/MedianOverview'
-import OverviewCard from '@/components/city/OverviewCard'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import OverviewCard, { OverviewCardSkeleton } from '@/components/city/OverviewCard'
+import { Card, CardContent } from '@/components/ui/card'
 import { useCity, useHourlyAll } from '@/hooks/queries'
 import useNow from '@/hooks/useNow'
 import { getCityName } from '@/lib/format'
 import { LatestResponse } from '@/shared/api'
 import { getSlotStart } from '@/shared/slots'
 import { Variable, VARIABLES } from '@/shared/variables'
-import { Loader2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 
@@ -47,17 +45,7 @@ export default function CityOverview({ slug }: IProps) {
 
     if (!city || !isReady || !anchor) {
         return (
-            <Card className="gap-4">
-                <CardHeader>
-                    <p className="flex h-7 items-center gap-2 text-sm text-muted-foreground" role="status">
-                        <Loader2 className="size-4 animate-spin" />
-                        {city ? t('fetching', { name: getCityName(city, locale) }) : t('loading')}
-                    </p>
-                </CardHeader>
-                <CardContent>
-                    <MedianOverviewSkeleton />
-                </CardContent>
-            </Card>
+            <OverviewCardSkeleton status={city ? t('fetching', { name: getCityName(city, locale) }) : t('loading')} />
         )
     }
 

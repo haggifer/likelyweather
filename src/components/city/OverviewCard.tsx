@@ -1,16 +1,17 @@
 'use client'
 
-import MedianOverview, { MedianSeries } from '@/charts/MedianOverview'
+import MedianOverview, { MedianOverviewSkeleton, MedianSeries } from '@/charts/MedianOverview'
 import FlagIcon from '@/components/shell/FlagIcon'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { getCityName, getCountryName } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { City, LatestResponse } from '@/shared/api'
 import { computeEnsemble, computeMedianDirection } from '@/shared/ensemble'
 import { buildSlots, getSlotStart, toSlotSeries } from '@/shared/slots'
 import { Variable, VARIABLES } from '@/shared/variables'
-import { ArrowRight, RefreshCw } from 'lucide-react'
+import { ArrowRight, Loader2, RefreshCw } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useMemo } from 'react'
@@ -23,6 +24,29 @@ interface IProps {
     isFetching?: boolean
     onRefresh?: () => void
 }
+
+interface SkeletonProps {
+    status: string
+}
+
+// Same header and panel structure as the loaded card, so nothing moves when the data arrives.
+export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
+    <Card className="gap-4">
+        <CardHeader>
+            <CardTitle className="flex h-7 items-center gap-2 text-xl font-normal text-muted-foreground" role="status">
+                <Loader2 className="size-4 animate-spin" />
+                <span className="text-sm">{status}</span>
+            </CardTitle>
+            <CardAction className="flex items-center gap-2">
+                <Skeleton className="h-7 w-22" />
+                <Skeleton className="h-7 w-30" />
+            </CardAction>
+        </CardHeader>
+        <CardContent>
+            <MedianOverviewSkeleton />
+        </CardContent>
+    </Card>
+)
 
 // Presentational: the landing page feeds it live queries, the Theme Lab gallery feeds it the static dump. The chart
 // starts at `anchor`, the local 3-hour slot the data arrived in; once `now` has moved into a later slot the chart is

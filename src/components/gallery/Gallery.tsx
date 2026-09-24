@@ -6,7 +6,7 @@ import PrecipPanel from '@/charts/PrecipPanel'
 import SpaghettiChart from '@/charts/SpaghettiChart'
 import DisagreementTiles from '@/components/city/DisagreementTiles'
 import ModelLegend from '@/components/city/ModelLegend'
-import OverviewCard from '@/components/city/OverviewCard'
+import OverviewCard, { OverviewCardSkeleton } from '@/components/city/OverviewCard'
 import StatusChip from '@/components/shell/StatusChip'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -254,7 +254,8 @@ export default function Gallery() {
                     </CardContent>
                 </Card>
             </Section>
-            <Section title="Landing overview: median of every variable, fresh and 4 hours later">
+            <Section title="Landing overview: loading, fresh and 4 hours later">
+                <OverviewCardSkeleton status="Fetching ten models for Kyiv…" />
                 <OverviewCard city={CITY} hourly={LAB_DUMP.hourly} anchor={OVERVIEW_ANCHOR} now={LAB_NOW} />
                 <OverviewCard
                     city={CITY}
