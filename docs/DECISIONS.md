@@ -1,6 +1,6 @@
 # Decisions
 
-Decisions already made in the project guide are listed in `PROJECT_GUIDE.md` §17. This file records the choices made while building the prototype (from 2026-09-23), including every place it deliberately departs from the guide, and what it would take to converge. Guide v3.0 (2026-09-24) absorbed P17 to P19.
+Decisions already made in the project guide are listed in `PROJECT_GUIDE.md` §17. This file records the choices made while building the prototype (from 2026-09-23), including every place it deliberately departs from the guide, and what it would take to converge. Guide v3.0 (2026-09-24) absorbed P17 to P19, and v3.1 P20.
 
 ## P1. One Next.js app instead of the pnpm + Turborepo monorepo
 
@@ -31,7 +31,7 @@ Converging: implement the same exported functions with Prisma; nothing above `st
 
 `src/server/cache.ts` implements the four Redis uses from guide §22 with the same key names and TTLs (geocode 24 h, previous-runs data 3 h, fixed-window rate limits, request de-duplication). State lives on `globalThis`, so it is per process, which is exactly the Lambda problem the guide describes; that is acceptable for a single local process. The collector lock is a lock file with a 10-minute expiry (`acquireJobLock`), the equivalent of `SET lock:collector NX EX 600`.
 
-## P5. Evolution from Open-Meteo's Previous Runs API
+## P5. Evolution from Open-Meteo's Previous Runs API (removed, see P20)
 
 The Previous Runs API (`previous-runs-api.open-meteo.com`) returns, for any location, each model's forecast from the runs issued 1 to 7 days before every hour, for the nine Open-Meteo models, back to early 2024 (verified on 2026-09-23, about 7 s per request). The evolution view uses it, so it works on day one for any city:
 
@@ -95,7 +95,7 @@ A variable can declare a gridline step (`tickStep` in `src/shared/variables.ts`)
 
 ## P16. The Theme Lab never fetches
 
-The gallery (`/theme-lab`) renders a static dump of real API payloads, `src/fixtures/lab-dump.json` (city, the 6-hour and the hourly `latest` payloads for all four variables, and an evolution response), captured with `pnpm lab:dump` through the same server code the API uses, without writing to the store. Gallery components are presentational and receive data as props; the capture time is used as "now" so the charts stay stable. The gallery and the dump load only behind `NEXT_PUBLIC_THEME_LAB`, `pnpm check:no-lab` also looks for them, and `outputFileTracingExcludes` keeps fixtures and `data/` out of server traces.
+The gallery (`/theme-lab`) renders a static dump of real API payloads, `src/fixtures/lab-dump.json` (city, and the 6-hour and hourly `latest` payloads for all four variables), captured with `pnpm lab:dump` through the same server code the API uses, without writing to the store. Gallery components are presentational and receive data as props; the capture time is used as "now" so the charts stay stable. The gallery and the dump load only behind `NEXT_PUBLIC_THEME_LAB`, `pnpm check:no-lab` also looks for them, and `outputFileTracingExcludes` keeps fixtures and `data/` out of server traces.
 
 ## P17. MVP scope: forecasts only (2026-09-24)
 
@@ -105,7 +105,7 @@ Decided by the author: comparing forecasts with what actually happened is a sepa
 - the 30-day MAE column in the dashboard legend, the truth line and truth figure in the evolution view, the "Score the models" landing tile, and the truth and skill sections of the methodology;
 - the scoreboard filters in Redux and the URL (`window`, `mode`, `lead`).
 
-Kept: the dashboard, evolution (forecasts compared with earlier forecasts, still from the Previous Runs API, see P5), compare, runs, cities, methodology and the Theme Lab. The landing title now reads "Compare weather forecasts for your city". Guide v3.0 moves truth, skill and the scoreboard to a post-MVP phase and drops the skill-job Lambda and its tables from the MVP. `GET /api/models` stays as plain model metadata.
+Kept at the time: the dashboard, evolution (removed later the same day, see P20), compare, runs, cities, methodology and the Theme Lab. The landing title now reads "Compare weather forecasts for your city". Guide v3.0 moves truth, skill and the scoreboard to a post-MVP phase and drops the skill-job Lambda and its tables from the MVP. `GET /api/models` stays as plain model metadata.
 
 ## P18. Landing overview on local 3-hour slots
 
@@ -124,6 +124,22 @@ Decided by the author on 2026-09-24. The overview shows 72 hours in 3-hour slots
 The overview starts at the slot the data arrived in, so on arrival "now" is the start of the chart and no now line is drawn. The hourly queries never refetch in the background, because that would silently re-anchor the chart. Once the current time moves into a later slot the chart is stale: the now line and the past shading appear and the Refresh button is enabled. Refresh refetches the four hourly payloads and re-anchors the chart.
 
 Refresh does not hit the upstream sources harder: the server only calls Open-Meteo and met.no when a new 6-hour run exists, and concurrent refreshes are de-duplicated. Gating the button in the UI is about a sensible interaction, not the protection.
+
+## P20. No evolution view; variable switch in the body; tiles beside the overview (2026-09-24)
+
+Decided by the author, checked before removing.
+
+- **Evolution removed.** Run-to-run charts of one hour's forecast are the "dprog" charts of forecaster and enthusiast sites. Mainstream weather apps do not have them, and reading them needs the ideas of model runs and lead time. Removed:
+    - `/city/[slug]/evolution`, `GET /api/cities/:slug/evolution` and `/steps`;
+    - `src/server/evolution.ts` and the Previous Runs source (`src/server/sources/previousRuns.ts`, `OPEN_METEO_PREVIOUS_RUNS_BASE`), so the MVP no longer calls that API;
+    - the evolution chart and view, its gallery section and dump entry, and the methodology section;
+    - the `filters` slice. The URL-hydrated flag moved into the `dashboard` slice, and `useUrlSync` now mirrors only `?v=`.
+
+    The design stays in guide section 9.2 as part of post-MVP accuracy, and the code is in the history (P5).
+
+- **No section tabs on city pages.** With only the dashboard left, the Dashboard/Evolution control in the top bar and the city header is gone.
+- **Variable switch in the body.** It moved from the top bar and city header to the top of the dashboard body, where it has room for labels (hidden on phones only).
+- **Landing tiles.** "Watch it converge" gave way to "How it works" (methodology), keeping three tiles. From 1600 px (`3xl`, 100rem, defined in `globals.css` because Tailwind cannot order an arbitrary `min-[1600px]` against its rem breakpoints) the tiles stack in a column beside the 1024 px overview card, stretched to its height. Measured: at 1600 px the column is 312 px wide with three 166 px tiles; at 1920 px the block stays centered under the hero; below 1600 px the row of three under the card is unchanged.
 
 ## Open: the design decision (guide phase 2.5)
 

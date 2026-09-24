@@ -1,6 +1,6 @@
 # Forecast Arena (prototype)
 
-Ten weather models for any city, how much they disagree, and how each forecast changed as the hour approached. Public, no login. Measuring which model has been right is a separate feature planned after the MVP.
+Ten weather models for any city and how much they disagree. Public, no login. Measuring which model has been right is a separate feature planned after the MVP.
 
 This is the functional prototype of the app specified in [docs/PROJECT_GUIDE.md](docs/PROJECT_GUIDE.md). It runs on live data from Open-Meteo and MET Norway with no database or Docker: a JSON file store and an in-process cache stand in for Postgres and Redis behind the same interfaces. Every departure from the guide, and how to converge, is in [docs/DECISIONS.md](docs/DECISIONS.md).
 
@@ -30,11 +30,10 @@ pnpm collect -- --loop                        # run now, then every 6 hours
 | -------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Landing        | `/?city=`                      | Search (Ctrl/Cmd+K) and "Start with" chips (New York, London, Paris, Kyiv) switch the city in place; the overview shows the median of all models for the next 72 h in local 3-hour slots (temperature, wind speed with direction arrows, pressure, precipitation) with a synced crosshair and next-24-hour summaries; a now line and Refresh appear once the chart is a slot old; "Open details" goes to the dashboard |
 | City dashboard | `/city/[slug]`                 | D3 spaghetti chart with min–max and interquartile bands, median, now line, 6-hour hover snapping, keyboard stepping; side list sorted by value; keys 1–9, 0 toggle models; disagreement tiles; precipitation panel (Recharts) with per-model ticks and chance of rain; wind arrows; preview and stale badges; table view on every chart                                                                                |
-| Evolution      | `/city/[slug]/evolution`       | One valid time, each model's forecast from runs 0–7 days earlier, convergence strip                                                                                                                                                                                                                                                                                                                                    |
 | Compare        | `/compare?cities=a,b`          | Up to four cities, shared axis                                                                                                                                                                                                                                                                                                                                                                                         |
 | Runs           | `/runs`                        | 30-day slot timeline, virtualized run history, raw archive per run                                                                                                                                                                                                                                                                                                                                                     |
 | Cities         | `/cities`                      | Tracked cities with status, views, scheduled runs                                                                                                                                                                                                                                                                                                                                                                      |
-| Methodology    | `/methodology`                 | Sources, grids, median and spread, disagreement, evolution, limits, attribution                                                                                                                                                                                                                                                                                                                                        |
+| Methodology    | `/methodology`                 | Sources, grids, median and spread, disagreement, limits, attribution                                                                                                                                                                                                                                                                                                                                                   |
 | Theme Lab      | `/theme-lab`, Ctrl/Cmd+Shift+T | Development only: 5 presets, every axis from guide §4.6, live WCAG badges, favourites, A/B, shareable `?tl=` link, Copy CSS. The gallery renders a static dump of real API payloads (`src/fixtures/lab-dump.json`) and never fetches                                                                                                                                                                                   |
 
 Ukrainian, English, Spanish, German and French (language menu in the top bar; the non-English catalogs are machine-drafted and need a native review), light and dark mode.
@@ -61,7 +60,6 @@ Browser ── TanStack Query ──▶ /api/* (Next route handlers, zod-validat
                                  │
                                  ├─ geocode ───────────▶ Open-Meteo Geocoding (cached 24 h)
                                  ├─ latest / compare ──▶ snapshot store (6-hour and hourly grids); stale → collector preview path ─▶ Open-Meteo + met.no
-                                 ├─ evolution / steps ─▶ Open-Meteo Previous Runs API (cached 3 h)
                                  └─ runs / cities / health ─▶ JSON store (data/)
 
 pnpm collect ─▶ collector (batched Open-Meteo, paced met.no, lock, dormancy) ─▶ data/forecasts, data/runs.json, data/raw
@@ -70,10 +68,10 @@ pnpm collect ─▶ collector (batched Open-Meteo, paced met.no, lock, dormancy)
 ```
 src/
   app/            pages and /api route handlers
-  server/         collector, sources (Open-Meteo, met.no, geocoding, previous runs), evolution, store, cache, http
+  server/         collector, sources (Open-Meteo, met.no, geocoding), store, cache, http
   shared/         zod API contract, model palette, variables, ensemble math, resampling, 3-hour slots, time helpers
   charts/         D3 hero charts, Recharts wrappers, chart theme reader
-  components/     shell, landing, city, evolution, runs, cities, compare, gallery, shadcn ui
+  components/     shell, landing, city, runs, cities, compare, gallery, shadcn ui
   store/          Redux Toolkit slices: dashboard, filters, layout
   theme/          Theme Lab: tokens, presets, resolve, apply, contrast, storage, freeze, provider, panel
   hooks/          TanStack Query hooks, URL sync, time
@@ -84,7 +82,7 @@ docs/             PROJECT_GUIDE.md, DECISIONS.md, METHODOLOGY.md
 
 ## Not in the prototype yet
 
-Monorepo split, Express on Lambda, Prisma/Postgres with partitions, Redis, S3, CDK, CI, Playwright, CSV import, Gemini brief. Truth, skill and the scoreboard are out of the MVP (DECISIONS P17; guide v3.0 phase 7). See the build plan in guide §16 and the convergence notes in DECISIONS.md.
+Monorepo split, Express on Lambda, Prisma/Postgres with partitions, Redis, S3, CDK, CI, Playwright, CSV import, Gemini brief. Truth, skill, the scoreboard and the evolution view are out of the MVP (DECISIONS P17, P20; guide v3.1 phase 7). See the build plan in guide §16 and the convergence notes in DECISIONS.md.
 
 ## Data and attribution
 

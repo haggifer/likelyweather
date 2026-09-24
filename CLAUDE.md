@@ -34,7 +34,7 @@ This repository is currently the single-app prototype described in docs/DECISION
 - `src/shared` = packages/shared (zod contract, model palette, variables, ensemble math, resampling, 3-hour slots). `src/charts` = packages/charts. `src/theme` = the Theme Lab.
 - `src/server` + `src/app/api/**/route.ts` = apps/api and apps/collector (same REST contract, Next route handlers instead of Express).
 - `src/server/store.ts` (JSON files under `data/`) stands in for Postgres/Prisma and S3; `src/server/cache.ts` stands in for Redis. Swap those modules, not their callers. A snapshot holds the 6-hour grid plus an `hourly` grid.
-- Scope is forecasts only (DECISIONS P17): no truth, skill, scoreboard or model detail. Evolution comes from Open-Meteo's Previous Runs API.
+- Scope is forecasts only (DECISIONS P17, P20): no truth, skill, scoreboard, model detail or evolution view, and no Previous Runs API. City pages have no section tabs; the variable switch sits in the dashboard body.
 - The landing overview is anchored to the local 3-hour slot the data arrived in and refetches only on Refresh (DECISIONS P18, P19).
 - Prototype commands: pnpm dev · pnpm collect [--cities a,b] [--loop] · pnpm seed [--force] · pnpm test · pnpm lint · pnpm typecheck · pnpm format · pnpm theme:export [--preset x] · pnpm lab:dump [--city slug] · pnpm check:no-lab (after a build with NEXT_PUBLIC_THEME_LAB=0). `pnpm check:messages` is specified but not written yet.
 - The Theme Lab gallery never fetches: it renders `src/fixtures/lab-dump.json` through presentational components. Keep gallery components prop-driven and refresh the dump with `pnpm lab:dump` when API shapes change.

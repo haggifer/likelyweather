@@ -8,7 +8,6 @@ How Forecast Arena collects forecasts and combines them in the prototype. The in
 | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | Open-Meteo forecast API                   | `ecmwf_ifs025`, `ecmwf_aifs025_single`, `gfs_seamless`, `gem_global`, `ukmo_seamless`, `jma_seamless`, `cma_grapes_global`; `icon_eu`, `arpege_europe` (Europe only) | Hourly, `past_days=1`, `forecast_days=5`, `wind_speed_unit=ms`, up to 50 locations per request |
 | MET Norway Locationforecast 2.0 (compact) | `metno`                                                                                                                                                              | One request per city, paced 5 per second, `If-Modified-Since`, descriptive `User-Agent`        |
-| Open-Meteo Previous Runs API              | the nine Open-Meteo models                                                                                                                                           | `<variable>_previous_dayN` for N = 0..7; used for the evolution view                           |
 | Open-Meteo Geocoding API                  | –                                                                                                                                                                    | City search, proxied and cached 24 h                                                           |
 
 A model is shown for a city only if it returned data there (`City.availableModels`). Regional models outside their domain are not warnings.
@@ -46,15 +45,10 @@ For each step, over the models with a value: median, quartiles (linear interpola
 
 Temperature gridlines are every 5 °C and wind every 2 m/s, with the domain snapped outward to the step. Pressure uses automatic ticks. Precipitation starts at 0 and uses the smallest step from 0.5, 1, 2, 5, 10, 20, 50 mm that reaches the maximum in at most three segments; both sources report 0.1 mm amounts, so a dry forecast shows only 0 and 0.5.
 
-## Evolution
-
-For a chosen valid time, each model's value from runs issued 0 to 7 days earlier (the Previous Runs API's `previous_day0..7`). The convergence strip shows the standard deviation across models at each offset. met.no has no archive, so it does not appear.
-
 ## Limits
 
 - Grid-point values, not the weather at a street corner; elevation differences between grid and city matter for temperature.
 - Agreement between models is not accuracy: models that share data or physics can agree and still be wrong together.
-- The evolution view has daily resolution (runs 1 to 7 days earlier); 6-hourly issues need the app's own stored runs.
 
 ## Attribution
 
