@@ -25,8 +25,8 @@ export default function Landing() {
     const [slug, setSlug] = useQueryState('city', cityParser)
     const tiles = [
         { key: 'disagree', icon: Split, href: `/city/${slug}` },
-        { key: 'method', icon: BookOpen, href: '/methodology' },
         { key: 'compare', icon: Columns3, href: '/compare' },
+        { key: 'method', icon: BookOpen, href: '/methodology' },
     ] as const
 
     return (
@@ -57,24 +57,26 @@ export default function Landing() {
                     </div>
                 </div>
             </section>
-            <section className="mx-auto w-full max-w-5xl" aria-live="polite">
-                <CityOverview key={slug} slug={slug} />
-            </section>
-            <section className="mx-auto grid w-full max-w-5xl gap-(--card-gap) sm:grid-cols-3">
-                {tiles.map(({ key, icon: Icon, href }) => (
-                    <Link key={key} href={href} className="group">
-                        <Card className="h-full gap-2 transition-colors group-hover:border-primary">
-                            <CardHeader>
-                                <Icon className="size-5 text-primary" aria-hidden="true" />
-                                <CardTitle className="font-semibold">{t(`tiles.${key}.title`)}</CardTitle>
-                            </CardHeader>
-                            <CardContent className="text-sm text-muted-foreground">
-                                {t(`tiles.${key}.body`)}
-                            </CardContent>
-                        </Card>
-                    </Link>
-                ))}
-            </section>
+            <div className="mx-auto grid w-full max-w-5xl gap-6 3xl:max-w-none 3xl:grid-cols-[minmax(0,64rem)_minmax(0,1fr)]">
+                <section className="min-w-0" aria-live="polite">
+                    <CityOverview key={slug} slug={slug} />
+                </section>
+                <section className="grid gap-(--card-gap) sm:grid-cols-3 3xl:auto-rows-fr 3xl:grid-cols-1">
+                    {tiles.map(({ key, icon: Icon, href }) => (
+                        <Link key={key} href={href} className="group">
+                            <Card className="h-full gap-2 transition-colors group-hover:border-primary">
+                                <CardHeader>
+                                    <Icon className="size-5 text-primary" aria-hidden="true" />
+                                    <CardTitle className="font-semibold">{t(`tiles.${key}.title`)}</CardTitle>
+                                </CardHeader>
+                                <CardContent className="text-sm text-muted-foreground">
+                                    {t(`tiles.${key}.body`)}
+                                </CardContent>
+                            </Card>
+                        </Link>
+                    ))}
+                </section>
+            </div>
         </div>
     )
 }
