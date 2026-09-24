@@ -1,12 +1,12 @@
 'use client'
 
 import ChartFrame from '@/charts/ChartFrame'
+import EvolutionChart from '@/charts/EvolutionChart'
 import PrecipPanel from '@/charts/PrecipPanel'
-import SkillHeatmap, { SelectedCell } from '@/charts/SkillHeatmap'
 import SpaghettiChart from '@/charts/SpaghettiChart'
 import DisagreementTiles from '@/components/city/DisagreementTiles'
 import ModelLegend from '@/components/city/ModelLegend'
-import RankingTable from '@/components/scoreboard/RankingTable'
+import OverviewCard from '@/components/city/OverviewCard'
 import StatusChip from '@/components/shell/StatusChip'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -25,9 +25,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { GALLERY_CELLS, GALLERY_CITY, GALLERY_LATEST, GALLERY_PRECIP } from '@/fixtures/gallery'
+import { LAB_DUMP, LAB_NOW } from '@/fixtures/labDump'
 import { computeChanceOfRain, computeDisagreement, computeEnsemble } from '@/shared/ensemble'
 import { MODELS } from '@/shared/models'
+import { getSlotStart } from '@/shared/slots'
+import { addHours } from '@/shared/time'
 import { Variable } from '@/shared/variables'
 import { THEME_CHANGE_EVENT } from '@/theme/apply'
 import { getContrastRatio } from '@/theme/contrast'
@@ -40,8 +42,10 @@ interface SectionProps {
     children: React.ReactNode
 }
 
-// Fixture computations anchor on the fixture issue time so server and client render identical markup.
-const GALLERY_ISSUE = new Date(GALLERY_LATEST.issueTime)
+const CITY = LAB_DUMP.city
+const TEMP = LAB_DUMP.latest[Variable.Temp]
+const PRECIP = LAB_DUMP.latest[Variable.Precip]
+const OVERVIEW_ANCHOR = getSlotStart(LAB_NOW, CITY.timezone)
 
 const SWATCH_TOKENS = [
     ['--background', '--foreground'],
@@ -78,31 +82,30 @@ const Section = ({ title, children }: SectionProps) => (
 export default function Gallery() {
     const locale = useLocale()
     const [hover, setHover] = useState<number | null>(null)
-    const [selected, setSelected] = useState<SelectedCell | null>(null)
     const tokenSnapshot = useSyncExternalStore(subscribe, readTokens, () => '')
     const stats = useMemo(
         () =>
             computeEnsemble(
-                GALLERY_LATEST.series.map((s) => s.values),
-                GALLERY_LATEST.steps.length,
+                TEMP.series.map((s) => s.values),
+                TEMP.steps.length,
             ),
         [],
     )
     const disagreement = useMemo(
         () =>
             computeDisagreement(
-                GALLERY_LATEST.steps,
-                GALLERY_LATEST.series.map((s) => s.values),
+                TEMP.steps,
+                TEMP.series.map((s) => s.values),
                 Variable.Temp,
-                GALLERY_CITY.timezone,
-                GALLERY_ISSUE,
+                CITY.timezone,
+                LAB_NOW,
             ),
         [],
     )
     const precip = useMemo(() => {
-        const first = GALLERY_PRECIP.steps.findIndex((s) => new Date(s) > GALLERY_ISSUE)
-        const series = GALLERY_PRECIP.series.map((s) => ({ ...s, values: s.values.slice(first) }))
-        const steps = GALLERY_PRECIP.steps.slice(first)
+        const first = PRECIP.steps.findIndex((s) => new Date(s) > LAB_NOW)
+        const series = PRECIP.series.map((s) => ({ ...s, values: s.values.slice(first) }))
+        const steps = PRECIP.steps.slice(first)
         const values = series.map((s) => s.values)
         return {
             steps,
@@ -124,16 +127,17 @@ export default function Gallery() {
         : []
     const chart = (height = 300) => (
         <SpaghettiChart
-            steps={GALLERY_LATEST.steps}
-            series={GALLERY_LATEST.series}
+            steps={TEMP.steps}
+            series={TEMP.series}
             stats={stats}
             variable={Variable.Temp}
-            timeZone={GALLERY_CITY.timezone}
+            timeZone={CITY.timezone}
             locale={locale}
             ariaLabel="Gallery spaghetti chart"
             hoverIndex={hover}
             onHoverIndex={setHover}
             height={height}
+            now={LAB_NOW}
         />
     )
 
@@ -142,8 +146,10 @@ export default function Gallery() {
             <div>
                 <h1 className="text-3xl font-bold tracking-tight">Theme Lab gallery</h1>
                 <p className="text-muted-foreground">
-                    Every key component on fixture data. Open the Lab (Ctrl/Cmd+Shift+T) and change any axis; this page
-                    and the real screens re-render instantly.
+                    Every key component on a static dump of real API payloads ({CITY.name}, captured{' '}
+                    {LAB_NOW.toISOString().slice(0, 16).replace('T', ' ')} UTC with pnpm lab:dump). Nothing here fetches
+                    data. Open the Lab (Ctrl/Cmd+Shift+T) and change any axis; this page and the real screens re-render
+                    instantly.
                 </p>
             </div>
             <Section title="Typography">
@@ -153,11 +159,11 @@ export default function Gallery() {
                             Ten forecasts. One city.
                         </p>
                         <p className="text-2xl font-semibold" style={{ fontFamily: 'var(--font-heading)' }}>
-                            Who was right? Харків, 24 вересня
+                            Where do the models disagree? Харків, 24 вересня
                         </p>
                         <p>Body: the median line is the middle of all models at each 6-hour step.</p>
                         <p className="text-sm text-muted-foreground">Muted: issue 12:00 UTC · 15:00 local</p>
-                        <p className="font-mono text-sm">Mono 0123456789 · MAE 1.24 °C · +0.31 bias</p>
+                        <p className="font-mono text-sm">Mono 0123456789 · spread 1.24 °C · 1012 hPa</p>
                     </CardContent>
                 </Card>
             </Section>
@@ -200,20 +206,20 @@ export default function Gallery() {
                         </div>
                         <div className="flex flex-wrap items-center gap-3">
                             <Input placeholder="Search any city…" className="w-60" />
-                            <Select defaultValue="30">
-                                <SelectTrigger className="w-32">
+                            <Select defaultValue="temp">
+                                <SelectTrigger className="w-36">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="7">7 days</SelectItem>
-                                    <SelectItem value="30">30 days</SelectItem>
-                                    <SelectItem value="90">90 days</SelectItem>
+                                    <SelectItem value="temp">Temperature</SelectItem>
+                                    <SelectItem value="wind">Wind speed</SelectItem>
+                                    <SelectItem value="pressure">Pressure</SelectItem>
                                 </SelectContent>
                             </Select>
                             <Switch defaultChecked aria-label="Example switch" />
-                            <ToggleGroup type="single" variant="outline" size="sm" spacing={0} defaultValue="consensus">
-                                <ToggleGroupItem value="consensus">Consensus</ToggleGroupItem>
-                                <ToggleGroupItem value="self">Self-analysis</ToggleGroupItem>
+                            <ToggleGroup type="single" variant="outline" size="sm" spacing={0} defaultValue="side">
+                                <ToggleGroupItem value="side">Side list</ToggleGroupItem>
+                                <ToggleGroupItem value="under">Under chart</ToggleGroupItem>
                             </ToggleGroup>
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
@@ -236,7 +242,7 @@ export default function Gallery() {
                                 <DialogHeader>
                                     <DialogTitle>Track Nairobi?</DialogTitle>
                                     <DialogDescription>
-                                        Nairobi joins the 6-hourly collection. Skill scores need 7 days.
+                                        Nairobi joins the 6-hourly collection. Its forecast appears within seconds.
                                     </DialogDescription>
                                 </DialogHeader>
                                 <DialogFooter>
@@ -248,21 +254,31 @@ export default function Gallery() {
                     </CardContent>
                 </Card>
             </Section>
+            <Section title="Landing overview: median of every variable, fresh and 4 hours later">
+                <OverviewCard city={CITY} hourly={LAB_DUMP.hourly} anchor={OVERVIEW_ANCHOR} now={LAB_NOW} />
+                <OverviewCard
+                    city={CITY}
+                    hourly={LAB_DUMP.hourly}
+                    anchor={OVERVIEW_ANCHOR}
+                    now={addHours(LAB_NOW, 4)}
+                    onRefresh={() => {}}
+                />
+            </Section>
             <Section title="Spaghetti chart: live, loading, preview-only">
                 <div className="grid gap-(--card-gap) lg:grid-cols-[minmax(0,1fr)_320px]">
-                    <ChartFrame title="Temperature · 10 models" description="Issue 23 Sep 12:00 UTC · scheduled run">
+                    <ChartFrame
+                        title={`Temperature · ${TEMP.series.length} models`}
+                        description={`Issue ${TEMP.issueTime}`}
+                    >
                         {chart()}
                     </ChartFrame>
                     <div className="rounded-(--radius) border bg-card p-3">
                         <ModelLegend
-                            series={GALLERY_LATEST.series}
+                            series={TEMP.series}
                             median={stats.median[hover ?? 4]}
                             readoutIndex={hover ?? 4}
                             readoutLabel="Readout"
                             variable={Variable.Temp}
-                            mae={
-                                new Map(GALLERY_CELLS.filter((c) => c.leadBucket === 24).map((c) => [c.modelId, c.mae]))
-                            }
                             placement="side"
                         />
                     </div>
@@ -300,33 +316,18 @@ export default function Gallery() {
                             series={precip.series}
                             median={precip.median}
                             chance={precip.chance}
-                            timeZone={GALLERY_CITY.timezone}
+                            timeZone={CITY.timezone}
                             locale={locale}
                         />
                     </ChartFrame>
                 </div>
             </Section>
-            <Section title="Scoreboard table and heatmap">
-                <ChartFrame title="Ranking at 24 h · 30 days">
-                    <RankingTable
-                        cells={GALLERY_CELLS.filter((c) => c.leadBucket === 24)}
-                        minN={20}
-                        decimals={1}
-                        unit="°C"
-                        showHitRate={false}
-                    />
-                </ChartFrame>
-                <ChartFrame title="MAE by lead time">
-                    <SkillHeatmap
-                        cells={GALLERY_CELLS}
-                        models={[...new Set(GALLERY_CELLS.map((c) => c.modelId))]}
-                        minN={20}
-                        decimals={2}
-                        unit="°C"
-                        timeZone={GALLERY_CITY.timezone}
-                        locale={locale}
-                        selected={selected}
-                        onSelect={setSelected}
+            <Section title="Evolution and convergence">
+                <ChartFrame title={`Temperature for ${LAB_DUMP.evolution.validTime}`}>
+                    <EvolutionChart
+                        points={LAB_DUMP.evolution.points}
+                        variable={Variable.Temp}
+                        ariaLabel="Gallery evolution chart"
                     />
                 </ChartFrame>
             </Section>
