@@ -7,14 +7,14 @@ import useChartTheme from '@/charts/useChartTheme'
 import useElementWidth from '@/charts/useElementWidth'
 import WindArrows from '@/charts/WindArrows'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatNumber } from '@/lib/format'
+import { formatNumber, formatStepLabel } from '@/lib/format'
 import { HOUR_MS } from '@/shared/constants'
 import { SLOT_HOURS } from '@/shared/slots'
 import { Variable, VARIABLE_BY_ID } from '@/shared/variables'
 import { scaleLinear, scaleUtc } from 'd3-scale'
 import { area, curveMonotoneX, line } from 'd3-shape'
 import { useTranslations } from 'next-intl'
-import { KeyboardEvent, PointerEvent, useState } from 'react'
+import { KeyboardEvent, PointerEvent, useId, useState } from 'react'
 
 export interface MedianSeries {
     steps: string[]
@@ -49,14 +49,17 @@ const ROWS: { variable: Variable; height: number }[] = [
 const ROW_GAP = 14
 const ROW_PAD = 6
 const ARROW_STRIP = 20
+const HOVER_STRIP = 20
 const AXIS_HEIGHT = 22
 const MARGIN = { left: 36, right: 8 }
+const PANEL_RADIUS = 4
+const HOVER_LABEL_HALF_WIDTH = 34
 const BAR_RATIO = 0.62
 const SUMMARY_HOURS = 24
 const GRID = 'grid grid-cols-[minmax(8rem,12rem)_minmax(0,1fr)] gap-x-4'
 
 const LAYOUT: RowLayout[] = ROWS.reduce<RowLayout[]>((rows, row) => {
-    const top = rows.length ? rows[rows.length - 1].top + rows[rows.length - 1].height + ROW_GAP : AXIS_HEIGHT
+    const top = rows.length ? rows[rows.length - 1].top + rows[rows.length - 1].height + ROW_GAP : HOVER_STRIP
     const strip = row.variable === Variable.Wind ? ARROW_STRIP : 0
 
     return [...rows, { variable: row.variable, top, height: row.height, bottom: top + row.height - ROW_PAD - strip }]
@@ -78,16 +81,17 @@ const getSummaryValues = (s: MedianSeries, from: Date) => {
     })
 }
 
+// The chart column's blocks are inset by the tick-label margin, so they cover exactly the panel backgrounds.
 export const MedianOverviewSkeleton = () => (
     <div className={GRID} role="presentation">
-        {[0, 1].map((column) => (
+        {[{ left: 0, right: 0 }, MARGIN].map((inset, column) => (
             <div
                 key={column}
                 className="flex flex-col"
-                style={{ gap: ROW_GAP, paddingTop: AXIS_HEIGHT, paddingBottom: AXIS_HEIGHT }}
+                style={{ gap: ROW_GAP, paddingTop: HOVER_STRIP, paddingBottom: AXIS_HEIGHT }}
             >
                 {ROWS.map(({ variable, height }) => (
-                    <Skeleton key={variable} style={{ height }} />
+                    <Skeleton key={variable} style={{ height, marginLeft: inset.left, marginRight: inset.right }} />
                 ))}
             </div>
         ))}
@@ -96,8 +100,8 @@ export const MedianOverviewSkeleton = () => (
 
 // Median of all models for every tracked variable on one time axis of 3-hour slots; a precipitation bar is the
 // amount of the 3 hours after its slot. Readouts on the left follow the crosshair, or the first slot while the
-// chart is fresh. `now` is set only once the chart has gone stale: it
-// draws the "now" line and shades the past.
+// chart is fresh; the hovered slot's time sits above the panels. `now` is set only once the chart has gone
+// stale: it draws the "now" line and shades the past.
 export default function MedianOverview({ series, directions, timeZone, locale, now, summaryStart, ariaLabel }: IProps) {
     const t = useTranslations('overview')
     const tv = useTranslations('variables')
@@ -105,6 +109,7 @@ export default function MedianOverview({ series, directions, timeZone, locale, n
     const theme = useChartTheme()
     const { ref, width } = useElementWidth<HTMLDivElement>()
     const [hoverIndex, setHoverIndex] = useState<number | null>(null)
+    const clipId = useId().replace(/[^\w-]/g, '')
     const axisSteps = series[Variable.Temp].steps
     const times = axisSteps.map((s) => new Date(s))
     const x = scaleUtc()
@@ -114,6 +119,14 @@ export default function MedianOverview({ series, directions, timeZone, locale, n
     const readoutTime = axisSteps[readoutIndex]
     const nowX = now ? Math.max(MARGIN.left, Math.min(width - MARGIN.right, x(now))) : null
     const barWidth = Math.max(2, (x(new Date(times[0].getTime() + SLOT_HOURS * HOUR_MS)) - x(times[0])) * BAR_RATIO)
+    const plotWidth = Math.max(0, width - MARGIN.left - MARGIN.right)
+    const hoverX =
+        hoverIndex === null
+            ? null
+            : Math.max(
+                  MARGIN.left + HOVER_LABEL_HALF_WIDTH,
+                  Math.min(width - MARGIN.right - HOVER_LABEL_HALF_WIDTH, x(times[hoverIndex])),
+              )
 
     const handlePointerMove = (e: PointerEvent<SVGRectElement>) => {
         const box = e.currentTarget.getBoundingClientRect()
@@ -131,7 +144,7 @@ export default function MedianOverview({ series, directions, timeZone, locale, n
         <div className={GRID}>
             <div
                 className="flex flex-col"
-                style={{ gap: ROW_GAP, paddingTop: AXIS_HEIGHT, paddingBottom: AXIS_HEIGHT }}
+                style={{ gap: ROW_GAP, paddingTop: HOVER_STRIP, paddingBottom: AXIS_HEIGHT }}
             >
                 {LAYOUT.map(({ variable, height }) => {
                     const info = VARIABLE_BY_ID[variable]
@@ -179,8 +192,33 @@ export default function MedianOverview({ series, directions, timeZone, locale, n
                     onBlur={() => setHoverIndex(null)}
                     className="block overflow-visible outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
+                    <defs>
+                        {SPANS.map(({ top, bottom }, i) => (
+                            <clipPath key={top} id={`${clipId}-${i}`}>
+                                <rect
+                                    x={MARGIN.left}
+                                    y={top}
+                                    width={plotWidth}
+                                    height={bottom - top}
+                                    rx={PANEL_RADIUS}
+                                />
+                            </clipPath>
+                        ))}
+                    </defs>
+                    {SPANS.map(({ top, bottom }) => (
+                        <rect
+                            key={top}
+                            x={MARGIN.left}
+                            y={top}
+                            width={plotWidth}
+                            height={bottom - top}
+                            rx={PANEL_RADIUS}
+                            fill={theme.grid}
+                            opacity={0.4}
+                        />
+                    ))}
                     {nowX !== null &&
-                        SPANS.map(({ top, bottom }) => (
+                        SPANS.map(({ top, bottom }, i) => (
                             <rect
                                 key={top}
                                 x={MARGIN.left}
@@ -188,7 +226,8 @@ export default function MedianOverview({ series, directions, timeZone, locale, n
                                 width={Math.max(0, nowX - MARGIN.left)}
                                 height={bottom - top}
                                 fill={theme.grid}
-                                opacity={0.4}
+                                opacity={0.6}
+                                clipPath={`url(#${clipId}-${i})`}
                             />
                         ))}
                     {LAYOUT.map(({ variable, top, bottom }) => {
@@ -306,7 +345,7 @@ export default function MedianOverview({ series, directions, timeZone, locale, n
                         timeZone={timeZone}
                         locale={locale}
                         spans={SPANS}
-                        labelYs={[PLOT_TOP - 8, PLOT_BOTTOM + 16]}
+                        labelYs={[PLOT_BOTTOM + 16]}
                         lineColor={theme.border}
                         labelColor={theme.muted}
                     />
@@ -328,6 +367,19 @@ export default function MedianOverview({ series, directions, timeZone, locale, n
                             </text>
                         </g>
                     )}
+                    {hoverIndex !== null && hoverX !== null && (
+                        <text
+                            x={hoverX}
+                            y={PLOT_TOP - 7}
+                            textAnchor="middle"
+                            fontSize={11}
+                            fontWeight={600}
+                            fill={theme.foreground}
+                            pointerEvents="none"
+                        >
+                            {formatStepLabel(axisSteps[hoverIndex], timeZone, locale)}
+                        </text>
+                    )}
                     {hoverIndex !== null &&
                         SPANS.map(({ top, bottom }) => (
                             <line
@@ -343,7 +395,7 @@ export default function MedianOverview({ series, directions, timeZone, locale, n
                     <rect
                         x={MARGIN.left}
                         y={PLOT_TOP}
-                        width={Math.max(0, width - MARGIN.left - MARGIN.right)}
+                        width={plotWidth}
                         height={PLOT_BOTTOM - PLOT_TOP}
                         fill="transparent"
                         onPointerMove={handlePointerMove}
