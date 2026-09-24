@@ -1,20 +1,19 @@
 # Decisions
 
-Decisions already made in the project guide are listed in `PROJECT_GUIDE.md` §17. This file records the choices made while building the prototype (2026-09-23), including every place it deliberately departs from the guide, and what it would take to converge.
+Decisions already made in the project guide are listed in `PROJECT_GUIDE.md` §17. This file records the choices made while building the prototype (from 2026-09-23), including every place it deliberately departs from the guide, and what it would take to converge. Guide v3.0 (2026-09-24) absorbed P17 to P19.
 
 ## P1. One Next.js app instead of the pnpm + Turborepo monorepo
 
 The prototype is a single Next.js 16 app so it runs with `pnpm dev` and nothing else. The guide's packages map onto folders:
 
-| Guide | Prototype |
-|---|---|
-| `packages/shared` | `src/shared` (zod contract, model palette, variables, ensemble math, time helpers) |
-| `packages/charts` | `src/charts` (D3 hero charts, Recharts wrappers, `theme.ts`) |
-| `packages/ui` presets | `src/theme` |
-| `apps/api` | `src/app/api/**/route.ts` + `src/server` |
-| `apps/collector` | `src/server/collector.ts` + `scripts/collect.ts` |
-| `apps/skill-job` | `src/server/skill.ts` + `src/server/analysis.ts` (computed on request, see P5) |
-| `packages/db` | `src/server/store.ts` (see P3) |
+| Guide                 | Prototype                                                                          |
+| --------------------- | ---------------------------------------------------------------------------------- |
+| `packages/shared`     | `src/shared` (zod contract, model palette, variables, ensemble math, time helpers) |
+| `packages/charts`     | `src/charts` (D3 hero charts, Recharts wrappers, `theme.ts`)                       |
+| `packages/ui` presets | `src/theme`                                                                        |
+| `apps/api`            | `src/app/api/**/route.ts` + `src/server`                                           |
+| `apps/collector`      | `src/server/collector.ts` + `scripts/collect.ts`                                   |
+| `packages/db`         | `src/server/store.ts` (see P3)                                                     |
 
 Converging: move each folder into its package; imports already go through `@/shared`, `@/server`, `@/charts`.
 
@@ -32,19 +31,17 @@ Converging: implement the same exported functions with Prisma; nothing above `st
 
 `src/server/cache.ts` implements the four Redis uses from guide §22 with the same key names and TTLs (geocode 24 h, previous-runs data 3 h, fixed-window rate limits, request de-duplication). State lives on `globalThis`, so it is per process, which is exactly the Lambda problem the guide describes; that is acceptable for a single local process. The collector lock is a lock file with a 10-minute expiry (`acquireJobLock`), the equivalent of `SET lock:collector NX EX 600`.
 
-## P5. Skill and evolution from Open-Meteo's Previous Runs API (guide phase 7 pulled forward)
+## P5. Evolution from Open-Meteo's Previous Runs API
 
-The guide builds skill from its own stored runs, so a new city waits 7 days for a scoreboard. The Previous Runs API (`previous-runs-api.open-meteo.com`) returns, for any location, each model's forecast from the runs issued 1 to 7 days before every hour, for the nine Open-Meteo models, back to early 2024. Verified on 2026-09-23 for all nine models over 90 days (about 7 s per request).
+The Previous Runs API (`previous-runs-api.open-meteo.com`) returns, for any location, each model's forecast from the runs issued 1 to 7 days before every hour, for the nine Open-Meteo models, back to early 2024 (verified on 2026-09-23, about 7 s per request). The evolution view uses it, so it works on day one for any city:
 
-Consequences:
-- The scoreboard works on day one for any city, including ones tracked a minute ago.
-- Lead buckets are 24, 48, 72 and 96 h (runs 1 to 4 days earlier) instead of 6 to 96 h. The 6/12/18/36 h buckets need the app's own stored runs.
-- "Analysis" is `previous_day0`: the most recent run's value at that hour (0 to 6 h lead). Consensus truth is the median of those with at least 5 models, as in the guide.
-- MET Norway has no archive, so it is not scored yet (explained on its model page).
-- Evolution shows 8 daily issue offsets (7 days before to latest) instead of the last 16 six-hourly issue times.
-- There is no nightly skill job: scores are computed on request and cached for 3 hours.
+- It shows 8 daily issue offsets (7 days before to latest) instead of the last 16 six-hourly issue times.
+- MET Norway has no archive, so it does not appear in the evolution view.
+- Responses are cached for 3 hours.
 
-Converging: once the collector has stored enough runs, compute `ForecastError`/`SkillDaily` from them in a skill job and keep the Previous Runs data as a backfill (`origin = IMPORT`).
+Until 2026-09-24 the same API also fed a scoreboard (truth from the models' own analyses, MAE, bias and RMSE per lead bucket). It was removed with the MVP scope change in P17.
+
+Converging: once the collector has stored enough runs, evolution can read the app's own runs at 6-hourly resolution and keep the Previous Runs data as a backfill (`origin = IMPORT`).
 
 ## P6. Hourly fetch aggregated to the 6-hour grid
 
@@ -57,8 +54,6 @@ There is no EventBridge locally. When `/latest` is requested and the newest snap
 ## P8. Ensemble statistics and disagreement labels are derived on the client
 
 Following the `api-design` rule (return raw data, derive on the client), `/latest` returns the raw series per model and the client computes median, quartiles, min–max, the disagreement tiles, median wind direction and chance of rain with the pure functions in `src/shared/ensemble.ts` (unit-tested). The disagreement thresholds live in `src/shared/variables.ts`, a shared module, so the guide's documented exception (`disagreement.label` from the server) is not needed.
-
-Likewise `/scoreboard` returns one cell per model and lead bucket (n, MAE, bias, RMSE, hit rate, daily sparkline, ten worst errors); the ranking for the selected lead is a client-side view of those cells, so changing the lead needs no request.
 
 ## P9. Model palette and colour-vision safety
 
@@ -80,6 +75,56 @@ The guide fixes the model palette and forbids reassigning it. Running the datavi
 - Redux owns filter state; `useUrlSync` hydrates it from the URL once per page (queries wait for that), then mirrors Redux back into the URL with nuqs.
 - `useNow` returns null during server rendering and hydration, so the "now" line never causes a hydration mismatch.
 
+## P13. Landing: median overview, in-place city selection, no header search, no "popular now"
+
+Decided by the author on 2026-09-23 after the first review.
+
+- The landing chart is no longer a spaghetti preview (that belongs to the dashboard). It shows the median of all models for temperature, wind speed (with median direction arrows), pressure and precipitation as four panels on one time axis, with day lines and a crosshair that drives the readouts. Per-model detail on hover is intentionally not built yet. The grid, the time window and the now line changed on 2026-09-24: see P18 and P19.
+- The search box moved out of the header; the landing page is the search hub. Choosing a search result or a "Start with" chip keeps the user on the landing page and switches the overview (`?city=` keeps it linkable); "Open details" goes to the dashboard. A city not yet tracked is still tracked on selection, because the overview needs its forecast.
+- "Start with" is New York, London, Paris, Kyiv. Paris was added to the seed cities; the store merges any missing seed on read.
+- "Popular now" was removed as too ambitious for a portfolio project, together with `GET /api/cities/popular` (guide §3.1 and §8 list it).
+- The wordmark is stacked on two lines next to a 32 px icon. Evaluated as a good move once the header lost the search box: it gives the brand more presence without widening the bar, and it still fits the compact 48 px density.
+
+## P14. Five UI languages
+
+Ukrainian, English, Spanish, German and French (`Locale` enum, `messages/*.json` with identical keys). The language menu lists each language by its own name. City names come from the geocoder per locale (`nameLocal`); country names come from `Intl.DisplayNames`, so they need no storage; region names stay in English. The Spanish, German and French catalogs are machine-drafted and should get a native review, as the Ukrainian one should (guide §19, question 3).
+
+## P15. Gridlines and day lines
+
+A variable can declare a gridline step (`tickStep` in `src/shared/variables.ts`): 5 °C for temperature and 2 m/s for wind speed; the y domain snaps outward to that step (`src/charts/scales.ts`). Pressure keeps automatic ticks. Precipitation declares a ladder of steps instead (`tickSteps`: 0.5, 1, 2, 5, 10, 20, 50 mm): the domain starts at 0 and uses the smallest step that reaches the maximum in at most three segments. Both sources report 0.1 mm amounts, so 0.5 mm is the finest step that reads cleanly, and a dry forecast shows exactly two ticks, 0 and 0.5. This was decided on 2026-09-24; before, automatic ticks produced labels like 0, 0.0, 0.0, 0.1. Every time chart draws day boundaries the same way (`DayGrid`): a solid hairline at the city's local midnight, with the day label centred in the day. The precipitation panel (Recharts, categorical axis) draws the boundary before the first 6-hour total of each new local day.
+
+## P16. The Theme Lab never fetches
+
+The gallery (`/theme-lab`) renders a static dump of real API payloads, `src/fixtures/lab-dump.json` (city, the 6-hour and the hourly `latest` payloads for all four variables, and an evolution response), captured with `pnpm lab:dump` through the same server code the API uses, without writing to the store. Gallery components are presentational and receive data as props; the capture time is used as "now" so the charts stay stable. The gallery and the dump load only behind `NEXT_PUBLIC_THEME_LAB`, `pnpm check:no-lab` also looks for them, and `outputFileTracingExcludes` keeps fixtures and `data/` out of server traces.
+
+## P17. MVP scope: forecasts only (2026-09-24)
+
+Decided by the author: comparing forecasts with what actually happened is a separate feature, not part of the MVP. Removed from the prototype:
+
+- the scoreboard (`/city/[slug]/scoreboard`, `GET /api/cities/:slug/scoreboard`), the model detail page (`/models/[id]`, `GET /api/models/:id`), and the skill maths (`src/server/skill.ts`: consensus and self-analysis truth, MAE, bias, RMSE, hit rate, lead buckets, sample thresholds);
+- the 30-day MAE column in the dashboard legend, the truth line and truth figure in the evolution view, the "Score the models" landing tile, and the truth and skill sections of the methodology;
+- the scoreboard filters in Redux and the URL (`window`, `mode`, `lead`).
+
+Kept: the dashboard, evolution (forecasts compared with earlier forecasts, still from the Previous Runs API, see P5), compare, runs, cities, methodology and the Theme Lab. The landing title now reads "Compare weather forecasts for your city". Guide v3.0 moves truth, skill and the scoreboard to a post-MVP phase and drops the skill-job Lambda and its tables from the MVP. `GET /api/models` stays as plain model metadata.
+
+## P18. Landing overview on local 3-hour slots
+
+Decided by the author on 2026-09-24. The overview shows 72 hours in 3-hour slots on the city's local clock (00, 03, 06…), starting at the slot the data arrived in. The city dashboard keeps the 6-hour UTC grid.
+
+- Each snapshot now also stores the run on an hourly grid (`Snapshot.hourly`, from 12 h before the issue time to 96 h after). The collector parses the same upstream responses twice, so no extra requests are made. Snapshots stored before this change have no hourly grid and are refreshed once on the next view.
+- `GET /api/cities/:slug/latest?resolution=hourly` returns that grid; the default stays the 6-hour grid. Following the API rule in P8, the client builds the slots (`src/shared/slots.ts`) with the same resampler the server uses (`src/shared/resample.ts`, moved to `shared`).
+- Instant values are read at each slot. A precipitation slot is the amount of the 3 hours after it, so the first readout of a fresh chart is the coming 3 hours, and its bar is drawn to the right of the slot.
+- Slots stay on whole UTC hours, where the hourly data is. A half-hour time zone (India, for example) gets slots at :30 local. Slots are evenly spaced, so after a DST change inside the window the later slots sit one hour off the local marks until the next refresh.
+- MET Norway publishes hourly values only for about the first 60 hours; later slots take the median of the other models.
+- The readout summaries cover the next 24 hours instead of four days. The chart already shows three days, and "today and tonight" is the more useful glance on the main screen; the dashboard is one click away.
+- Layout: four panels with a 14 px gap, matching the readouts on the left. Day lines, past shading, the now line and the crosshair are drawn per panel. Tick labels sit on the left, and day labels appear both above and below. The loading skeleton is built from the same row layout, so it cannot drift from the chart. The run and model-count line under the city name was removed; the region and country follow the city name in muted text.
+
+## P19. The overview is anchored when the data arrives; Refresh
+
+The overview starts at the slot the data arrived in, so on arrival "now" is the start of the chart and no now line is drawn. The hourly queries never refetch in the background, because that would silently re-anchor the chart. Once the current time moves into a later slot the chart is stale: the now line and the past shading appear and the Refresh button is enabled. Refresh refetches the four hourly payloads and re-anchors the chart.
+
+Refresh does not hit the upstream sources harder: the server only calls Open-Meteo and met.no when a new 6-hour run exists, and concurrent refreshes are de-duplicated. Gating the button in the UI is about a sensible interaction, not the protection.
+
 ## Open: the design decision (guide phase 2.5)
 
-Not made yet. Base tokens are preset A (Sky). To decide: run `pnpm dev`, open the Lab (Ctrl/Cmd+Shift+T) on `/theme-lab`, a live city dashboard and its scoreboard, star favourites, then `Copy CSS` into `globals.css` and record the choice and the runners-up with screenshots here.
+Not made yet. Base tokens are preset A (Sky). To decide: run `pnpm dev`, open the Lab (Ctrl/Cmd+Shift+T) on `/theme-lab`, a live city dashboard and the landing overview, star favourites, then `Copy CSS` into `globals.css` and record the choice and the runners-up with screenshots here.
