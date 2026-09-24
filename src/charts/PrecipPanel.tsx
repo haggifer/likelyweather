@@ -1,10 +1,12 @@
 'use client'
 
+import { getYDomain, getYTicks } from '@/charts/scales'
 import useChartTheme from '@/charts/useChartTheme'
 import { formatNumber, formatPercent, formatStepLabel, formatTime } from '@/lib/format'
 import { Series } from '@/shared/api'
 import { MODEL_BY_ID, ModelId } from '@/shared/models'
 import { getLocalDateKey } from '@/shared/time'
+import { Variable } from '@/shared/variables'
 import { useTranslations } from 'next-intl'
 import {
     Bar,
@@ -67,6 +69,10 @@ export default function PrecipPanel({ steps, series, median, chance, timeZone, l
         ...Object.fromEntries(series.map((s) => [s.modelId, s.values[i]])),
     }))
 
+    // The axis covers every model's tick, not only the median bars, and uses the shared 0.5 / 1 / 2 / 5 mm steps.
+    const yDomain = getYDomain([...median, ...series.flatMap((s) => s.values)], Variable.Precip)
+    const yTicks = getYTicks(yDomain, Variable.Precip, 3)
+
     // A 6-hour total belongs to the day of its last hour; a new day starts where that day changes.
     const dayKeys = steps.map((step) => getLocalDateKey(new Date(new Date(step).getTime() - 1).toISOString(), timeZone))
     const dayStarts = steps.filter((_, i) => i > 0 && dayKeys[i] !== dayKeys[i - 1])
@@ -122,10 +128,13 @@ export default function PrecipPanel({ steps, series, median, chance, timeZone, l
                 />
                 <YAxis
                     width={36}
+                    domain={yDomain}
+                    ticks={yTicks}
+                    tickFormatter={(tick: number) => formatNumber(tick, Number.isInteger(tick) ? 0 : 1)}
                     tick={{ fontSize: 10, fill: theme.muted }}
                     tickLine={false}
                     axisLine={false}
-                    allowDecimals
+                    allowDataOverflow
                 />
                 {dayStarts.map((step) => (
                     <ReferenceLine
