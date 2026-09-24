@@ -2,7 +2,7 @@
 
 Ten weather models for any city and how much they disagree. Public, no login. Measuring which model has been right is a separate feature planned after the MVP.
 
-This is the functional prototype of the app specified in [docs/PROJECT_GUIDE.md](docs/PROJECT_GUIDE.md). It runs on live data from Open-Meteo and MET Norway with no database or Docker: a JSON file store and an in-process cache stand in for Postgres and Redis behind the same interfaces. Every departure from the guide, and how to converge, is in [docs/DECISIONS.md](docs/DECISIONS.md).
+This is the functional prototype of the app described under [Target architecture](#target-architecture). It runs on live data from Open-Meteo and MET Norway with no database or Docker: a JSON file store and an in-process cache stand in for Postgres and Redis behind the same interfaces. Every departure from the target, and how to converge, is in [docs/DECISIONS.md](docs/DECISIONS.md).
 
 ## Run it
 
@@ -14,7 +14,7 @@ cp .env.example .env.local   # then put a real contact in METNO_USER_AGENT
 pnpm dev                     # http://localhost:3000
 ```
 
-The eleven seed cities (guide §2.3 plus Paris) are created on first start. Open any city and its forecast is fetched within a few seconds; search for any other city to start tracking it.
+The eleven seed cities (`src/shared/seeds.ts`) are created on first start. Open any city and its forecast is fetched within a few seconds; search for any other city to start tracking it.
 
 Optional: fill the store for every active city now, or keep a local 6-hourly schedule running.
 
@@ -26,15 +26,15 @@ pnpm collect -- --loop                        # run now, then every 6 hours
 
 ## What works
 
-| Screen         | Route                          | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| -------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Landing        | `/?city=`                      | Search (Ctrl/Cmd+K) and "Start with" chips (New York, London, Paris, Kyiv) switch the city in place; the overview shows the median of all models for the next 72 h in local 3-hour slots (temperature, wind speed with direction arrows, pressure, precipitation) with a synced crosshair and next-24-hour summaries; a now line and Refresh appear once the chart is a slot old; "Open details" goes to the dashboard                                                                                                                            |
-| City dashboard | `/city/[slug]`                 | Back link and in-place city switcher; D3 spaghetti chart over 96 h in local 3-hour slots from arrival (now line once stale), min–max and interquartile bands, median, precipitation as median bars with per-model ticks, hovered time above the crosshair, keyboard stepping; side list sorted by value; keys 1–9, 0 toggle models; disagreement tiles; precipitation panel (Recharts, lazy-loaded) with 6-hour totals from the chart start, per-model ticks and chance of rain; wind arrows; preview and stale badges; table view on every chart |
-| Compare        | `/compare?cities=a,b`          | Up to four cities, shared axis                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| Runs           | `/runs`                        | 30-day slot timeline, virtualized run history, raw archive per run                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| Cities         | `/cities`                      | Tracked cities with status, views, scheduled runs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| Methodology    | `/methodology`                 | Sources, grids, median and spread, disagreement, limits, attribution                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| Theme Lab      | `/theme-lab`, Ctrl/Cmd+Shift+T | Development only: 5 presets, every axis from guide §4.6, live WCAG badges, favourites, A/B, shareable `?tl=` link, Copy CSS. The gallery renders a static dump of real API payloads (`src/fixtures/lab-dump.json`) and never fetches                                                                                                                                                                                                                                                                                                              |
+| Screen         | Route                          | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| -------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Landing        | `/?city=`                      | Search (Ctrl/Cmd+K) and "Start with" chips (New York, London, Paris, Kyiv) switch the city in place; the overview shows the median of all models for the next 72 h in local 3-hour slots (temperature, wind speed with direction arrows, pressure, precipitation) with a synced crosshair and next-24-hour summaries; the run time sits beside Refresh, which is enabled once the chart is a slot old, together with a now line; "Open details" goes to the dashboard                                                                                                                                          |
+| City dashboard | `/city/[slug]`                 | Back link, in-place city switcher, run time and Refresh; D3 spaghetti chart over 96 h in local 3-hour slots from arrival (now line once stale), min–max and interquartile bands, median, precipitation as median bars with per-model ticks, hovered as the 3-hour period each bar covers, hovered time above the chart, keyboard stepping; side list sorted by value; keys 1–9, 0 toggle models; disagreement tiles; precipitation panel (Recharts, lazy-loaded) with 6-hour totals from the chart start, per-model ticks and chance of rain; wind arrows; preview and stale badges; table view on every chart |
+| Compare        | `/compare?cities=a,b`          | Up to four cities, shared axis                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Runs           | `/runs`                        | 30-day slot timeline, virtualized run history, raw archive per run                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Cities         | `/cities`                      | Tracked cities with status, views, scheduled runs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Methodology    | `/methodology`                 | Sources, grids, median and spread, disagreement, limits, attribution                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Theme Lab      | `/theme-lab`, Ctrl/Cmd+Shift+T | Development only: 5 presets, every design axis (density, surface, radius, type, accent, chips, bands), live WCAG badges, favourites, A/B, shareable `?tl=` link, Copy CSS. The gallery renders a static dump of real API payloads (`src/fixtures/lab-dump.json`) and never fetches                                                                                                                                                                                                                                                                                                                             |
 
 Ukrainian, English, Spanish, German and French (language menu in the top bar; the non-English catalogs are machine-drafted and need a native review), light and dark mode.
 
@@ -72,17 +72,37 @@ src/
   shared/         zod API contract, model palette, variables, ensemble math, resampling, 3-hour slots, time helpers
   charts/         D3 hero charts, Recharts wrappers, chart theme reader
   components/     shell, landing, city, runs, cities, compare, gallery, shadcn ui
-  store/          Redux Toolkit slices: dashboard, filters, layout
+  store/          Redux Toolkit slices: dashboard, layout
   theme/          Theme Lab: tokens, presets, resolve, apply, contrast, storage, freeze, provider, panel
   hooks/          TanStack Query hooks, URL sync, time
   fixtures/       real collector snapshot for tests, Theme Lab dump
   i18n/, messages/ next-intl config and uk/en/es/de/fr catalogs
-docs/             PROJECT_GUIDE.md, DECISIONS.md, METHODOLOGY.md
+docs/             DECISIONS.md (design decisions), METHODOLOGY.md (grids, slots, ensemble maths)
 ```
 
-## Not in the prototype yet
+## Target architecture
 
-Monorepo split, Express on Lambda, Prisma/Postgres with partitions, Redis, S3, CDK, CI, Playwright, CSV import, Gemini brief. Truth, skill, the scoreboard and the evolution view are out of the MVP (DECISIONS P17, P20; guide v3.1 phase 7). See the build plan in guide §16 and the convergence notes in DECISIONS.md.
+The prototype converges on this stack; the mapping of each piece is in DECISIONS P1 to P4.
+
+- **Web:** Next.js App Router, Tailwind v4 and shadcn/ui with a token system and a development-only Theme Lab, Redux Toolkit for UI state, TanStack Query for server state, TanStack Table and Virtual, Recharts, D3 for the hero charts, next-intl (uk, en, es, de, fr). Hosted on Amplify.
+- **API:** Express 5 REST on AWS Lambda (Web Adapter) behind CloudFront, with the same zod contract.
+- **Data:** Prisma on Postgres (Neon) with forecasts partitioned by issue time; Redis (Upstash) for the geocode and preview caches, rate limits and the collector lock; an S3 archive of raw upstream responses.
+- **Collector:** a scheduled Lambda function (EventBridge Scheduler, every 6 hours).
+- **Infrastructure and tooling:** one AWS CDK stack; a pnpm and Turborepo monorepo (`apps/web`, `apps/api`, `apps/collector`, `packages/shared`, `packages/charts`, `packages/ui`, `packages/db`, `packages/fixtures`, `infra`); CI runs lint, typecheck, tests, the catalog check, end-to-end tests, the lab-off build and `cdk synth`.
+- **Optional:** a daily Gemini Flash brief with a claim checker.
+
+Not in the prototype yet: the monorepo split, Express on Lambda, Prisma and Postgres, Redis, S3, CDK, CI, Playwright, CSV import, the Gemini brief and `pnpm check:messages`. Truth, skill scores, the scoreboard and the evolution view are out of the MVP (DECISIONS P17, P20).
+
+## Design decisions
+
+The full log, with the rejected alternatives, is [docs/DECISIONS.md](docs/DECISIONS.md). The ones a newcomer is most likely to undo by accident:
+
+- **Models are compared with each other, not with observations** (P17). Accuracy needs truth data and its own UI; it is a post-MVP feature.
+- **The server returns raw series; the client derives everything** (P8). Medians, quartiles, slots, disagreement and labels are pure functions in `src/shared`, unit-tested and shared with the future API.
+- **Charts are anchored to when the data arrived** (P18, P19, P21). They start at the local 3-hour slot of arrival, so "now" is the chart start; a background refetch would silently move the landing chart, so it only moves on Refresh.
+- **Precipitation is a total over a span** (P18, P21, P23): bars, not lines, and hovered as the period each bar covers.
+- **The Theme Lab never ships and never fetches** (P11, P16). A production build is checked with `pnpm check:no-lab`.
+- **The model palette is fixed** (P9), with dash patterns where two colors are too close for color-vision deficiencies.
 
 ## Data and attribution
 

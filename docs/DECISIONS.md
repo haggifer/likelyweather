@@ -1,12 +1,12 @@
 # Decisions
 
-Decisions already made in the project guide are listed in `PROJECT_GUIDE.md` §17. This file records the choices made while building the prototype (from 2026-09-23), including every place it deliberately departs from the guide, and what it would take to converge. Guide v3.0 (2026-09-24) absorbed P17 to P19, v3.1 P20, and v3.2 P21.
+The choices made while building the prototype (from 2026-09-23), including every place it deliberately departs from the target architecture in the [README](../README.md#target-architecture), and what it would take to converge. Each entry says what was decided, why, and what was rejected where that matters.
 
 ## P1. One Next.js app instead of the pnpm + Turborepo monorepo
 
-The prototype is a single Next.js 16 app so it runs with `pnpm dev` and nothing else. The guide's packages map onto folders:
+The prototype is a single Next.js 16 app so it runs with `pnpm dev` and nothing else. The target's packages map onto folders:
 
-| Guide                 | Prototype                                                                          |
+| Target                | Prototype                                                                          |
 | --------------------- | ---------------------------------------------------------------------------------- |
 | `packages/shared`     | `src/shared` (zod contract, model palette, variables, ensemble math, time helpers) |
 | `packages/charts`     | `src/charts` (D3 hero charts, Recharts wrappers, `theme.ts`)                       |
@@ -23,13 +23,13 @@ Same REST paths, same zod schemas (`src/shared/api.ts`), same `{error: {code, me
 
 ## P3. JSON files instead of Postgres and S3
 
-Docker was not running on the build machine and the prototype should run without it. `src/server/store.ts` keeps the guide's table shapes: `data/cities.json` (City), `data/runs.json` (CollectionRun), `data/forecasts/<cityId>/<issueTime>.json` (Forecast rows in columnar form per run and city), `data/raw/<runId>/*.json` (the S3 raw archive). Read-modify-write cycles take a cross-process file lock so the collector CLI and the dev server never interleave. `/api/runs/:id/archive` returns the raw JSON directly instead of a presigned URL.
+Docker was not running on the build machine and the prototype should run without it. `src/server/store.ts` keeps the target's table shapes: `data/cities.json` (City), `data/runs.json` (CollectionRun), `data/forecasts/<cityId>/<issueTime>.json` (Forecast rows in columnar form per run and city), `data/raw/<runId>/*.json` (the S3 raw archive). Read-modify-write cycles take a cross-process file lock so the collector CLI and the dev server never interleave. `/api/runs/:id/archive` returns the raw JSON directly instead of a presigned URL.
 
 Converging: implement the same exported functions with Prisma; nothing above `store.ts` changes.
 
 ## P4. In-process cache instead of Redis
 
-`src/server/cache.ts` implements the four Redis uses from guide §22 with the same key names and TTLs (geocode 24 h, previous-runs data 3 h, fixed-window rate limits, request de-duplication). State lives on `globalThis`, so it is per process, which is exactly the Lambda problem the guide describes; that is acceptable for a single local process. The collector lock is a lock file with a 10-minute expiry (`acquireJobLock`), the equivalent of `SET lock:collector NX EX 600`.
+`src/server/cache.ts` stands in for Redis with the same key names and TTLs: the geocode cache (24 h), fixed-window rate limits and request de-duplication. The previous-runs cache went with P20. The target's preview and `/latest` payload caches have no stand-in; the file store and de-duplication cover them locally. State lives on `globalThis`, so it is per process, which is exactly why the target uses Redis across Lambda instances; that is acceptable for a single local process. The collector lock is a lock file with a 10-minute expiry (`acquireJobLock`), the equivalent of `SET lock:collector NX EX 600`.
 
 ## P5. Evolution from Open-Meteo's Previous Runs API (removed, see P20)
 
@@ -53,11 +53,11 @@ There is no EventBridge locally. When `/latest` is requested and the newest snap
 
 ## P8. Ensemble statistics and disagreement labels are derived on the client
 
-Following the `api-design` rule (return raw data, derive on the client), `/latest` returns the raw series per model and the client computes median, quartiles, min–max, the disagreement tiles, median wind direction and chance of rain with the pure functions in `src/shared/ensemble.ts` (unit-tested). The disagreement thresholds live in `src/shared/variables.ts`, a shared module, so the guide's documented exception (`disagreement.label` from the server) is not needed.
+Following the `api-design` rule (return raw data, derive on the client), `/latest` returns the raw series per model and the client computes median, quartiles, min–max, the disagreement tiles, median wind direction and chance of rain with the pure functions in `src/shared/ensemble.ts` (unit-tested). The disagreement thresholds live in `src/shared/variables.ts`, a shared module, so the planned exception (`disagreement.label` from the server) is not needed.
 
 ## P9. Model palette and colour-vision safety
 
-The guide fixes the model palette and forbids reassigning it. Running the dataviz validator on it: lightness and contrast pass, but ECMWF IFS (`#1D4ED8`) and ECMWF AIFS (`#7C3AED`) are only ΔE 3.4 apart for protanopes and 13.0 for normal vision, and met.no's `#475569` reads as gray. The colours stay; AIFS (dash `6 3`) and met.no (dash `2 3`) get a dash pattern as secondary encoding everywhere a model line or swatch appears, and every chart has a legend, a hover highlight and a table view.
+The model palette is fixed and never reassigned. Running the dataviz validator on it: lightness and contrast pass, but ECMWF IFS (`#1D4ED8`) and ECMWF AIFS (`#7C3AED`) are only ΔE 3.4 apart for protanopes and 13.0 for normal vision, and met.no's `#475569` reads as gray. The colours stay; AIFS (dash `6 3`) and met.no (dash `2 3`) get a dash pattern as secondary encoding everywhere a model line or swatch appears, and every chart has a legend, a hover highlight and a table view.
 
 ## P10. Locale in a cookie, not the URL
 
@@ -69,7 +69,7 @@ The guide fixes the model palette and forbids reassigning it. Running the datavi
 
 ## P12. Smaller choices
 
-- shadcn/ui with the Radix base (`radix-nova`), as the guide specifies. The surface axis restyles every `[data-slot=card]` from `globals.css`; status chips and the source line live in `@layer components` so utilities can still hide them.
+- shadcn/ui with the Radix base (`radix-nova`). The surface axis restyles every `[data-slot=card]` from `globals.css`; status chips and the source line live in `@layer components` so utilities can still hide them.
 - Country flags are the MIT-licensed `country-flag-icons` 3×2 SVGs copied into `public/flags` (`pnpm flags`).
 - TanStack Table is pinned to v8; v9 was current on npm with a new API.
 - Redux owns filter state; `useUrlSync` hydrates it from the URL once per page (queries wait for that), then mirrors Redux back into the URL with nuqs.
@@ -82,12 +82,12 @@ Decided by the author on 2026-09-23 after the first review.
 - The landing chart is no longer a spaghetti preview (that belongs to the dashboard). It shows the median of all models for temperature, wind speed (with median direction arrows), pressure and precipitation as four panels on one time axis, with day lines and a crosshair that drives the readouts. Per-model detail on hover is intentionally not built yet. The grid, the time window and the now line changed on 2026-09-24: see P18 and P19.
 - The search box moved out of the header; the landing page is the search hub. Choosing a search result or a "Start with" chip keeps the user on the landing page and switches the overview (`?city=` keeps it linkable); "Open details" goes to the dashboard. A city not yet tracked is still tracked on selection, because the overview needs its forecast.
 - "Start with" is New York, London, Paris, Kyiv. Paris was added to the seed cities; the store merges any missing seed on read.
-- "Popular now" was removed as too ambitious for a portfolio project, together with `GET /api/cities/popular` (guide §3.1 and §8 list it).
+- "Popular now" was removed as more than the MVP needs, together with `GET /api/cities/popular`.
 - The wordmark is stacked on two lines next to a 32 px icon. Evaluated as a good move once the header lost the search box: it gives the brand more presence without widening the bar, and it still fits the compact 48 px density.
 
 ## P14. Five UI languages
 
-Ukrainian, English, Spanish, German and French (`Locale` enum, `messages/*.json` with identical keys). The language menu lists each language by its own name. City names come from the geocoder per locale (`nameLocal`); country names come from `Intl.DisplayNames`, so they need no storage; region names stay in English. The Spanish, German and French catalogs are machine-drafted and should get a native review, as the Ukrainian one should (guide §19, question 3).
+Ukrainian, English, Spanish, German and French (`Locale` enum, `messages/*.json` with identical keys). The language menu lists each language by its own name. City names come from the geocoder per locale (`nameLocal`); country names come from `Intl.DisplayNames`, so they need no storage; region names stay in English. The Spanish, German and French catalogs are machine-drafted and should get a native review, as the Ukrainian one should.
 
 ## P15. Gridlines and day lines
 
@@ -105,11 +105,11 @@ Decided by the author: comparing forecasts with what actually happened is a sepa
 - the 30-day MAE column in the dashboard legend, the truth line and truth figure in the evolution view, the "Score the models" landing tile, and the truth and skill sections of the methodology;
 - the scoreboard filters in Redux and the URL (`window`, `mode`, `lead`).
 
-Kept at the time: the dashboard, evolution (removed later the same day, see P20), compare, runs, cities, methodology and the Theme Lab. The landing title now reads "Compare weather forecasts for your city". Guide v3.0 moves truth, skill and the scoreboard to a post-MVP phase and drops the skill-job Lambda and its tables from the MVP. `GET /api/models` stays as plain model metadata.
+Kept at the time: the dashboard, evolution (removed later the same day, see P20), compare, runs, cities, methodology and the Theme Lab. The landing title now reads "Compare weather forecasts for your city". Truth, skill and the scoreboard move to a post-MVP phase, and the skill-job Lambda and its tables leave the MVP. `GET /api/models` stays as plain model metadata.
 
 ## P18. Landing overview on local 3-hour slots
 
-Decided by the author on 2026-09-24. The overview shows 72 hours in 3-hour slots on the city's local clock (00, 03, 06…), starting at the slot the data arrived in. The city dashboard keeps the 6-hour UTC grid.
+Decided by the author on 2026-09-24. The overview shows 72 hours in 3-hour slots on the city's local clock (00, 03, 06…), starting at the slot the data arrived in. The city dashboard kept the 6-hour UTC grid until P21.
 
 - Each snapshot now also stores the run on an hourly grid (`Snapshot.hourly`, from 12 h before the issue time to 96 h after). The collector parses the same upstream responses twice, so no extra requests are made. Snapshots stored before this change have no hourly grid and are refreshed once on the next view.
 - `GET /api/cities/:slug/latest?resolution=hourly` returns that grid; the default stays the 6-hour grid. Following the API rule in P8, the client builds the slots (`src/shared/slots.ts`) with the same resampler the server uses (`src/shared/resample.ts`, moved to `shared`).
@@ -135,7 +135,7 @@ Decided by the author, checked before removing.
     - the evolution chart and view, its gallery section and dump entry, and the methodology section;
     - the `filters` slice. The URL-hydrated flag moved into the `dashboard` slice, and `useUrlSync` now mirrors only `?v=`.
 
-    The design stays in guide section 9.2 as part of post-MVP accuracy, and the code is in the history (P5).
+    It may return as part of post-MVP accuracy; the code is in the history (P5).
 
 - **No section tabs on city pages.** With only the dashboard left, the Dashboard/Evolution control in the top bar and the city header is gone.
 - **Variable switch in the body.** It moved from the top bar and city header to the top of the dashboard body, where it has room for labels (hidden on phones only).
@@ -166,6 +166,6 @@ Asked by the author. A precipitation bar is a total over a span, so hovering it 
 - **Dashboard chart (D3).** The pointer selects the bar whose span it is over (`getSpanIndex`). Before, it snapped to the nearest slot time, which sits on a bar's edge, so the right half of a bar selected the next one. The hovered span is shaded across the plot instead of drawing a crosshair line. The label above the plot, the legend readout and the compare tooltip read "Sat 03:00–06:00" (`formatPeriodLabel`). Stepping with the arrow keys stays on drawn bars.
 - **Precipitation panel (Recharts).** Recharts already shades the hovered category (`Tooltip` `cursor`); its tooltip now names the 6-hour period instead of the hour it ends.
 
-## Open: the design decision (guide phase 2.5)
+## Open: the design decision
 
 Not made yet. Base tokens are preset A (Sky). To decide: run `pnpm dev`, open the Lab (Ctrl/Cmd+Shift+T) on `/theme-lab`, a live city dashboard and the landing overview, star favourites, then `Copy CSS` into `globals.css` and record the choice and the runners-up with screenshots here.
