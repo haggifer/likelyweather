@@ -1,0 +1,294 @@
+{
+    "app": {
+        "tagline": "Ten forecasts, any city, and a scoreboard of who was right."
+    },
+    "shell": {
+        "switchMode": "Switch to {mode} mode",
+        "modes": { "light": "light", "dark": "dark" },
+        "language": "Language",
+        "locales": { "en": "English", "uk": "Ukrainian" }
+    },
+    "nav": {
+        "more": "More pages",
+        "cities": "Cities",
+        "compare": "Compare",
+        "runs": "Runs",
+        "methodology": "Methodology",
+        "themeLab": "Theme Lab gallery",
+        "dashboard": "Dashboard",
+        "scoreboard": "Scoreboard",
+        "evolution": "Evolution",
+        "cityTabs": "City sections"
+    },
+    "footer": {
+        "attribution": "Weather data by <openMeteo>Open-Meteo.com</openMeteo> (CC BY 4.0) and <metno>MET Norway</metno>. Geocoding by Open-Meteo.",
+        "methodology": "Methodology",
+        "runs": "Runs",
+        "repo": "Source code"
+    },
+    "search": {
+        "label": "Search any city",
+        "placeholder": "Search any city…",
+        "placeholderShortcut": "Search any city…  Ctrl K",
+        "hint": "Type at least 3 letters",
+        "searching": "Searching…",
+        "error": "Search failed. Try again in a moment.",
+        "empty": "No places found",
+        "results": "Places, largest first",
+        "trackFailed": "Could not open this city: {message}"
+    },
+    "chart": {
+        "table": "Table",
+        "chart": "Chart",
+        "showTable": "Show the data as a table",
+        "showChart": "Show the chart",
+        "source": "Source: Open-Meteo (CC BY 4.0), MET Norway. Forecast Arena.",
+        "now": "now",
+        "median": "Median",
+        "compass": "N,NE,E,SE,S,SW,W,NW"
+    },
+    "variables": {
+        "label": "Variable",
+        "temp": "Temperature",
+        "wind": "Wind speed",
+        "pressure": "Pressure",
+        "precip": "Precipitation"
+    },
+    "city": {
+        "updated": "Updated",
+        "stale": "Stale",
+        "local": "local",
+        "updatedTitle": "Run issued {utc} ({local} city time). Fetched {fetched}.",
+        "trackedSince": "tracked since {date}",
+        "preview": "Preview",
+        "previewTitle": "Only on-demand preview runs so far; scheduled 6-hourly runs start with the next collection.",
+        "status": {
+            "ACTIVE": "Active",
+            "DORMANT": "Dormant",
+            "QUEUED": "Queued"
+        },
+        "notTracked": "This city is not tracked yet",
+        "notTrackedBody": "Search for it to start tracking: the forecast appears within seconds.",
+        "trackingBanner": "Tracking of {name} started on {date}. It now joins the 6-hourly collection. Skill scores are available right away from Open-Meteo’s archive of previous model runs.",
+        "medianTotal": "Median total",
+        "chanceOfRain": "Chance of rain"
+    },
+    "dashboard": {
+        "fetching": "Fetching ten models for {name}…",
+        "fetchFailed": "Could not fetch the forecast: {message}",
+        "chartTitle": "{variable} · {count} models",
+        "chartDescription": "Issue {issue} UTC · {origin}. Shaded area: the last 24 hours of analysis.",
+        "origin": {
+            "SCHEDULED": "scheduled run",
+            "PREVIEW": "on-demand preview",
+            "IMPORT": "imported"
+        },
+        "summary": "Median {variable} over the next four days ranges from {min} to {max} {unit} across {count} models. They disagree most on {day} (spread {spread} {unit}).",
+        "median": "Median",
+        "time": "Time (city)",
+        "windArrows": "Arrows show where the median wind blows to; hover one for the direction it comes from.",
+        "precipTitle": "Precipitation, 6-hour totals",
+        "precipDescription": "Bars: median of models. Ticks: each model. Row under the bars: share of models above 0.2 mm.",
+        "precipSummary": "{steps, plural, =0 {No 6-hour step has} one {# 6-hour step has} other {# 6-hour steps have}} a chance of rain of 50% or more; the median totals {total} mm over the next four days."
+    },
+    "legend": {
+        "median": "Median",
+        "reset": "Show all",
+        "pin": "Pin: keep this model highlighted",
+        "unpin": "Unpin",
+        "show": "Show {model}",
+        "hide": "Hide {model}",
+        "maeTitle": "30-day mean absolute error at 24 h lead, this city and variable",
+        "hint": "Hover a model to highlight it, click to pin. Keys 1–9 and 0 toggle models. Right column: 30-day error at 24 h."
+    },
+    "disagreement": {
+        "title": "Disagreement by day",
+        "description": "Average max–min spread of {variable} across models. Agree under {agree} {unit}, split from {split} {unit}.",
+        "descriptionPrecip": "Range of the models’ daily precipitation totals. Agree under {agree} {unit}, split from {split} {unit}.",
+        "spreadTitle": "Spread between the highest and the lowest model",
+        "agree": "Agree",
+        "mixed": "Mixed",
+        "split": "Split",
+        "empty": "No future steps in this run."
+    },
+    "scoreboard": {
+        "window": "Window",
+        "days": "{days} d",
+        "truthMode": "Truth",
+        "consensus": "Consensus",
+        "self": "Self-analysis",
+        "lead": "Lead",
+        "loading": "Loading",
+        "computing": "Scoring every model over the last {window} days…",
+        "truthNoteConsensus": "Truth is the median of the models’ own analyses (at least 5), not station observations. Errors compare each model’s forecast issued 1 to 4 days earlier with that truth.",
+        "truthNoteSelf": "Self-analysis: each model is scored against its own later analysis, which measures consistency rather than accuracy. Truth is model analysis, not station observations.",
+        "rankingTitle": "{variable} ranking at {lead} h lead · {window} days",
+        "rankingDescription": "Sorted by mean absolute error. Models with fewer than {minN} samples are not ranked. {days} days with truth.",
+        "rankingSummary": "{model} has the lowest error at {lead} h: {mae} {unit} on average.",
+        "noRanking": "No model has enough samples to be ranked yet.",
+        "model": "Model",
+        "mae": "MAE",
+        "bias": "Bias",
+        "rmse": "RMSE",
+        "hitRate": "Hit rate",
+        "daily": "Daily MAE",
+        "sparkLabel": "Daily mean absolute error of {model}",
+        "sparse": "Only {n} samples: excluded from the ranking",
+        "heatmapTitle": "Error by lead time",
+        "heatmapDescription": "Mean absolute error for every model and lead. Click a cell to see its ten largest errors.",
+        "heatmapLabel": "Mean absolute error by model and lead time",
+        "leadColumn": "{hours} h",
+        "whyTitle": "{model} at {hours} h: largest errors",
+        "whyBody": "{n} samples, MAE {mae} {unit}. These ten valid times contributed the most error.",
+        "validTime": "Valid time",
+        "forecast": "Forecast",
+        "truth": "Truth",
+        "error": "Error",
+        "maeLegend": "MAE",
+        "sparseLegend": "fewer than {minN} samples, not ranked",
+        "youngTitle": "Not enough history yet",
+        "youngBody": "{collected} of {required} days collected. The scoreboard opens on {date}."
+    },
+    "evolution": {
+        "validTime": "Valid time",
+        "pick": "Pick a time",
+        "past": "Past (with truth)",
+        "future": "Upcoming",
+        "title": "How the {variable} forecast for {time} evolved",
+        "description": "Each line is one model: its forecast for this hour from runs issued up to 7 days earlier. The strip below shows the spread between models at each lead.",
+        "summary": "Spread between models went from {first} {unit} at the longest lead to {last} {unit} in the latest run. Truth: {truth}.",
+        "noTruth": "not available yet",
+        "latest": "latest",
+        "daysBefore": "{days} d before",
+        "truthLabel": "truth {value}",
+        "convergence": "Spread between models (standard deviation)",
+        "model": "Model",
+        "empty": "No archived runs cover this time."
+    },
+    "model": {
+        "subtitle": "{provider} · via {source}",
+        "regional": "regional model, Europe only",
+        "noArchive": "MET Norway keeps no archive of past runs, so it joins the scoreboard only once scheduled collection has stored its own runs.",
+        "biasTitle": "Daily bias at 24 h lead ({unit})",
+        "errorByLeadTitle": "Mean absolute error by lead ({unit})",
+        "worstTitle": "Worst misses across these cities",
+        "city": "City",
+        "bias": "Bias",
+        "mae": "MAE",
+        "leadHours": "{hours} h lead",
+        "noErrors": "No errors to show for this window."
+    },
+    "compare": {
+        "title": "Compare cities",
+        "description": "Up to four cities side by side on a shared axis.",
+        "add": "Add a tracked city",
+        "seed": "Try the four Ukrainian cities",
+        "count": "{count} of {max} cities",
+        "empty": "Add cities to compare their forecasts.",
+        "remove": "Remove city",
+        "sharedAxis": "All panels share one vertical axis so values compare directly."
+    },
+    "runs": {
+        "title": "Collection runs",
+        "description": "Every scheduled run and on-demand preview, with status, row counts, warnings and the raw upstream responses.",
+        "timelineTitle": "Last 30 days",
+        "timelineDescription": "One square per scheduled 6-hour slot (UTC). Gaps are slots where no scheduled run happened.",
+        "tableTitle": "Run history",
+        "tableDescription": "{count, plural, one {# run} other {# runs}} stored locally.",
+        "issueTime": "Issue time",
+        "origin": "Origin",
+        "status": "Status",
+        "rows": "Rows",
+        "cities": "Cities",
+        "warnings": "Warnings",
+        "duration": "Duration",
+        "archive": "Raw archive",
+        "empty": "No runs yet. Run pnpm collect or open a city.",
+        "origins": {
+            "SCHEDULED": "Scheduled",
+            "PREVIEW": "Preview",
+            "IMPORT": "Import"
+        },
+        "statuses": {
+            "OK": "OK",
+            "PARTIAL": "Partial",
+            "FAILED": "Failed"
+        },
+        "slot": {
+            "OK": "OK",
+            "PARTIAL": "Partial",
+            "FAILED": "Failed",
+            "PREVIEW": "Previews only",
+            "MISSING": "No run",
+            "FUTURE": "Upcoming"
+        }
+    },
+    "cities": {
+        "title": "Tracked cities",
+        "description": "Every city anyone has opened. Active cities are collected every 6 hours; after 30 days without a view they turn dormant and keep their history.",
+        "city": "City",
+        "status": "Status",
+        "firstTracked": "First tracked",
+        "lastViewed": "Last viewed",
+        "views": "Views",
+        "runs": "Scheduled runs",
+        "models": "Models",
+        "note": "Nothing here can be deleted. Queued cities wait for a free slot under the active-city cap."
+    },
+    "landing": {
+        "hero": "Ten forecasts. One city. Who was right?",
+        "sub": "See what ten weather models predict for any city, how much they disagree, how each forecast changed as the hour approached, and which models have actually been right there.",
+        "popular": "Popular now",
+        "seeds": "Start with",
+        "previewTitle": "{name}: temperature, 10 models",
+        "previewLoading": "Loading a preview…",
+        "previewDescription": "Thin lines are models, the thick line is their median, the band is their range.",
+        "open": "Open",
+        "tiles": {
+            "compare": {
+                "title": "Compare",
+                "body": "Ten models on one chart, with the median, the spread, and a day-by-day disagreement meter."
+            },
+            "converge": {
+                "title": "Watch it converge",
+                "body": "Pick an hour and see how every model’s forecast for it changed over the previous week."
+            },
+            "score": {
+                "title": "Score the models",
+                "body": "Mean error, bias and a heatmap by lead time show which model has actually been right in this city."
+            }
+        }
+    },
+    "methodology": {
+        "title": "Methodology",
+        "intro": "How Forecast Arena collects forecasts, defines truth, and scores the models, and where the numbers stop being trustworthy.",
+        "europeOnly": "Europe only",
+        "sources": {
+            "title": "Sources",
+            "body": "Nine numerical models come from the Open-Meteo forecast API and one from MET Norway’s Locationforecast. Every value is placed on a 6-hour UTC grid (00, 06, 12, 18). Temperature, wind and pressure are the values at the step; precipitation is the total of the six hours ending at the step.\nRegional models return data only inside their domain, so a city outside Europe shows up to eight models."
+        },
+        "truth": {
+            "title": "Truth",
+            "body": "Truth is model analysis, not station observations. For each 6-hour step the analysis of a model is its own forecast from the most recent run (0 to 6 hours lead), taken from Open-Meteo’s archive of previous runs.\nConsensus truth, the default, is the median of those analyses when at least {contributors} models contribute. Self-analysis scores each model against its own analysis, which rewards consistency rather than accuracy."
+        },
+        "skill": {
+            "title": "Skill",
+            "body": "For each model and lead bucket (24, 48, 72, 96 hours: runs issued one to four days earlier) the scoreboard reports mean absolute error, bias (forecast minus truth), root mean square error and the number of samples. Precipitation adds a hit rate: forecast and truth both above or both below {hit} mm in the 6-hour step.\nCells with fewer than {minN} samples are hatched and excluded from the ranking. Windows of 7, 30 and 90 days aggregate every 6-hour step in the window."
+        },
+        "disagreement": {
+            "title": "Disagreement",
+            "body": "For temperature, wind and pressure the daily disagreement is the average, over the day’s future steps, of the spread between the highest and the lowest model. For precipitation it is the range of the models’ daily totals. Days are in the city’s local time. Thresholds:"
+        },
+        "limits": {
+            "title": "Limits",
+            "body": "Model values are grid-point values, not the weather at a street corner, and the models’ own analyses share their biases. MET Norway keeps no archive, so it is not scored until scheduled runs accumulate. This prototype stores data in local JSON files and caches in memory; the production design uses Postgres, Redis and S3."
+        },
+        "thresholds": "{variable}: agree under {agree} {unit}, split from {split} {unit}",
+        "attribution": "Weather data by Open-Meteo.com (CC BY 4.0) and MET Norway (CC BY 4.0). Geocoding by Open-Meteo, based on GeoNames."
+    },
+    "notFound": {
+        "title": "Page not found",
+        "body": "The page you are looking for does not exist.",
+        "home": "Back to the start"
+    }
+}
