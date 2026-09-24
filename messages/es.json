@@ -68,7 +68,8 @@
         "notTrackedBody": "Búscala para empezar a seguirla: el pronóstico aparece en segundos.",
         "trackingBanner": "El seguimiento de {name} empezó el {date}. Ahora se incluye en la recogida cada 6 horas.",
         "medianTotal": "Total mediano",
-        "chanceOfRain": "Probabilidad de lluvia"
+        "chanceOfRain": "Probabilidad de lluvia",
+        "back": "Volver al resumen"
     },
     "dashboard": {
         "fetching": "Obteniendo diez modelos para {name}…",

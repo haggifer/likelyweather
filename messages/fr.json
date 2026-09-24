@@ -68,7 +68,8 @@
         "notTrackedBody": "Recherchez-la pour commencer le suivi : la prévision apparaît en quelques secondes.",
         "trackingBanner": "Le suivi de {name} a commencé le {date}. La ville rejoint désormais la collecte toutes les 6 heures.",
         "medianTotal": "Total médian",
-        "chanceOfRain": "Probabilité de pluie"
+        "chanceOfRain": "Probabilité de pluie",
+        "back": "Retour à l’aperçu"
     },
     "dashboard": {
         "fetching": "Récupération de dix modèles pour {name}…",

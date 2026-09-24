@@ -3,9 +3,12 @@
 import UpdatedChip from '@/components/city/UpdatedChip'
 import FlagIcon from '@/components/shell/FlagIcon'
 import StatusChip from '@/components/shell/StatusChip'
+import { Button } from '@/components/ui/button'
 import { formatTime, getCityName, getCountryName } from '@/lib/format'
 import { CityDetail, CityStatus } from '@/shared/api'
+import { ArrowLeft } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
+import Link from 'next/link'
 
 interface IProps {
     city: CityDetail
@@ -17,6 +20,11 @@ export default function CityHeader({ city }: IProps) {
 
     return (
         <div className="mb-(--card-gap) flex flex-col gap-3">
+            <Button asChild variant="ghost" size="sm" className="-ml-2 self-start text-muted-foreground">
+                <Link href={`/?city=${city.slug}`}>
+                    <ArrowLeft /> {t('back')}
+                </Link>
+            </Button>
             <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
                 <div className="min-w-0">
                     <h1 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight">

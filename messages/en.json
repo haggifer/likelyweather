@@ -68,7 +68,8 @@
         "notTrackedBody": "Search for it to start tracking: the forecast appears within seconds.",
         "trackingBanner": "Tracking of {name} started on {date}. It now joins the 6-hourly collection.",
         "medianTotal": "Median total",
-        "chanceOfRain": "Chance of rain"
+        "chanceOfRain": "Chance of rain",
+        "back": "Back to overview"
     },
     "dashboard": {
         "fetching": "Fetching ten models for {name}…",

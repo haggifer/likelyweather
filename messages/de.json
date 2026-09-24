@@ -68,7 +68,8 @@
         "notTrackedBody": "Suche sie, um die Verfolgung zu starten: Die Vorhersage erscheint in wenigen Sekunden.",
         "trackingBanner": "Die Verfolgung von {name} begann am {date}. Die Stadt ist jetzt Teil der Sammlung alle 6 Stunden.",
         "medianTotal": "Median-Summe",
-        "chanceOfRain": "Regenwahrscheinlichkeit"
+        "chanceOfRain": "Regenwahrscheinlichkeit",
+        "back": "Zurück zur Übersicht"
     },
     "dashboard": {
         "fetching": "Zehn Modelle für {name} werden abgerufen…",
