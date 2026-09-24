@@ -12,10 +12,7 @@
         "format": "prettier --write .",
         "seed": "tsx scripts/seed.ts",
         "collect": "tsx scripts/collect.ts",
-        "theme:export": "tsx scripts/theme-export.ts",
-        "flags": "node scripts/copy-flags.mjs",
-        "check:no-lab": "node scripts/check-no-lab.mjs",
-        "lab:dump": "tsx scripts/capture-lab-dump.ts"
+        "flags": "node scripts/copy-flags.mjs"
     },
     "dependencies": {
         "@reduxjs/toolkit": "^2.12.0",

@@ -1,15 +1,14 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { THEME_CHANGE_EVENT } from '@/theme/apply'
-import { getColorMode, setColorMode } from '@/theme/mode'
+import { COLOR_MODE_EVENT, getColorMode, setColorMode } from '@/lib/colorMode'
 import { Moon, Sun } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useSyncExternalStore } from 'react'
 
 const subscribe = (onChange: () => void) => {
-    window.addEventListener(THEME_CHANGE_EVENT, onChange)
-    return () => window.removeEventListener(THEME_CHANGE_EVENT, onChange)
+    window.addEventListener(COLOR_MODE_EVENT, onChange)
+    return () => window.removeEventListener(COLOR_MODE_EVENT, onChange)
 }
 
 export default function ThemeToggle() {

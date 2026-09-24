@@ -1,5 +1,5 @@
 import { ChartTheme, FALLBACK_CHART_THEME, readChartTheme } from '@/charts/theme'
-import { THEME_CHANGE_EVENT } from '@/theme/apply'
+import { COLOR_MODE_EVENT } from '@/lib/colorMode'
 import { useSyncExternalStore } from 'react'
 
 let snapshot: ChartTheme | null = null
@@ -10,15 +10,15 @@ const subscribe = (onChange: () => void) => {
         onChange()
     }
 
-    window.addEventListener(THEME_CHANGE_EVENT, handleChange)
-    return () => window.removeEventListener(THEME_CHANGE_EVENT, handleChange)
+    window.addEventListener(COLOR_MODE_EVENT, handleChange)
+    return () => window.removeEventListener(COLOR_MODE_EVENT, handleChange)
 }
 
 const getSnapshot = () => (snapshot ??= readChartTheme())
 
 const getServerSnapshot = () => FALLBACK_CHART_THEME
 
-// D3 and Recharts read colors from the live CSS variables and re-render on every `themechange` event.
+// D3 and Recharts read colors from the live CSS variables and re-render after every color mode switch.
 export default function useChartTheme(): ChartTheme {
     return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 }

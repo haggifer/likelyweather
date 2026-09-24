@@ -51,7 +51,7 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Base tokens = preset A, Sky (light). The Theme Lab overrides these at runtime until the design freeze. */
+/* Base tokens (light). */
 :root {
     --background: #f7f9fc;
     --foreground: #0b1b33;
@@ -127,28 +127,12 @@
     --chart-grid: #1e2a44;
 }
 
-/* density axis */
-:root,
-[data-density='comfortable'] {
+:root {
     --row-height: 36px;
     --pane-padding: 20px;
     --card-padding: 16px;
     --card-gap: 16px;
     --topbar-h: 56px;
-}
-[data-density='compact'] {
-    --row-height: 30px;
-    --pane-padding: 12px;
-    --card-padding: 12px;
-    --card-gap: 10px;
-    --topbar-h: 48px;
-}
-[data-density='spacious'] {
-    --row-height: 42px;
-    --pane-padding: 28px;
-    --card-padding: 22px;
-    --card-gap: 22px;
-    --topbar-h: 64px;
 }
 
 @layer base {
@@ -174,28 +158,21 @@
     }
 }
 
-/* surface axis: applies to every shadcn Card */
+/* every shadcn Card */
 [data-slot='card'] {
     --card-spacing: var(--card-padding);
     border-radius: var(--radius);
     border: var(--border-width) solid var(--border);
-    box-shadow: none;
-}
-[data-surface='flat'] [data-slot='card'] {
-    background: var(--secondary);
-    border-color: transparent;
-}
-[data-surface='elevated'] [data-slot='card'] {
     box-shadow:
         0 1px 2px rgb(15 23 42 / 0.06),
         0 8px 24px -12px rgb(15 23 42 / 0.18);
 }
-.dark[data-surface='elevated'] [data-slot='card'] {
+.dark [data-slot='card'] {
     box-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
 }
 
 @layer components {
-    /* status chip axis */
+    /* status chips */
     .fa-chip {
         --chip: var(--muted-foreground);
         display: inline-flex;
@@ -208,6 +185,8 @@
         font-weight: 600;
         line-height: 1.4;
         white-space: nowrap;
+        background: color-mix(in srgb, var(--chip) 14%, transparent);
+        color: color-mix(in srgb, var(--chip) 75%, var(--foreground));
     }
     .fa-chip-ok {
         --chip: var(--success);
@@ -220,33 +199,6 @@
     }
     .fa-chip-fail {
         --chip: var(--destructive);
-    }
-    [data-chips='filled'] .fa-chip {
-        background: color-mix(in srgb, var(--chip) 14%, transparent);
-        color: color-mix(in srgb, var(--chip) 75%, var(--foreground));
-    }
-    [data-chips='outline'] .fa-chip {
-        color: color-mix(in srgb, var(--chip) 75%, var(--foreground));
-        border-color: var(--chip);
-    }
-    [data-chips='dot'] .fa-chip {
-        color: var(--foreground);
-        padding-left: 2px;
-    }
-    [data-chips='dot'] .fa-chip::before {
-        content: '';
-        width: 7px;
-        height: 7px;
-        border-radius: 999px;
-        background: var(--chip);
-    }
-
-    /* Civic Editorial shows a source line under every chart */
-    .fa-sourceline {
-        display: none;
-    }
-    [data-sourceline='on'] .fa-sourceline {
-        display: block;
     }
 }
 

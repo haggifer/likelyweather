@@ -8,7 +8,6 @@ import { MODEL_BY_ID } from '@/shared/models'
 import { Variable, VARIABLE_BY_ID } from '@/shared/variables'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { setHighlightedModel, showAllModels, toggleHiddenModel, togglePinnedModel } from '@/store/dashboardSlice'
-import { LegendPlacement } from '@/theme/tokens'
 import { Eye, EyeOff, Pin } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
@@ -18,7 +17,6 @@ interface IProps {
     readoutIndex: number
     readoutLabel: string
     variable: Variable
-    placement: LegendPlacement
 }
 
 interface SwatchProps {
@@ -42,7 +40,7 @@ export const LineSwatch = ({ color, dash, width = 18 }: SwatchProps) => (
     </svg>
 )
 
-export default function ModelLegend({ series, median, readoutIndex, readoutLabel, variable, placement }: IProps) {
+export default function ModelLegend({ series, median, readoutIndex, readoutLabel, variable }: IProps) {
     const t = useTranslations('legend')
     const dispatch = useAppDispatch()
     const hidden = useAppSelector((s) => s.dashboard.hiddenModels)
@@ -57,7 +55,7 @@ export default function ModelLegend({ series, median, readoutIndex, readoutLabel
         .sort((a, b) => Number(a.isHidden) - Number(b.isHidden) || (b.value ?? -Infinity) - (a.value ?? -Infinity))
 
     return (
-        <div className={cn('flex flex-col gap-2', placement === 'under' && 'mt-2')}>
+        <div className="flex flex-col gap-2">
             <div className="flex min-h-4.5 items-center justify-between gap-2 text-xs">
                 <span className="font-medium">{readoutLabel}</span>
                 {(hidden.length > 0 || pinned.length > 0) && (
@@ -91,12 +89,7 @@ export default function ModelLegend({ series, median, readoutIndex, readoutLabel
                     <span className="text-xs font-normal text-muted-foreground">{unit}</span>
                 </span>
             </div>
-            <ul
-                className={cn(
-                    'grid gap-0.5',
-                    placement === 'under' ? 'grid-cols-[repeat(auto-fill,minmax(240px,1fr))]' : 'grid-cols-1',
-                )}
-            >
+            <ul className="grid grid-cols-1 gap-0.5">
                 {rows.map(({ modelId, value, isHidden }) => {
                     const model = MODEL_BY_ID[modelId]
                     const isPinned = pinned.includes(modelId)

@@ -12,7 +12,6 @@ import { useCity, useLatest } from '@/hooks/queries'
 import useNow from '@/hooks/useNow'
 import useUrlSync from '@/hooks/useUrlSync'
 import { formatNumber, formatPeriodLabel, formatStepLabel, formatTime, getCityName } from '@/lib/format'
-import { cn } from '@/lib/utils'
 import { LatestResponse, Series } from '@/shared/api'
 import {
     computeChanceOfRain,
@@ -115,7 +114,6 @@ export default function Dashboard({ slug }: IProps) {
     const highlighted = useAppSelector((s) => s.dashboard.highlightedModel)
     const pinned = useAppSelector((s) => s.dashboard.pinnedModels)
     const hidden = useAppSelector((s) => s.dashboard.hiddenModels)
-    const legendPlacement = useAppSelector((s) => s.layout.legendPlacement)
     const { data: city } = useCity(slug)
     const latestQuery = useLatest(slug, variable, isHydrated)
     const precipQuery = useLatest(slug, Variable.Precip, isHydrated)
@@ -292,19 +290,13 @@ export default function Dashboard({ slug }: IProps) {
                     : formatStepLabel(latest.steps[readoutIndex], timeZone, locale)
             }
             variable={variable}
-            placement={legendPlacement}
         />
     )
 
     return (
         <div className="flex flex-col gap-(--card-gap)">
             <VariableSwitch className="self-start" />
-            <div
-                className={cn(
-                    'grid gap-(--card-gap)',
-                    legendPlacement === 'side' && 'lg:grid-cols-[minmax(0,1fr)_320px]',
-                )}
-            >
+            <div className="grid gap-(--card-gap) lg:grid-cols-[minmax(0,1fr)_320px]">
                 <ChartFrame
                     title={tv(variable)}
                     summary={summary}
@@ -321,7 +313,6 @@ export default function Dashboard({ slug }: IProps) {
                             timeLabel={t('time')}
                         />
                     }
-                    footer={legendPlacement === 'under' ? legend : undefined}
                 >
                     <SpaghettiChart
                         steps={latest.steps}
@@ -342,7 +333,7 @@ export default function Dashboard({ slug }: IProps) {
                         <p className="mt-1 text-xs text-muted-foreground">{t('windArrows')}</p>
                     )}
                 </ChartFrame>
-                {legendPlacement === 'side' && <div className="rounded-(--radius) border bg-card p-3">{legend}</div>}
+                <div className="rounded-(--radius) border bg-card p-3">{legend}</div>
             </div>
             <div className="grid gap-(--card-gap) lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
                 <DisagreementTiles days={derived.disagreement} variable={variable} />

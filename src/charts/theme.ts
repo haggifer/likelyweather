@@ -1,5 +1,3 @@
-import { BandStyle, HeatmapScale, LegendPlacement } from '@/theme/tokens'
-
 export interface ChartTheme {
     foreground: string
     muted: string
@@ -12,13 +10,10 @@ export interface ChartTheme {
     warning: string
     bandOuterOpacity: number
     bandInnerOpacity: number
-    bands: BandStyle
-    heatmap: HeatmapScale
-    legend: LegendPlacement
     fontMono: string
 }
 
-// Server snapshot and first client render: preset A light, matching globals.css.
+// Server snapshot and first client render: the light tokens in globals.css.
 export const FALLBACK_CHART_THEME: ChartTheme = {
     foreground: '#0b1b33',
     muted: '#4a5a73',
@@ -31,9 +26,6 @@ export const FALLBACK_CHART_THEME: ChartTheme = {
     warning: '#b45309',
     bandOuterOpacity: 0.12,
     bandInnerOpacity: 0.22,
-    bands: 'minmax-iqr',
-    heatmap: 'blues',
-    legend: 'side',
     fontMono: 'ui-monospace, monospace',
 }
 
@@ -55,9 +47,6 @@ export const readChartTheme = (): ChartTheme => {
         warning: read('--warning', FALLBACK_CHART_THEME.warning),
         bandOuterOpacity: readNumber('--band-outer-opacity', FALLBACK_CHART_THEME.bandOuterOpacity),
         bandInnerOpacity: readNumber('--band-inner-opacity', FALLBACK_CHART_THEME.bandInnerOpacity),
-        bands: (el.dataset.bands as BandStyle) ?? FALLBACK_CHART_THEME.bands,
-        heatmap: (el.dataset.heatmap as HeatmapScale) ?? FALLBACK_CHART_THEME.heatmap,
-        legend: (el.dataset.legend as LegendPlacement) ?? FALLBACK_CHART_THEME.legend,
         fontMono: read('--font-mono', FALLBACK_CHART_THEME.fontMono),
     }
 }

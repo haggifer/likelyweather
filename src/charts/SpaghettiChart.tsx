@@ -107,8 +107,6 @@ export default function SpaghettiChart({
     const yTicks = getYTicks(domain, variable, compact ? 3 : 5)
     const isDimmed = (id: ModelId) => emphasized.length > 0 && !emphasized.includes(id)
     const isBars = variable === Variable.Precip
-    const showOuter = !isBars && theme.bands === 'minmax-iqr'
-    const showInner = !isBars && theme.bands !== 'none'
     const stepMs = times.length > 1 ? times[1].getTime() - times[0].getTime() : 3 * HOUR_MS
     const barWidth = Math.max(2, (x(new Date(times[0].getTime() + stepMs)) - x(times[0])) * BAR_RATIO)
     const tickWidth = Math.min(barWidth, MAX_TICK_WIDTH)
@@ -230,8 +228,8 @@ export default function SpaghettiChart({
                         {info.unit}
                     </text>
                 )}
-                {showOuter && <path d={geometry.outerBand} fill={theme.band} opacity={theme.bandOuterOpacity} />}
-                {showInner && <path d={geometry.innerBand} fill={theme.band} opacity={theme.bandInnerOpacity} />}
+                {!isBars && <path d={geometry.outerBand} fill={theme.band} opacity={theme.bandOuterOpacity} />}
+                {!isBars && <path d={geometry.innerBand} fill={theme.band} opacity={theme.bandInnerOpacity} />}
                 {hoverSpan && (
                     <rect
                         x={spanLeft}

@@ -22,15 +22,13 @@ pnpm test                    # Vitest
 pnpm format                  # Prettier with organize-imports
 pnpm collect [--cities a,b] [--loop]
 pnpm seed [--force]
-pnpm lab:dump [--city slug]  # re-capture the Theme Lab gallery dump after API shape changes
-NEXT_PUBLIC_THEME_LAB=0 pnpm build && pnpm check:no-lab
+pnpm build
 ```
 
 ## Rules that must not break
 
-- **UI kit.** Tailwind v4 and shadcn/ui only; no other component library. Colors, fonts and radii come from token-backed utilities (`src/app/globals.css`), never literals in components. Density, surface and chip variants are data attributes in `globals.css`.
-- **Model palette.** `src/shared/models.ts` fixes one color per model; presets never reassign it. ECMWF AIFS and met.no keep their dash patterns as a second encoding.
-- **Theme Lab stays out of production.** `src/theme` and `/theme-lab` load only behind the inlined literal `process.env.NEXT_PUBLIC_THEME_LAB === '1'`. The gallery never fetches: it renders `src/fixtures/lab-dump.json` through prop-driven components.
+- **UI kit.** Tailwind v4 and shadcn/ui only; no other component library. Colors, fonts and radii come from token-backed utilities (`src/app/globals.css`), never literals in components. Dark mode is the `.dark` class on `<html>` (`src/lib/colorMode.ts`); charts re-read their colors when it changes.
+- **Model palette.** `src/shared/models.ts` fixes one color per model; never reassign it. ECMWF AIFS and met.no keep their dash patterns as a second encoding.
 - **API contract.** The zod schemas in `src/shared/api.ts` are the contract; change them first. The server returns stored data; the client derives medians, slots, labels and formatting with `src/shared`.
 - **Upstream calls.** The browser never calls Open-Meteo or met.no. The API proxies geocoding and performs preview fetches, and only calls upstream when a newer 6-hour run exists.
 - **Time.** Timestamps are UTC in storage and the API, and displayed in the city's local time.
@@ -53,7 +51,6 @@ NEXT_PUBLIC_THEME_LAB=0 pnpm build && pnpm check:no-lab
 ## Gotchas
 
 - Next.js 16: route `params` is a Promise, and the `PageProps`/`RouteContext` types come from `next typegen` (run by `pnpm typecheck`).
-- `NEXT_PUBLIC_*` values are inlined at build time; the Theme Lab flag must be `0` for a production build.
 - `METNO_USER_AGENT` must name a real contact; met.no throttles or blocks anonymous clients.
 - After renaming message keys, the dev server can hot-reload a component before its catalog and log `MISSING_MESSAGE`; a full reload clears it.
 - Recharts' `ResponsiveContainer` renders nothing while its container has zero width, for example in a hidden tab.

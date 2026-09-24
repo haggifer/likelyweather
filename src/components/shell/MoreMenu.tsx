@@ -1,18 +1,10 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { BookOpen, Building2, Columns3, FlaskConical, History, Menu } from 'lucide-react'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { BookOpen, Building2, Columns3, History, Menu } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
-
-const IS_LAB_ENABLED = process.env.NEXT_PUBLIC_THEME_LAB === '1'
 
 export default function MoreMenu() {
     const t = useTranslations('nav')
@@ -45,16 +37,6 @@ export default function MoreMenu() {
                         <BookOpen /> {t('methodology')}
                     </Link>
                 </DropdownMenuItem>
-                {IS_LAB_ENABLED && (
-                    <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
-                            <Link href="/theme-lab">
-                                <FlaskConical /> {t('themeLab')}
-                            </Link>
-                        </DropdownMenuItem>
-                    </>
-                )}
             </DropdownMenuContent>
         </DropdownMenu>
     )

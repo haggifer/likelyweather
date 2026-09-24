@@ -63,7 +63,7 @@ The model palette is fixed and never reassigned. Running the dataviz validator o
 
 `next-intl` runs without i18n routing: the language switch sets `NEXT_LOCALE` and refreshes. City names come from the geocoder in both languages (`nameLocal.uk`). Moving to locale-prefixed URLs needs a `[locale]` segment and the next-intl proxy.
 
-## P11. Theme Lab never ships
+## P11. Theme Lab never ships (removed, see P25)
 
 `Providers.tsx` imports the lab with `next/dynamic` inside a branch on the inlined literal `process.env.NEXT_PUBLIC_THEME_LAB === '1'`; with `0` the branch is dead and no chunk is emitted. `pnpm check:no-lab` greps `.next/static` for a string that only exists in the panel; verified failing on a lab-on build and passing on a lab-off build. Candidate fonts are declared with `preload: false`, so a browser only downloads the ones a combination uses. `/theme-lab` calls `notFound()` when the flag is off.
 
@@ -93,7 +93,7 @@ Ukrainian, English, Spanish, German and French (`Locale` enum, `messages/*.json`
 
 A variable can declare a gridline step (`tickStep` in `src/shared/variables.ts`): 5 °C for temperature and 2 m/s for wind speed; the y domain snaps outward to that step (`src/charts/scales.ts`). Pressure keeps automatic ticks. Precipitation declares a ladder of steps instead (`tickSteps`: 0.5, 1, 2, 5, 10, 20, 25, 50 mm; 25 was added on 2026-09-24 so a 60–75 mm outlier gets an axis to 75 rather than 100): the domain starts at 0 and uses the smallest step that reaches the maximum in at most three segments. Both sources report 0.1 mm amounts, so 0.5 mm is the finest step that reads cleanly, and a dry forecast shows exactly two ticks, 0 and 0.5. This was decided on 2026-09-24; before, automatic ticks produced labels like 0, 0.0, 0.0, 0.1. Every time chart draws day boundaries the same way (`DayGrid`): a solid hairline at the city's local midnight, with the day label centred in the day. The precipitation panel (Recharts, categorical axis) draws the boundary before the first 6-hour total of each new local day.
 
-## P16. The Theme Lab never fetches
+## P16. The Theme Lab never fetches (removed, see P25)
 
 The gallery (`/theme-lab`) renders a static dump of real API payloads, `src/fixtures/lab-dump.json` (city, and the 6-hour and hourly `latest` payloads for all four variables), captured with `pnpm lab:dump` through the same server code the API uses, without writing to the store. Gallery components are presentational and receive data as props; the capture time is used as "now" so the charts stay stable. The gallery and the dump load only behind `NEXT_PUBLIC_THEME_LAB`, `pnpm check:no-lab` also looks for them, and `outputFileTracingExcludes` keeps fixtures and `data/` out of server traces.
 
@@ -170,6 +170,8 @@ Asked by the author. A precipitation bar is a total over a span, so hovering it 
 
 Decided by the author. The chart card's title is the variable name alone ("Temperature"); the model count and the "Run 24 Sept, 12:00 UTC · on-demand preview" line are gone. The run time is already in the Updated chip on the city line, the model count in the legend, and preview status in its own chip. The legend's header row keeps the height of its "Show all" button, so the button no longer shifts the list when it appears.
 
-## Open: the design decision
+## P25. The design is frozen and the Theme Lab is removed (2026-09-24)
 
-Not made yet. Base tokens are preset A (Sky). To decide: run `pnpm dev`, open the Lab (Ctrl/Cmd+Shift+T) on `/theme-lab`, a live city dashboard and the landing overview, star favourites, then `Copy CSS` into `globals.css` and record the choice and the runners-up with screenshots here.
+Decided by the author: the current design stays. That is preset A (Sky) in light and dark, comfortable density, elevated cards, filled status chips, Inter with JetBrains Mono, and the legend beside the dashboard chart. `globals.css` now states these directly instead of switching them on `<html>` data attributes, and the eight candidate fonts are gone from the layout.
+
+Removed: `src/theme` (tokens, presets, the lab panel and provider), `/theme-lab` and its gallery, `src/fixtures/lab-dump.json`, `pnpm theme:export`, `pnpm lab:dump`, `pnpm check:no-lab`, `NEXT_PUBLIC_THEME_LAB`, the Redux `layout` slice (legend placement and the lab's open state), and the hidden source line under charts. The color-mode helpers moved to `src/lib/colorMode.ts`. The lab is in the history (last present at `47b6bc5`) if a redesign needs it.

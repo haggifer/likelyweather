@@ -1,16 +1,17 @@
-import { THEME_CHANGE_EVENT } from '@/theme/apply'
-import { Mode } from '@/theme/tokens'
+export type ColorMode = 'light' | 'dark'
 
-export const MODE_STORAGE_KEY = 'fa.mode'
+const MODE_STORAGE_KEY = 'fa.mode'
+
+// Charts read their colors from CSS variables, so they listen for this to re-read them after a mode switch.
 export const COLOR_MODE_EVENT = 'colormodechange'
 
 // Runs in <head> before paint: explicit choice first, system preference otherwise.
 export const MODE_RESTORE = `(function(){try{var m=localStorage.getItem(${JSON.stringify(MODE_STORAGE_KEY)});var d=m?m==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.toggle('dark',d)}catch(e){}})();`
 
-export const getColorMode = (): Mode =>
+export const getColorMode = (): ColorMode =>
     typeof document !== 'undefined' && document.documentElement.classList.contains('dark') ? 'dark' : 'light'
 
-export const setColorMode = (mode: Mode) => {
+export const setColorMode = (mode: ColorMode) => {
     try {
         localStorage.setItem(MODE_STORAGE_KEY, mode)
     } catch {
@@ -18,6 +19,5 @@ export const setColorMode = (mode: Mode) => {
     }
 
     document.documentElement.classList.toggle('dark', mode === 'dark')
-    window.dispatchEvent(new CustomEvent<Mode>(COLOR_MODE_EVENT, { detail: mode }))
-    window.dispatchEvent(new CustomEvent(THEME_CHANGE_EVENT))
+    window.dispatchEvent(new CustomEvent<ColorMode>(COLOR_MODE_EVENT, { detail: mode }))
 }

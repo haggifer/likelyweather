@@ -15,8 +15,7 @@
         "cities": "Städte",
         "compare": "Vergleich",
         "runs": "Läufe",
-        "methodology": "Methodik",
-        "themeLab": "Theme-Lab-Galerie"
+        "methodology": "Methodik"
     },
     "footer": {
         "attribution": "Wetterdaten von <openMeteo>Open-Meteo.com</openMeteo> (CC BY 4.0) und <metno>MET Norway</metno>. Geokodierung von Open-Meteo.",
@@ -39,7 +38,6 @@
         "chart": "Diagramm",
         "showTable": "Daten als Tabelle anzeigen",
         "showChart": "Diagramm anzeigen",
-        "source": "Quelle: Open-Meteo (CC BY 4.0), MET Norway. Forecast Arena.",
         "now": "jetzt",
         "median": "Median",
         "compass": "N,NO,O,SO,S,SW,W,NW"

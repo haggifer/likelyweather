@@ -15,8 +15,7 @@
         "cities": "Міста",
         "compare": "Порівняння",
         "runs": "Запуски",
-        "methodology": "Методологія",
-        "themeLab": "Галерея Theme Lab"
+        "methodology": "Методологія"
     },
     "footer": {
         "attribution": "Погодні дані: <openMeteo>Open-Meteo.com</openMeteo> (CC BY 4.0) та <metno>MET Norway</metno>. Геокодування: Open-Meteo.",
@@ -39,7 +38,6 @@
         "chart": "Графік",
         "showTable": "Показати дані таблицею",
         "showChart": "Показати графік",
-        "source": "Джерело: Open-Meteo (CC BY 4.0), MET Norway. Forecast Arena.",
         "now": "зараз",
         "median": "Медіана",
         "compass": "Пн,ПнСх,Сх,ПдСх,Пд,ПдЗх,Зх,ПнЗх"

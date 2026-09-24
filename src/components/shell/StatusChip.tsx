@@ -10,7 +10,7 @@ interface IProps {
     children: ReactNode
 }
 
-// Styling follows the Theme Lab's status-chip axis (filled, outline, dot + text) via [data-chips] in globals.css.
+// Tone colors and the tinted pill come from .fa-chip in globals.css.
 export default function StatusChip({ tone, title, className, children }: IProps) {
     return (
         <span className={cn('fa-chip', tone !== 'muted' && `fa-chip-${tone}`, className)} title={title}>
