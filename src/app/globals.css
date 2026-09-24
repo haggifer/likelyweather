@@ -1,0 +1,256 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --font-sans: var(--font-sans);
+    --font-mono: var(--font-mono);
+    --font-heading: var(--font-heading);
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+    --color-chart-median: var(--chart-median);
+    --color-chart-band: var(--chart-band);
+    --color-chart-grid: var(--chart-grid);
+    --color-info: var(--info);
+    --color-warning: var(--warning);
+    --color-success: var(--success);
+    --color-code-background: var(--code-background);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* Base tokens = preset A, Sky (light). The Theme Lab overrides these at runtime until the design freeze. */
+:root {
+    --background: #f7f9fc;
+    --foreground: #0b1b33;
+    --card: #ffffff;
+    --card-foreground: #0b1b33;
+    --popover: #ffffff;
+    --popover-foreground: #0b1b33;
+    --primary: #1e5eff;
+    --primary-foreground: #ffffff;
+    --secondary: #edf2fa;
+    --secondary-foreground: #0b1b33;
+    --muted: #eef2f8;
+    --muted-foreground: #4a5a73;
+    --accent: #e3ebfb;
+    --accent-foreground: #0b1b33;
+    --destructive: #dc2626;
+    --border: #dce3ee;
+    --input: #ffffff;
+    --ring: #1e5eff;
+    --info: #1e5eff;
+    --warning: #b45309;
+    --success: #15803d;
+    --code-background: #eef2f8;
+    --chart-1: #1e5eff;
+    --chart-2: #f97316;
+    --chart-3: #10b981;
+    --chart-4: #8b5cf6;
+    --chart-5: #ec4899;
+    --chart-median: #0b1b33;
+    --chart-band: #1e5eff;
+    --chart-grid: #e6ebf3;
+    --band-outer-opacity: 0.12;
+    --band-inner-opacity: 0.22;
+
+    --font-sans: var(--font-inter), system-ui, sans-serif;
+    --font-heading: var(--font-inter), system-ui, sans-serif;
+    --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+    --text-base: 14px;
+    --radius: 10px;
+    --border-width: 1px;
+}
+
+.dark {
+    --background: #0b1220;
+    --foreground: #e8eef9;
+    --card: #121b2e;
+    --card-foreground: #e8eef9;
+    --popover: #121b2e;
+    --popover-foreground: #e8eef9;
+    --primary: #5b8cff;
+    --primary-foreground: #07122a;
+    --secondary: #1a2540;
+    --secondary-foreground: #e8eef9;
+    --muted: #1a2540;
+    --muted-foreground: #9aa8c2;
+    --accent: #1f2c4a;
+    --accent-foreground: #e8eef9;
+    --destructive: #f87171;
+    --border: #24324f;
+    --input: #121b2e;
+    --ring: #5b8cff;
+    --info: #7aa2ff;
+    --warning: #f59e0b;
+    --success: #4ade80;
+    --code-background: #0a1020;
+    --chart-1: #7aa2ff;
+    --chart-2: #fb923c;
+    --chart-3: #34d399;
+    --chart-4: #a78bfa;
+    --chart-5: #f472b6;
+    --chart-median: #f1f5fb;
+    --chart-band: #5b8cff;
+    --chart-grid: #1e2a44;
+}
+
+/* density axis */
+:root,
+[data-density='comfortable'] {
+    --row-height: 36px;
+    --pane-padding: 20px;
+    --card-padding: 16px;
+    --card-gap: 16px;
+    --topbar-h: 56px;
+}
+[data-density='compact'] {
+    --row-height: 30px;
+    --pane-padding: 12px;
+    --card-padding: 12px;
+    --card-gap: 10px;
+    --topbar-h: 48px;
+}
+[data-density='spacious'] {
+    --row-height: 42px;
+    --pane-padding: 28px;
+    --card-padding: 22px;
+    --card-gap: 22px;
+    --topbar-h: 64px;
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    html {
+        @apply font-sans;
+    }
+    body {
+        @apply bg-background text-foreground;
+        font-size: var(--text-base);
+        font-variant-numeric: tabular-nums;
+    }
+    h1,
+    h2,
+    h3 {
+        font-family: var(--font-heading);
+    }
+    button:not(:disabled),
+    [role='button']:not(:disabled) {
+        cursor: pointer;
+    }
+}
+
+/* surface axis: applies to every shadcn Card */
+[data-slot='card'] {
+    --card-spacing: var(--card-padding);
+    border-radius: var(--radius);
+    border: var(--border-width) solid var(--border);
+    box-shadow: none;
+}
+[data-surface='flat'] [data-slot='card'] {
+    background: var(--secondary);
+    border-color: transparent;
+}
+[data-surface='elevated'] [data-slot='card'] {
+    box-shadow:
+        0 1px 2px rgb(15 23 42 / 0.06),
+        0 8px 24px -12px rgb(15 23 42 / 0.18);
+}
+.dark[data-surface='elevated'] [data-slot='card'] {
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+}
+
+@layer components {
+    /* status chip axis */
+    .fa-chip {
+        --chip: var(--muted-foreground);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: var(--border-width) solid transparent;
+        border-radius: 999px;
+        padding: 1px 9px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1.4;
+        white-space: nowrap;
+    }
+    .fa-chip-ok {
+        --chip: var(--success);
+    }
+    .fa-chip-info {
+        --chip: var(--info);
+    }
+    .fa-chip-warn {
+        --chip: var(--warning);
+    }
+    .fa-chip-fail {
+        --chip: var(--destructive);
+    }
+    [data-chips='filled'] .fa-chip {
+        background: color-mix(in srgb, var(--chip) 14%, transparent);
+        color: color-mix(in srgb, var(--chip) 75%, var(--foreground));
+    }
+    [data-chips='outline'] .fa-chip {
+        color: color-mix(in srgb, var(--chip) 75%, var(--foreground));
+        border-color: var(--chip);
+    }
+    [data-chips='dot'] .fa-chip {
+        color: var(--foreground);
+        padding-left: 2px;
+    }
+    [data-chips='dot'] .fa-chip::before {
+        content: '';
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: var(--chip);
+    }
+
+    /* Civic Editorial shows a source line under every chart */
+    .fa-sourceline {
+        display: none;
+    }
+    [data-sourceline='on'] .fa-sourceline {
+        display: block;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+        animation-duration: 0ms !important;
+        transition-duration: 0ms !important;
+    }
+}
