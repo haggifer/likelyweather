@@ -56,7 +56,9 @@ const PANEL_RADIUS = 4
 const HOVER_LABEL_HALF_WIDTH = 34
 const BAR_RATIO = 0.62
 const SUMMARY_HOURS = 24
-const GRID = 'grid grid-cols-[minmax(8rem,12rem)_minmax(0,1fr)] gap-x-4'
+const GRID = 'grid grid-cols-[minmax(8rem,12rem)_minmax(0,1fr)]'
+const COLUMN_GAP = 16
+const SKELETON_GAP = 24
 
 const LAYOUT: RowLayout[] = ROWS.reduce<RowLayout[]>((rows, row) => {
     const top = rows.length ? rows[rows.length - 1].top + rows[rows.length - 1].height + ROW_GAP : HOVER_STRIP
@@ -81,10 +83,11 @@ const getSummaryValues = (s: MedianSeries, from: Date) => {
     })
 }
 
-// The chart column's blocks are inset by the tick-label margin, so they cover exactly the panel backgrounds.
+// The chart column's blocks are inset by the tick-label margin, so they cover exactly the panel backgrounds; the
+// readout blocks reach across the tick labels to leave a SKELETON_GAP between the two columns.
 export const MedianOverviewSkeleton = () => (
-    <div className={GRID} role="presentation">
-        {[{ left: 0, right: 0 }, MARGIN].map((inset, column) => (
+    <div className={GRID} style={{ columnGap: COLUMN_GAP }} role="presentation">
+        {[{ left: 0, right: SKELETON_GAP - COLUMN_GAP - MARGIN.left }, MARGIN].map((inset, column) => (
             <div
                 key={column}
                 className="flex flex-col"
@@ -141,7 +144,7 @@ export default function MedianOverview({ series, directions, timeZone, locale, n
     }
 
     return (
-        <div className={GRID}>
+        <div className={GRID} style={{ columnGap: COLUMN_GAP }}>
             <div
                 className="flex flex-col"
                 style={{ gap: ROW_GAP, paddingTop: HOVER_STRIP, paddingBottom: AXIS_HEIGHT }}
