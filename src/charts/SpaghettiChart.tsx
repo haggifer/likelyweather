@@ -2,7 +2,13 @@
 
 import DayGrid from '@/charts/DayGrid'
 import { getYDomain, getYTicks } from '@/charts/scales'
-import { buildSpaghettiGeometry, getNearestIndex, Margin } from '@/charts/spaghettiGeometry'
+import {
+    buildSpaghettiGeometry,
+    getNearestIndex,
+    getSumBarCenter,
+    Margin,
+    SumAlignment,
+} from '@/charts/spaghettiGeometry'
 import useAnimatedDomain from '@/charts/useAnimatedDomain'
 import useChartTheme from '@/charts/useChartTheme'
 import useElementWidth from '@/charts/useElementWidth'
@@ -10,6 +16,7 @@ import WindArrows from '@/charts/WindArrows'
 import useNow from '@/hooks/useNow'
 import { formatNumber, formatStepLabel } from '@/lib/format'
 import { Series } from '@/shared/api'
+import { HOUR_MS } from '@/shared/constants'
 import { EnsembleStats } from '@/shared/ensemble'
 import { MODEL_BY_ID, ModelId } from '@/shared/models'
 import { Variable, VARIABLE_BY_ID } from '@/shared/variables'
@@ -32,13 +39,18 @@ interface IProps {
     compact?: boolean
     showTooltip?: boolean
     yDomain?: [number, number]
-    now?: Date
+    now?: Date | null
+    sumAlignment?: SumAlignment
 }
 
 const ARROW_ROW = 26
+const BAR_RATIO = 0.62
+const MAX_TICK_WIDTH = 16
+const HOVER_LABEL_HALF_WIDTH = 34
+const UNIT_LABEL_WIDTH = 28
 
 const getMargin = (compact: boolean, hasArrows: boolean): Margin => ({
-    top: 14,
+    top: compact ? 14 : 24,
     right: 12,
     bottom: (compact ? 22 : 30) + (hasArrows ? ARROW_ROW : 0),
     left: compact ? 34 : 44,
@@ -61,11 +73,12 @@ export default function SpaghettiChart({
     showTooltip = false,
     yDomain,
     now: nowProp,
+    sumAlignment = 'end',
 }: IProps) {
     const t = useTranslations('chart')
     const theme = useChartTheme()
     const liveNow = useNow()
-    const now = nowProp ?? liveNow
+    const now = nowProp === undefined ? liveNow : nowProp
     const { ref, width } = useElementWidth<HTMLDivElement>()
     const info = VARIABLE_BY_ID[variable]
     const hasArrows = Boolean(directions)
@@ -90,8 +103,19 @@ export default function SpaghettiChart({
     const nowX = now ? Math.max(margin.left, Math.min(width - margin.right, x(now))) : null
     const yTicks = getYTicks(domain, variable, compact ? 3 : 5)
     const isDimmed = (id: ModelId) => emphasized.length > 0 && !emphasized.includes(id)
-    const showOuter = theme.bands === 'minmax-iqr'
-    const showInner = theme.bands !== 'none'
+    const isBars = variable === Variable.Precip
+    const showOuter = !isBars && theme.bands === 'minmax-iqr'
+    const showInner = !isBars && theme.bands !== 'none'
+    const stepMs = times.length > 1 ? times[1].getTime() - times[0].getTime() : 3 * HOUR_MS
+    const barWidth = Math.max(2, (x(new Date(times[0].getTime() + stepMs)) - x(times[0])) * BAR_RATIO)
+    const tickWidth = Math.min(barWidth, MAX_TICK_WIDTH)
+    const bars = isBars
+        ? times
+              .map((time, i) => ({ i, center: x(getSumBarCenter(time, stepMs, sumAlignment)) }))
+              .filter(
+                  ({ center }) => center - barWidth / 2 >= margin.left && center + barWidth / 2 <= width - margin.right,
+              )
+        : []
 
     const handlePointerMove = (e: PointerEvent<SVGRectElement>) => {
         const box = e.currentTarget.getBoundingClientRect()
@@ -108,6 +132,13 @@ export default function SpaghettiChart({
 
     const hover = hoverIndex !== null && times[hoverIndex] ? hoverIndex : null
     const hoverX = hover !== null ? x(times[hover]) : null
+    const hoverLabelX =
+        hoverX === null
+            ? null
+            : Math.max(
+                  margin.left + UNIT_LABEL_WIDTH + HOVER_LABEL_HALF_WIDTH,
+                  Math.min(width - margin.right - HOVER_LABEL_HALF_WIDTH, hoverX),
+              )
     const tooltipRows =
         hover !== null
             ? series
@@ -173,25 +204,66 @@ export default function SpaghettiChart({
                     fontSize={compact ? 10 : 11}
                 />
                 {!compact && (
-                    <text x={margin.left} y={margin.top - 4} fontSize={10} fill={theme.muted}>
+                    <text x={margin.left} y={margin.top - 8} fontSize={10} fill={theme.muted}>
                         {info.unit}
                     </text>
                 )}
                 {showOuter && <path d={geometry.outerBand} fill={theme.band} opacity={theme.bandOuterOpacity} />}
                 {showInner && <path d={geometry.innerBand} fill={theme.band} opacity={theme.bandInnerOpacity} />}
-                {geometry.lines.map(({ modelId, d }) => (
-                    <path
-                        key={modelId}
-                        d={d}
-                        fill="none"
-                        stroke={MODEL_BY_ID[modelId].color}
-                        strokeWidth={emphasized.includes(modelId) ? 2.5 : 1.5}
-                        strokeDasharray={MODEL_BY_ID[modelId].dash}
-                        strokeLinecap="round"
-                        opacity={isDimmed(modelId) ? 0.15 : 0.9}
-                    />
-                ))}
-                <path d={geometry.median} fill="none" stroke={theme.median} strokeWidth={3} strokeLinecap="round" />
+                {bars.map(({ i, center }) => {
+                    const median = stats.median[i]
+
+                    return (
+                        <g key={times[i].toISOString()}>
+                            {median !== null && (
+                                <rect
+                                    x={center - barWidth / 2}
+                                    y={y(median)}
+                                    width={barWidth}
+                                    height={Math.max(0, plotBottom - y(median))}
+                                    rx={2}
+                                    fill={theme.band}
+                                    opacity={hover === i ? 0.95 : 0.6}
+                                />
+                            )}
+                            {series.map((s) => {
+                                const v = s.values[i]
+
+                                if (v === null) return null
+
+                                return (
+                                    <line
+                                        key={s.modelId}
+                                        x1={center - tickWidth / 2}
+                                        x2={center + tickWidth / 2}
+                                        y1={y(v)}
+                                        y2={y(v)}
+                                        stroke={MODEL_BY_ID[s.modelId].color}
+                                        strokeWidth={emphasized.includes(s.modelId) ? 3 : 2}
+                                        strokeLinecap="round"
+                                        opacity={isDimmed(s.modelId) ? 0.15 : 0.9}
+                                    />
+                                )
+                            })}
+                        </g>
+                    )
+                })}
+                {!isBars &&
+                    geometry.lines.map(({ modelId, d }) => (
+                        <path
+                            key={modelId}
+                            d={d}
+                            fill="none"
+                            stroke={MODEL_BY_ID[modelId].color}
+                            strokeWidth={emphasized.includes(modelId) ? 2.5 : 1.5}
+                            strokeDasharray={MODEL_BY_ID[modelId].dash}
+                            strokeLinecap="round"
+                            opacity={isDimmed(modelId) ? 0.15 : 0.9}
+                        />
+                    ))}
+                {!isBars && (
+                    <path d={geometry.median} fill="none" stroke={theme.median} strokeWidth={3} strokeLinecap="round" />
+                )}
                 {nowX !== null && (
                     <g>
                         <line
@@ -221,24 +293,37 @@ export default function SpaghettiChart({
                 {hover !== null && hoverX !== null && (
                     <g pointerEvents="none">
                         <line x1={hoverX} x2={hoverX} y1={margin.top} y2={plotBottom} stroke={theme.muted} />
-                        {series.map((s) => {
-                            const v = s.values[hover]
+                        {!compact && hoverLabelX !== null && (
+                            <text
+                                x={hoverLabelX}
+                                y={margin.top - 8}
+                                textAnchor="middle"
+                                fontSize={11}
+                                fontWeight={600}
+                                fill={theme.foreground}
+                            >
+                                {formatStepLabel(steps[hover], timeZone, locale)}
+                            </text>
+                        )}
+                        {!isBars &&
+                            series.map((s) => {
+                                const v = s.values[hover]
 
-                            if (v === null || isDimmed(s.modelId)) return null
+                                if (v === null || isDimmed(s.modelId)) return null
 
-                            return (
-                                <circle
-                                    key={s.modelId}
-                                    cx={hoverX}
-                                    cy={y(v)}
-                                    r={3.5}
-                                    fill={MODEL_BY_ID[s.modelId].color}
-                                    stroke={theme.card}
-                                    strokeWidth={2}
-                                />
-                            )
-                        })}
-                        {stats.median[hover] !== null && (
+                                return (
+                                    <circle
+                                        key={s.modelId}
+                                        cx={hoverX}
+                                        cy={y(v)}
+                                        r={3.5}
+                                        fill={MODEL_BY_ID[s.modelId].color}
+                                        stroke={theme.card}
+                                        strokeWidth={2}
+                                    />
+                                )
+                            })}
+                        {!isBars && stats.median[hover] !== null && (
                             <circle
                                 cx={hoverX}
                                 cy={y(stats.median[hover]!)}

@@ -14,7 +14,7 @@ import useNow from '@/hooks/useNow'
 import useUrlSync from '@/hooks/useUrlSync'
 import { formatNumber, formatStepLabel, formatTime, formatUtc, getCityName } from '@/lib/format'
 import { cn } from '@/lib/utils'
-import { Series } from '@/shared/api'
+import { LatestResponse, Series } from '@/shared/api'
 import {
     computeChanceOfRain,
     computeDisagreement,
@@ -23,7 +23,10 @@ import {
     EnsembleStats,
 } from '@/shared/ensemble'
 import { MODEL_BY_ID, ModelId, MODELS } from '@/shared/models'
-import { Variable, VARIABLE_BY_ID } from '@/shared/variables'
+import { indexSteps, toStepSeries } from '@/shared/resample'
+import { buildSlots, DASHBOARD_HOURS, getSlotStart, SLOT_HOURS, toSlotSeries } from '@/shared/slots'
+import { addHours, toIsoMinute } from '@/shared/time'
+import { Aggregation, Variable, VARIABLE_BY_ID } from '@/shared/variables'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { setHoverStep, toggleHiddenModel } from '@/store/dashboardSlice'
 import { Loader2 } from 'lucide-react'
@@ -44,6 +47,11 @@ interface SeriesTableProps {
     medianLabel: string
     timeLabel: string
 }
+
+const PRECIP_WINDOW_HOURS = 6
+
+const toSlotSeriesList = (response: LatestResponse, list: Series[], slots: string[], aggregation: Aggregation) =>
+    list.map((s) => ({ modelId: s.modelId, values: toSlotSeries(response.steps, s.values, slots, aggregation) }))
 
 const isTypingTarget = (target: EventTarget | null) =>
     target instanceof HTMLElement &&
@@ -105,9 +113,29 @@ export default function Dashboard({ slug }: IProps) {
     const { data: city } = useCity(slug)
     const latestQuery = useLatest(slug, variable, isHydrated)
     const precipQuery = useLatest(slug, Variable.Precip, isHydrated)
-    const latest = latestQuery.data
     const info = VARIABLE_BY_ID[variable]
     const timeZone = city?.timezone ?? 'UTC'
+    // Like the landing overview, the chart starts at the local 3-hour slot the data arrived in. The precipitation
+    // query is shared by every variable, so its arrival time anchors the chart and each refetch re-anchors it.
+    const receivedAt = precipQuery.dataUpdatedAt || latestQuery.dataUpdatedAt
+    const anchor = useMemo(
+        () => (city && receivedAt ? getSlotStart(new Date(receivedAt), city.timezone) : null),
+        [city, receivedAt],
+    )
+    const slots = useMemo(() => (anchor ? buildSlots(anchor, DASHBOARD_HOURS) : null), [anchor])
+    const latest = useMemo(() => {
+        const hourly = latestQuery.data
+
+        if (!hourly || !slots) return null
+
+        return {
+            ...hourly,
+            steps: slots,
+            series: toSlotSeriesList(hourly, hourly.series, slots, info.aggregation),
+            directions: hourly.directions ? toSlotSeriesList(hourly, hourly.directions, slots, 'instant') : undefined,
+        }
+    }, [latestQuery.data, slots, info.aggregation])
+    const chartNow = now && anchor && getSlotStart(now, timeZone) > anchor ? now : null
 
     const derived = useMemo(() => {
         if (!latest || !now) return null
@@ -115,9 +143,15 @@ export default function Dashboard({ slug }: IProps) {
         const values = latest.series.map((s) => s.values)
         const stats = computeEnsemble(values, latest.steps.length)
 
+        // A slot's precipitation covers the 3 hours after it; computeDisagreement files a sum under the day it ends.
+        const disagreementSteps =
+            variable === Variable.Precip
+                ? latest.steps.map((s) => toIsoMinute(addHours(new Date(s), SLOT_HOURS)))
+                : latest.steps
+
         return {
             stats,
-            disagreement: computeDisagreement(latest.steps, values, variable, timeZone, now),
+            disagreement: computeDisagreement(disagreementSteps, values, variable, timeZone, now),
             directions: latest.directions
                 ? computeMedianDirection(
                       latest.directions.map((d) => d.values),
@@ -130,11 +164,17 @@ export default function Dashboard({ slug }: IProps) {
     const precip = useMemo(() => {
         const data = precipQuery.data
 
-        if (!data || !now) return null
+        if (!data || !anchor) return null
 
-        const firstFuture = data.steps.findIndex((s) => new Date(s) > now)
-        const steps = data.steps.slice(firstFuture)
-        const series = data.series.map((s) => ({ ...s, values: s.values.slice(firstFuture) }))
+        // 6-hour totals from the chart start, each labelled by the hour it ends, so the labels stay on the 3-hour grid.
+        const steps = Array.from({ length: DASHBOARD_HOURS / PRECIP_WINDOW_HOURS }, (_, k) =>
+            toIsoMinute(addHours(anchor, (k + 1) * PRECIP_WINDOW_HOURS)),
+        )
+        const timeIndex = indexSteps(data.steps)
+        const series = data.series.map((s) => ({
+            modelId: s.modelId,
+            values: toStepSeries(timeIndex, s.values, steps, 'sum', PRECIP_WINDOW_HOURS),
+        }))
         const values = series.map((s) => s.values)
 
         return {
@@ -143,7 +183,7 @@ export default function Dashboard({ slug }: IProps) {
             median: computeEnsemble(values, steps.length).median,
             chance: computeChanceOfRain(values, steps.length),
         }
-    }, [precipQuery.data, now])
+    }, [precipQuery.data, anchor])
 
     useEffect(() => {
         const available = new Set(latest?.series.map((s) => s.modelId))
@@ -191,10 +231,12 @@ export default function Dashboard({ slug }: IProps) {
     const readoutIndex =
         hoverIndex >= 0
             ? hoverIndex
-            : getNearestIndex(
-                  latest.steps.map((s) => new Date(s)),
-                  now,
-              )
+            : chartNow
+              ? getNearestIndex(
+                    latest.steps.map((s) => new Date(s)),
+                    chartNow,
+                )
+              : 0
     const futureMedian = derived.stats.median
         .filter((_, i) => new Date(latest.steps[i]) > now)
         .filter((v): v is number => v !== null)
@@ -262,7 +304,8 @@ export default function Dashboard({ slug }: IProps) {
                         onHoverIndex={(i) => dispatch(setHoverStep(i === null ? null : latest.steps[i]))}
                         emphasized={emphasized}
                         directions={variable === Variable.Wind ? derived.directions : null}
-                        now={now}
+                        now={chartNow}
+                        sumAlignment="start"
                     />
                     {variable === Variable.Wind && (
                         <p className="mt-1 text-xs text-muted-foreground">{t('windArrows')}</p>

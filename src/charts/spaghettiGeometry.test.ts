@@ -1,5 +1,5 @@
 import { getYDomain, getYTicks } from '@/charts/scales'
-import { buildSpaghettiGeometry, getNearestIndex } from '@/charts/spaghettiGeometry'
+import { buildSpaghettiGeometry, getNearestIndex, getSumBarCenter } from '@/charts/spaghettiGeometry'
 import snapshot from '@/fixtures/snapshot-kharkiv.json'
 import { computeEnsemble } from '@/shared/ensemble'
 import { ModelId } from '@/shared/models'
@@ -44,6 +44,14 @@ describe('spaghetti geometry', () => {
             innerBand: geometry.innerBand,
             lines: geometry.lines,
         }).toMatchSnapshot()
+    })
+
+    it('centers a sum bar after its step when the sum starts there, before it when the sum ends there', () => {
+        const at = new Date('2026-09-24T12:00Z')
+        const threeHours = 3 * 3_600_000
+
+        expect(getSumBarCenter(at, threeHours, 'start').toISOString()).toBe('2026-09-24T13:30:00.000Z')
+        expect(getSumBarCenter(at, 2 * threeHours, 'end').toISOString()).toBe('2026-09-24T09:00:00.000Z')
     })
 
     it('snaps a time to the nearest 6-hour step', () => {

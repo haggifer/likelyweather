@@ -75,7 +75,7 @@
         "fetching": "Отримуємо десять моделей для міста {name}…",
         "fetchFailed": "Не вдалося отримати прогноз: {message}",
         "chartTitle": "{variable} · моделей: {count}",
-        "chartDescription": "Запуск {issue} UTC · {origin}. Затінено: останні 24 години аналізу.",
+        "chartDescription": "Запуск {issue} UTC · {origin}.",
         "origin": {
             "SCHEDULED": "плановий запуск",
             "PREVIEW": "перегляд на вимогу",

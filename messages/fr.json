@@ -75,7 +75,7 @@
         "fetching": "Récupération de dix modèles pour {name}…",
         "fetchFailed": "Impossible de récupérer la prévision : {message}",
         "chartTitle": "{variable} · {count} modèles",
-        "chartDescription": "Émission {issue} UTC · {origin}. Zone ombrée : les 24 dernières heures d’analyse.",
+        "chartDescription": "Émission {issue} UTC · {origin}.",
         "origin": {
             "SCHEDULED": "exécution programmée",
             "PREVIEW": "aperçu à la demande",

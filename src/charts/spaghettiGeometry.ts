@@ -77,6 +77,13 @@ export const buildSpaghettiGeometry = ({
     }
 }
 
+export type SumAlignment = 'start' | 'end'
+
+// A sum (precipitation) covers one step of time: the hours after its step on the 3-hour slots ('start'), the hours
+// before it on the 6-hour grid ('end'). Its bar is centered in that span.
+export const getSumBarCenter = (time: Date, stepMs: number, alignment: SumAlignment) =>
+    new Date(time.getTime() + (alignment === 'start' ? stepMs : -stepMs) / 2)
+
 const timeBisector = bisector<Date, Date>((d) => d)
 
 export const getNearestIndex = (times: Date[], at: Date) => {
