@@ -9,9 +9,12 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/componen
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCities, useCompare } from '@/hooks/queries'
+import useNow from '@/hooks/useNow'
 import useUrlSync from '@/hooks/useUrlSync'
 import { getCityLabel, getCityName } from '@/lib/format'
 import { MAX_COMPARE_CITIES, SEED_CITY_IDS } from '@/shared/constants'
+import { buildSlots, DASHBOARD_HOURS, getSlotStart, toSlotLatest } from '@/shared/slots'
+import { VARIABLE_BY_ID } from '@/shared/variables'
 import { useAppSelector } from '@/store'
 import { Plus, X } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
@@ -28,17 +31,33 @@ export default function CompareView() {
     const variable = useAppSelector((s) => s.dashboard.variable)
     const [slugs, setSlugs] = useQueryState('cities', citiesParser)
     const { data: cities } = useCities()
-    const { data, isFetching } = useCompare(isHydrated ? slugs : [], variable)
+    const now = useNow()
+    const { data, dataUpdatedAt, isFetching } = useCompare(isHydrated ? slugs : [], variable)
     const available = (cities?.items ?? []).filter((c) => !slugs.includes(c.slug))
+    // Like the dashboard, each chart starts at its city's local 3-hour slot the data arrived in.
+    const items = useMemo(
+        () =>
+            (data?.items ?? []).map((item) => {
+                const anchor = getSlotStart(new Date(dataUpdatedAt), item.city.timezone)
+                const slots = buildSlots(anchor, DASHBOARD_HOURS)
+
+                return {
+                    ...item,
+                    anchor,
+                    latest: item.latest && toSlotLatest(item.latest, slots, VARIABLE_BY_ID[variable].aggregation),
+                }
+            }),
+        [data, dataUpdatedAt, variable],
+    )
     const sharedDomain = useMemo(
         () =>
-            data?.items.length
+            items.length
                 ? getYDomain(
-                      data.items.flatMap((i) => i.latest?.series.flatMap((s) => s.values) ?? []),
+                      items.flatMap((i) => i.latest?.series.flatMap((s) => s.values) ?? []),
                       variable,
                   )
                 : undefined,
-        [data, variable],
+        [items, variable],
     )
 
     const handleAdd = (slug: string) => void setSlugs([...slugs, slug].slice(0, MAX_COMPARE_CITIES))
@@ -85,7 +104,7 @@ export default function CompareView() {
             {!slugs.length && <p className="py-10 text-center text-sm text-muted-foreground">{t('empty')}</p>}
             <div className="grid gap-(--card-gap) md:grid-cols-2">
                 {slugs.map((slug) => {
-                    const item = data?.items.find((i) => i.city.slug === slug)
+                    const item = items.find((i) => i.city.slug === slug)
 
                     return (
                         <Card key={slug} className={isFetching ? 'opacity-70 transition-opacity' : undefined}>
@@ -118,6 +137,7 @@ export default function CompareView() {
                                         latest={item.latest}
                                         variable={variable}
                                         ariaLabel={getCityName(item.city, locale)}
+                                        now={now && getSlotStart(now, item.city.timezone) > item.anchor ? now : null}
                                         yDomain={sharedDomain}
                                     />
                                 ) : (

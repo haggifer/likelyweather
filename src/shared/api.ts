@@ -98,11 +98,7 @@ export const VariableQuerySchema = z.strictObject({
     variable: VariableSchema.default(Variable.Temp),
 })
 
-export type Resolution = 'step' | 'hourly'
-
-export const LatestQuerySchema = VariableQuerySchema.extend({
-    resolution: z.enum(['step', 'hourly']).default('step'),
-})
+export const LatestQuerySchema = VariableQuerySchema
 
 export const SeriesSchema = z.object({ modelId: ModelIdSchema, values: NumberList })
 export type Series = z.infer<typeof SeriesSchema>

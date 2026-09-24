@@ -1,4 +1,3 @@
-import { STEP_HOURS } from '@/shared/constants'
 import { addHours, toIsoMinute } from '@/shared/time'
 import { Aggregation } from '@/shared/variables'
 
@@ -10,13 +9,14 @@ export const indexSteps = (steps: string[]) => new Map(steps.map((s, i) => [s, i
 const round = (value: number) => Math.round(value * 100) / 100
 
 // Instant variables are sampled at the step; sums (precipitation) are the `sumHours` hourly amounts ending at the
-// step, so a 6-hour 06:00 value covers 00:00–06:00. A sum with any missing hour is null rather than an undercount.
+// step, so with `sumHours` 6 a 06:00 value covers 00:00–06:00. A sum with any missing hour is null rather than an
+// undercount.
 export const toStepSeries = (
     timeIndex: Map<string, number>,
     values: (number | null)[] | undefined,
     steps: string[],
     aggregation: Aggregation,
-    sumHours = STEP_HOURS,
+    sumHours: number,
 ) =>
     steps.map((step) => {
         if (!values) return null

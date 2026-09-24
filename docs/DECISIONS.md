@@ -43,7 +43,7 @@ Until 2026-09-24 the same API also fed a scoreboard (truth from the models' own 
 
 Converging: once the collector has stored enough runs, evolution can read the app's own runs at 6-hourly resolution and keep the Previous Runs data as a backfill (`origin = IMPORT`).
 
-## P6. Hourly fetch aggregated to the 6-hour grid
+## P6. Hourly fetch aggregated to the 6-hour grid (superseded by P26)
 
 The reference collector used `temporal_resolution=hourly_6`, where precipitation at a step is the one-hour amount (its notes flag the undercount). The prototype fetches hourly data and aggregates on the server: instant variables are sampled at 00/06/12/18 UTC and precipitation is the six hours ending at the step. met.no precipitation uses `next_6_hours` of the entry six hours earlier (or the six `next_1_hours` blocks), so met.no joins the precipitation panel on the same basis. A sum with any missing hour is null rather than an undercount.
 
@@ -175,3 +175,14 @@ Decided by the author. The chart card's title is the variable name alone ("Tempe
 Decided by the author: the current design stays. That is preset A (Sky) in light and dark, comfortable density, elevated cards, filled status chips, Inter with JetBrains Mono, and the legend beside the dashboard chart. `globals.css` now states these directly instead of switching them on `<html>` data attributes, and the eight candidate fonts are gone from the layout.
 
 Removed: `src/theme` (tokens, presets, the lab panel and provider), `/theme-lab` and its gallery, `src/fixtures/lab-dump.json`, `pnpm theme:export`, `pnpm lab:dump`, `pnpm check:no-lab`, `NEXT_PUBLIC_THEME_LAB`, the Redux `layout` slice (legend placement and the lab's open state), and the hidden source line under charts. The color-mode helpers moved to `src/lib/colorMode.ts`. The lab is in the history (last present at `47b6bc5`) if a redesign needs it.
+
+## P26. One hourly grid per run; no past hours (2026-09-24)
+
+Decided by the author: no chart uses a 6-hour grid or the past 24 hours any more, so the stored run keeps neither.
+
+- **Storage.** A snapshot is one hourly grid from 3 hours before the issue time to 108 hours after it (112 steps), replacing the 6-hour grid (24 hours back, 21 steps) and the hourly grid that started 12 hours back. Three early hours are the minimum: a chart starts at the local 3-hour slot the data arrived in, and that slot can begin up to 2 hours before the issue time. Snapshots in the old shape are refreshed once on the next view. Run row counts on `/runs` now count hourly values.
+- **API.** `GET /latest` returns that grid; the `resolution` parameter is gone (a request that still sends it gets a 400).
+- **Compare** uses the dashboard's time model: each city's chart starts at its local 3-hour slot of arrival and covers 96 hours, with a now line once a slot old. `toSlotLatest` in `src/shared/slots.ts` re-grids a payload for both.
+- **Charts** draw a precipitation bar over the 3 hours after its slot only; the alternative alignment for sums ending at a 6-hour step is gone.
+- **Where 6 hours remain.** Runs are still issued every 6 hours (00, 06, 12, 18 UTC), and the dashboard's precipitation panel still shows 6-hour totals counted from the chart start, because 3-hour bars leave no room for its hour and chance-of-rain labels.
+- **Nothing needs the past hours.** The truth, skill and evolution features that used analysis hours were removed with P17 and P20; post-MVP accuracy would score stored future hours against later observations.

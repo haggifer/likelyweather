@@ -12,23 +12,18 @@ How Forecast Arena collects forecasts and combines them in the prototype. The in
 
 A model is shown for a city only if it returned data there (`City.availableModels`). Regional models outside their domain are not warnings.
 
-## Two grids from one run
+## One hourly grid per run
 
-Every run is anchored at `issueTime = floor(now, 6 h)` (00, 06, 12, 18 UTC). The collector parses the same hourly responses onto two grids and stores both in the snapshot.
+Every run is anchored at `issueTime = floor(now, 6 h)` (00, 06, 12, 18 UTC) and stored on one hourly grid: from 3 hours before the issue time to 108 hours after it, 112 steps. The 3 early hours exist because a chart starts at the local 3-hour slot the data arrived in, which can begin up to 2 hours before the issue time; 108 hours cover a 96-hour chart starting at any later slot.
 
-**The 6-hour grid** (compare): the 24 hours before the issue time plus the 96 hours after it, 21 steps.
-
-- Temperature, wind speed, wind direction and pressure are instant values at the step.
-- Precipitation, rain and snowfall are the sum of the six hourly amounts ending at the step (a 06:00 value covers 00:00–06:00). A sum with a missing hour is null.
-- met.no instant values are read at the step; its precipitation is `next_6_hours` of the entry six hours earlier, or the six `next_1_hours` blocks.
-
-**The hourly grid** (landing overview, city dashboard): from 12 hours before the issue time to 108 hours after it, 121 steps, so a 96-hour chart starting at any later slot is covered. Precipitation is the amount of the hour ending at the step; for met.no it is `next_1_hours` of the entry one hour earlier. met.no publishes hourly entries only for about the first 60 hours, then 6-hourly ones, so its later hourly steps are mostly null.
+- Temperature, wind speed, wind direction and pressure are instant values at the hour.
+- Precipitation, rain and snowfall are the amount of the hour ending at the step. For met.no it is `next_1_hours` of the entry one hour earlier. met.no publishes hourly entries only for about the first 60 hours, then 6-hourly ones, so its later hours are null and later slots take the median of the other models.
 
 ## Local 3-hour slots
 
-The client builds the landing overview and the city dashboard from the hourly grid (`src/shared/slots.ts`):
+The client builds every chart (the landing overview, the city dashboard and compare) from the hourly grid (`src/shared/slots.ts`):
 
-- The chart starts at the local 3-hour slot the data arrived in (local 00, 03, 06…) and covers 72 hours on the overview (25 slots, 3 hours apart) and 96 hours on the dashboard (33 slots). Slots stay on whole UTC hours, so a half-hour time zone gets slots at :30 local; after a DST change inside the window the later slots sit one hour off the local marks until the next refresh.
+- The chart starts at the local 3-hour slot the data arrived in (local 00, 03, 06…) and covers 72 hours on the overview (25 slots, 3 hours apart) and 96 hours on the dashboard and compare (33 slots). Slots stay on whole UTC hours, so a half-hour time zone gets slots at :30 local; after a DST change inside the window the later slots sit one hour off the local marks until the next refresh.
 - Instant values are read at each slot. Precipitation at a slot is the amount of the 3 hours after it, so the first readout of a fresh chart is the coming 3 hours. A sum with a missing hour is null.
 - Precipitation is drawn as bars: the median total per slot, with a tick per model. Hovering selects the whole 3 hours a bar covers.
 - Each overview panel plots the median of all models per slot. The readouts show the slot under the crosshair, or the current slot, and a summary for the next 24 hours: the range for temperature, wind and pressure, and the total for precipitation.

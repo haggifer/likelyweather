@@ -29,20 +29,20 @@ const BODY: MetnoBody = {
 }
 
 describe('parseMetno', () => {
-    it('reads instant values at steps and the 6-hour amount ending at each step', () => {
-        const series = parseMetno(BODY, ['2026-09-23T12:00Z', '2026-09-23T18:00Z', '2026-09-24T00:00Z'])!
+    it('reads instant values at each hour and the amount of the hour ending there', () => {
+        const series = parseMetno(BODY, ['2026-09-23T13:00Z', '2026-09-23T14:00Z', '2026-09-23T18:00Z'])!
 
-        expect(series.temp).toEqual([15, 12, 10])
+        expect(series.temp).toEqual([14, 14, 12])
         expect(series.pressure).toEqual([1012, 1012, 1012])
-        expect(series.precip).toEqual([null, 2.4, 0])
+        expect(series.precip).toEqual([null, 0.1, 0.1])
         expect(series.pressureSfc).toEqual([null, null, null])
     })
 
-    it('reads the hourly amount ending at each step on an hourly grid', () => {
-        const series = parseMetno(BODY, ['2026-09-23T13:00Z', '2026-09-23T14:00Z', '2026-09-23T18:00Z'], 1)!
+    it('leaves hours without an hourly entry empty, even where a 6-hour amount exists', () => {
+        const series = parseMetno(BODY, ['2026-09-23T19:00Z', '2026-09-24T00:00Z'])!
 
-        expect(series.temp).toEqual([14, 14, 12])
-        expect(series.precip).toEqual([null, 0.1, 0.1])
+        expect(series.temp).toEqual([null, 10])
+        expect(series.precip).toEqual([null, null])
     })
 
     it('returns null when no step has data', () => {

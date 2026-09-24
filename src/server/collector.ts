@@ -10,7 +10,7 @@ import {
     writeSnapshot,
 } from '@/server/store'
 import { City, Run, RunOrigin, RunStatus } from '@/shared/api'
-import { FORECAST_HOURS, HOURLY_FORECAST_HOURS, HOURLY_PAST_HOURS, PAST_HOURS } from '@/shared/constants'
+import { FORECAST_HOURS, HOUR_MS, PAST_HOURS } from '@/shared/constants'
 import { MODEL_BY_ID, ModelId, MODELS, OPEN_METEO_MODELS } from '@/shared/models'
 import { addHours, buildSteps, compactIso, floorToStep, toIsoMinute } from '@/shared/time'
 import { ModelSeries } from '@/shared/variables'
@@ -39,15 +39,12 @@ export const getRunId = (origin: RunOrigin, issueTime: string, cityId?: number) 
         ? `preview-${cityId}-${compactIso(issueTime)}`
         : `${origin.toLowerCase()}-${compactIso(issueTime)}`
 
-export interface WindowGrids {
-    steps: string[]
-    hourlySteps: string[]
-}
+export const getWindowSteps = (issueTime: Date) =>
+    buildSteps(addHours(issueTime, -PAST_HOURS), addHours(issueTime, FORECAST_HOURS), 1)
 
-export const getWindowGrids = (issueTime: Date): WindowGrids => ({
-    steps: buildSteps(addHours(issueTime, -PAST_HOURS), addHours(issueTime, FORECAST_HOURS)),
-    hourlySteps: buildSteps(addHours(issueTime, -HOURLY_PAST_HOURS), addHours(issueTime, HOURLY_FORECAST_HOURS), 1),
-})
+// Snapshots stored before the 6-hour grid was dropped keep 6-hourly `steps`; they are refreshed, never reused.
+export const isHourlyGrid = (grid: SeriesGrid) =>
+    grid.steps.length > 1 && new Date(grid.steps[1]).getTime() - new Date(grid.steps[0]).getTime() === HOUR_MS
 
 const realignSeries = (series: ModelSeries, fromSteps: string[], toSteps: string[]): ModelSeries => {
     const index = new Map(fromSteps.map((s, i) => [s, i]))
@@ -71,24 +68,22 @@ type ModelsByCity = Map<number, Partial<Record<ModelId, ModelSeries>>>
 
 export interface FetchModelsResult {
     models: ModelsByCity
-    hourly: ModelsByCity
     metnoLastModified: Map<number, string>
     warnings: string[]
 }
 
-const realignGrid = (grid: SeriesGrid | undefined, toSteps: string[]) =>
-    grid?.models.metno ? realignSeries(grid.models.metno, grid.steps, toSteps) : undefined
+const realignMetno = (grid: SeriesGrid | null | undefined, toSteps: string[]) =>
+    grid?.models.metno && isHourlyGrid(grid) ? realignSeries(grid.models.metno, grid.steps, toSteps) : undefined
 
-// Fetches and parses every source for the given cities onto both grids, without touching the store. Partial
+// Fetches and parses every source for the given cities onto the hourly grid, without touching the store. Partial
 // failures never throw: they become warnings.
 export const fetchModels = async (
     cities: City[],
-    { steps, hourlySteps }: WindowGrids,
+    steps: string[],
     { previous = new Map(), archive = async () => {}, log = () => {} }: FetchModelsOptions = {},
 ): Promise<FetchModelsResult> => {
     const warnings: string[] = []
     const models: ModelsByCity = new Map(cities.map((c) => [c.id, {}]))
-    const hourly: ModelsByCity = new Map(cities.map((c) => [c.id, {}]))
     const metnoLastModified = new Map<number, string>()
     const batches = chunk(cities, OPEN_METEO_BATCH_SIZE)
 
@@ -101,7 +96,6 @@ export const fetchModels = async (
             batch.forEach((city, j) => {
                 const parsed = parseOpenMeteoModels(results[j], steps)
                 Object.assign(models.get(city.id)!, parsed)
-                Object.assign(hourly.get(city.id)!, parseOpenMeteoModels(results[j], hourlySteps, 1))
 
                 for (const model of OPEN_METEO_MODELS) {
                     if (!parsed[model] && !MODEL_BY_ID[model].regional) {
@@ -118,16 +112,15 @@ export const fetchModels = async (
         if (i > 0) await sleep(METNO_PACE_MS)
 
         const last = previous.get(city.id)
-        const lastHourly = realignGrid(last?.hourly, hourlySteps)
+        const lastMetno = realignMetno(last, steps)
 
         try {
-            const res = await fetchMetno(city.lat, city.lon, lastHourly ? last?.metnoLastModified : undefined)
+            const res = await fetchMetno(city.lat, city.lon, lastMetno ? last?.metnoLastModified : undefined)
 
             if (res.lastModified) metnoLastModified.set(city.id, res.lastModified)
 
-            if (res.status === 304 && last?.models.metno && lastHourly) {
-                models.get(city.id)!.metno = realignGrid(last, steps)
-                hourly.get(city.id)!.metno = lastHourly
+            if (res.status === 304 && lastMetno) {
+                models.get(city.id)!.metno = lastMetno
                 continue
             }
 
@@ -135,9 +128,6 @@ export const fetchModels = async (
 
             await archive(`metno-${city.id}`, res.body)
             const parsed = parseMetno(res.body, steps)
-            const parsedHourly = parseMetno(res.body, hourlySteps, 1)
-
-            if (parsedHourly) hourly.get(city.id)!.metno = parsedHourly
 
             if (parsed) models.get(city.id)!.metno = parsed
             else warnings.push(`met.no returned no usable steps for ${city.name}`)
@@ -146,7 +136,7 @@ export const fetchModels = async (
         }
     }
 
-    return { models, hourly, metnoLastModified, warnings }
+    return { models, metnoLastModified, warnings }
 }
 
 // One code path for scheduled runs, CLI runs, and on-demand previews (DECISIONS P7). FAILED only means no rows.
@@ -159,14 +149,14 @@ export const collect = async ({
     const issueTime = toIsoMinute(floorToStep(now))
     const runId = getRunId(origin, issueTime, origin === 'PREVIEW' ? cities[0]?.id : undefined)
     const startedAt = new Date().toISOString()
-    const grids = getWindowGrids(new Date(issueTime))
+    const steps = getWindowSteps(new Date(issueTime))
     const previous = new Map(await Promise.all(cities.map(async (c) => [c.id, await getLatestSnapshot(c.id)] as const)))
     const recollected = new Set(
         cities
             .filter((c) => previous.get(c.id)?.origin === 'SCHEDULED' && previous.get(c.id)?.issueTime === issueTime)
             .map((c) => c.id),
     )
-    const { models, hourly, metnoLastModified, warnings } = await fetchModels(cities, grids, {
+    const { models, metnoLastModified, warnings } = await fetchModels(cities, steps, {
         previous,
         archive: (name, body) => writeRaw(runId, name, body),
         log,
@@ -180,9 +170,8 @@ export const collect = async ({
             runId,
             origin,
             fetchedAt,
-            steps: grids.steps,
+            steps,
             models: models.get(city.id)!,
-            hourly: { steps: grids.hourlySteps, models: hourly.get(city.id)! },
             metnoLastModified: metnoLastModified.get(city.id),
         }))
         .filter((s) => Object.keys(s.models).length > 0)

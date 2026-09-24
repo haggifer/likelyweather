@@ -52,23 +52,20 @@ describe('spaghetti geometry', () => {
         }).toMatchSnapshot()
     })
 
-    it('centers a sum bar after its step when the sum starts there, before it when the sum ends there', () => {
+    it('centers a sum bar in the step after its slot', () => {
         const at = new Date('2026-09-24T12:00Z')
-        const threeHours = 3 * 3_600_000
 
-        expect(getSumBarCenter(at, threeHours, 'start').toISOString()).toBe('2026-09-24T13:30:00.000Z')
-        expect(getSumBarCenter(at, 2 * threeHours, 'end').toISOString()).toBe('2026-09-24T09:00:00.000Z')
+        expect(getSumBarCenter(at, 3 * 3_600_000).toISOString()).toBe('2026-09-24T13:30:00.000Z')
     })
 
     it('selects the sum whose span holds the pointer, not the nearest step', () => {
         const threeHours = 3 * 3_600_000
         const times = ['2026-09-26T04:00Z', '2026-09-26T07:00Z', '2026-09-26T10:00Z'].map((t) => new Date(t))
 
-        // 09:30 is nearest the 10:00 step, but it lies in the bar that starts at 07:00 ('start') or ends at 10:00 ('end').
-        expect(getSpanIndex(times, new Date('2026-09-26T09:30Z'), threeHours, 'start')).toBe(1)
-        expect(getSpanIndex(times, new Date('2026-09-26T09:30Z'), threeHours, 'end')).toBe(2)
-        expect(getSpanIndex(times, new Date('2026-09-26T07:10Z'), threeHours, 'start')).toBe(1)
-        expect(getSumSpan(times[1], threeHours, 'start').map((d) => d.toISOString())).toEqual([
+        // 09:30 is nearest the 10:00 step, but it lies in the bar that covers 07:00–10:00.
+        expect(getSpanIndex(times, new Date('2026-09-26T09:30Z'), threeHours)).toBe(1)
+        expect(getSpanIndex(times, new Date('2026-09-26T07:10Z'), threeHours)).toBe(1)
+        expect(getSumSpan(times[1], threeHours).map((d) => d.toISOString())).toEqual([
             '2026-09-26T07:00:00.000Z',
             '2026-09-26T10:00:00.000Z',
         ])

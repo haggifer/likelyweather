@@ -1,6 +1,5 @@
 import { env } from '@/server/env'
 import { fetchJson } from '@/server/sources/fetchWithRetry'
-import { STEP_HOURS } from '@/shared/constants'
 import { ModelId, OPEN_METEO_MODELS } from '@/shared/models'
 import { indexHourlyTimes, toStepSeries } from '@/shared/resample'
 import { ModelSeries, SERIES_FIELDS } from '@/shared/variables'
@@ -63,7 +62,6 @@ const getHourlyValues = (hourly: OpenMeteoLocation['hourly'], key: string, model
 export const parseOpenMeteoModels = (
     location: OpenMeteoLocation,
     steps: string[],
-    sumHours = STEP_HOURS,
     models: ModelId[] = OPEN_METEO_MODELS,
 ): Partial<Record<ModelId, ModelSeries>> => {
     const timeIndex = indexHourlyTimes(location.hourly.time)
@@ -79,7 +77,7 @@ export const parseOpenMeteoModels = (
                     getHourlyValues(location.hourly, openMeteoKey, model, single),
                     steps,
                     aggregation,
-                    sumHours,
+                    1,
                 ),
             ]),
         ) as unknown as ModelSeries

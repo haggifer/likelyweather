@@ -1,6 +1,5 @@
 import { env } from '@/server/env'
 import { fetchWithRetry } from '@/server/sources/fetchWithRetry'
-import { STEP_HOURS } from '@/shared/constants'
 import { addHours, toIsoMinute } from '@/shared/time'
 import { ModelSeries } from '@/shared/variables'
 
@@ -46,32 +45,17 @@ export const fetchMetno = async (lat: number, lon: number, ifModifiedSince?: str
 
 const round = (value: number) => Math.round(value * 100) / 100
 
-// met.no mixes hourly and 6-hourly entries. Instant values are read at the step; precipitation is the amount of the
-// `sumHours` hours ending at the step (on the 6-hour grid next_6_hours of step−6h, else the next_1_hours blocks),
-// matching Open-Meteo.
-const getPrecipEndingAt = (byTime: Map<string, MetnoEntry>, step: string, sumHours: number) => {
-    if (sumHours === STEP_HOURS) {
-        const sixHour = byTime.get(toIsoMinute(addHours(new Date(step), -STEP_HOURS)))?.data.next_6_hours?.details
-            .precipitation_amount
+// met.no mixes hourly and 6-hourly entries; only the hourly ones (about the first 60 hours) fill the hourly grid.
+// Instant values are read at the step; precipitation is the hour ending at the step, `next_1_hours` of the entry one
+// hour earlier, matching Open-Meteo.
+const getPrecipEndingAt = (byTime: Map<string, MetnoEntry>, step: string) => {
+    const amount = byTime.get(toIsoMinute(addHours(new Date(step), -1)))?.data.next_1_hours?.details
+        .precipitation_amount
 
-        if (sixHour !== undefined) return sixHour
-    }
-
-    let total = 0
-
-    for (let h = sumHours; h >= 1; h--) {
-        const amount = byTime.get(toIsoMinute(addHours(new Date(step), -h)))?.data.next_1_hours?.details
-            .precipitation_amount
-
-        if (amount === undefined) return null
-
-        total += amount
-    }
-
-    return round(total)
+    return amount === undefined ? null : round(amount)
 }
 
-export const parseMetno = (body: MetnoBody, steps: string[], sumHours = STEP_HOURS): ModelSeries | null => {
+export const parseMetno = (body: MetnoBody, steps: string[]): ModelSeries | null => {
     const byTime = new Map(body.properties.timeseries.map((e) => [toIsoMinute(new Date(e.time)), e]))
     const instant = (step: string, key: keyof MetnoDetails) => byTime.get(step)?.data.instant.details[key] ?? null
     const series: ModelSeries = {
@@ -80,7 +64,7 @@ export const parseMetno = (body: MetnoBody, steps: string[], sumHours = STEP_HOU
         windDir: steps.map((s) => instant(s, 'wind_from_direction')),
         pressure: steps.map((s) => instant(s, 'air_pressure_at_sea_level')),
         pressureSfc: steps.map(() => null),
-        precip: steps.map((s) => getPrecipEndingAt(byTime, s, sumHours)),
+        precip: steps.map((s) => getPrecipEndingAt(byTime, s)),
         rain: steps.map(() => null),
         snow: steps.map(() => null),
     }

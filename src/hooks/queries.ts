@@ -7,7 +7,6 @@ import {
     GeocodeResponse,
     LatestResponse,
     Locale,
-    Resolution,
     RunsResponse,
     TimelineResponse,
     TrackResponse,
@@ -33,16 +32,16 @@ export const useCity = (slug: string): UseQueryResult<CityDetail, Error> =>
         retry: (count, error) => count < 2 && !error.message.includes('No tracked city'),
     })
 
-const getLatestQuery = (slug: string, variable: Variable, resolution: Resolution = 'step') => ({
-    queryKey: ['latest', slug, variable, resolution],
-    queryFn: () => apiGet<LatestResponse>(`/cities/${slug}/latest`, { variable, resolution }),
+const getLatestQuery = (slug: string, variable: Variable) => ({
+    queryKey: ['latest', slug, variable],
+    queryFn: () => apiGet<LatestResponse>(`/cities/${slug}/latest`, { variable }),
 })
 
 // The hourly grid of one variable, shared with the landing overview's cache; the dashboard builds its local 3-hour
 // slots from it and re-anchors them whenever this refetches.
 export const useLatest = (slug: string, variable: Variable, enabled = true): UseQueryResult<LatestResponse, Error> =>
     useQuery({
-        ...getLatestQuery(slug, variable, 'hourly'),
+        ...getLatestQuery(slug, variable),
         enabled: Boolean(slug) && enabled,
         staleTime: 5 * MINUTE,
         refetchInterval: LATEST_REFETCH_MS,
@@ -55,7 +54,7 @@ export const useLatest = (slug: string, variable: Variable, enabled = true): Use
 export const useHourlyAll = (slug: string, enabled = true): UseQueryResult<LatestResponse, Error>[] =>
     useQueries({
         queries: VARIABLES.map((v) => ({
-            ...getLatestQuery(slug, v.id, 'hourly'),
+            ...getLatestQuery(slug, v.id),
             enabled: Boolean(slug) && enabled,
             staleTime: Infinity,
             refetchOnWindowFocus: false,

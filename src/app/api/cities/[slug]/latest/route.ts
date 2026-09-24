@@ -5,8 +5,8 @@ import { LatestQuerySchema } from '@/shared/api'
 
 export const GET = handle('read', async (req, ctx: RouteContext<'/api/cities/[slug]/latest'>) => {
     const { slug } = await ctx.params
-    const { variable, resolution } = parseQuery(req, LatestQuerySchema)
+    const { variable } = parseQuery(req, LatestQuerySchema)
     const snapshot = await ensureFreshSnapshot(await requireCity(slug))
 
-    return json(toLatestResponse(snapshot, variable, resolution))
+    return json(toLatestResponse(snapshot, variable))
 })

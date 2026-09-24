@@ -12,7 +12,7 @@ import { useCity, useLatest } from '@/hooks/queries'
 import useNow from '@/hooks/useNow'
 import useUrlSync from '@/hooks/useUrlSync'
 import { formatNumber, formatPeriodLabel, formatStepLabel, formatTime, getCityName } from '@/lib/format'
-import { LatestResponse, Series } from '@/shared/api'
+import { Series } from '@/shared/api'
 import {
     computeChanceOfRain,
     computeDisagreement,
@@ -22,9 +22,9 @@ import {
 } from '@/shared/ensemble'
 import { MODEL_BY_ID, ModelId, MODELS } from '@/shared/models'
 import { indexSteps, toStepSeries } from '@/shared/resample'
-import { buildSlots, DASHBOARD_HOURS, getSlotStart, SLOT_HOURS, toSlotSeries } from '@/shared/slots'
+import { buildSlots, DASHBOARD_HOURS, getSlotStart, SLOT_HOURS, toSlotLatest } from '@/shared/slots'
 import { addHours, toIsoMinute } from '@/shared/time'
-import { Aggregation, Variable, VARIABLE_BY_ID } from '@/shared/variables'
+import { Variable, VARIABLE_BY_ID } from '@/shared/variables'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { setHoverStep, toggleHiddenModel } from '@/store/dashboardSlice'
 import { Loader2 } from 'lucide-react'
@@ -54,9 +54,6 @@ const PrecipPanel = dynamic(() => import('@/charts/PrecipPanel'), {
     ssr: false,
     loading: () => <Skeleton className="h-[230px]" />,
 })
-
-const toSlotSeriesList = (response: LatestResponse, list: Series[], slots: string[], aggregation: Aggregation) =>
-    list.map((s) => ({ modelId: s.modelId, values: toSlotSeries(response.steps, s.values, slots, aggregation) }))
 
 const isTypingTarget = (target: EventTarget | null) =>
     target instanceof HTMLElement &&
@@ -127,18 +124,10 @@ export default function Dashboard({ slug }: IProps) {
         [city, receivedAt],
     )
     const slots = useMemo(() => (anchor ? buildSlots(anchor, DASHBOARD_HOURS) : null), [anchor])
-    const latest = useMemo(() => {
-        const hourly = latestQuery.data
-
-        if (!hourly || !slots) return null
-
-        return {
-            ...hourly,
-            steps: slots,
-            series: toSlotSeriesList(hourly, hourly.series, slots, info.aggregation),
-            directions: hourly.directions ? toSlotSeriesList(hourly, hourly.directions, slots, 'instant') : undefined,
-        }
-    }, [latestQuery.data, slots, info.aggregation])
+    const latest = useMemo(
+        () => (latestQuery.data && slots ? toSlotLatest(latestQuery.data, slots, info.aggregation) : null),
+        [latestQuery.data, slots, info.aggregation],
+    )
     const chartNow = now && anchor && getSlotStart(now, timeZone) > anchor ? now : null
 
     const derived = useMemo(() => {
@@ -327,7 +316,6 @@ export default function Dashboard({ slug }: IProps) {
                         emphasized={emphasized}
                         directions={variable === Variable.Wind ? derived.directions : null}
                         now={chartNow}
-                        sumAlignment="start"
                     />
                     {variable === Variable.Wind && (
                         <p className="mt-1 text-xs text-muted-foreground">{t('windArrows')}</p>

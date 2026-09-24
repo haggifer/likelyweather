@@ -1,3 +1,4 @@
+import { LatestResponse, Series } from '@/shared/api'
 import { indexSteps, toStepSeries } from '@/shared/resample'
 import { addHours, floorToHours, getLocalHour, toIsoMinute } from '@/shared/time'
 import { Aggregation } from '@/shared/variables'
@@ -34,3 +35,16 @@ export const toSlotSeries = (
         aggregation,
         SLOT_HOURS,
     )
+
+// A `/latest` payload re-gridded onto slots, so charts take it like any other series.
+export const toSlotLatest = (latest: LatestResponse, slots: string[], aggregation: Aggregation): LatestResponse => {
+    const toSlots = (list: Series[], listAggregation: Aggregation) =>
+        list.map((s) => ({ modelId: s.modelId, values: toSlotSeries(latest.steps, s.values, slots, listAggregation) }))
+
+    return {
+        ...latest,
+        steps: slots,
+        series: toSlots(latest.series, aggregation),
+        directions: latest.directions ? toSlots(latest.directions, 'instant') : undefined,
+    }
+}

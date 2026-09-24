@@ -9,7 +9,6 @@ import {
     getSumBarCenter,
     getSumSpan,
     Margin,
-    SumAlignment,
 } from '@/charts/spaghettiGeometry'
 import useAnimatedDomain from '@/charts/useAnimatedDomain'
 import useChartTheme from '@/charts/useChartTheme'
@@ -42,7 +41,6 @@ interface IProps {
     showTooltip?: boolean
     yDomain?: [number, number]
     now?: Date | null
-    sumAlignment?: SumAlignment
 }
 
 const ARROW_ROW = 26
@@ -76,7 +74,6 @@ export default function SpaghettiChart({
     showTooltip = false,
     yDomain,
     now: nowProp,
-    sumAlignment = 'end',
 }: IProps) {
     const t = useTranslations('chart')
     const theme = useChartTheme()
@@ -112,7 +109,7 @@ export default function SpaghettiChart({
     const tickWidth = Math.min(barWidth, MAX_TICK_WIDTH)
     const bars = isBars
         ? times
-              .map((time, i) => ({ i, center: x(getSumBarCenter(time, stepMs, sumAlignment)) }))
+              .map((time, i) => ({ i, center: x(getSumBarCenter(time, stepMs)) }))
               .filter(
                   ({ center }) => center - barWidth / 2 >= margin.left && center + barWidth / 2 <= width - margin.right,
               )
@@ -124,7 +121,7 @@ export default function SpaghettiChart({
     const handlePointerMove = (e: PointerEvent<SVGRectElement>) => {
         const box = e.currentTarget.getBoundingClientRect()
         const at = x.invert(e.clientX - box.left + margin.left)
-        const index = isBars ? getSpanIndex(times, at, stepMs, sumAlignment) : getNearestIndex(times, at)
+        const index = isBars ? getSpanIndex(times, at, stepMs) : getNearestIndex(times, at)
 
         onHoverIndex?.(Math.max(minIndex, Math.min(maxIndex, index)))
     }
@@ -139,9 +136,8 @@ export default function SpaghettiChart({
 
     const hover = hoverIndex !== null && times[hoverIndex] ? hoverIndex : null
     // A sum is hovered as the period it covers: shaded across, labelled with its start and end.
-    const hoverSpan = hover !== null && isBars ? getSumSpan(times[hover], stepMs, sumAlignment) : null
-    const hoverTime =
-        hover === null ? null : hoverSpan ? getSumBarCenter(times[hover], stepMs, sumAlignment) : times[hover]
+    const hoverSpan = hover !== null && isBars ? getSumSpan(times[hover], stepMs) : null
+    const hoverTime = hover === null ? null : hoverSpan ? getSumBarCenter(times[hover], stepMs) : times[hover]
     const hoverX = hoverTime ? x(hoverTime) : null
     const hoverLabel =
         hover === null

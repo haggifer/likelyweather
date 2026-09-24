@@ -15,15 +15,13 @@ export interface SeriesGrid {
     models: Partial<Record<ModelId, ModelSeries>>
 }
 
-// `steps`/`models` are the 6-hour grid; `hourly` holds the same run on the hourly grid (absent in snapshots stored
-// before the landing overview moved to 3-hour slots).
+// One run for one city on the hourly grid (`getWindowSteps`).
 export interface Snapshot extends SeriesGrid {
     cityId: number
     issueTime: string
     runId: string
     origin: RunOrigin
     fetchedAt: string
-    hourly?: SeriesGrid
     metnoLastModified?: string
 }
 
