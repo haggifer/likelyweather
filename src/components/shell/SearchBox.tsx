@@ -10,7 +10,7 @@ import { Command as CommandPrimitive } from 'cmdk'
 import { Loader2, Search } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { toast } from 'sonner'
 
 interface IProps {
@@ -20,6 +20,13 @@ interface IProps {
 }
 
 const MIN_QUERY = 3
+
+const subscribeToNothing = () => () => {}
+
+const getShortcutLabel = () =>
+    /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent) ? '⌘K' : 'Ctrl K'
+
+const getServerShortcutLabel = () => null
 
 const formatPopulation = (population: number | undefined, locale: string) =>
     population ? new Intl.NumberFormat(locale, { notation: 'compact' }).format(population) : null
@@ -38,6 +45,7 @@ export default function SearchBox({ enableShortcut = false, onSelectCity, classN
     const track = useTrackCity()
     const results = [...(data?.results ?? [])].sort((a, b) => (b.population ?? 0) - (a.population ?? 0))
     const isQueryReady = query.trim().length >= MIN_QUERY
+    const shortcutLabel = useSyncExternalStore(subscribeToNothing, getShortcutLabel, getServerShortcutLabel)
 
     useEffect(() => {
         if (!enableShortcut) return
@@ -93,9 +101,9 @@ export default function SearchBox({ enableShortcut = false, onSelectCity, classN
                     className="h-full min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground"
                 />
                 {track.isPending && <Loader2 className="size-4 shrink-0 animate-spin text-muted-foreground" />}
-                {enableShortcut && !track.isPending && (
+                {enableShortcut && shortcutLabel && !track.isPending && (
                     <kbd className="hidden shrink-0 rounded border bg-muted px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground sm:inline">
-                        Ctrl K
+                        {shortcutLabel}
                     </kbd>
                 )}
             </div>
