@@ -28,9 +28,6 @@ const getShortcutLabel = () =>
 
 const getServerShortcutLabel = () => null
 
-const formatPopulation = (population: number | undefined, locale: string) =>
-    population ? new Intl.NumberFormat(locale, { notation: 'compact' }).format(population) : null
-
 // Selecting a place tracks it (guide §2.3) and then hands the slug to `onSelectCity`; without a handler the
 // box navigates to the city dashboard.
 export default function SearchBox({ enableShortcut = false, onSelectCity, className }: IProps) {
@@ -134,9 +131,6 @@ export default function SearchBox({ enableShortcut = false, onSelectCity, classN
                                         <FlagIcon countryCode={place.countryCode} />
                                         <span className="truncate">
                                             {[place.name, place.admin1, place.country].filter(Boolean).join(', ')}
-                                        </span>
-                                        <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">
-                                            {formatPopulation(place.population, locale)}
                                         </span>
                                     </CommandItem>
                                 ))}
