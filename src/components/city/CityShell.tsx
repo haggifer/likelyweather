@@ -24,7 +24,7 @@ export default function CityShell({ slug, children }: IProps) {
             <div className="mx-auto flex max-w-xl flex-col items-center gap-4 py-16 text-center">
                 <h1 className="text-xl font-semibold">{t('notTracked')}</h1>
                 <p className="text-sm text-muted-foreground">{t('notTrackedBody')}</p>
-                <SearchBox variant="hero" />
+                <SearchBox />
             </div>
         )
     }

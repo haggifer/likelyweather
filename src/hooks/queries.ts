@@ -8,18 +8,21 @@ import {
     GeocodeResponse,
     LatestResponse,
     Locale,
-    ModelDetailResponse,
+    Resolution,
     RunsResponse,
-    ScoreboardResponse,
     StepsResponse,
     TimelineResponse,
     TrackResponse,
-    TruthMode,
 } from '@/shared/api'
-import { SkillWindow } from '@/shared/constants'
-import { ModelId } from '@/shared/models'
-import { Variable } from '@/shared/variables'
-import { keepPreviousData, useMutation, UseMutationResult, useQuery, UseQueryResult } from '@tanstack/react-query'
+import { Variable, VARIABLES } from '@/shared/variables'
+import {
+    keepPreviousData,
+    useMutation,
+    UseMutationResult,
+    useQueries,
+    useQuery,
+    UseQueryResult,
+} from '@tanstack/react-query'
 
 const MINUTE = 60_000
 const LATEST_REFETCH_MS = 15 * MINUTE
@@ -32,33 +35,31 @@ export const useCity = (slug: string): UseQueryResult<CityDetail, Error> =>
         retry: (count, error) => count < 2 && !error.message.includes('No tracked city'),
     })
 
+const getLatestQuery = (slug: string, variable: Variable, resolution: Resolution = 'step') => ({
+    queryKey: ['latest', slug, variable, resolution],
+    queryFn: () => apiGet<LatestResponse>(`/cities/${slug}/latest`, { variable, resolution }),
+})
+
 export const useLatest = (slug: string, variable: Variable, enabled = true): UseQueryResult<LatestResponse, Error> =>
     useQuery({
-        queryKey: ['latest', slug, variable],
-        queryFn: () => apiGet<LatestResponse>(`/cities/${slug}/latest`, { variable }),
+        ...getLatestQuery(slug, variable),
         enabled: Boolean(slug) && enabled,
         staleTime: 5 * MINUTE,
         refetchInterval: LATEST_REFETCH_MS,
         placeholderData: keepPreviousData,
     })
 
-export interface ScoreboardParams {
-    variable: Variable
-    window: SkillWindow
-    mode: TruthMode
-}
-
-export const useScoreboard = (
-    slug: string,
-    { variable, window, mode }: ScoreboardParams,
-    enabled = true,
-): UseQueryResult<ScoreboardResponse, Error> =>
-    useQuery({
-        queryKey: ['scoreboard', slug, variable, window, mode],
-        queryFn: () => apiGet<ScoreboardResponse>(`/cities/${slug}/scoreboard`, { variable, window, mode }),
-        enabled: Boolean(slug) && enabled,
-        staleTime: 30 * MINUTE,
-        placeholderData: keepPreviousData,
+// Hourly series of every variable for the landing overview. The chart is anchored to the moment the data arrived,
+// so it is never refetched in the background: only an explicit refresh re-anchors it. No placeholder data either,
+// because switching cities must never show the previous one.
+export const useHourlyAll = (slug: string, enabled = true): UseQueryResult<LatestResponse, Error>[] =>
+    useQueries({
+        queries: VARIABLES.map((v) => ({
+            ...getLatestQuery(slug, v.id, 'hourly'),
+            enabled: Boolean(slug) && enabled,
+            staleTime: Infinity,
+            refetchOnWindowFocus: false,
+        })),
     })
 
 export const useSteps = (slug: string): UseQueryResult<StepsResponse, Error> =>
@@ -90,13 +91,6 @@ export const useGeocode = (q: string, locale: Locale): UseQueryResult<GeocodeRes
         placeholderData: keepPreviousData,
     })
 
-export const usePopularCities = (limit = 6): UseQueryResult<City[], Error> =>
-    useQuery({
-        queryKey: ['popular', limit],
-        queryFn: () => apiGet<City[]>('/cities/popular', { limit }),
-        staleTime: 5 * MINUTE,
-    })
-
 export const useCities = (status?: CityStatus): UseQueryResult<{ items: City[] }, Error> =>
     useQuery({
         queryKey: ['cities', status ?? 'all'],
@@ -116,20 +110,6 @@ export const useTimeline = (days = 30): UseQueryResult<TimelineResponse, Error> 
         queryKey: ['timeline', days],
         queryFn: () => apiGet<TimelineResponse>('/runs/timeline', { days }),
         staleTime: MINUTE,
-    })
-
-export const useModelDetail = (
-    id: ModelId,
-    variable: Variable,
-    window: SkillWindow,
-    enabled = true,
-): UseQueryResult<ModelDetailResponse, Error> =>
-    useQuery({
-        queryKey: ['model', id, variable, window],
-        queryFn: () => apiGet<ModelDetailResponse>(`/models/${id}`, { variable, window }),
-        enabled,
-        staleTime: 30 * MINUTE,
-        placeholderData: keepPreviousData,
     })
 
 export const useCompare = (slugs: string[], variable: Variable): UseQueryResult<CompareResponse, Error> =>
