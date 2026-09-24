@@ -1,9 +1,9 @@
 import { dedupe } from '@/server/cache'
-import { collect, getRunId } from '@/server/collector'
+import { collect, getRunId, getWindowGrids } from '@/server/collector'
 import { env } from '@/server/env'
 import { HttpError } from '@/server/errors'
 import { getPlace } from '@/server/sources/geocoding'
-import { getCities, getCityBySlug, getLatestSnapshot, updateCities } from '@/server/store'
+import { getCities, getCityBySlug, getLatestSnapshot, Snapshot, updateCities } from '@/server/store'
 import { City, CityDetail, CityStatus, Locale, LOCALES } from '@/shared/api'
 import { slugify } from '@/shared/seeds'
 import { floorToStep, toIsoMinute } from '@/shared/time'
@@ -106,15 +106,18 @@ export const applyDormancy = (now = new Date()) =>
         })
     })
 
-// A city whose newest snapshot predates the current 6-hour grid, or has no hourly grid yet, is refreshed through
-// the collector's preview path. This stands in for the scheduler locally: views never wait more than one upstream
-// round trip.
+const hasFullHourlyGrid = (snapshot: Snapshot) =>
+    snapshot.hourly?.steps.at(-1) === getWindowGrids(new Date(snapshot.issueTime)).hourlySteps.at(-1)
+
+// A city whose newest snapshot predates the current 6-hour grid, or whose hourly grid is missing or shorter than
+// the current window, is refreshed through the collector's preview path. This stands in for the scheduler locally:
+// views never wait more than one upstream round trip.
 export const ensureFreshSnapshot = (city: City) =>
     dedupe(`refresh:${city.id}`, async () => {
         const snapshot = await getLatestSnapshot(city.id)
         const currentIssue = toIsoMinute(floorToStep(new Date()))
 
-        if (snapshot?.hourly && snapshot.issueTime >= currentIssue) return snapshot
+        if (snapshot && hasFullHourlyGrid(snapshot) && snapshot.issueTime >= currentIssue) return snapshot
 
         try {
             const { snapshots } = await collect({ origin: 'PREVIEW', cities: [city] })

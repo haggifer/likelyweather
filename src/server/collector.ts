@@ -10,7 +10,7 @@ import {
     writeSnapshot,
 } from '@/server/store'
 import { City, Run, RunOrigin, RunStatus } from '@/shared/api'
-import { FORECAST_HOURS, HOURLY_PAST_HOURS, PAST_HOURS } from '@/shared/constants'
+import { FORECAST_HOURS, HOURLY_FORECAST_HOURS, HOURLY_PAST_HOURS, PAST_HOURS } from '@/shared/constants'
 import { MODEL_BY_ID, ModelId, MODELS, OPEN_METEO_MODELS } from '@/shared/models'
 import { addHours, buildSteps, compactIso, floorToStep, toIsoMinute } from '@/shared/time'
 import { ModelSeries } from '@/shared/variables'
@@ -46,7 +46,7 @@ export interface WindowGrids {
 
 export const getWindowGrids = (issueTime: Date): WindowGrids => ({
     steps: buildSteps(addHours(issueTime, -PAST_HOURS), addHours(issueTime, FORECAST_HOURS)),
-    hourlySteps: buildSteps(addHours(issueTime, -HOURLY_PAST_HOURS), addHours(issueTime, FORECAST_HOURS), 1),
+    hourlySteps: buildSteps(addHours(issueTime, -HOURLY_PAST_HOURS), addHours(issueTime, HOURLY_FORECAST_HOURS), 1),
 })
 
 const realignSeries = (series: ModelSeries, fromSteps: string[], toSteps: string[]): ModelSeries => {

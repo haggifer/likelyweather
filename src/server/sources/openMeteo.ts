@@ -33,7 +33,7 @@ export const buildForecastUrl = (locations: LatLon[], models: ModelId[] = OPEN_M
         hourly: HOURLY_KEYS,
         models: models.join(','),
         past_days: '1',
-        forecast_days: '5',
+        forecast_days: '6',
         timezone: 'UTC',
         wind_speed_unit: 'ms',
     })

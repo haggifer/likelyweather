@@ -5,6 +5,8 @@ export const STEP_MS = STEP_HOURS * HOUR_MS
 export const PAST_HOURS = 24
 export const HOURLY_PAST_HOURS = 12
 export const FORECAST_HOURS = 96
+// The hourly grid runs longer so a 96-hour chart starting at any later local 3-hour slot is fully covered.
+export const HOURLY_FORECAST_HOURS = 108
 export const STALE_AFTER_HOURS = 9
 
 export const RAIN_THRESHOLD_MM = 0.2
