@@ -1,22 +1,29 @@
 // JSON-file stand-in for Postgres (City, CollectionRun, Forecast) and S3 (raw archive). The prototype keeps
 // the guide's table shapes so the Prisma port replaces these functions, not their callers.
 import { env } from '@/server/env'
-import { SEED_CITIES } from '@/server/seed'
+import { mergeSeeds } from '@/server/seed'
 import { City, Run, RunOrigin } from '@/shared/api'
 import { ModelId } from '@/shared/models'
 import { compactIso } from '@/shared/time'
 import { ModelSeries } from '@/shared/variables'
+import { isEqual } from 'es-toolkit'
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 
-export interface Snapshot {
+export interface SeriesGrid {
+    steps: string[]
+    models: Partial<Record<ModelId, ModelSeries>>
+}
+
+// `steps`/`models` are the 6-hour grid; `hourly` holds the same run on the hourly grid (absent in snapshots stored
+// before the landing overview moved to 3-hour slots).
+export interface Snapshot extends SeriesGrid {
     cityId: number
     issueTime: string
     runId: string
     origin: RunOrigin
     fetchedAt: string
-    steps: string[]
-    models: Partial<Record<ModelId, ModelSeries>>
+    hourly?: SeriesGrid
     metnoLastModified?: string
 }
 
@@ -81,15 +88,12 @@ const withFileLock = async <T>(file: string, run: () => Promise<T>): Promise<T> 
 export const getCities = async () => {
     const cities = await readJson<City[] | null>(FILES.cities(), null)
 
-    if (cities) return cities
+    if (cities && isEqual(mergeSeeds(cities), cities)) return cities
 
     return withFileLock(FILES.cities(), async () => {
-        const existing = await readJson<City[] | null>(FILES.cities(), null)
-
-        if (existing) return existing
-
-        await writeJsonAtomic(FILES.cities(), SEED_CITIES)
-        return SEED_CITIES
+        const merged = mergeSeeds((await readJson<City[] | null>(FILES.cities(), null)) ?? [])
+        await writeJsonAtomic(FILES.cities(), merged)
+        return merged
     })
 }
 

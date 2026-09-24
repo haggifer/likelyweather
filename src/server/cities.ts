@@ -2,10 +2,10 @@ import { dedupe } from '@/server/cache'
 import { collect, getRunId } from '@/server/collector'
 import { env } from '@/server/env'
 import { HttpError } from '@/server/errors'
-import { slugify } from '@/server/seed'
 import { getPlace } from '@/server/sources/geocoding'
 import { getCities, getCityBySlug, getLatestSnapshot, updateCities } from '@/server/store'
 import { City, CityDetail, CityStatus, Locale, LOCALES } from '@/shared/api'
+import { slugify } from '@/shared/seeds'
 import { floorToStep, toIsoMinute } from '@/shared/time'
 
 const DAY_MS = 86_400_000
@@ -29,12 +29,12 @@ export const trackCity = async (geocodeId: number) => {
     if (existing) return existing
 
     const places = await Promise.all(LOCALES.map((locale) => getPlace(geocodeId, locale)))
-    const [place] = places
+    const place = places[LOCALES.indexOf(Locale.En)]
 
     if (!place) throw new HttpError(404, 'place_not_found', `Geocoding id ${geocodeId} not found`)
 
     const nameLocal = Object.fromEntries(
-        LOCALES.map((locale, i) => [locale, places[i]?.name]).filter(([locale, name]) => locale !== 'en' && name),
+        LOCALES.map((locale, i) => [locale, places[i]?.name]).filter(([locale, name]) => locale !== Locale.En && name),
     ) as Partial<Record<Locale, string>>
     const now = new Date().toISOString()
     let created: City | undefined
@@ -106,14 +106,15 @@ export const applyDormancy = (now = new Date()) =>
         })
     })
 
-// A city whose newest snapshot predates the current 6-hour grid is refreshed through the collector's preview
-// path. This stands in for the scheduler locally: views never wait more than one upstream round trip.
+// A city whose newest snapshot predates the current 6-hour grid, or has no hourly grid yet, is refreshed through
+// the collector's preview path. This stands in for the scheduler locally: views never wait more than one upstream
+// round trip.
 export const ensureFreshSnapshot = (city: City) =>
     dedupe(`refresh:${city.id}`, async () => {
         const snapshot = await getLatestSnapshot(city.id)
         const currentIssue = toIsoMinute(floorToStep(new Date()))
 
-        if (snapshot && snapshot.issueTime >= currentIssue) return snapshot
+        if (snapshot?.hourly && snapshot.issueTime >= currentIssue) return snapshot
 
         try {
             const { snapshots } = await collect({ origin: 'PREVIEW', cities: [city] })

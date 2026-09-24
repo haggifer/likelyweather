@@ -38,6 +38,13 @@ describe('parseMetno', () => {
         expect(series.pressureSfc).toEqual([null, null, null])
     })
 
+    it('reads the hourly amount ending at each step on an hourly grid', () => {
+        const series = parseMetno(BODY, ['2026-09-23T13:00Z', '2026-09-23T14:00Z', '2026-09-23T18:00Z'], 1)!
+
+        expect(series.temp).toEqual([14, 14, 12])
+        expect(series.precip).toEqual([null, 0.1, 0.1])
+    })
+
     it('returns null when no step has data', () => {
         expect(parseMetno(BODY, ['2026-10-01T00:00Z'])).toBeNull()
     })

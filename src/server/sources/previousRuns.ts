@@ -1,9 +1,9 @@
 import { cached } from '@/server/cache'
 import { env } from '@/server/env'
-import { indexHourlyTimes, toStepSeries } from '@/server/resample'
 import { fetchJson } from '@/server/sources/fetchWithRetry'
 import { LatLon, OpenMeteoLocation } from '@/server/sources/openMeteo'
 import { ModelId, OPEN_METEO_MODELS } from '@/shared/models'
+import { indexHourlyTimes, toStepSeries } from '@/shared/resample'
 import { addHours, buildSteps, toUtcDate } from '@/shared/time'
 import { Variable, VARIABLE_BY_ID } from '@/shared/variables'
 

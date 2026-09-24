@@ -1,5 +1,5 @@
-import { getEvolutionSteps } from '@/server/analysis'
 import { requireCity } from '@/server/cities'
+import { getEvolutionSteps } from '@/server/evolution'
 import { handle, json } from '@/server/http'
 import { StepsResponse } from '@/shared/api'
 
