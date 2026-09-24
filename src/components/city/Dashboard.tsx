@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useCity, useLatest } from '@/hooks/queries'
 import useNow from '@/hooks/useNow'
 import useUrlSync from '@/hooks/useUrlSync'
-import { formatNumber, formatPeriodLabel, formatStepLabel, formatTime, formatUtc, getCityName } from '@/lib/format'
+import { formatNumber, formatPeriodLabel, formatStepLabel, formatTime, getCityName } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { LatestResponse, Series } from '@/shared/api'
 import {
@@ -306,11 +306,7 @@ export default function Dashboard({ slug }: IProps) {
                 )}
             >
                 <ChartFrame
-                    title={t('chartTitle', { variable: tv(variable), count: latest.series.length })}
-                    description={t('chartDescription', {
-                        issue: formatUtc(latest.issueTime, locale),
-                        origin: t(`origin.${latest.origin}`),
-                    })}
+                    title={tv(variable)}
                     summary={summary}
                     isFetching={latestQuery.isFetching && latestQuery.isPlaceholderData}
                     table={

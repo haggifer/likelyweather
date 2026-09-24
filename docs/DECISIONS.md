@@ -156,7 +156,7 @@ Decided by the author.
 Decided by the author.
 
 - **Landing.** The "Updated 12:00 UTC · 08:00 local" chip sits left of Refresh in the overview card header, from 1024 px (`lg`) up; at tablet width it would squeeze the city name to a few words. The skeleton has a matching block. The chip is presentational (`issueTime`, `timeZone`, `now` as props), so the Theme Lab gallery shows it from the dump.
-- **Dashboard.** The chip moved from the top bar to the right end of the city name line, followed by a Refresh button; on phones the pair wraps under the name, right-aligned. The top bar no longer carries anything city-specific.
+- **Dashboard.** The chip moved from the top bar to the right end of the city name line, followed by a Refresh button; on phones the pair wraps under the name, right-aligned. The top bar no longer carries anything city-specific. The chip is as tall as the buttons beside it (28 px), and so are the preview and status chips on that line.
 - **Dashboard Refresh is never gated.** It refetches the city's active `latest` queries, which re-anchors the chart at the current slot. Unlike the landing card, the dashboard already refetches every 15 minutes, so a button enabled only on a stale chart would almost always be disabled. The server only calls the upstream sources when a newer run exists (P19), so an ungated button costs nothing upstream.
 
 ## P23. Precipitation is hovered as a period (2026-09-24)
@@ -165,6 +165,10 @@ Asked by the author. A precipitation bar is a total over a span, so hovering it 
 
 - **Dashboard chart (D3).** The pointer selects the bar whose span it is over (`getSpanIndex`). Before, it snapped to the nearest slot time, which sits on a bar's edge, so the right half of a bar selected the next one. The hovered span is shaded across the plot instead of drawing a crosshair line. The label above the plot, the legend readout and the compare tooltip read "Sat 03:00–06:00" (`formatPeriodLabel`). Stepping with the arrow keys stays on drawn bars.
 - **Precipitation panel (Recharts).** Recharts already shades the hovered category (`Tooltip` `cursor`); its tooltip now names the 6-hour period instead of the hour it ends.
+
+## P24. The dashboard chart is titled by its variable (2026-09-24)
+
+Decided by the author. The chart card's title is the variable name alone ("Temperature"); the model count and the "Run 24 Sept, 12:00 UTC · on-demand preview" line are gone. The run time is already in the Updated chip on the city line, the model count in the legend, and preview status in its own chip. The legend's header row keeps the height of its "Show all" button, so the button no longer shifts the list when it appears.
 
 ## Open: the design decision
 

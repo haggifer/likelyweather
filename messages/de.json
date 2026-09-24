@@ -76,13 +76,6 @@
     "dashboard": {
         "fetching": "Zehn Modelle für {name} werden abgerufen…",
         "fetchFailed": "Die Vorhersage konnte nicht abgerufen werden: {message}",
-        "chartTitle": "{variable} · {count} Modelle",
-        "chartDescription": "Lauf {issue} UTC · {origin}.",
-        "origin": {
-            "SCHEDULED": "geplanter Lauf",
-            "PREVIEW": "Vorschau auf Abruf",
-            "IMPORT": "importiert"
-        },
         "summary": "Der Median ({variable}) der nächsten vier Tage reicht über {count} Modelle von {min} bis {max} {unit}. Am meisten weichen sie am {day} ab (Spanne {spread} {unit}).",
         "median": "Median",
         "time": "Zeit (Ortszeit)",

@@ -76,13 +76,6 @@
     "dashboard": {
         "fetching": "Fetching ten models for {name}…",
         "fetchFailed": "Could not fetch the forecast: {message}",
-        "chartTitle": "{variable} · {count} models",
-        "chartDescription": "Run {issue} UTC · {origin}.",
-        "origin": {
-            "SCHEDULED": "scheduled run",
-            "PREVIEW": "on-demand preview",
-            "IMPORT": "imported"
-        },
         "summary": "Median {variable} over the next four days ranges from {min} to {max} {unit} across {count} models. They disagree most on {day} (spread {spread} {unit}).",
         "median": "Median",
         "time": "Time (city)",

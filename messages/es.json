@@ -76,13 +76,6 @@
     "dashboard": {
         "fetching": "Obteniendo diez modelos para {name}…",
         "fetchFailed": "No se pudo obtener el pronóstico: {message}",
-        "chartTitle": "{variable} · {count} modelos",
-        "chartDescription": "Emisión {issue} UTC · {origin}.",
-        "origin": {
-            "SCHEDULED": "ejecución programada",
-            "PREVIEW": "vista previa bajo demanda",
-            "IMPORT": "importado"
-        },
         "summary": "La mediana ({variable}) de los próximos cuatro días va de {min} a {max} {unit} entre {count} modelos. Discrepan más el {day} (dispersión {spread} {unit}).",
         "median": "Mediana",
         "time": "Hora (ciudad)",

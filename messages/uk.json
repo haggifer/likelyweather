@@ -76,13 +76,6 @@
     "dashboard": {
         "fetching": "Отримуємо десять моделей для міста {name}…",
         "fetchFailed": "Не вдалося отримати прогноз: {message}",
-        "chartTitle": "{variable} · моделей: {count}",
-        "chartDescription": "Запуск {issue} UTC · {origin}.",
-        "origin": {
-            "SCHEDULED": "плановий запуск",
-            "PREVIEW": "перегляд на вимогу",
-            "IMPORT": "імпорт"
-        },
         "summary": "Медіана ({variable}) на наступні чотири дні коливається від {min} до {max} {unit} для {count} моделей. Найбільше вони розходяться {day} (розкид {spread} {unit}).",
         "median": "Медіана",
         "time": "Час (місцевий)",

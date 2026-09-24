@@ -76,13 +76,6 @@
     "dashboard": {
         "fetching": "Récupération de dix modèles pour {name}…",
         "fetchFailed": "Impossible de récupérer la prévision : {message}",
-        "chartTitle": "{variable} · {count} modèles",
-        "chartDescription": "Émission {issue} UTC · {origin}.",
-        "origin": {
-            "SCHEDULED": "exécution programmée",
-            "PREVIEW": "aperçu à la demande",
-            "IMPORT": "importé"
-        },
         "summary": "La médiane ({variable}) des quatre prochains jours va de {min} à {max} {unit} sur {count} modèles. Ils divergent le plus le {day} (écart {spread} {unit}).",
         "median": "Médiane",
         "time": "Heure (locale)",

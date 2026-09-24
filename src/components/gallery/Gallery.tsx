@@ -266,12 +266,7 @@ export default function Gallery() {
             </Section>
             <Section title="Spaghetti chart: live, loading, preview-only">
                 <div className="grid gap-(--card-gap) lg:grid-cols-[minmax(0,1fr)_320px]">
-                    <ChartFrame
-                        title={`Temperature · ${TEMP.series.length} models`}
-                        description={`Issue ${TEMP.issueTime}`}
-                    >
-                        {chart()}
-                    </ChartFrame>
+                    <ChartFrame title="Temperature">{chart()}</ChartFrame>
                     <div className="rounded-(--radius) border bg-card p-3">
                         <ModelLegend
                             series={TEMP.series}
