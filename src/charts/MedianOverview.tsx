@@ -7,6 +7,7 @@ import useChartTheme from '@/charts/useChartTheme'
 import useElementWidth from '@/charts/useElementWidth'
 import WindArrows from '@/charts/WindArrows'
 import { Skeleton } from '@/components/ui/skeleton'
+import useMediaQuery from '@/hooks/useMediaQuery'
 import { formatNumber, formatStepLabel } from '@/lib/format'
 import { HOUR_MS } from '@/shared/constants'
 import { SLOT_HOURS } from '@/shared/slots'
@@ -14,7 +15,7 @@ import { Variable, VARIABLE_BY_ID } from '@/shared/variables'
 import { scaleLinear, scaleUtc } from 'd3-scale'
 import { area, curveMonotoneX, line } from 'd3-shape'
 import { useTranslations } from 'next-intl'
-import { KeyboardEvent, PointerEvent, useId, useState } from 'react'
+import { CSSProperties, KeyboardEvent, PointerEvent, useId, useState } from 'react'
 
 export interface MedianSeries {
     steps: string[]
@@ -56,9 +57,14 @@ const PANEL_RADIUS = 4
 const HOVER_LABEL_HALF_WIDTH = 34
 const BAR_RATIO = 0.62
 const SUMMARY_HOURS = 24
-const GRID = 'grid grid-cols-[minmax(8rem,12rem)_minmax(0,1fr)]'
+// Phones stack the readouts in a 2 × 2 grid above a full-width chart; from `sm` they form a column beside it, one
+// per panel. The column's gap and padding match ROW_GAP, HOVER_STRIP and AXIS_HEIGHT.
+const GRID = 'grid grid-cols-1 gap-y-3 sm:grid-cols-[minmax(8rem,12rem)_minmax(0,1fr)] sm:gap-x-4'
+const READOUTS = 'grid grid-cols-2 gap-2 sm:flex sm:flex-col sm:gap-3.5 sm:pt-5 sm:pb-5.5'
+const STACKED_QUERY = '(width < 40rem)'
 const COLUMN_GAP = 16
 const SKELETON_GAP = 24
+const SKELETON_READOUT_REACH = SKELETON_GAP - COLUMN_GAP - MARGIN.left
 
 const LAYOUT: RowLayout[] = ROWS.reduce<RowLayout[]>((rows, row) => {
     const top = rows.length ? rows[rows.length - 1].top + rows[rows.length - 1].height + ROW_GAP : HOVER_STRIP
@@ -86,18 +92,21 @@ const getSummaryValues = (s: MedianSeries, from: Date) => {
 // The chart column's blocks are inset by the tick-label margin, so they cover exactly the panel backgrounds; the
 // readout blocks reach across the tick labels to leave a SKELETON_GAP between the two columns.
 export const MedianOverviewSkeleton = () => (
-    <div className={GRID} style={{ columnGap: COLUMN_GAP }} role="presentation">
-        {[{ left: 0, right: SKELETON_GAP - COLUMN_GAP - MARGIN.left }, MARGIN].map((inset, column) => (
-            <div
-                key={column}
-                className="flex flex-col"
-                style={{ gap: ROW_GAP, paddingTop: HOVER_STRIP, paddingBottom: AXIS_HEIGHT }}
-            >
-                {ROWS.map(({ variable, height }) => (
-                    <Skeleton key={variable} style={{ height, marginLeft: inset.left, marginRight: inset.right }} />
-                ))}
-            </div>
-        ))}
+    <div className={GRID} role="presentation">
+        <div className={READOUTS}>
+            {ROWS.map(({ variable, height }) => (
+                <Skeleton
+                    key={variable}
+                    className="h-18 sm:mr-(--reach) sm:h-(--row-h)"
+                    style={{ '--row-h': `${height}px`, '--reach': `${SKELETON_READOUT_REACH}px` } as CSSProperties}
+                />
+            ))}
+        </div>
+        <div className="flex flex-col" style={{ gap: ROW_GAP, paddingTop: HOVER_STRIP, paddingBottom: AXIS_HEIGHT }}>
+            {ROWS.map(({ variable, height }) => (
+                <Skeleton key={variable} style={{ height, marginLeft: MARGIN.left, marginRight: MARGIN.right }} />
+            ))}
+        </div>
     </div>
 )
 
@@ -112,6 +121,7 @@ export default function MedianOverview({ series, directions, timeZone, locale, n
     const theme = useChartTheme()
     const { ref, width } = useElementWidth<HTMLDivElement>()
     const [hoverIndex, setHoverIndex] = useState<number | null>(null)
+    const isStacked = useMediaQuery(STACKED_QUERY)
     const clipId = useId().replace(/[^\w-]/g, '')
     const axisSteps = series[Variable.Temp].steps
     const times = axisSteps.map((s) => new Date(s))
@@ -144,11 +154,8 @@ export default function MedianOverview({ series, directions, timeZone, locale, n
     }
 
     return (
-        <div className={GRID} style={{ columnGap: COLUMN_GAP }}>
-            <div
-                className="flex flex-col"
-                style={{ gap: ROW_GAP, paddingTop: HOVER_STRIP, paddingBottom: AXIS_HEIGHT }}
-            >
+        <div className={GRID}>
+            <div className={READOUTS}>
                 {LAYOUT.map(({ variable, height }) => {
                     const info = VARIABLE_BY_ID[variable]
                     const s = series[variable]
@@ -171,9 +178,13 @@ export default function MedianOverview({ series, directions, timeZone, locale, n
                           })
 
                     return (
-                        <div key={variable} className="flex flex-col justify-center border-l-2 pl-3" style={{ height }}>
+                        <div
+                            key={variable}
+                            className="flex flex-col justify-center border-l-2 pl-3 sm:h-(--row-h)"
+                            style={{ '--row-h': `${height}px` } as CSSProperties}
+                        >
                             <span className="text-xs font-medium text-muted-foreground">{tv(variable)}</span>
-                            <span className="text-2xl leading-tight font-semibold">
+                            <span className="text-xl leading-tight font-semibold sm:text-2xl">
                                 {formatNumber(value, info.decimals)}
                                 <span className="ml-1 text-sm font-normal whitespace-nowrap text-muted-foreground">
                                     {isSum ? t('perSlot', { unit: info.unit, hours: SLOT_HOURS }) : info.unit}
@@ -395,12 +406,31 @@ export default function MedianOverview({ series, directions, timeZone, locale, n
                                 pointerEvents="none"
                             />
                         ))}
+                    {isStacked &&
+                        LAYOUT.map(({ variable, top }) => (
+                            <text
+                                key={variable}
+                                x={MARGIN.left + 6}
+                                y={top + 12}
+                                fontSize={10}
+                                fontWeight={600}
+                                fill={theme.muted}
+                                stroke={theme.card}
+                                strokeWidth={3}
+                                paintOrder="stroke"
+                                pointerEvents="none"
+                            >
+                                {tv(variable)}, {VARIABLE_BY_ID[variable].unit}
+                            </text>
+                        ))}
                     <rect
                         x={MARGIN.left}
                         y={PLOT_TOP}
                         width={plotWidth}
                         height={PLOT_BOTTOM - PLOT_TOP}
                         fill="transparent"
+                        style={{ touchAction: 'pan-y' }}
+                        onPointerDown={handlePointerMove}
                         onPointerMove={handlePointerMove}
                         onPointerLeave={() => setHoverIndex(null)}
                     />

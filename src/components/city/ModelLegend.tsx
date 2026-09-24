@@ -89,7 +89,7 @@ export default function ModelLegend({ series, median, readoutIndex, readoutLabel
                     <span className="text-xs font-normal text-muted-foreground">{unit}</span>
                 </span>
             </div>
-            <ul className="grid grid-cols-1 gap-0.5">
+            <ul className="grid grid-cols-1 gap-x-3 gap-y-0.5 sm:grid-cols-2 lg:grid-cols-1">
                 {rows.map(({ modelId, value, isHidden }) => {
                     const model = MODEL_BY_ID[modelId]
                     const isPinned = pinned.includes(modelId)

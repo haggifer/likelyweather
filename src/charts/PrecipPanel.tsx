@@ -2,6 +2,7 @@
 
 import { getYDomain, getYTicks } from '@/charts/scales'
 import useChartTheme from '@/charts/useChartTheme'
+import useElementWidth from '@/charts/useElementWidth'
 import { formatNumber, formatPercent, formatPeriodLabel, formatTime } from '@/lib/format'
 import { Series } from '@/shared/api'
 import { MODEL_BY_ID, ModelId } from '@/shared/models'
@@ -55,6 +56,9 @@ interface TooltipContentProps {
     payload?: readonly { payload?: Row }[]
 }
 
+// Below this width per window the hour and chance labels touch, so every other one is shown.
+const MIN_WIDTH_PER_LABEL = 28
+
 const ModelTick = ({ cx, cy, color }: ModelTickProps) =>
     cx === undefined || cy === undefined ? null : (
         <line x1={cx - 7} x2={cx + 7} y1={cy} y2={cy} stroke={color} strokeWidth={2} strokeLinecap="round" />
@@ -72,6 +76,7 @@ export default function PrecipPanel({
 }: IProps) {
     const t = useTranslations('city')
     const theme = useChartTheme()
+    const { ref, width } = useElementWidth<HTMLDivElement>()
     const rows: Row[] = steps.map((step, i) => ({
         step,
         median: median[i],
@@ -132,56 +137,58 @@ export default function PrecipPanel({
     }
 
     return (
-        <ResponsiveContainer width="100%" height={height}>
-            <ComposedChart data={rows} margin={{ top: 8, right: 8, bottom: 16, left: 0 }}>
-                <CartesianGrid vertical={false} stroke={theme.grid} />
-                <XAxis
-                    dataKey="step"
-                    tick={TimeAndChanceTick}
-                    tickLine={false}
-                    axisLine={{ stroke: theme.border }}
-                    interval={0}
-                    height={36}
-                />
-                <YAxis
-                    width={36}
-                    domain={yDomain}
-                    ticks={yTicks}
-                    tickFormatter={(tick: number) => formatNumber(tick, Number.isInteger(tick) ? 0 : 1)}
-                    tick={{ fontSize: 10, fill: theme.muted }}
-                    tickLine={false}
-                    axisLine={false}
-                    allowDataOverflow
-                />
-                {dayStarts.map((step) => (
-                    <ReferenceLine
-                        key={step}
-                        x={step}
-                        position="start"
-                        stroke={theme.border}
-                        ifOverflow="extendDomain"
+        <div ref={ref}>
+            <ResponsiveContainer width="100%" height={height}>
+                <ComposedChart data={rows} margin={{ top: 8, right: 8, bottom: 16, left: 0 }}>
+                    <CartesianGrid vertical={false} stroke={theme.grid} />
+                    <XAxis
+                        dataKey="step"
+                        tick={TimeAndChanceTick}
+                        tickLine={false}
+                        axisLine={{ stroke: theme.border }}
+                        interval={width < MIN_WIDTH_PER_LABEL * steps.length ? 1 : 0}
+                        height={36}
                     />
-                ))}
-                <Tooltip content={renderTooltip} cursor={{ fill: theme.grid, opacity: 0.6 }} />
-                <Bar
-                    dataKey="median"
-                    fill={theme.band}
-                    fillOpacity={0.55}
-                    radius={[4, 4, 0, 0]}
-                    maxBarSize={28}
-                    isAnimationActive={false}
-                />
-                {series.map((s) => (
-                    <Scatter
-                        key={s.modelId}
-                        dataKey={s.modelId as ModelId}
+                    <YAxis
+                        width={36}
+                        domain={yDomain}
+                        ticks={yTicks}
+                        tickFormatter={(tick: number) => formatNumber(tick, Number.isInteger(tick) ? 0 : 1)}
+                        tick={{ fontSize: 10, fill: theme.muted }}
+                        tickLine={false}
+                        axisLine={false}
+                        allowDataOverflow
+                    />
+                    {dayStarts.map((step) => (
+                        <ReferenceLine
+                            key={step}
+                            x={step}
+                            position="start"
+                            stroke={theme.border}
+                            ifOverflow="extendDomain"
+                        />
+                    ))}
+                    <Tooltip content={renderTooltip} cursor={{ fill: theme.grid, opacity: 0.6 }} />
+                    <Bar
+                        dataKey="median"
+                        fill={theme.band}
+                        fillOpacity={0.55}
+                        radius={[4, 4, 0, 0]}
+                        maxBarSize={28}
                         isAnimationActive={false}
-                        shape={(props: { cx?: number; cy?: number }) => (
-                            <ModelTick cx={props.cx} cy={props.cy} color={MODEL_BY_ID[s.modelId].color} />
-                        )}
                     />
-                ))}
-            </ComposedChart>
-        </ResponsiveContainer>
+                    {series.map((s) => (
+                        <Scatter
+                            key={s.modelId}
+                            dataKey={s.modelId as ModelId}
+                            isAnimationActive={false}
+                            shape={(props: { cx?: number; cy?: number }) => (
+                                <ModelTick cx={props.cx} cy={props.cy} color={MODEL_BY_ID[s.modelId].color} />
+                            )}
+                        />
+                    ))}
+                </ComposedChart>
+            </ResponsiveContainer>
+        </div>
     )
 }

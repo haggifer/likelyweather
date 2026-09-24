@@ -1,6 +1,7 @@
 'use client'
 
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { cn } from '@/lib/utils'
 import { Variable, VARIABLES } from '@/shared/variables'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { setVariable } from '@/store/dashboardSlice'
@@ -43,10 +44,10 @@ export default function VariableSwitch({ className }: IProps) {
                         value={id}
                         aria-label={t(id)}
                         title={t(id)}
-                        className="gap-1.5 px-2.5 text-xs"
+                        className="gap-1.5 px-2.5 text-xs pointer-coarse:h-9"
                     >
                         <Icon className="size-3.5" />
-                        <span className="max-sm:sr-only">{t(id)}</span>
+                        <span className={cn(id !== variable && 'max-sm:sr-only')}>{t(id)}</span>
                     </ToggleGroupItem>
                 )
             })}

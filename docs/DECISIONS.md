@@ -196,3 +196,15 @@ Asked by the author: a strict daily limit per user, visible in the header, sized
 - **When it runs out.** A city with a stored snapshot is served as stored (the Updated chip shows its age); a city with none, or a new search, gets a 429 `quota_exceeded` that says when it resets.
 - **Who a client is.** The first `x-forwarded-for` address, the key the rate limits already use. A client can forge that header, so in the target it must come from the CDN (CloudFront's viewer address); without accounts, IP is the only identity. Counters live in `src/server/cache.ts`, so they reset when the prototype's process restarts; in the target they are Redis keys with a TTL to midnight UTC.
 - **Header meter.** `GET /api/quota` returns `{limit, used, resetsAt}`; the meter shows requests left as a bar and a count (the label hides on phones), turns amber at 20 percent, and its tooltip explains what counts and when it resets in the viewer's time. The client refetches it whenever a `latest`, `compare` or `geocode` query or a mutation settles (`makeQueryClient`).
+
+## P28. Phone layout (2026-09-24)
+
+Left to the author's agent to decide. Measured at 375 × 812 before the change: no page scrolled sideways, but the landing overview's chart was 101 px wide next to its readout column, the overview title had about 110 px beside its two buttons, the header ran 14 px into its padding once the quota meter arrived, 11 of the 16 chance-of-rain labels in the precipitation panel touched, and the model legend took 432 px.
+
+- **Landing overview.** Below `sm` (640 px) the readouts form a 2 × 2 grid above a full-width chart (309 px at 375), and each panel carries its name and unit in its top-left corner, since the readouts no longer sit beside the panels. The skeleton follows the same layout. The card's buttons move under the city name.
+- **Touch.** Charts take `touch-action: pan-y`, so a vertical swipe scrolls the page and a horizontal drag scrubs the chart; a tap selects the slot under the finger. On coarse pointers the header buttons and the variable switch grow to 36 px.
+- **Variable switch.** Phones show only the selected variable's name next to the icons, so the current choice is readable without a hover title.
+- **Header.** The quota meter drops its bar and label on phones and shows the count only.
+- **Precipitation panel.** When a 6-hour window gets less than 28 px, every other hour and chance label is shown; the tooltip still has every window.
+- **Legend.** Two columns while it sits under the chart (tablets), one beside it from `lg`. On phones it stays one column: the 36 px rows are the touch targets.
+- **Unchanged.** Data tables (cities, runs) scroll sideways inside their own container, which suits tables of that width; compare already fitted.

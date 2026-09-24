@@ -12,7 +12,7 @@ export default function MoreMenu() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon-sm" aria-label={t('more')}>
+                <Button variant="ghost" size="icon-sm" aria-label={t('more')} className="pointer-coarse:size-9">
                     <Menu />
                 </Button>
             </DropdownMenuTrigger>

@@ -9,6 +9,7 @@ import {
     DropdownMenuRadioItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { cn } from '@/lib/utils'
 import { Locale, LOCALES } from '@/shared/api'
 import { Languages } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
@@ -47,7 +48,7 @@ export default function LanguageSwitch() {
                     variant="ghost"
                     size="sm"
                     aria-label={t('language')}
-                    className={isPending ? 'opacity-60' : undefined}
+                    className={cn('pointer-coarse:h-9', isPending && 'opacity-60')}
                 >
                     <Languages />
                     <span className="text-xs font-semibold uppercase">{locale}</span>

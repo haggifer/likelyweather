@@ -371,6 +371,8 @@ export default function SpaghettiChart({
                         width={Math.max(0, width - margin.left - margin.right)}
                         height={Math.max(0, plotBottom - margin.top)}
                         fill="transparent"
+                        style={{ touchAction: 'pan-y' }}
+                        onPointerDown={handlePointerMove}
                         onPointerMove={handlePointerMove}
                         onPointerLeave={() => onHoverIndex(null)}
                     />

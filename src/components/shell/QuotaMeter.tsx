@@ -38,7 +38,7 @@ export default function QuotaMeter() {
                     className="flex items-center gap-2 rounded-md px-1.5 py-1 text-xs text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                     <span className="hidden sm:inline">{t('short')}</span>
-                    <span className="h-1.5 w-12 overflow-hidden rounded-full bg-muted sm:w-16">
+                    <span className="hidden h-1.5 w-16 overflow-hidden rounded-full bg-muted sm:block">
                         <span
                             className={cn(
                                 'block h-full rounded-full transition-[width]',

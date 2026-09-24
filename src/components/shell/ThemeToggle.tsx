@@ -20,6 +20,7 @@ export default function ThemeToggle() {
         <Button
             variant="ghost"
             size="icon-sm"
+            className="pointer-coarse:size-9"
             onClick={() => setColorMode(next)}
             aria-label={t('switchMode', { mode: t(`modes.${next}`) })}
             title={t('switchMode', { mode: t(`modes.${next}`) })}

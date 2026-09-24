@@ -39,7 +39,7 @@ export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
                 <Loader2 className="size-4 animate-spin" />
                 <span className="text-sm">{status}</span>
             </CardTitle>
-            <CardAction className="flex items-center gap-2">
+            <CardAction className="flex items-center gap-2 max-sm:col-span-2 max-sm:col-start-1 max-sm:row-start-2 max-sm:justify-self-start">
                 <Skeleton className="hidden h-7 w-53 rounded-full lg:block" />
                 <Skeleton className="h-7 w-22" />
                 <Skeleton className="h-7 w-30" />
@@ -104,7 +104,7 @@ export default function OverviewCard({ city, hourly, anchor, now, isFetching, on
                         {region && <span className="font-medium text-muted-foreground">, {region}</span>}
                     </span>
                 </CardTitle>
-                <CardAction className="flex items-center gap-2">
+                <CardAction className="flex items-center gap-2 max-sm:col-span-2 max-sm:col-start-1 max-sm:row-start-2 max-sm:justify-self-start">
                     <UpdatedChip
                         issueTime={hourly[Variable.Temp].issueTime}
                         fetchedAt={hourly[Variable.Temp].fetchedAt}
