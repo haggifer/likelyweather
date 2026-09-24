@@ -1,14 +1,25 @@
 import { City, Locale } from '@/shared/api'
 import { Variable, VARIABLE_BY_ID } from '@/shared/variables'
 
+const INTL_LOCALES: Record<Locale, string> = {
+    [Locale.Uk]: 'uk-UA',
+    [Locale.En]: 'en-GB',
+    [Locale.Es]: 'es-ES',
+    [Locale.De]: 'de-DE',
+    [Locale.Fr]: 'fr-FR',
+}
+
 const FORMATTERS = new Map<string, Intl.DateTimeFormat>()
+const REGION_NAMES = new Map<string, Intl.DisplayNames>()
+
+export const getIntlLocale = (locale: string) => INTL_LOCALES[locale as Locale] ?? INTL_LOCALES[Locale.En]
 
 const getFormatter = (locale: string, timeZone: string, options: Intl.DateTimeFormatOptions) => {
     const key = `${locale}|${timeZone}|${JSON.stringify(options)}`
     let formatter = FORMATTERS.get(key)
 
     if (!formatter) {
-        formatter = new Intl.DateTimeFormat(locale === 'uk' ? 'uk-UA' : 'en-GB', { timeZone, ...options })
+        formatter = new Intl.DateTimeFormat(getIntlLocale(locale), { timeZone, ...options })
         FORMATTERS.set(key, formatter)
     }
 
@@ -51,12 +62,32 @@ export const formatPercent = (value: number | null | undefined) =>
 export const getCityName = (city: Pick<City, 'name' | 'nameLocal'>, locale: string) =>
     city.nameLocal?.[locale as Locale] ?? city.name
 
-export const getCityLabel = (city: Pick<City, 'name' | 'nameLocal' | 'admin1' | 'country'>, locale: string) =>
-    [getCityName(city, locale), city.admin1, city.country].filter(Boolean).join(', ')
+export const getCountryName = (countryCode: string, fallback: string, locale: string) => {
+    let names = REGION_NAMES.get(locale)
+
+    if (!names) {
+        names = new Intl.DisplayNames([getIntlLocale(locale)], { type: 'region' })
+        REGION_NAMES.set(locale, names)
+    }
+
+    try {
+        return names.of(countryCode.toUpperCase()) ?? fallback
+    } catch {
+        return fallback
+    }
+}
+
+export const getCityLabel = (
+    city: Pick<City, 'name' | 'nameLocal' | 'admin1' | 'country' | 'countryCode'>,
+    locale: string,
+) =>
+    [getCityName(city, locale), city.admin1, getCountryName(city.countryCode, city.country, locale)]
+        .filter(Boolean)
+        .join(', ')
 
 // Offset of a time zone from UTC at a given instant, in minutes (positive east of Greenwich).
 export const getTimeZoneOffsetMinutes = (date: Date, timeZone: string) => {
-    const parts = getFormatter('en', timeZone, {
+    const parts = getFormatter(Locale.En, timeZone, {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',

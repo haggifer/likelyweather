@@ -5,7 +5,7 @@ import UpdatedChip from '@/components/city/UpdatedChip'
 import VariableSwitch from '@/components/city/VariableSwitch'
 import FlagIcon from '@/components/shell/FlagIcon'
 import StatusChip from '@/components/shell/StatusChip'
-import { formatTime, getCityName } from '@/lib/format'
+import { formatTime, getCityName, getCountryName } from '@/lib/format'
 import { CityDetail, CityStatus } from '@/shared/api'
 import { useLocale, useTranslations } from 'next-intl'
 
@@ -26,8 +26,10 @@ export default function CityHeader({ city }: IProps) {
                         {getCityName(city, locale)}
                     </h1>
                     <p className="text-sm text-muted-foreground">
-                        {[city.admin1, city.country].filter(Boolean).join(', ')} · {city.lat.toFixed(2)}°,{' '}
-                        {city.lon.toFixed(2)}° ·{' '}
+                        {[city.admin1, getCountryName(city.countryCode, city.country, locale)]
+                            .filter(Boolean)
+                            .join(', ')}{' '}
+                        · {city.lat.toFixed(2)}°, {city.lon.toFixed(2)}° ·{' '}
                         {t('trackedSince', {
                             date: formatTime(city.firstTrackedAt, city.timezone, locale, {
                                 day: 'numeric',

@@ -1,0 +1,248 @@
+{
+    "app": {
+        "tagline": "Dix modèles météo, n’importe quelle ville et leur désaccord."
+    },
+    "shell": {
+        "switchMode": "Passer en mode {mode}",
+        "modes": {
+            "light": "clair",
+            "dark": "sombre"
+        },
+        "language": "Langue"
+    },
+    "nav": {
+        "more": "Autres pages",
+        "cities": "Villes",
+        "compare": "Comparer",
+        "runs": "Exécutions",
+        "methodology": "Méthodologie",
+        "themeLab": "Galerie du Theme Lab",
+        "dashboard": "Tableau de bord",
+        "evolution": "Évolution",
+        "cityTabs": "Sections de la ville"
+    },
+    "footer": {
+        "attribution": "Données météo : <openMeteo>Open-Meteo.com</openMeteo> (CC BY 4.0) et <metno>MET Norway</metno>. Géocodage : Open-Meteo.",
+        "methodology": "Méthodologie",
+        "runs": "Exécutions",
+        "repo": "Code source"
+    },
+    "search": {
+        "label": "Rechercher une ville",
+        "placeholder": "Rechercher une ville…",
+        "hint": "Saisissez au moins 3 lettres",
+        "searching": "Recherche…",
+        "error": "La recherche a échoué. Réessayez dans un instant.",
+        "empty": "Aucun lieu trouvé",
+        "results": "Lieux, les plus grands d’abord",
+        "trackFailed": "Impossible d’ouvrir cette ville : {message}"
+    },
+    "chart": {
+        "table": "Tableau",
+        "chart": "Graphique",
+        "showTable": "Afficher les données sous forme de tableau",
+        "showChart": "Afficher le graphique",
+        "source": "Source : Open-Meteo (CC BY 4.0), MET Norway. Forecast Arena.",
+        "now": "maintenant",
+        "median": "Médiane",
+        "compass": "N,NE,E,SE,S,SO,O,NO"
+    },
+    "variables": {
+        "label": "Variable",
+        "temp": "Température",
+        "wind": "Vitesse du vent",
+        "pressure": "Pression",
+        "precip": "Précipitations"
+    },
+    "city": {
+        "updated": "Mis à jour",
+        "stale": "Périmé",
+        "local": "heure locale",
+        "updatedTitle": "Exécution émise {utc} ({local} heure locale). Récupérée {fetched}.",
+        "trackedSince": "suivie depuis le {date}",
+        "preview": "Aperçu",
+        "previewTitle": "Seulement des exécutions à la demande pour l’instant ; les exécutions programmées toutes les 6 heures commencent à la prochaine collecte.",
+        "status": {
+            "ACTIVE": "Active",
+            "DORMANT": "En veille",
+            "QUEUED": "En attente"
+        },
+        "notTracked": "Cette ville n’est pas encore suivie",
+        "notTrackedBody": "Recherchez-la pour commencer le suivi : la prévision apparaît en quelques secondes.",
+        "trackingBanner": "Le suivi de {name} a commencé le {date}. La ville rejoint désormais la collecte toutes les 6 heures.",
+        "medianTotal": "Total médian",
+        "chanceOfRain": "Probabilité de pluie"
+    },
+    "dashboard": {
+        "fetching": "Récupération de dix modèles pour {name}…",
+        "fetchFailed": "Impossible de récupérer la prévision : {message}",
+        "chartTitle": "{variable} · {count} modèles",
+        "chartDescription": "Émission {issue} UTC · {origin}. Zone ombrée : les 24 dernières heures d’analyse.",
+        "origin": {
+            "SCHEDULED": "exécution programmée",
+            "PREVIEW": "aperçu à la demande",
+            "IMPORT": "importé"
+        },
+        "summary": "La médiane ({variable}) des quatre prochains jours va de {min} à {max} {unit} sur {count} modèles. Ils divergent le plus le {day} (écart {spread} {unit}).",
+        "median": "Médiane",
+        "time": "Heure (locale)",
+        "windArrows": "Les flèches indiquent où souffle le vent médian ; survolez-en une pour voir d’où il vient.",
+        "precipTitle": "Précipitations, cumuls sur 6 heures",
+        "precipDescription": "Barres : médiane des modèles. Traits : chaque modèle. Ligne sous les barres : part des modèles au-dessus de 0,2 mm.",
+        "precipSummary": "{steps, plural, =0 {Aucun pas de 6 heures n’a} one {# pas de 6 heures a} other {# pas de 6 heures ont}} une probabilité de pluie de 50 % ou plus ; la médiane totalise {total} mm sur les quatre prochains jours."
+    },
+    "legend": {
+        "median": "Médiane",
+        "reset": "Tout afficher",
+        "pin": "Épingler : garder ce modèle en évidence",
+        "unpin": "Désépingler",
+        "show": "Afficher {model}",
+        "hide": "Masquer {model}",
+        "hint": "Survolez un modèle pour le mettre en évidence, cliquez pour l’épingler. Les touches 1–9 et 0 affichent ou masquent les modèles."
+    },
+    "disagreement": {
+        "title": "Désaccord par jour",
+        "description": "Écart moyen entre le modèle le plus haut et le plus bas ({variable}). Accord sous {agree} {unit}, division à partir de {split} {unit}.",
+        "descriptionPrecip": "Écart entre les cumuls journaliers de précipitations des modèles. Accord sous {agree} {unit}, division à partir de {split} {unit}.",
+        "spreadTitle": "Écart entre le modèle le plus haut et le plus bas",
+        "agree": "Accord",
+        "mixed": "Mitigé",
+        "split": "Division",
+        "empty": "Cette exécution n’a aucun pas futur."
+    },
+    "evolution": {
+        "validTime": "Heure de validité",
+        "pick": "Choisir une heure",
+        "past": "Passé",
+        "future": "À venir",
+        "title": "Comment la prévision ({variable}) pour {time} a évolué",
+        "description": "Chaque ligne est un modèle : sa prévision pour cette heure issue d’exécutions émises jusqu’à 7 jours plus tôt. La bande du bas montre l’écart entre les modèles à chaque échéance.",
+        "summary": "L’écart entre les modèles est passé de {first} {unit} à l’échéance la plus longue à {last} {unit} dans la dernière exécution.",
+        "latest": "dernière",
+        "daysBefore": "{days} j avant",
+        "convergence": "Écart entre les modèles (écart type)",
+        "model": "Modèle",
+        "empty": "Aucune exécution archivée ne couvre cette heure."
+    },
+    "compare": {
+        "title": "Comparer des villes",
+        "description": "Jusqu’à quatre villes côte à côte sur un axe commun.",
+        "add": "Ajouter une ville suivie",
+        "seed": "Essayer les quatre villes ukrainiennes",
+        "count": "{count} villes sur {max}",
+        "empty": "Ajoutez des villes pour comparer leurs prévisions.",
+        "remove": "Retirer la ville",
+        "sharedAxis": "Tous les panneaux partagent un même axe vertical pour comparer les valeurs directement."
+    },
+    "runs": {
+        "title": "Exécutions de collecte",
+        "description": "Chaque exécution programmée et chaque aperçu à la demande, avec statut, nombre de lignes, avertissements et réponses brutes des sources.",
+        "timelineTitle": "30 derniers jours",
+        "timelineDescription": "Un carré par créneau programmé de 6 heures (UTC). Les trous sont des créneaux sans exécution programmée.",
+        "tableTitle": "Historique des exécutions",
+        "tableDescription": "{count, plural, one {# exécution stockée} other {# exécutions stockées}} localement.",
+        "issueTime": "Heure d’émission",
+        "origin": "Origine",
+        "status": "Statut",
+        "rows": "Lignes",
+        "cities": "Villes",
+        "warnings": "Avertissements",
+        "duration": "Durée",
+        "archive": "Archive brute",
+        "empty": "Aucune exécution pour l’instant. Lancez pnpm collect ou ouvrez une ville.",
+        "origins": {
+            "SCHEDULED": "Programmée",
+            "PREVIEW": "Aperçu",
+            "IMPORT": "Import"
+        },
+        "statuses": {
+            "OK": "OK",
+            "PARTIAL": "Partielle",
+            "FAILED": "Échouée"
+        },
+        "slot": {
+            "OK": "OK",
+            "PARTIAL": "Partielle",
+            "FAILED": "Échouée",
+            "PREVIEW": "Aperçus seulement",
+            "MISSING": "Aucune exécution",
+            "FUTURE": "À venir"
+        }
+    },
+    "cities": {
+        "title": "Villes suivies",
+        "description": "Chaque ville que quelqu’un a ouverte. Les villes actives sont collectées toutes les 6 heures ; après 30 jours sans visite elles passent en veille et gardent leur historique.",
+        "city": "Ville",
+        "status": "Statut",
+        "firstTracked": "Suivie depuis",
+        "lastViewed": "Dernière visite",
+        "views": "Visites",
+        "runs": "Exécutions programmées",
+        "models": "Modèles",
+        "note": "Rien ne peut être supprimé ici. Les villes en attente attendent une place libre sous le plafond de villes actives."
+    },
+    "landing": {
+        "hero": "Comparez les prévisions météo de votre ville",
+        "sub": "Voyez ce que prévoient dix modèles météo pour n’importe quelle ville et à quel point ils divergent. Choisissez une ville pour voir la médiane de tous les modèles sur les trois prochains jours.",
+        "seeds": "Commencer par",
+        "tiles": {
+            "disagree": {
+                "title": "Voir où ils divergent",
+                "body": "Tous les modèles sur un même graphique, avec la médiane, l’écart et un indicateur quotidien de désaccord."
+            },
+            "converge": {
+                "title": "Voir la convergence",
+                "body": "Choisissez une heure et voyez comment la prévision de chaque modèle pour elle a changé au cours de la semaine précédente."
+            },
+            "compare": {
+                "title": "Comparer des villes",
+                "body": "Jusqu’à quatre villes côte à côte sur un axe commun."
+            }
+        }
+    },
+    "methodology": {
+        "title": "Méthodologie",
+        "intro": "Comment Forecast Arena collecte et combine les prévisions, et où les chiffres cessent d’être fiables.",
+        "europeOnly": "Europe seulement",
+        "sources": {
+            "title": "Sources",
+            "body": "Neuf modèles numériques proviennent de l’API de prévision d’Open-Meteo et un du Locationforecast de MET Norway, tous deux récupérés à l’heure. Le tableau de bord de la ville place chaque valeur sur une grille UTC de 6 heures (00, 06, 12, 18) ; l’aperçu de l’accueil utilise des tranches de 3 heures à l’heure locale de la ville (00, 03, 06…). La température, le vent et la pression sont les valeurs au pas ; les précipitations sont le cumul des heures depuis le pas précédent.\nLes modèles régionaux ne renvoient des données que dans leur domaine : une ville hors d’Europe affiche donc jusqu’à huit modèles. MET Norway ne publie des valeurs horaires que pour les 60 premières heures environ ; les tranches suivantes utilisent les autres modèles."
+        },
+        "median": {
+            "title": "Médiane et écart",
+            "body": "La médiane est la valeur centrale de tous les modèles ayant renvoyé des données pour un pas (pour un nombre pair, la moyenne des deux valeurs centrales). Les bandes du tableau de bord montrent l’étendue du modèle le plus bas au plus haut et la moitié centrale des modèles. La direction du vent utilise une médiane circulaire : 350° et 10° se rejoignent au nord. La probabilité de pluie est la part des modèles prévoyant plus de {rain} mm sur le pas."
+        },
+        "disagreement": {
+            "title": "Désaccord",
+            "body": "Pour la température, le vent et la pression, le désaccord journalier est la moyenne, sur les pas futurs de la journée, de l’écart entre le modèle le plus haut et le plus bas. Pour les précipitations, c’est l’écart entre les cumuls journaliers des modèles. Les jours sont en heure locale de la ville. Seuils :"
+        },
+        "evolution": {
+            "title": "Évolution",
+            "body": "La vue d’évolution prend une heure et montre ce que chaque modèle prévoyait pour elle dans les exécutions émises jusqu’à {days} jours plus tôt, à partir de l’archive des exécutions précédentes d’Open-Meteo. L’écart entre les modèles se réduit généralement à l’approche de l’heure. MET Norway ne conserve pas d’archive et n’y figure donc pas."
+        },
+        "limits": {
+            "title": "Limites",
+            "body": "Les valeurs des modèles sont des valeurs de point de grille, pas la météo au coin d’une rue. Les modèles sont comparés entre eux, pas avec ce qui s’est réellement produit : mesurer quel modèle a eu raison est une fonction à part, prévue après le MVP. Ce prototype stocke les données dans des fichiers JSON locaux et en mémoire ; la conception de production utilise Postgres, Redis et S3."
+        },
+        "thresholds": "{variable} : accord sous {agree} {unit}, division à partir de {split} {unit}",
+        "attribution": "Données météo : Open-Meteo.com (CC BY 4.0) et MET Norway (CC BY 4.0). Géocodage : Open-Meteo, d’après GeoNames."
+    },
+    "notFound": {
+        "title": "Page introuvable",
+        "body": "La page que vous cherchez n’existe pas.",
+        "home": "Retour à l’accueil"
+    },
+    "overview": {
+        "range": "24 prochaines heures : {min}–{max} {unit}",
+        "total": "24 prochaines heures : {value} {unit} au total",
+        "details": "Voir les détails",
+        "aria": "Prévision médiane pour {name} sur {count} modèles : température, vitesse du vent, pression et précipitations",
+        "fetching": "Récupération de dix modèles pour {name}…",
+        "loading": "Chargement…",
+        "failed": "Impossible de charger cette ville : {message}",
+        "perSlot": "{unit} / {hours} h",
+        "refresh": "Actualiser",
+        "refreshLater": "Disponible dès que le graphique a une tranche de 3 heures de retard",
+        "unavailable": "Aucune prévision horaire n’est encore disponible pour cette ville. Réessayez dans une minute."
+    }
+}
