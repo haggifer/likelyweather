@@ -240,7 +240,7 @@
         "fetching": "Obteniendo diez modelos para {name}…",
         "loading": "Cargando…",
         "failed": "No se pudo cargar esta ciudad: {message}",
-        "perSlot": "{unit} / {hours} h",
+        "perSlot": "{unit} / próx. {hours} h",
         "refresh": "Actualizar",
         "refreshLater": "Disponible cuando el gráfico se quede una franja de 3 horas atrás",
         "unavailable": "Todavía no hay pronóstico horario para esta ciudad. Inténtalo de nuevo en un minuto."

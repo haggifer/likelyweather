@@ -175,7 +175,7 @@ export default function MedianOverview({ series, directions, timeZone, locale, n
                             <span className="text-xs font-medium text-muted-foreground">{tv(variable)}</span>
                             <span className="text-2xl leading-tight font-semibold">
                                 {formatNumber(value, info.decimals)}
-                                <span className="ml-1 text-sm font-normal text-muted-foreground">
+                                <span className="ml-1 text-sm font-normal whitespace-nowrap text-muted-foreground">
                                     {isSum ? t('perSlot', { unit: info.unit, hours: SLOT_HOURS }) : info.unit}
                                 </span>
                             </span>

@@ -240,7 +240,7 @@
         "fetching": "Fetching ten models for {name}…",
         "loading": "Loading…",
         "failed": "Could not load this city: {message}",
-        "perSlot": "{unit} / {hours} h",
+        "perSlot": "{unit} / next {hours} h",
         "refresh": "Refresh",
         "refreshLater": "Available once the chart is a 3-hour slot behind",
         "unavailable": "No hourly forecast is available for this city yet. Try again in a minute."
