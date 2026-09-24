@@ -1,7 +1,6 @@
 'use client'
 
 import UpdatedChip from '@/components/city/UpdatedChip'
-import VariableSwitch from '@/components/city/VariableSwitch'
 import FlagIcon from '@/components/shell/FlagIcon'
 import StatusChip from '@/components/shell/StatusChip'
 import { formatTime, getCityName, getCountryName } from '@/lib/format'
@@ -50,10 +49,6 @@ export default function CityHeader({ city }: IProps) {
                     <UpdatedChip slug={city.slug} className="lg:hidden" />
                 </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2 lg:hidden">
-                <VariableSwitch />
-            </div>
-            <VariableSwitch className="hidden lg:flex xl:hidden" />
         </div>
     )
 }

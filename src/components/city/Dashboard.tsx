@@ -6,6 +6,7 @@ import SpaghettiChart from '@/charts/SpaghettiChart'
 import { getNearestIndex } from '@/charts/spaghettiGeometry'
 import DisagreementTiles from '@/components/city/DisagreementTiles'
 import ModelLegend from '@/components/city/ModelLegend'
+import VariableSwitch from '@/components/city/VariableSwitch'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useCity, useLatest } from '@/hooks/queries'
@@ -165,6 +166,7 @@ export default function Dashboard({ slug }: IProps) {
     if (!latest || !derived || !now) {
         return (
             <div className="flex flex-col gap-(--card-gap)">
+                <VariableSwitch className="self-start" />
                 <div className="flex items-center gap-2 text-sm text-muted-foreground" role="status">
                     <Loader2 className="size-4 animate-spin" />
                     {latestQuery.isError
@@ -219,6 +221,7 @@ export default function Dashboard({ slug }: IProps) {
 
     return (
         <div className="flex flex-col gap-(--card-gap)">
+            <VariableSwitch className="self-start" />
             <div
                 className={cn(
                     'grid gap-(--card-gap)',

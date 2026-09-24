@@ -46,7 +46,7 @@ export default function VariableSwitch({ className }: IProps) {
                         className="gap-1.5 px-2.5 text-xs"
                     >
                         <Icon className="size-3.5" />
-                        <span className="max-2xl:sr-only">{t(id)}</span>
+                        <span className="max-sm:sr-only">{t(id)}</span>
                     </ToggleGroupItem>
                 )
             })}

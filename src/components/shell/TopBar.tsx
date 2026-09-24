@@ -1,7 +1,6 @@
 'use client'
 
 import UpdatedChip from '@/components/city/UpdatedChip'
-import VariableSwitch from '@/components/city/VariableSwitch'
 import LanguageSwitch from '@/components/shell/LanguageSwitch'
 import MoreMenu from '@/components/shell/MoreMenu'
 import ThemeToggle from '@/components/shell/ThemeToggle'
@@ -26,7 +25,6 @@ export default function TopBar() {
                     </span>
                 </Link>
                 <div className="ml-auto flex items-center gap-2">
-                    {slug && <VariableSwitch className="hidden xl:flex" />}
                     {slug && <UpdatedChip slug={slug} className="hidden lg:inline-flex" />}
                     <LanguageSwitch />
                     <ThemeToggle />
