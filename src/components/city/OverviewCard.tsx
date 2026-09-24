@@ -33,7 +33,7 @@ interface SkeletonProps {
 
 // Same header and panel structure as the loaded card, so nothing moves when the data arrives.
 export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
-    <Card className="gap-4">
+    <Card className="gap-0">
         <CardHeader>
             <CardTitle className="flex h-7 items-center gap-2 text-xl font-normal text-muted-foreground" role="status">
                 <Loader2 className="size-4 animate-spin" />
@@ -95,7 +95,7 @@ export default function OverviewCard({ city, hourly, anchor, now, isFetching, on
     )
 
     return (
-        <Card className={cn('gap-4 transition-opacity', isFetching && 'opacity-70')}>
+        <Card className={cn('gap-0 transition-opacity', isFetching && 'opacity-70')}>
             <CardHeader>
                 <CardTitle className="flex min-w-0 items-center gap-2.5 text-xl tracking-tight">
                     <FlagIcon countryCode={city.countryCode} className="h-4 w-6 shrink-0" />
