@@ -217,7 +217,7 @@
         "failed": "Impossible de charger cette ville : {message}",
         "perSlot": "{unit} / {hours} h à venir",
         "refresh": "Actualiser",
-        "refreshLater": "Disponible dès que le graphique a une tranche de 3 heures de retard",
+        "upToDate": "Déjà à jour",
         "unavailable": "Aucune prévision horaire n’est encore disponible pour cette ville. Réessayez dans une minute."
     }
 }

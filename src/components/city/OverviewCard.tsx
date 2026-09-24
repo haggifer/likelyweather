@@ -6,6 +6,7 @@ import FlagIcon from '@/components/shell/FlagIcon'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { getCityName, getCountryName } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { City, LatestResponse } from '@/shared/api'
@@ -87,6 +88,11 @@ export default function OverviewCard({ city, hourly, anchor, now, isFetching, on
     const currentSlot = now ? getSlotStart(now, city.timezone) : anchor
     const isStale = currentSlot > anchor
     const modelCount = hourly[Variable.Temp].series.length
+    const refreshButton = (
+        <Button variant="outline" size="sm" onClick={onRefresh} disabled={!onRefresh || !isStale || isFetching}>
+            <RefreshCw className={cn(isFetching && 'animate-spin')} /> {t('refresh')}
+        </Button>
+    )
 
     return (
         <Card className={cn('gap-4 transition-opacity', isFetching && 'opacity-70')}>
@@ -106,15 +112,22 @@ export default function OverviewCard({ city, hourly, anchor, now, isFetching, on
                         now={now}
                         className="hidden lg:inline-flex"
                     />
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={onRefresh}
-                        disabled={!onRefresh || !isStale || isFetching}
-                        title={isStale ? t('refresh') : t('refreshLater')}
-                    >
-                        <RefreshCw className={cn(isFetching && 'animate-spin')} /> {t('refresh')}
-                    </Button>
+                    {isStale ? (
+                        refreshButton
+                    ) : (
+                        // A disabled button gets no pointer events, so the tooltip hangs on a focusable wrapper.
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span
+                                    tabIndex={0}
+                                    className="inline-flex rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                >
+                                    {refreshButton}
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent>{t('upToDate')}</TooltipContent>
+                        </Tooltip>
+                    )}
                     <Button asChild size="sm">
                         <Link href={`/city/${city.slug}`}>
                             {t('details')} <ArrowRight />

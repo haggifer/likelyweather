@@ -217,7 +217,7 @@
         "failed": "Could not load this city: {message}",
         "perSlot": "{unit} / next {hours} h",
         "refresh": "Refresh",
-        "refreshLater": "Available once the chart is a 3-hour slot behind",
+        "upToDate": "Already up to date",
         "unavailable": "No hourly forecast is available for this city yet. Try again in a minute."
     }
 }

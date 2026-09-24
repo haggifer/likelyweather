@@ -217,7 +217,7 @@
         "failed": "Diese Stadt konnte nicht geladen werden: {message}",
         "perSlot": "{unit} / nächste {hours} h",
         "refresh": "Aktualisieren",
-        "refreshLater": "Verfügbar, sobald das Diagramm einen 3-Stunden-Abschnitt zurückliegt",
+        "upToDate": "Bereits aktuell",
         "unavailable": "Für diese Stadt gibt es noch keine stündliche Vorhersage. Versuche es in einer Minute erneut."
     }
 }

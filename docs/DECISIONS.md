@@ -121,7 +121,7 @@ Decided by the author on 2026-09-24. The overview shows 72 hours in 3-hour slots
 
 ## P19. The overview is anchored when the data arrives; Refresh
 
-The overview starts at the slot the data arrived in, so on arrival "now" is the start of the chart and no now line is drawn. The hourly queries never refetch in the background, because that would silently re-anchor the chart. Once the current time moves into a later slot the chart is stale: the now line and the past shading appear and the Refresh button is enabled. Refresh refetches the four hourly payloads and re-anchors the chart.
+The overview starts at the slot the data arrived in, so on arrival "now" is the start of the chart and no now line is drawn. The hourly queries never refetch in the background, because that would silently re-anchor the chart. Once the current time moves into a later slot the chart is stale: the now line and the past shading appear and the Refresh button is enabled. Refresh refetches the four hourly payloads and re-anchors the chart. While it is disabled, a tooltip says "Already up to date"; it hangs on a focusable wrapper, because a disabled button receives no pointer events.
 
 Refresh does not hit the upstream sources harder: the server only calls Open-Meteo and met.no when a new 6-hour run exists, and concurrent refreshes are de-duplicated. Gating the button in the UI is about a sensible interaction, not the protection.
 
