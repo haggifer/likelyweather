@@ -84,6 +84,9 @@ export type SumAlignment = 'start' | 'end'
 export const getSumBarCenter = (time: Date, stepMs: number, alignment: SumAlignment) =>
     new Date(time.getTime() + (alignment === 'start' ? stepMs : -stepMs) / 2)
 
+export const getSumSpan = (time: Date, stepMs: number, alignment: SumAlignment): [Date, Date] =>
+    alignment === 'start' ? [time, new Date(time.getTime() + stepMs)] : [new Date(time.getTime() - stepMs), time]
+
 const timeBisector = bisector<Date, Date>((d) => d)
 
 export const getNearestIndex = (times: Date[], at: Date) => {
@@ -91,3 +94,8 @@ export const getNearestIndex = (times: Date[], at: Date) => {
 
     return Math.max(0, Math.min(times.length - 1, i))
 }
+
+// The sum whose span contains `at`, so the pointer selects the bar it is over rather than the nearest step, which
+// sits on the bar's edge.
+export const getSpanIndex = (times: Date[], at: Date, stepMs: number, alignment: SumAlignment) =>
+    getNearestIndex(times, new Date(at.getTime() + ((alignment === 'start' ? -1 : 1) * stepMs) / 2))

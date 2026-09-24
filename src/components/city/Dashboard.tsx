@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useCity, useLatest } from '@/hooks/queries'
 import useNow from '@/hooks/useNow'
 import useUrlSync from '@/hooks/useUrlSync'
-import { formatNumber, formatStepLabel, formatTime, formatUtc, getCityName } from '@/lib/format'
+import { formatNumber, formatPeriodLabel, formatStepLabel, formatTime, formatUtc, getCityName } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { LatestResponse, Series } from '@/shared/api'
 import {
@@ -203,6 +203,7 @@ export default function Dashboard({ slug }: IProps) {
                     chance={precip.chance}
                     timeZone={timeZone}
                     locale={locale}
+                    windowHours={PRECIP_WINDOW_HOURS}
                 />
             ) : (
                 <Skeleton className="h-[230px]" />
@@ -280,7 +281,16 @@ export default function Dashboard({ slug }: IProps) {
             series={latest.series}
             median={derived.stats.median[readoutIndex]}
             readoutIndex={readoutIndex}
-            readoutLabel={formatStepLabel(latest.steps[readoutIndex], timeZone, locale)}
+            readoutLabel={
+                variable === Variable.Precip
+                    ? formatPeriodLabel(
+                          latest.steps[readoutIndex],
+                          toIsoMinute(addHours(new Date(latest.steps[readoutIndex]), SLOT_HOURS)),
+                          timeZone,
+                          locale,
+                      )
+                    : formatStepLabel(latest.steps[readoutIndex], timeZone, locale)
+            }
             variable={variable}
             placement={legendPlacement}
         />

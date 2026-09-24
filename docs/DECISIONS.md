@@ -159,6 +159,13 @@ Decided by the author.
 - **Dashboard.** The chip moved from the top bar to the right end of the city name line, followed by a Refresh button; on phones the pair wraps under the name, right-aligned. The top bar no longer carries anything city-specific.
 - **Dashboard Refresh is never gated.** It refetches the city's active `latest` queries, which re-anchors the chart at the current slot. Unlike the landing card, the dashboard already refetches every 15 minutes, so a button enabled only on a stale chart would almost always be disabled. The server only calls the upstream sources when a newer run exists (P19), so an ungated button costs nothing upstream.
 
+## P23. Precipitation is hovered as a period (2026-09-24)
+
+Asked by the author. A precipitation bar is a total over a span, so hovering it now selects the span, not an instant.
+
+- **Dashboard chart (D3).** The pointer selects the bar whose span it is over (`getSpanIndex`). Before, it snapped to the nearest slot time, which sits on a bar's edge, so the right half of a bar selected the next one. The hovered span is shaded across the plot instead of drawing a crosshair line. The label above the plot, the legend readout and the compare tooltip read "Sat 03:00–06:00" (`formatPeriodLabel`). Stepping with the arrow keys stays on drawn bars.
+- **Precipitation panel (Recharts).** Recharts already shades the hovered category (`Tooltip` `cursor`); its tooltip now names the 6-hour period instead of the hour it ends.
+
 ## Open: the design decision (guide phase 2.5)
 
 Not made yet. Base tokens are preset A (Sky). To decide: run `pnpm dev`, open the Lab (Ctrl/Cmd+Shift+T) on `/theme-lab`, a live city dashboard and the landing overview, star favourites, then `Copy CSS` into `globals.css` and record the choice and the runners-up with screenshots here.

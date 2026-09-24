@@ -2,10 +2,10 @@
 
 import { getYDomain, getYTicks } from '@/charts/scales'
 import useChartTheme from '@/charts/useChartTheme'
-import { formatNumber, formatPercent, formatStepLabel, formatTime } from '@/lib/format'
+import { formatNumber, formatPercent, formatPeriodLabel, formatTime } from '@/lib/format'
 import { Series } from '@/shared/api'
 import { MODEL_BY_ID, ModelId } from '@/shared/models'
-import { getLocalDateKey } from '@/shared/time'
+import { addHours, getLocalDateKey, toIsoMinute } from '@/shared/time'
 import { Variable } from '@/shared/variables'
 import { useTranslations } from 'next-intl'
 import {
@@ -27,6 +27,7 @@ interface IProps {
     chance: (number | null)[]
     timeZone: string
     locale: string
+    windowHours?: number
     height?: number
 }
 
@@ -59,7 +60,16 @@ const ModelTick = ({ cx, cy, color }: ModelTickProps) =>
         <line x1={cx - 7} x2={cx + 7} y1={cy} y2={cy} stroke={color} strokeWidth={2} strokeLinecap="round" />
     )
 
-export default function PrecipPanel({ steps, series, median, chance, timeZone, locale, height = 230 }: IProps) {
+export default function PrecipPanel({
+    steps,
+    series,
+    median,
+    chance,
+    timeZone,
+    locale,
+    windowHours = 6,
+    height = 230,
+}: IProps) {
     const t = useTranslations('city')
     const theme = useChartTheme()
     const rows: Row[] = steps.map((step, i) => ({
@@ -95,7 +105,14 @@ export default function PrecipPanel({ steps, series, median, chance, timeZone, l
 
         return (
             <div className="rounded-md border bg-popover px-2.5 py-2 text-xs shadow-md">
-                <div className="mb-1 text-muted-foreground">{formatStepLabel(row.step, timeZone, locale)}</div>
+                <div className="mb-1 text-muted-foreground">
+                    {formatPeriodLabel(
+                        toIsoMinute(addHours(new Date(row.step), -windowHours)),
+                        row.step,
+                        timeZone,
+                        locale,
+                    )}
+                </div>
                 <div className="flex justify-between gap-4 font-semibold">
                     <span>{t('medianTotal')}</span>
                     <span>{formatNumber(row.median)} mm</span>

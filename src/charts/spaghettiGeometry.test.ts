@@ -1,5 +1,11 @@
 import { getYDomain, getYTicks } from '@/charts/scales'
-import { buildSpaghettiGeometry, getNearestIndex, getSumBarCenter } from '@/charts/spaghettiGeometry'
+import {
+    buildSpaghettiGeometry,
+    getNearestIndex,
+    getSpanIndex,
+    getSumBarCenter,
+    getSumSpan,
+} from '@/charts/spaghettiGeometry'
 import snapshot from '@/fixtures/snapshot-kharkiv.json'
 import { computeEnsemble } from '@/shared/ensemble'
 import { ModelId } from '@/shared/models'
@@ -52,6 +58,20 @@ describe('spaghetti geometry', () => {
 
         expect(getSumBarCenter(at, threeHours, 'start').toISOString()).toBe('2026-09-24T13:30:00.000Z')
         expect(getSumBarCenter(at, 2 * threeHours, 'end').toISOString()).toBe('2026-09-24T09:00:00.000Z')
+    })
+
+    it('selects the sum whose span holds the pointer, not the nearest step', () => {
+        const threeHours = 3 * 3_600_000
+        const times = ['2026-09-26T04:00Z', '2026-09-26T07:00Z', '2026-09-26T10:00Z'].map((t) => new Date(t))
+
+        // 09:30 is nearest the 10:00 step, but it lies in the bar that starts at 07:00 ('start') or ends at 10:00 ('end').
+        expect(getSpanIndex(times, new Date('2026-09-26T09:30Z'), threeHours, 'start')).toBe(1)
+        expect(getSpanIndex(times, new Date('2026-09-26T09:30Z'), threeHours, 'end')).toBe(2)
+        expect(getSpanIndex(times, new Date('2026-09-26T07:10Z'), threeHours, 'start')).toBe(1)
+        expect(getSumSpan(times[1], threeHours, 'start').map((d) => d.toISOString())).toEqual([
+            '2026-09-26T07:00:00.000Z',
+            '2026-09-26T10:00:00.000Z',
+        ])
     })
 
     it('snaps a time to the nearest 6-hour step', () => {

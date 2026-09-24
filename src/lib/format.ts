@@ -32,6 +32,12 @@ export const formatTime = (iso: string | Date, timeZone: string, locale: string,
 export const formatStepLabel = (iso: string, timeZone: string, locale: string) =>
     formatTime(iso, timeZone, locale, { weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
 
+const CLOCK: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
+
+// A total over a span, e.g. "Sat 03:00–06:00": the day is the start's, so a span ending at midnight reads "Sat 21:00–00:00".
+export const formatPeriodLabel = (start: string, end: string, timeZone: string, locale: string) =>
+    `${formatStepLabel(start, timeZone, locale)}–${formatTime(end, timeZone, locale, CLOCK)}`
+
 export const formatDayLabel = (iso: string, timeZone: string, locale: string) =>
     formatTime(iso, timeZone, locale, { weekday: 'short', day: 'numeric', month: 'short' })
 

@@ -5,7 +5,9 @@ import { getYDomain, getYTicks } from '@/charts/scales'
 import {
     buildSpaghettiGeometry,
     getNearestIndex,
+    getSpanIndex,
     getSumBarCenter,
+    getSumSpan,
     Margin,
     SumAlignment,
 } from '@/charts/spaghettiGeometry'
@@ -14,7 +16,7 @@ import useChartTheme from '@/charts/useChartTheme'
 import useElementWidth from '@/charts/useElementWidth'
 import WindArrows from '@/charts/WindArrows'
 import useNow from '@/hooks/useNow'
-import { formatNumber, formatStepLabel } from '@/lib/format'
+import { formatNumber, formatPeriodLabel, formatStepLabel } from '@/lib/format'
 import { Series } from '@/shared/api'
 import { HOUR_MS } from '@/shared/constants'
 import { EnsembleStats } from '@/shared/ensemble'
@@ -47,6 +49,7 @@ const ARROW_ROW = 26
 const BAR_RATIO = 0.62
 const MAX_TICK_WIDTH = 16
 const HOVER_LABEL_HALF_WIDTH = 34
+const PERIOD_LABEL_HALF_WIDTH = 50
 const UNIT_LABEL_WIDTH = 28
 
 const getMargin = (compact: boolean, hasArrows: boolean): Margin => ({
@@ -116,10 +119,16 @@ export default function SpaghettiChart({
                   ({ center }) => center - barWidth / 2 >= margin.left && center + barWidth / 2 <= width - margin.right,
               )
         : []
+    // Bars that would overflow the plot are not drawn, so hovering and stepping stay within the drawn ones.
+    const minIndex = isBars && bars.length ? bars[0].i : 0
+    const maxIndex = isBars && bars.length ? bars[bars.length - 1].i : times.length - 1
 
     const handlePointerMove = (e: PointerEvent<SVGRectElement>) => {
         const box = e.currentTarget.getBoundingClientRect()
-        onHoverIndex?.(getNearestIndex(times, x.invert(e.clientX - box.left + margin.left)))
+        const at = x.invert(e.clientX - box.left + margin.left)
+        const index = isBars ? getSpanIndex(times, at, stepMs, sumAlignment) : getNearestIndex(times, at)
+
+        onHoverIndex?.(Math.max(minIndex, Math.min(maxIndex, index)))
     }
 
     const handleKeyDown = (e: KeyboardEvent<SVGSVGElement>) => {
@@ -127,18 +136,31 @@ export default function SpaghettiChart({
 
         e.preventDefault()
         const current = hoverIndex ?? getNearestIndex(times, now ?? times[0])
-        onHoverIndex?.(Math.max(0, Math.min(times.length - 1, current + (e.key === 'ArrowRight' ? 1 : -1))))
+        onHoverIndex?.(Math.max(minIndex, Math.min(maxIndex, current + (e.key === 'ArrowRight' ? 1 : -1))))
     }
 
     const hover = hoverIndex !== null && times[hoverIndex] ? hoverIndex : null
-    const hoverX = hover !== null ? x(times[hover]) : null
+    // A sum is hovered as the period it covers: shaded across, labelled with its start and end.
+    const hoverSpan = hover !== null && isBars ? getSumSpan(times[hover], stepMs, sumAlignment) : null
+    const hoverTime =
+        hover === null ? null : hoverSpan ? getSumBarCenter(times[hover], stepMs, sumAlignment) : times[hover]
+    const hoverX = hoverTime ? x(hoverTime) : null
+    const hoverLabel =
+        hover === null
+            ? null
+            : hoverSpan
+              ? formatPeriodLabel(hoverSpan[0].toISOString(), hoverSpan[1].toISOString(), timeZone, locale)
+              : formatStepLabel(steps[hover], timeZone, locale)
+    const labelHalfWidth = hoverSpan ? PERIOD_LABEL_HALF_WIDTH : HOVER_LABEL_HALF_WIDTH
     const hoverLabelX =
         hoverX === null
             ? null
             : Math.max(
-                  margin.left + UNIT_LABEL_WIDTH + HOVER_LABEL_HALF_WIDTH,
-                  Math.min(width - margin.right - HOVER_LABEL_HALF_WIDTH, hoverX),
+                  margin.left + UNIT_LABEL_WIDTH + labelHalfWidth,
+                  Math.min(width - margin.right - labelHalfWidth, hoverX),
               )
+    const spanLeft = hoverSpan ? Math.max(margin.left, x(hoverSpan[0])) : 0
+    const spanRight = hoverSpan ? Math.min(width - margin.right, x(hoverSpan[1])) : 0
     const tooltipRows =
         hover !== null
             ? series
@@ -210,6 +232,17 @@ export default function SpaghettiChart({
                 )}
                 {showOuter && <path d={geometry.outerBand} fill={theme.band} opacity={theme.bandOuterOpacity} />}
                 {showInner && <path d={geometry.innerBand} fill={theme.band} opacity={theme.bandInnerOpacity} />}
+                {hoverSpan && (
+                    <rect
+                        x={spanLeft}
+                        y={margin.top}
+                        width={Math.max(0, spanRight - spanLeft)}
+                        height={plotBottom - margin.top}
+                        fill={theme.grid}
+                        opacity={0.8}
+                        pointerEvents="none"
+                    />
+                )}
                 {bars.map(({ i, center }) => {
                     const median = stats.median[i]
 
@@ -292,7 +325,9 @@ export default function SpaghettiChart({
                 )}
                 {hover !== null && hoverX !== null && (
                     <g pointerEvents="none">
-                        <line x1={hoverX} x2={hoverX} y1={margin.top} y2={plotBottom} stroke={theme.muted} />
+                        {!isBars && (
+                            <line x1={hoverX} x2={hoverX} y1={margin.top} y2={plotBottom} stroke={theme.muted} />
+                        )}
                         {!compact && hoverLabelX !== null && (
                             <text
                                 x={hoverLabelX}
@@ -302,7 +337,7 @@ export default function SpaghettiChart({
                                 fontWeight={600}
                                 fill={theme.foreground}
                             >
-                                {formatStepLabel(steps[hover], timeZone, locale)}
+                                {hoverLabel}
                             </text>
                         )}
                         {!isBars &&
@@ -352,7 +387,7 @@ export default function SpaghettiChart({
                     className="pointer-events-none absolute top-2 z-10 min-w-40 rounded-md border bg-popover px-2.5 py-2 text-xs shadow-md"
                     style={hoverX > width / 2 ? { right: width - hoverX + 10 } : { left: hoverX + 10 }}
                 >
-                    <div className="mb-1 text-muted-foreground">{formatStepLabel(steps[hover], timeZone, locale)}</div>
+                    <div className="mb-1 text-muted-foreground">{hoverLabel}</div>
                     <div className="mb-1 flex items-center justify-between gap-3 font-semibold">
                         <span>{t('median')}</span>
                         <span>{formatNumber(stats.median[hover], info.decimals)}</span>
