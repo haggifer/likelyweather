@@ -183,7 +183,7 @@
     },
     "landing": {
         "hero": "Compare weather forecasts for your city",
-        "sub": "See what ten weather models predict for any city and how much they disagree. Pick a city to see the median of all models for the next three days.",
+        "sub": "Ten weather models, one city: the median forecast for the next three days.",
         "seeds": "Start with",
         "tiles": {
             "disagree": {

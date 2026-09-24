@@ -183,7 +183,7 @@
     },
     "landing": {
         "hero": "Compara los pronósticos del tiempo para tu ciudad",
-        "sub": "Mira qué predicen diez modelos meteorológicos para cualquier ciudad y cuánto discrepan. Elige una ciudad para ver la mediana de todos los modelos para los próximos tres días.",
+        "sub": "Diez modelos, una ciudad: la mediana del pronóstico para los próximos tres días.",
         "seeds": "Empieza con",
         "tiles": {
             "disagree": {

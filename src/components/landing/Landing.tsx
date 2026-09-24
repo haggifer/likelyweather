@@ -30,29 +30,31 @@ export default function Landing() {
     ] as const
 
     return (
-        <div className="flex flex-col gap-10 py-6">
+        <div className="flex flex-col gap-6 py-6">
             <section className="flex flex-col items-center gap-5 text-center">
                 <h1 className="max-w-3xl text-4xl font-bold tracking-tight text-balance sm:text-5xl">{t('hero')}</h1>
                 <p className="max-w-2xl text-base text-pretty text-muted-foreground">{t('sub')}</p>
-                <SearchBox enableShortcut onSelectCity={(next) => void setSlug(next)} />
-                <div className="flex flex-wrap items-center justify-center gap-2">
-                    <span className="text-xs font-medium text-muted-foreground">{t('seeds')}</span>
-                    {START_WITH.map((city) => (
-                        <button
-                            key={city.id}
-                            type="button"
-                            onClick={() => void setSlug(city.slug)}
-                            aria-pressed={slug === city.slug}
-                            className={cn(
-                                'inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-[13px] font-medium transition-colors hover:border-primary hover:text-primary',
-                                slug === city.slug &&
-                                    'border-primary bg-primary text-primary-foreground hover:text-primary-foreground',
-                            )}
-                        >
-                            <FlagIcon countryCode={city.countryCode} />
-                            {getCityName(city, locale)}
-                        </button>
-                    ))}
+                <div className="flex w-full flex-col items-center gap-3">
+                    <SearchBox enableShortcut onSelectCity={(next) => void setSlug(next)} />
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                        <span className="text-xs font-medium text-muted-foreground">{t('seeds')}</span>
+                        {START_WITH.map((city) => (
+                            <button
+                                key={city.id}
+                                type="button"
+                                onClick={() => void setSlug(city.slug)}
+                                aria-pressed={slug === city.slug}
+                                className={cn(
+                                    'inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-[13px] font-medium transition-colors hover:border-primary hover:text-primary',
+                                    slug === city.slug &&
+                                        'border-primary bg-primary text-primary-foreground hover:text-primary-foreground',
+                                )}
+                            >
+                                <FlagIcon countryCode={city.countryCode} />
+                                {getCityName(city, locale)}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </section>
             <section className="mx-auto w-full max-w-5xl" aria-live="polite">

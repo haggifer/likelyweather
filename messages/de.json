@@ -183,7 +183,7 @@
     },
     "landing": {
         "hero": "Vergleiche Wettervorhersagen für deine Stadt",
-        "sub": "Sieh, was zehn Wettermodelle für jede Stadt vorhersagen und wie sehr sie voneinander abweichen. Wähle eine Stadt, um den Median aller Modelle für die nächsten drei Tage zu sehen.",
+        "sub": "Zehn Wettermodelle, eine Stadt: die Median-Vorhersage für die nächsten drei Tage.",
         "seeds": "Starte mit",
         "tiles": {
             "disagree": {

@@ -183,7 +183,7 @@
     },
     "landing": {
         "hero": "Comparez les prévisions météo de votre ville",
-        "sub": "Voyez ce que prévoient dix modèles météo pour n’importe quelle ville et à quel point ils divergent. Choisissez une ville pour voir la médiane de tous les modèles sur les trois prochains jours.",
+        "sub": "Dix modèles météo, une ville : la prévision médiane des trois prochains jours.",
         "seeds": "Commencer par",
         "tiles": {
             "disagree": {
