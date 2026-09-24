@@ -43,3 +43,7 @@ next-env.d.ts
 # local data store (stands in for Postgres / S3 in the prototype)
 /data/
 !.env.example
+
+# Personal agent settings and notes (.claude/launch.json is shared and stays tracked)
+.claude/settings.local.json
+CLAUDE.local.md
