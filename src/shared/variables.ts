@@ -33,6 +33,9 @@ export interface VariableInfo {
     openMeteoKey: string
     aggregation: Aggregation
     disagreement: DisagreementThresholds
+    tickStep?: number
+    tickSteps?: number[]
+    nonNegative?: boolean
 }
 
 export const VARIABLES: VariableInfo[] = [
@@ -44,6 +47,7 @@ export const VARIABLES: VariableInfo[] = [
         openMeteoKey: 'temperature_2m',
         aggregation: 'instant',
         disagreement: { agree: 2, split: 4.5 },
+        tickStep: 5,
     },
     {
         id: Variable.Wind,
@@ -53,6 +57,8 @@ export const VARIABLES: VariableInfo[] = [
         openMeteoKey: 'wind_speed_10m',
         aggregation: 'instant',
         disagreement: { agree: 1.5, split: 4 },
+        tickStep: 2,
+        nonNegative: true,
     },
     {
         id: Variable.Pressure,
@@ -71,6 +77,9 @@ export const VARIABLES: VariableInfo[] = [
         openMeteoKey: 'precipitation',
         aggregation: 'sum',
         disagreement: { agree: 2, split: 8 },
+        // Both sources report 0.1 mm amounts, so the finest readable step is 0.5 mm.
+        tickSteps: [0.5, 1, 2, 5, 10, 20, 50],
+        nonNegative: true,
     },
 ]
 

@@ -3,18 +3,11 @@ export const HOUR_MS = 3_600_000
 export const STEP_MS = STEP_HOURS * HOUR_MS
 
 export const PAST_HOURS = 24
+export const HOURLY_PAST_HOURS = 12
 export const FORECAST_HOURS = 96
 export const STALE_AFTER_HOURS = 9
 
-export const LEAD_BUCKETS = [24, 48, 72, 96] as const
-export type LeadBucket = (typeof LEAD_BUCKETS)[number]
-
-export const SKILL_WINDOWS = [7, 30, 90] as const
-export type SkillWindow = (typeof SKILL_WINDOWS)[number]
-
-export const MIN_SAMPLES = 20
-export const MIN_TRUTH_CONTRIBUTORS = 5
-export const PRECIP_HIT_MM = 0.2
+export const RAIN_THRESHOLD_MM = 0.2
 export const MAX_COMPARE_CITIES = 4
 export const EVOLUTION_MAX_DAYS = 7
 

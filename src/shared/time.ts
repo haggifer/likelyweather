@@ -1,18 +1,21 @@
-import { HOUR_MS, STEP_MS } from '@/shared/constants'
+import { HOUR_MS, STEP_HOURS } from '@/shared/constants'
 
 export const toIsoMinute = (date: Date) => `${date.toISOString().slice(0, 16)}Z`
 
-export const floorToStep = (date: Date) => new Date(Math.floor(date.getTime() / STEP_MS) * STEP_MS)
+export const floorToHours = (date: Date, hours: number) =>
+    new Date(Math.floor(date.getTime() / (hours * HOUR_MS)) * hours * HOUR_MS)
+
+export const floorToStep = (date: Date) => floorToHours(date, STEP_HOURS)
 
 export const addHours = (date: Date, hours: number) => new Date(date.getTime() + hours * HOUR_MS)
 
 export const hoursBetween = (from: string | Date, to: string | Date) =>
     Math.round((new Date(to).getTime() - new Date(from).getTime()) / HOUR_MS)
 
-export const buildSteps = (start: Date, end: Date) => {
+export const buildSteps = (start: Date, end: Date, stepHours = STEP_HOURS) => {
     const steps: string[] = []
 
-    for (let t = floorToStep(start).getTime(); t <= end.getTime(); t += STEP_MS) {
+    for (let t = floorToHours(start, stepHours).getTime(); t <= end.getTime(); t += stepHours * HOUR_MS) {
         steps.push(toIsoMinute(new Date(t)))
     }
 
@@ -34,4 +37,17 @@ export const getLocalDateKey = (iso: string, timeZone: string) => {
     }
 
     return formatter.format(new Date(iso))
+}
+
+const HOUR_FORMATTERS = new Map<string, Intl.DateTimeFormat>()
+
+export const getLocalHour = (date: Date, timeZone: string) => {
+    let formatter = HOUR_FORMATTERS.get(timeZone)
+
+    if (!formatter) {
+        formatter = new Intl.DateTimeFormat('en-GB', { timeZone, hour: '2-digit', hourCycle: 'h23' })
+        HOUR_FORMATTERS.set(timeZone, formatter)
+    }
+
+    return Number(formatter.format(date))
 }

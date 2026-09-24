@@ -1,4 +1,4 @@
-import { PRECIP_HIT_MM } from '@/shared/constants'
+import { RAIN_THRESHOLD_MM } from '@/shared/constants'
 import { getLocalDateKey, hoursBetween } from '@/shared/time'
 import { DisagreementThresholds, Variable, VARIABLE_BY_ID } from '@/shared/variables'
 
@@ -101,7 +101,7 @@ export const computeChanceOfRain = (series: (number | null)[][], stepCount: numb
     Array.from({ length: stepCount }, (_, i) => {
         const values = getStepValues(series, i)
 
-        return values.length ? values.filter((v) => v > PRECIP_HIT_MM).length / values.length : null
+        return values.length ? values.filter((v) => v > RAIN_THRESHOLD_MM).length / values.length : null
     })
 
 // Precipitation steps are 6-hour sums ending at the step, so each is attributed to the day of its last hour.

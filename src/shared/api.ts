@@ -1,4 +1,4 @@
-import { EVOLUTION_MAX_DAYS, LEAD_BUCKETS, MAX_COMPARE_CITIES, SKILL_WINDOWS } from '@/shared/constants'
+import { EVOLUTION_MAX_DAYS, MAX_COMPARE_CITIES } from '@/shared/constants'
 import { ModelId } from '@/shared/models'
 import { Variable } from '@/shared/variables'
 import { z } from 'zod'
@@ -11,19 +11,22 @@ export enum CityStatus {
 
 export type RunStatus = 'OK' | 'PARTIAL' | 'FAILED'
 export type RunOrigin = 'SCHEDULED' | 'PREVIEW' | 'IMPORT'
-export type TruthMode = 'consensus' | 'self'
-export type Locale = 'en' | 'uk'
+export enum Locale {
+    Uk = 'uk',
+    En = 'en',
+    Es = 'es',
+    De = 'de',
+    Fr = 'fr',
+}
 
-export const LOCALES: Locale[] = ['en', 'uk']
+export const LOCALES: Locale[] = Object.values(Locale)
+export const DEFAULT_LOCALE = Locale.En
 
 const NumberList = z.array(z.number().nullable())
 
 export const VariableSchema = z.enum(Variable)
 export const ModelIdSchema = z.enum(ModelId)
-export const LocaleSchema = z.enum(['en', 'uk'])
-export const TruthModeSchema = z.enum(['consensus', 'self'])
-export const WindowSchema = z.coerce.number().pipe(z.literal(SKILL_WINDOWS))
-export const LeadBucketSchema = z.coerce.number().pipe(z.literal(LEAD_BUCKETS))
+export const LocaleSchema = z.enum(Locale)
 const IsoTime = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?Z$/)
 
 export const GeocodeQuerySchema = z.strictObject({
@@ -92,12 +95,14 @@ export const CitiesQuerySchema = z.strictObject({
     status: z.enum(CityStatus).optional(),
 })
 
-export const PopularQuerySchema = z.strictObject({
-    limit: z.coerce.number().int().min(1).max(24).default(6),
-})
-
 export const VariableQuerySchema = z.strictObject({
     variable: VariableSchema.default(Variable.Temp),
+})
+
+export type Resolution = 'step' | 'hourly'
+
+export const LatestQuerySchema = VariableQuerySchema.extend({
+    resolution: z.enum(['step', 'hourly']).default('step'),
 })
 
 export const SeriesSchema = z.object({ modelId: ModelIdSchema, values: NumberList })
@@ -114,41 +119,6 @@ export const LatestResponseSchema = z.object({
 })
 export type LatestResponse = z.infer<typeof LatestResponseSchema>
 
-export const ScoreboardQuerySchema = z.strictObject({
-    variable: VariableSchema.default(Variable.Temp),
-    window: WindowSchema.default(30),
-    mode: TruthModeSchema.default('consensus'),
-})
-
-export const ErrorSampleSchema = z.object({
-    validTime: z.string(),
-    forecast: z.number(),
-    truth: z.number(),
-    error: z.number(),
-})
-export type ErrorSample = z.infer<typeof ErrorSampleSchema>
-
-export const SkillCellSchema = z.object({
-    modelId: ModelIdSchema,
-    leadBucket: z.number(),
-    n: z.number(),
-    mae: z.number().nullable(),
-    bias: z.number().nullable(),
-    rmse: z.number().nullable(),
-    hitRate: z.number().nullable().optional(),
-    spark: NumberList,
-    worst: z.array(ErrorSampleSchema),
-})
-export type SkillCell = z.infer<typeof SkillCellSchema>
-
-export const ScoreboardResponseSchema = z.object({
-    minN: z.number(),
-    days: z.array(z.string()),
-    daysCollected: z.number(),
-    cells: z.array(SkillCellSchema),
-})
-export type ScoreboardResponse = z.infer<typeof ScoreboardResponseSchema>
-
 export const EvolutionQuerySchema = z.strictObject({
     variable: VariableSchema.default(Variable.Temp),
     validTime: IsoTime,
@@ -164,31 +134,11 @@ export type EvolutionPoint = z.infer<typeof EvolutionPointSchema>
 export const EvolutionResponseSchema = z.object({
     validTime: z.string(),
     points: z.array(EvolutionPointSchema),
-    truth: z.number().nullable(),
 })
 export type EvolutionResponse = z.infer<typeof EvolutionResponseSchema>
 
 export const StepsResponseSchema = z.object({ steps: z.array(z.string()) })
 export type StepsResponse = z.infer<typeof StepsResponseSchema>
-
-export const ModelDetailQuerySchema = z.strictObject({
-    variable: VariableSchema.default(Variable.Temp),
-    window: WindowSchema.default(30),
-    city: z.string().optional(),
-})
-
-export const ModelDetailResponseSchema = z.object({
-    cities: z.array(
-        z.object({
-            slug: z.string(),
-            name: z.string(),
-            biasDaily: z.array(z.object({ day: z.string(), bias: z.number().nullable(), n: z.number() })),
-            errorByLead: z.array(z.object({ leadBucket: z.number(), mae: z.number().nullable(), n: z.number() })),
-        }),
-    ),
-    worst: z.array(ErrorSampleSchema.extend({ slug: z.string(), leadBucket: z.number() })),
-})
-export type ModelDetailResponse = z.infer<typeof ModelDetailResponseSchema>
 
 export const CompareQuerySchema = z.strictObject({
     cities: z
