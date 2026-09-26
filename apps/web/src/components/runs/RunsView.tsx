@@ -48,10 +48,8 @@ export default function RunsView() {
                                 <RunsCards runs={runs.items} cityNames={cityNames} />
                             </div>
                             {isDesktop && (
-                                // useVirtualizer measures a 0×0 scroll element while its wrapper is
-                                // `display: none` and never recovers once the wrapper becomes visible again
-                                // (ResizeObserver does not fire for that transition), so the table is only
-                                // mounted once the viewport is actually wide enough to size it.
+                                // useVirtualizer sizes rows from its scroll box, which has no size while hidden,
+                                // so the table only mounts where it is shown; phones get the card list instead.
                                 <RunsTable runs={runs.items} cityNames={cityNames} />
                             )}
                         </>
