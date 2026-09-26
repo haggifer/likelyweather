@@ -1,4 +1,4 @@
-import { DEFAULT_LOCALE, Locale, LOCALES } from '@/shared/api'
+import { DEFAULT_LOCALE, Locale, LOCALES } from '@fa/shared/api'
 import { getRequestConfig } from 'next-intl/server'
 import { cookies } from 'next/headers'
 

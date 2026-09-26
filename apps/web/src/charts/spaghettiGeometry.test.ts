@@ -7,9 +7,9 @@ import {
     getSumSpan,
 } from '@/charts/spaghettiGeometry'
 import snapshot from '@/fixtures/snapshot-kharkiv.json'
-import { computeEnsemble } from '@/shared/ensemble'
-import { ModelId } from '@/shared/models'
-import { Variable } from '@/shared/variables'
+import { computeEnsemble } from '@fa/shared/ensemble'
+import { ModelId } from '@fa/shared/models'
+import { Variable } from '@fa/shared/variables'
 
 // A real collector snapshot (Kharkiv, 2026-09-23 12:00 UTC) keeps the path data honest.
 const series = Object.entries(snapshot.models).map(([modelId, s]) => ({ modelId: modelId as ModelId, values: s.temp }))

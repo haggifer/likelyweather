@@ -1,6 +1,6 @@
 import { incrementWindow } from '@/server/cache'
 import { HttpError } from '@/server/errors'
-import { ApiError } from '@/shared/api'
+import { ApiError } from '@fa/shared/api'
 import type { NextRequest } from 'next/server'
 import { z, ZodError } from 'zod'
 

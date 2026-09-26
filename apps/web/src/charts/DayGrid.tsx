@@ -1,4 +1,4 @@
-import { formatDayLabel, getLocalMidnights } from '@/lib/format'
+import { formatDayLabel, getLocalMidnights } from '@fa/shared/format'
 import { ScaleTime } from 'd3-scale'
 import { useMemo } from 'react'
 

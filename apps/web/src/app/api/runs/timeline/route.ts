@@ -1,7 +1,7 @@
 import { handle, json, parseQuery } from '@/server/http'
 import { getRuns } from '@/server/store'
-import { TimelineQuerySchema, TimelineResponse } from '@/shared/api'
-import { toIsoMinute } from '@/shared/time'
+import { TimelineQuerySchema, TimelineResponse } from '@fa/shared/api'
+import { toIsoMinute } from '@fa/shared/time'
 
 const DAY_MS = 86_400_000
 

@@ -3,11 +3,11 @@
 import { getYDomain, getYTicks } from '@/charts/scales'
 import useChartTheme from '@/charts/useChartTheme'
 import useElementWidth from '@/charts/useElementWidth'
-import { formatNumber, formatPercent, formatPeriodLabel, formatTime } from '@/lib/format'
-import { Series } from '@/shared/api'
-import { MODEL_BY_ID, ModelId } from '@/shared/models'
-import { addHours, getLocalDateKey, toIsoMinute } from '@/shared/time'
-import { Variable } from '@/shared/variables'
+import { formatNumber, formatPercent, formatPeriodLabel, formatTime } from '@fa/shared/format'
+import { Series } from '@fa/shared/api'
+import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
+import { addHours, getLocalDateKey, toIsoMinute } from '@fa/shared/time'
+import { Variable } from '@fa/shared/variables'
 import { useTranslations } from 'next-intl'
 import {
     Bar,

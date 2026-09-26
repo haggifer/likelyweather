@@ -1,6 +1,6 @@
 import { handle, json } from '@/server/http'
 import { getCities, getRuns } from '@/server/store'
-import { CityStatus, HealthResponse } from '@/shared/api'
+import { CityStatus, HealthResponse } from '@fa/shared/api'
 
 export const GET = handle('read', async () => {
     const [cities, runs] = await Promise.all([getCities(), getRuns()])

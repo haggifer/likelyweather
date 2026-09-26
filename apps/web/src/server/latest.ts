@@ -1,7 +1,7 @@
 import { SeriesGrid, Snapshot } from '@/server/store'
-import { LatestResponse, Series } from '@/shared/api'
-import { MODELS } from '@/shared/models'
-import { SeriesField, Variable, VARIABLE_BY_ID } from '@/shared/variables'
+import { LatestResponse, Series } from '@fa/shared/api'
+import { MODELS } from '@fa/shared/models'
+import { SeriesField, Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 
 const pickSeries = (grid: SeriesGrid, field: SeriesField): Series[] =>
     MODELS.filter((m) => grid.models[m.id]).map((m) => ({ modelId: m.id, values: grid.models[m.id]![field] }))

@@ -1,11 +1,11 @@
 'use client'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { formatTime, formatUtc } from '@/lib/format'
+import { formatTime, formatUtc } from '@fa/shared/format'
 import { cn } from '@/lib/utils'
-import { TimelineResponse } from '@/shared/api'
-import { HOUR_MS } from '@/shared/constants'
-import { toIsoMinute } from '@/shared/time'
+import { TimelineResponse } from '@fa/shared/api'
+import { HOUR_MS } from '@fa/shared/constants'
+import { toIsoMinute } from '@fa/shared/time'
 import { useLocale, useTranslations } from 'next-intl'
 
 interface IProps {

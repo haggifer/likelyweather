@@ -1,7 +1,7 @@
 import { env } from '@/server/env'
 import { fetchWithRetry } from '@/server/sources/fetchWithRetry'
-import { addHours, toIsoMinute } from '@/shared/time'
-import { ModelSeries } from '@/shared/variables'
+import { addHours, toIsoMinute } from '@fa/shared/time'
+import { ModelSeries } from '@fa/shared/variables'
 
 interface MetnoDetails {
     air_temperature?: number

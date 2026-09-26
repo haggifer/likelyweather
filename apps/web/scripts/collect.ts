@@ -20,7 +20,7 @@ const runOnce = async () => {
     const { applyDormancy } = await import('@/server/cities')
     const { collect } = await import('@/server/collector')
     const { acquireJobLock, getCities } = await import('@/server/store')
-    const { CityStatus } = await import('@/shared/api')
+    const { CityStatus } = await import('@fa/shared/api')
 
     const release = await acquireJobLock('collector', LOCK_TTL_SECONDS)
 

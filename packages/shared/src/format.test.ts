@@ -1,4 +1,4 @@
-import { formatPeriodLabel, getLocalMidnights, getTimeZoneOffsetMinutes } from '@/lib/format'
+import { formatPeriodLabel, getLocalMidnights, getTimeZoneOffsetMinutes } from './format'
 
 describe('time zones', () => {
     it('computes offsets including DST', () => {

@@ -1,7 +1,7 @@
 import { cacheGet, cacheSet } from '@/server/cache'
 import { HttpError } from '@/server/errors'
-import { QuotaResponse } from '@/shared/api'
-import { HOUR_MS } from '@/shared/constants'
+import { QuotaResponse } from '@fa/shared/api'
+import { HOUR_MS } from '@fa/shared/constants'
 
 // Daily budget of upstream requests (Open-Meteo, met.no) made on a client's behalf: a city refresh when a newer run
 // exists, or a geocoding search the cache cannot answer. Reading stored data is free. The app-wide cap keeps the

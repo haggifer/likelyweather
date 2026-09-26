@@ -5,7 +5,7 @@ import { CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/componen
 import { useGeocode, useTrackCity } from '@/hooks/queries'
 import useDebouncedValue from '@/hooks/useDebouncedValue'
 import { cn } from '@/lib/utils'
-import { GeocodeResult, Locale } from '@/shared/api'
+import { GeocodeResult, Locale } from '@fa/shared/api'
 import { Command as CommandPrimitive } from 'cmdk'
 import { Loader2, Search } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'

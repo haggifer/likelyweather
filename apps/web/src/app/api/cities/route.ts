@@ -1,6 +1,6 @@
 import { handle, json, parseQuery } from '@/server/http'
 import { getCities } from '@/server/store'
-import { CitiesQuerySchema } from '@/shared/api'
+import { CitiesQuerySchema } from '@fa/shared/api'
 
 export const GET = handle('read', async (req) => {
     const { status } = parseQuery(req, CitiesQuerySchema)

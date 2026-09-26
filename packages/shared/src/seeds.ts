@@ -1,4 +1,4 @@
-import { Locale } from '@/shared/api'
+import { Locale } from './api'
 
 export interface SeedCity {
     id: number

@@ -1,7 +1,7 @@
-import { MAX_COMPARE_CITIES } from '@/shared/constants'
-import { ModelId } from '@/shared/models'
-import { Variable } from '@/shared/variables'
 import { z } from 'zod'
+import { MAX_COMPARE_CITIES } from './constants'
+import { ModelId } from './models'
+import { Variable } from './variables'
 
 export enum CityStatus {
     Active = 'ACTIVE',

@@ -1,6 +1,6 @@
 import { handle, json, parseQuery } from '@/server/http'
 import { getRuns } from '@/server/store'
-import { RunsQuerySchema, RunsResponse } from '@/shared/api'
+import { RunsQuerySchema, RunsResponse } from '@fa/shared/api'
 
 export const GET = handle('read', async (req) => {
     const { limit, cursor } = parseQuery(req, RunsQuerySchema)

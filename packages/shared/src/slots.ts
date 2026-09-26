@@ -1,7 +1,7 @@
-import { LatestResponse, Series } from '@/shared/api'
-import { indexSteps, toStepSeries } from '@/shared/resample'
-import { addHours, floorToHours, getLocalHour, toIsoMinute } from '@/shared/time'
-import { Aggregation } from '@/shared/variables'
+import { LatestResponse, Series } from './api'
+import { indexSteps, toStepSeries } from './resample'
+import { addHours, floorToHours, getLocalHour, toIsoMinute } from './time'
+import { Aggregation } from './variables'
 
 export const SLOT_HOURS = 3
 export const OVERVIEW_HOURS = 72

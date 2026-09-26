@@ -1,10 +1,10 @@
 'use client'
 
 import StatusChip from '@/components/shell/StatusChip'
-import { formatTime } from '@/lib/format'
+import { formatTime } from '@fa/shared/format'
 import { cn } from '@/lib/utils'
-import { STALE_AFTER_HOURS } from '@/shared/constants'
-import { hoursBetween } from '@/shared/time'
+import { STALE_AFTER_HOURS } from '@fa/shared/constants'
+import { hoursBetween } from '@fa/shared/time'
 import { useLocale, useTranslations } from 'next-intl'
 
 interface IProps {

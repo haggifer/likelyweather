@@ -2,9 +2,9 @@
 
 import StatusChip, { ChipTone } from '@/components/shell/StatusChip'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { formatNumber, formatTime } from '@/lib/format'
-import { DayDisagreement, DisagreementLabel } from '@/shared/ensemble'
-import { Variable, VARIABLE_BY_ID } from '@/shared/variables'
+import { formatNumber, formatTime } from '@fa/shared/format'
+import { DayDisagreement, DisagreementLabel } from '@fa/shared/ensemble'
+import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { useLocale, useTranslations } from 'next-intl'
 
 interface IProps {

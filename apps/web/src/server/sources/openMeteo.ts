@@ -1,8 +1,8 @@
 import { env } from '@/server/env'
 import { fetchJson } from '@/server/sources/fetchWithRetry'
-import { ModelId, OPEN_METEO_MODELS } from '@/shared/models'
-import { indexHourlyTimes, toStepSeries } from '@/shared/resample'
-import { ModelSeries, SERIES_FIELDS } from '@/shared/variables'
+import { ModelId, OPEN_METEO_MODELS } from '@fa/shared/models'
+import { indexHourlyTimes, toStepSeries } from '@fa/shared/resample'
+import { ModelSeries, SERIES_FIELDS } from '@fa/shared/variables'
 
 export interface LatLon {
     lat: number

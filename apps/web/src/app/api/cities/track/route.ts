@@ -1,6 +1,6 @@
 import { ensureFreshSnapshot, getPreviewRunId, trackCity } from '@/server/cities'
 import { getClientIp, handle, json, parseBody } from '@/server/http'
-import { TrackBodySchema, TrackResponse } from '@/shared/api'
+import { TrackBodySchema, TrackResponse } from '@fa/shared/api'
 import { after } from 'next/server'
 
 export const POST = handle('track', async (req) => {

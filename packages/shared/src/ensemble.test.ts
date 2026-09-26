@@ -8,8 +8,8 @@ import {
     getStandardDeviation,
     median,
     quantileSorted,
-} from '@/shared/ensemble'
-import { Variable } from '@/shared/variables'
+} from './ensemble'
+import { Variable } from './variables'
 
 describe('quantiles', () => {
     it('interpolates linearly between sorted values', () => {

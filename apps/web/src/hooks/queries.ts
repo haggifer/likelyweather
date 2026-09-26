@@ -11,8 +11,8 @@ import {
     RunsResponse,
     TimelineResponse,
     TrackResponse,
-} from '@/shared/api'
-import { Variable, VARIABLES } from '@/shared/variables'
+} from '@fa/shared/api'
+import { Variable, VARIABLES } from '@fa/shared/variables'
 import {
     keepPreviousData,
     useMutation,

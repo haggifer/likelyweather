@@ -5,9 +5,9 @@ import { HttpError } from '@/server/errors'
 import { quotaExceeded, trySpendQuota } from '@/server/quota'
 import { getPlace } from '@/server/sources/geocoding'
 import { getCities, getCityBySlug, getLatestSnapshot, Snapshot, updateCities } from '@/server/store'
-import { City, CityDetail, CityStatus, Locale, LOCALES } from '@/shared/api'
-import { slugify } from '@/shared/seeds'
-import { floorToStep, toIsoMinute } from '@/shared/time'
+import { City, CityDetail, CityStatus, Locale, LOCALES } from '@fa/shared/api'
+import { slugify } from '@fa/shared/seeds'
+import { floorToStep, toIsoMinute } from '@fa/shared/time'
 
 const DAY_MS = 86_400_000
 

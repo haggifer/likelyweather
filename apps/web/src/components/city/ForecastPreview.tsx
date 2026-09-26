@@ -1,9 +1,9 @@
 'use client'
 
 import SpaghettiChart from '@/charts/SpaghettiChart'
-import { City, LatestResponse } from '@/shared/api'
-import { computeEnsemble } from '@/shared/ensemble'
-import { Variable } from '@/shared/variables'
+import { City, LatestResponse } from '@fa/shared/api'
+import { computeEnsemble } from '@fa/shared/ensemble'
+import { Variable } from '@fa/shared/variables'
 import { useLocale } from 'next-intl'
 import { useMemo, useState } from 'react'
 

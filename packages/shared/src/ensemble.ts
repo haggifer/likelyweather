@@ -1,6 +1,6 @@
-import { RAIN_THRESHOLD_MM } from '@/shared/constants'
-import { getLocalDateKey, hoursBetween } from '@/shared/time'
-import { DisagreementThresholds, Variable, VARIABLE_BY_ID } from '@/shared/variables'
+import { RAIN_THRESHOLD_MM } from './constants'
+import { getLocalDateKey, hoursBetween } from './time'
+import { DisagreementThresholds, Variable, VARIABLE_BY_ID } from './variables'
 
 export type DisagreementLabel = 'agree' | 'mixed' | 'split'
 

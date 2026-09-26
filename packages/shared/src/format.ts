@@ -1,5 +1,5 @@
-import { City, Locale } from '@/shared/api'
-import { Variable, VARIABLE_BY_ID } from '@/shared/variables'
+import { City, Locale } from './api'
+import { Variable, VARIABLE_BY_ID } from './variables'
 
 const INTL_LOCALES: Record<Locale, string> = {
     [Locale.Uk]: 'uk-UA',

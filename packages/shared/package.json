@@ -1,0 +1,21 @@
+{
+    "name": "@fa/shared",
+    "private": true,
+    "type": "module",
+    "exports": {
+        "./*": "./src/*.ts"
+    },
+    "scripts": {
+        "lint": "eslint .",
+        "typecheck": "tsc --noEmit",
+        "test": "vitest run --passWithNoTests"
+    },
+    "dependencies": {
+        "zod": "^4.6.5"
+    },
+    "devDependencies": {
+        "vitest": "^5.0.1",
+        "typescript": "^5",
+        "eslint": "^9"
+    }
+}

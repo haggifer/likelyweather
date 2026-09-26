@@ -2,8 +2,8 @@
 
 import StatusChip, { ChipTone } from '@/components/shell/StatusChip'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { formatUtc } from '@/lib/format'
-import { Run, RunStatus } from '@/shared/api'
+import { formatUtc } from '@fa/shared/format'
+import { Run, RunStatus } from '@fa/shared/api'
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { ExternalLink } from 'lucide-react'

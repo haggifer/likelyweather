@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCities, useRuns, useTimeline } from '@/hooks/queries'
 import useNow from '@/hooks/useNow'
-import { getCityName } from '@/lib/format'
+import { getCityName } from '@fa/shared/format'
 import { useLocale, useTranslations } from 'next-intl'
 
 export default function RunsView() {

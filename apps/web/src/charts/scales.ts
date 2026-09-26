@@ -1,4 +1,4 @@
-import { Variable, VARIABLE_BY_ID } from '@/shared/variables'
+import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { range } from 'd3-array'
 import { scaleLinear } from 'd3-scale'
 

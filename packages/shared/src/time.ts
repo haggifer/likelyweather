@@ -1,4 +1,4 @@
-import { HOUR_MS, STEP_HOURS } from '@/shared/constants'
+import { HOUR_MS, STEP_HOURS } from './constants'
 
 export const toIsoMinute = (date: Date) => `${date.toISOString().slice(0, 16)}Z`
 

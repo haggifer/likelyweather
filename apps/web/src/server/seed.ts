@@ -1,5 +1,5 @@
-import { City, CityStatus } from '@/shared/api'
-import { SEEDS, slugify } from '@/shared/seeds'
+import { City, CityStatus } from '@fa/shared/api'
+import { SEEDS, slugify } from '@fa/shared/seeds'
 
 const SEED_EPOCH = '2026-09-23T00:00:00.000Z'
 

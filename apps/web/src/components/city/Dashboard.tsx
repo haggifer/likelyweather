@@ -11,20 +11,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useCity, useLatest } from '@/hooks/queries'
 import useNow from '@/hooks/useNow'
 import useUrlSync from '@/hooks/useUrlSync'
-import { formatNumber, formatPeriodLabel, formatStepLabel, formatTime, getCityName } from '@/lib/format'
-import { Series } from '@/shared/api'
+import { formatNumber, formatPeriodLabel, formatStepLabel, formatTime, getCityName } from '@fa/shared/format'
+import { Series } from '@fa/shared/api'
 import {
     computeChanceOfRain,
     computeDisagreement,
     computeEnsemble,
     computeMedianDirection,
     EnsembleStats,
-} from '@/shared/ensemble'
-import { MODEL_BY_ID, ModelId, MODELS } from '@/shared/models'
-import { indexSteps, toStepSeries } from '@/shared/resample'
-import { buildSlots, DASHBOARD_HOURS, getSlotStart, SLOT_HOURS, toSlotLatest } from '@/shared/slots'
-import { addHours, toIsoMinute } from '@/shared/time'
-import { Variable, VARIABLE_BY_ID } from '@/shared/variables'
+} from '@fa/shared/ensemble'
+import { MODEL_BY_ID, ModelId, MODELS } from '@fa/shared/models'
+import { indexSteps, toStepSeries } from '@fa/shared/resample'
+import { buildSlots, DASHBOARD_HOURS, getSlotStart, SLOT_HOURS, toSlotLatest } from '@fa/shared/slots'
+import { addHours, toIsoMinute } from '@fa/shared/time'
+import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { setHoverStep, toggleHiddenModel } from '@/store/dashboardSlice'
 import { Loader2 } from 'lucide-react'

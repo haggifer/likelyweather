@@ -1,7 +1,7 @@
 import { ensureFreshSnapshot, requireCity } from '@/server/cities'
 import { getClientIp, handle, json, parseQuery } from '@/server/http'
 import { toLatestResponse } from '@/server/latest'
-import { CompareQuerySchema, CompareResponse } from '@/shared/api'
+import { CompareQuerySchema, CompareResponse } from '@fa/shared/api'
 
 export const GET = handle('read', async (req) => {
     const { cities, variable } = parseQuery(req, CompareQuerySchema)

@@ -1,5 +1,5 @@
-import { addHours, toIsoMinute } from '@/shared/time'
-import { Aggregation } from '@/shared/variables'
+import { addHours, toIsoMinute } from './time'
+import { Aggregation } from './variables'
 
 // Open-Meteo hourly times come as "YYYY-MM-DDTHH:MM" in UTC when timezone=UTC.
 export const indexHourlyTimes = (times: string[]) => new Map(times.map((t, i) => [`${t}Z`, i]))

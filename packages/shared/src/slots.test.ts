@@ -1,4 +1,4 @@
-import { buildSlots, getSlotStart, toSlotSeries } from '@/shared/slots'
+import { buildSlots, getSlotStart, toSlotSeries } from './slots'
 
 const at = (iso: string) => new Date(iso)
 

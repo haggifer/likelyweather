@@ -1,4 +1,4 @@
-import { indexHourlyTimes, indexSteps, toStepSeries } from '@/shared/resample'
+import { indexHourlyTimes, indexSteps, toStepSeries } from './resample'
 
 const TIMES = Array.from({ length: 13 }, (_, h) => `2026-09-23T${String(h).padStart(2, '0')}:00`)
 

@@ -2,7 +2,7 @@
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useQuota } from '@/hooks/queries'
-import { formatTime } from '@/lib/format'
+import { formatTime } from '@fa/shared/format'
 import { cn } from '@/lib/utils'
 import { useLocale, useTranslations } from 'next-intl'
 

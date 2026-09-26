@@ -9,11 +9,11 @@ import {
     writeRaw,
     writeSnapshot,
 } from '@/server/store'
-import { City, Run, RunOrigin, RunStatus } from '@/shared/api'
-import { FORECAST_HOURS, HOUR_MS, PAST_HOURS } from '@/shared/constants'
-import { MODEL_BY_ID, ModelId, MODELS, OPEN_METEO_MODELS } from '@/shared/models'
-import { addHours, buildSteps, compactIso, floorToStep, toIsoMinute } from '@/shared/time'
-import { ModelSeries } from '@/shared/variables'
+import { City, Run, RunOrigin, RunStatus } from '@fa/shared/api'
+import { FORECAST_HOURS, HOUR_MS, PAST_HOURS } from '@fa/shared/constants'
+import { MODEL_BY_ID, ModelId, MODELS, OPEN_METEO_MODELS } from '@fa/shared/models'
+import { addHours, buildSteps, compactIso, floorToStep, toIsoMinute } from '@fa/shared/time'
+import { ModelSeries } from '@fa/shared/variables'
 import { chunk } from 'es-toolkit'
 
 export interface CollectOptions {

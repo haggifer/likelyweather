@@ -2,7 +2,7 @@
 
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { cn } from '@/lib/utils'
-import { Variable, VARIABLES } from '@/shared/variables'
+import { Variable, VARIABLES } from '@fa/shared/variables'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { setVariable } from '@/store/dashboardSlice'
 import { CloudRain, Gauge, LucideIcon, Thermometer, Wind } from 'lucide-react'
