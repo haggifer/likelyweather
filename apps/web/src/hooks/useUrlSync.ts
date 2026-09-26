@@ -1,6 +1,6 @@
-import { Variable } from '@fa/shared/variables'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { markUrlHydrated, setVariable } from '@/store/dashboardSlice'
+import { Variable } from '@fa/shared/variables'
 import { parseAsStringEnum, useQueryState } from 'nuqs'
 import { useEffect } from 'react'
 

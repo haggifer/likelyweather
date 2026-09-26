@@ -1,5 +1,6 @@
 'use client'
 
+import { Locale, LOCALES } from '@fa/shared/api'
 import { Button } from '@fa/ui/components/button'
 import {
     DropdownMenu,
@@ -10,7 +11,6 @@ import {
     DropdownMenuTrigger,
 } from '@fa/ui/components/dropdown-menu'
 import { cn } from '@fa/ui/lib/utils'
-import { Locale, LOCALES } from '@fa/shared/api'
 import { Languages } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'

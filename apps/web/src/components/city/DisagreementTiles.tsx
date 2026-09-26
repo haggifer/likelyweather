@@ -1,10 +1,10 @@
 'use client'
 
 import StatusChip, { ChipTone } from '@/components/shell/StatusChip'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@fa/ui/components/card'
-import { formatNumber, formatTime } from '@fa/shared/format'
 import { DayDisagreement, DisagreementLabel } from '@fa/shared/ensemble'
+import { formatNumber, formatTime } from '@fa/shared/format'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@fa/ui/components/card'
 import { useLocale, useTranslations } from 'next-intl'
 
 interface IProps {

@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@fa/ui/components/card'
 import { RAIN_THRESHOLD_MM } from '@fa/shared/constants'
 import { MODELS } from '@fa/shared/models'
 import { VARIABLES } from '@fa/shared/variables'
+import { Card, CardContent, CardHeader, CardTitle } from '@fa/ui/components/card'
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 

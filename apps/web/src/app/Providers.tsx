@@ -1,9 +1,9 @@
 'use client'
 
-import { Toaster } from '@fa/ui/components/sonner'
-import { TooltipProvider } from '@fa/ui/components/tooltip'
 import { makeQueryClient } from '@/lib/queryClient'
 import { makeStore } from '@/store'
+import { Toaster } from '@fa/ui/components/sonner'
+import { TooltipProvider } from '@fa/ui/components/tooltip'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { ReactNode, useState } from 'react'

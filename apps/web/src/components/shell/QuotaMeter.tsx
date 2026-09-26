@@ -1,8 +1,8 @@
 'use client'
 
-import { Tooltip, TooltipContent, TooltipTrigger } from '@fa/ui/components/tooltip'
 import { useQuota } from '@/hooks/queries'
 import { formatTime } from '@fa/shared/format'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@fa/ui/components/tooltip'
 import { cn } from '@fa/ui/lib/utils'
 import { useLocale, useTranslations } from 'next-intl'
 

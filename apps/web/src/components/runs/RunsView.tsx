@@ -2,11 +2,11 @@
 
 import RunsTable from '@/components/runs/RunsTable'
 import RunsTimeline from '@/components/runs/RunsTimeline'
+import { useCities, useRuns, useTimeline } from '@/hooks/queries'
+import { getCityName } from '@fa/shared/format'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@fa/ui/components/card'
 import { Skeleton } from '@fa/ui/components/skeleton'
-import { useCities, useRuns, useTimeline } from '@/hooks/queries'
 import useNow from '@fa/ui/hooks/useNow'
-import { getCityName } from '@fa/shared/format'
 import { useLocale, useTranslations } from 'next-intl'
 
 export default function RunsView() {

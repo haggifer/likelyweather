@@ -6,3 +6,5 @@ cdk.out
 dist
 .turbo
 apps/web/src/vitest.d.ts
+packages/db/src/generated
+pnpm-workspace.yaml
