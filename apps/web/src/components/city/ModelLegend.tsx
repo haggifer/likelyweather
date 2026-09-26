@@ -1,8 +1,8 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@fa/ui/components/button'
 import { formatNumber } from '@fa/shared/format'
-import { cn } from '@/lib/utils'
+import { cn } from '@fa/ui/lib/utils'
 import { Series } from '@fa/shared/api'
 import { MODEL_BY_ID } from '@fa/shared/models'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'

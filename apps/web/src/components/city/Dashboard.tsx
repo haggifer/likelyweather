@@ -1,15 +1,15 @@
 'use client'
 
-import ChartFrame from '@/charts/ChartFrame'
-import SpaghettiChart from '@/charts/SpaghettiChart'
-import { getNearestIndex } from '@/charts/spaghettiGeometry'
+import ChartFrame from '@fa/charts/ChartFrame'
+import SpaghettiChart from '@fa/charts/SpaghettiChart'
+import { getNearestIndex } from '@fa/charts/spaghettiGeometry'
 import DisagreementTiles from '@/components/city/DisagreementTiles'
 import ModelLegend from '@/components/city/ModelLegend'
 import VariableSwitch from '@/components/city/VariableSwitch'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Skeleton } from '@fa/ui/components/skeleton'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@fa/ui/components/table'
 import { useCity, useLatest } from '@/hooks/queries'
-import useNow from '@/hooks/useNow'
+import useNow from '@fa/ui/hooks/useNow'
 import useUrlSync from '@/hooks/useUrlSync'
 import { formatNumber, formatPeriodLabel, formatStepLabel, formatTime, getCityName } from '@fa/shared/format'
 import { Series } from '@fa/shared/api'
@@ -50,7 +50,7 @@ interface SeriesTableProps {
 const PRECIP_WINDOW_HOURS = 6
 
 // Recharts is the heaviest chart library here and the panel sits below the fold, so it loads after the main chart.
-const PrecipPanel = dynamic(() => import('@/charts/PrecipPanel'), {
+const PrecipPanel = dynamic(() => import('@fa/charts/PrecipPanel'), {
     ssr: false,
     loading: () => <Skeleton className="h-[230px]" />,
 })

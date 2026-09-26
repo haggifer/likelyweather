@@ -1,7 +1,7 @@
 import Providers from '@/app/Providers'
 import Footer from '@/components/shell/Footer'
 import TopBar from '@/components/shell/TopBar'
-import { MODE_RESTORE } from '@/lib/colorMode'
+import { MODE_RESTORE } from '@fa/ui/lib/colorMode'
 import type { Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getTranslations } from 'next-intl/server'

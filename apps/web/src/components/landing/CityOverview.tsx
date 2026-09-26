@@ -1,9 +1,9 @@
 'use client'
 
 import OverviewCard, { OverviewCardSkeleton } from '@/components/city/OverviewCard'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent } from '@fa/ui/components/card'
 import { useCity, useHourlyAll } from '@/hooks/queries'
-import useNow from '@/hooks/useNow'
+import useNow from '@fa/ui/hooks/useNow'
 import { getCityName } from '@fa/shared/format'
 import { LatestResponse } from '@fa/shared/api'
 import { getSlotStart } from '@fa/shared/slots'

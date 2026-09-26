@@ -1,0 +1,8 @@
+{
+    "name": "@fa/fixtures",
+    "private": true,
+    "type": "module",
+    "exports": {
+        "./*": "./*"
+    }
+}

@@ -1,7 +1,7 @@
 'use client'
 
-import { Toaster } from '@/components/ui/sonner'
-import { TooltipProvider } from '@/components/ui/tooltip'
+import { Toaster } from '@fa/ui/components/sonner'
+import { TooltipProvider } from '@fa/ui/components/tooltip'
 import { makeQueryClient } from '@/lib/queryClient'
 import { makeStore } from '@/store'
 import { QueryClientProvider } from '@tanstack/react-query'

@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button'
+import { Button } from '@fa/ui/components/button'
 import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 

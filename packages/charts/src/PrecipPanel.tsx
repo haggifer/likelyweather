@@ -1,10 +1,7 @@
 'use client'
 
-import { getYDomain, getYTicks } from '@/charts/scales'
-import useChartTheme from '@/charts/useChartTheme'
-import useElementWidth from '@/charts/useElementWidth'
-import { formatNumber, formatPercent, formatPeriodLabel, formatTime } from '@fa/shared/format'
 import { Series } from '@fa/shared/api'
+import { formatNumber, formatPercent, formatPeriodLabel, formatTime } from '@fa/shared/format'
 import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { addHours, getLocalDateKey, toIsoMinute } from '@fa/shared/time'
 import { Variable } from '@fa/shared/variables'
@@ -20,6 +17,9 @@ import {
     XAxis,
     YAxis,
 } from 'recharts'
+import { getYDomain, getYTicks } from './scales'
+import useChartTheme from './useChartTheme'
+import useElementWidth from './useElementWidth'
 
 interface IProps {
     steps: string[]

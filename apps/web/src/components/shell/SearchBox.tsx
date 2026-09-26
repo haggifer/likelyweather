@@ -1,10 +1,10 @@
 'use client'
 
 import FlagIcon from '@/components/shell/FlagIcon'
-import { CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command'
+import { CommandEmpty, CommandGroup, CommandItem, CommandList } from '@fa/ui/components/command'
 import { useGeocode, useTrackCity } from '@/hooks/queries'
 import useDebouncedValue from '@/hooks/useDebouncedValue'
-import { cn } from '@/lib/utils'
+import { cn } from '@fa/ui/lib/utils'
 import { GeocodeResult, Locale } from '@fa/shared/api'
 import { Command as CommandPrimitive } from 'cmdk'
 import { Loader2, Search } from 'lucide-react'

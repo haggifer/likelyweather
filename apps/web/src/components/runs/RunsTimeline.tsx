@@ -1,8 +1,8 @@
 'use client'
 
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@fa/ui/components/tooltip'
 import { formatTime, formatUtc } from '@fa/shared/format'
-import { cn } from '@/lib/utils'
+import { cn } from '@fa/ui/lib/utils'
 import { TimelineResponse } from '@fa/shared/api'
 import { HOUR_MS } from '@fa/shared/constants'
 import { toIsoMinute } from '@fa/shared/time'

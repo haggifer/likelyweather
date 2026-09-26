@@ -1,15 +1,9 @@
-import { getYDomain, getYTicks } from '@/charts/scales'
-import {
-    buildSpaghettiGeometry,
-    getNearestIndex,
-    getSpanIndex,
-    getSumBarCenter,
-    getSumSpan,
-} from '@/charts/spaghettiGeometry'
-import snapshot from '@/fixtures/snapshot-kharkiv.json'
+import snapshot from '@fa/fixtures/snapshot-kharkiv.json'
 import { computeEnsemble } from '@fa/shared/ensemble'
 import { ModelId } from '@fa/shared/models'
 import { Variable } from '@fa/shared/variables'
+import { getYDomain, getYTicks } from './scales'
+import { buildSpaghettiGeometry, getNearestIndex, getSpanIndex, getSumBarCenter, getSumSpan } from './spaghettiGeometry'
 
 // A real collector snapshot (Kharkiv, 2026-09-23 12:00 UTC) keeps the path data honest.
 const series = Object.entries(snapshot.models).map(([modelId, s]) => ({ modelId: modelId as ModelId, values: s.temp }))

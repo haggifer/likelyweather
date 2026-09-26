@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@fa/ui/components/card'
 import { RAIN_THRESHOLD_MM } from '@fa/shared/constants'
 import { MODELS } from '@fa/shared/models'
 import { VARIABLES } from '@fa/shared/variables'

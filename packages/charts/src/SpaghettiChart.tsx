@@ -1,7 +1,16 @@
 'use client'
 
-import DayGrid from '@/charts/DayGrid'
-import { getYDomain, getYTicks } from '@/charts/scales'
+import { Series } from '@fa/shared/api'
+import { HOUR_MS } from '@fa/shared/constants'
+import { EnsembleStats } from '@fa/shared/ensemble'
+import { formatNumber, formatPeriodLabel, formatStepLabel } from '@fa/shared/format'
+import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
+import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
+import useNow from '@fa/ui/hooks/useNow'
+import { useTranslations } from 'next-intl'
+import { KeyboardEvent, PointerEvent, useMemo } from 'react'
+import DayGrid from './DayGrid'
+import { getYDomain, getYTicks } from './scales'
 import {
     buildSpaghettiGeometry,
     getNearestIndex,
@@ -9,20 +18,11 @@ import {
     getSumBarCenter,
     getSumSpan,
     Margin,
-} from '@/charts/spaghettiGeometry'
-import useAnimatedDomain from '@/charts/useAnimatedDomain'
-import useChartTheme from '@/charts/useChartTheme'
-import useElementWidth from '@/charts/useElementWidth'
-import WindArrows from '@/charts/WindArrows'
-import useNow from '@/hooks/useNow'
-import { formatNumber, formatPeriodLabel, formatStepLabel } from '@fa/shared/format'
-import { Series } from '@fa/shared/api'
-import { HOUR_MS } from '@fa/shared/constants'
-import { EnsembleStats } from '@fa/shared/ensemble'
-import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
-import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
-import { useTranslations } from 'next-intl'
-import { KeyboardEvent, PointerEvent, useMemo } from 'react'
+} from './spaghettiGeometry'
+import useAnimatedDomain from './useAnimatedDomain'
+import useChartTheme from './useChartTheme'
+import useElementWidth from './useElementWidth'
+import WindArrows from './WindArrows'
 
 interface IProps {
     steps: string[]

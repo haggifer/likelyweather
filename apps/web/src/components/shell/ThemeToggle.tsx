@@ -1,7 +1,7 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { COLOR_MODE_EVENT, getColorMode, setColorMode } from '@/lib/colorMode'
+import { Button } from '@fa/ui/components/button'
+import { COLOR_MODE_EVENT, getColorMode, setColorMode } from '@fa/ui/lib/colorMode'
 import { Moon, Sun } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useSyncExternalStore } from 'react'

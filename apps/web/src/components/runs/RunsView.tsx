@@ -2,10 +2,10 @@
 
 import RunsTable from '@/components/runs/RunsTable'
 import RunsTimeline from '@/components/runs/RunsTimeline'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@fa/ui/components/card'
+import { Skeleton } from '@fa/ui/components/skeleton'
 import { useCities, useRuns, useTimeline } from '@/hooks/queries'
-import useNow from '@/hooks/useNow'
+import useNow from '@fa/ui/hooks/useNow'
 import { getCityName } from '@fa/shared/format'
 import { useLocale, useTranslations } from 'next-intl'
 

@@ -4,7 +4,7 @@
         {
             "name": "forecast-arena",
             "runtimeExecutable": "pnpm",
-            "runtimeArgs": ["dev", "--port", "3222"],
+            "runtimeArgs": ["--filter", "@fa/web", "dev", "--port", "3222"],
             "port": 3222
         }
     ]

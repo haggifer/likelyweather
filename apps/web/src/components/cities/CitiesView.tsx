@@ -2,9 +2,9 @@
 
 import FlagIcon from '@/components/shell/FlagIcon'
 import StatusChip, { ChipTone } from '@/components/shell/StatusChip'
-import { Card, CardContent } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Card, CardContent } from '@fa/ui/components/card'
+import { Skeleton } from '@fa/ui/components/skeleton'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@fa/ui/components/table'
 import { useCities } from '@/hooks/queries'
 import { formatTime, getCityName } from '@fa/shared/format'
 import { CityStatus } from '@fa/shared/api'

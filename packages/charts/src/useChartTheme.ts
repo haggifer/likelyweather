@@ -1,6 +1,6 @@
-import { ChartTheme, FALLBACK_CHART_THEME, readChartTheme } from '@/charts/theme'
-import { COLOR_MODE_EVENT } from '@/lib/colorMode'
+import { COLOR_MODE_EVENT } from '@fa/ui/lib/colorMode'
 import { useSyncExternalStore } from 'react'
+import { ChartTheme, FALLBACK_CHART_THEME, readChartTheme } from './theme'
 
 let snapshot: ChartTheme | null = null
 

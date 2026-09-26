@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@fa/ui/components/button'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -8,8 +8,8 @@ import {
     DropdownMenuRadioGroup,
     DropdownMenuRadioItem,
     DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { cn } from '@/lib/utils'
+} from '@fa/ui/components/dropdown-menu'
+import { cn } from '@fa/ui/lib/utils'
 import { Locale, LOCALES } from '@fa/shared/api'
 import { Languages } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'

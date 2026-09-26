@@ -1,5 +1,5 @@
-import { getYDomain, getYTicks } from '@/charts/scales'
 import { Variable } from '@fa/shared/variables'
+import { getYDomain, getYTicks } from './scales'
 
 const precipTicks = (values: (number | null)[]) => getYTicks(getYDomain(values, Variable.Precip), Variable.Precip, 3)
 

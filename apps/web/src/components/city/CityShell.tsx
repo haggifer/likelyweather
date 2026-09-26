@@ -2,7 +2,7 @@
 
 import CityHeader from '@/components/city/CityHeader'
 import SearchBox from '@/components/shell/SearchBox'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@fa/ui/components/skeleton'
 import { useCity } from '@/hooks/queries'
 import { formatTime, getCityName } from '@fa/shared/format'
 import { Radar } from 'lucide-react'

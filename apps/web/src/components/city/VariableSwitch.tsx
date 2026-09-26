@@ -1,7 +1,7 @@
 'use client'
 
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { cn } from '@/lib/utils'
+import { ToggleGroup, ToggleGroupItem } from '@fa/ui/components/toggle-group'
+import { cn } from '@fa/ui/lib/utils'
 import { Variable, VARIABLES } from '@fa/shared/variables'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { setVariable } from '@/store/dashboardSlice'

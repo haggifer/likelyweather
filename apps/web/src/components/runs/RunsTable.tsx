@@ -1,7 +1,7 @@
 'use client'
 
 import StatusChip, { ChipTone } from '@/components/shell/StatusChip'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@fa/ui/components/table'
 import { formatUtc } from '@fa/shared/format'
 import { Run, RunStatus } from '@fa/shared/api'
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
