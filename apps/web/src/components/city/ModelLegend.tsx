@@ -107,7 +107,7 @@ export default function ModelLegend({ series, median, readoutIndex, readoutLabel
                         >
                             <button
                                 type="button"
-                                className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                                className="flex min-w-0 flex-1 items-center gap-2 text-left max-sm:gap-1"
                                 onClick={() => dispatch(togglePinnedModel(modelId))}
                                 onFocus={() => dispatch(setHighlightedModel(modelId))}
                                 onBlur={() => dispatch(setHighlightedModel(null))}
@@ -117,7 +117,7 @@ export default function ModelLegend({ series, median, readoutIndex, readoutLabel
                                 <LineSwatch color={model.color} dash={model.dash} />
                                 <span
                                     className={cn(
-                                        'truncate max-sm:whitespace-normal max-sm:leading-tight',
+                                        'truncate max-sm:whitespace-normal max-sm:break-words max-sm:leading-tight',
                                         isHidden && 'line-through',
                                     )}
                                     title={model.name}
@@ -129,7 +129,7 @@ export default function ModelLegend({ series, median, readoutIndex, readoutLabel
                                     {model.hotkey}
                                 </kbd>
                             </button>
-                            <span className="w-10 text-right font-medium sm:w-14">
+                            <span className="w-10 text-right font-medium max-sm:w-8 sm:w-14">
                                 {isHidden ? '' : formatNumber(value, decimals)}
                             </span>
                             <Button

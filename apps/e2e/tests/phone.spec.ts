@@ -48,25 +48,31 @@ test('the variable switch stays in view and the model list sits under the chart'
     expect(box?.y ?? 999).toBeLessThan(140)
 })
 
+const PHONE_LEGEND_WIDTHS = [360, 412]
+
 test('model names in the phone legend wrap instead of clipping', async ({ page, isMobile }) => {
     test.skip(!isMobile, 'phone layout only')
-    await page.goto(`/city/${KYIV}`)
-    await expect(page.locator('main svg[role=img]').first()).toBeVisible()
 
-    const chartCard = page.locator('main [data-slot=card]').first()
-    const rows = chartCard.locator('li')
+    for (const width of PHONE_LEGEND_WIDTHS) {
+        await page.setViewportSize({ width, height: 800 })
+        await page.goto(`/city/${KYIV}`)
+        await expect(page.locator('main svg[role=img]').first()).toBeVisible()
 
-    await expect(rows.first()).toBeVisible()
+        const chartCard = page.locator('main [data-slot=card]').first()
+        const rows = chartCard.locator('li')
 
-    const clippedNames = await rows.evaluateAll((lis) =>
-        lis
-            .filter((li) => (li as HTMLElement).offsetParent !== null)
-            .flatMap((li) => Array.from(li.querySelectorAll('span.truncate')))
-            .filter((span) => span.scrollWidth > span.clientWidth)
-            .map((span) => span.textContent),
-    )
+        await expect(rows.first()).toBeVisible()
 
-    expect(clippedNames).toEqual([])
+        const clippedNames = await rows.evaluateAll((lis) =>
+            lis
+                .filter((li) => (li as HTMLElement).offsetParent !== null)
+                .flatMap((li) => Array.from(li.querySelectorAll('span.truncate')))
+                .filter((span) => span.scrollWidth > span.clientWidth)
+                .map((span) => span.textContent),
+        )
+
+        expect(clippedNames, `clipped at ${width}px`).toEqual([])
+    }
 })
 
 test('runs and cities are cards on phones and tables elsewhere', async ({ page, isMobile }) => {
