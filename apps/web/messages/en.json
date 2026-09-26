@@ -190,19 +190,19 @@
         "europeOnly": "Europe only",
         "sources": {
             "title": "Sources",
-            "body": "Nine numerical models come from the Open-Meteo forecast API and one from MET Norway’s Locationforecast, both fetched hourly. The city dashboard places every value on a 6-hour UTC grid (00, 06, 12, 18); the landing overview uses 3-hour slots on the city’s local clock (00, 03, 06…). Temperature, wind and pressure are the values at the step; precipitation is the total of the hours since the previous step.\nRegional models return data only inside their domain, so a city outside Europe shows up to eight models. MET Norway publishes hourly values for about the first 60 hours only; later slots use the other models."
+            "body": "Nine numerical models come from the Open-Meteo forecast API and one from MET Norway’s Locationforecast. Every run is collected at 00, 06, 12 and 18 UTC (or on demand once a newer run exists) and stored hour by hour, from 3 hours before the run to 108 hours after it.\nThe charts use 3-hour slots on the city’s local clock (00, 03, 06…), starting at the slot the data arrived in: 72 hours on the landing overview, 96 hours on the city dashboard and in Compare. Temperature, wind and pressure are the values at the slot; precipitation is the amount of the 3 hours after it, and hovering a bar selects those 3 hours. The dashboard’s precipitation panel adds 6-hour totals.\nRegional models return data only inside their domain, so a city outside Europe shows up to eight models. MET Norway publishes hourly values for about the first 60 hours only; later slots use the other models."
         },
         "median": {
             "title": "Median and spread",
-            "body": "The median is the middle value of all models that returned data for a step (with an even count, the mean of the two middle values). The dashboard’s bands show the range from the lowest to the highest model and the middle half of the models. Wind direction uses a circular median, so 350° and 10° meet at north. The chance of rain is the share of models forecasting more than {rain} mm in the step."
+            "body": "The median is the middle value of all models that returned data for a step (with an even count, the mean of the two middle values). The dashboard’s bands show the range from the lowest to the highest model and the middle half of the models. Wind direction uses a circular median, so 350° and 10° meet at north. The chance of rain is the share of models forecasting more than {rain} mm in a 6-hour window of the precipitation panel."
         },
         "disagreement": {
             "title": "Disagreement",
-            "body": "For temperature, wind and pressure the daily disagreement is the average, over the day’s future steps, of the spread between the highest and the lowest model. For precipitation it is the range of the models’ daily totals. Days are in the city’s local time. Thresholds:"
+            "body": "For temperature, wind and pressure the daily disagreement is the average, over the day’s future steps, of the spread between the highest and the lowest model. For precipitation it is the range of the models’ daily totals, each hour counted on the day it ends. Days are in the city’s local time. Thresholds:"
         },
         "limits": {
             "title": "Limits",
-            "body": "Model values are grid-point values, not the weather at a street corner. The models are compared with each other, not with what actually happened: measuring which model has been right is a separate feature planned after the MVP. This prototype stores data in local JSON files and caches in memory; the production design uses Postgres, Redis and S3."
+            "body": "Model values are grid-point values, not the weather at a street corner; the grid point’s elevation can differ from the city’s, which matters for temperature. Agreement is not accuracy: models that share data or physics can agree and still be wrong together. The models are compared with each other, not with what actually happened: measuring which model has been right is a separate feature planned after the MVP."
         },
         "thresholds": "{variable}: agree under {agree} {unit}, split from {split} {unit}",
         "attribution": "Weather data by Open-Meteo.com (CC BY 4.0) and MET Norway (CC BY 4.0). Geocoding by Open-Meteo, based on GeoNames."

@@ -1,6 +1,6 @@
 # Methodology
 
-How Forecast Arena collects forecasts and combines them in the prototype. The in-app `/methodology` page is a short version of this file. The MVP compares the models with each other, not with what actually happened; measuring which model has been right is a separate, post-MVP feature (DECISIONS P17).
+How Forecast Arena collects forecasts and combines them. The in-app `/methodology` page is a short version of this file. The MVP compares the models with each other, not with what actually happened; measuring which model has been right is a separate, post-MVP feature (DECISIONS P17).
 
 ## Sources
 
