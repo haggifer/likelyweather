@@ -53,6 +53,7 @@ Ukrainian, English, Spanish, German and French (language menu in the top bar; th
 | `pnpm test`                                           | Vitest in every package; database tests run when `DATABASE_URL` is reachable           |
 | `pnpm lint` / `typecheck` / `format` / `format:check` | ESLint, TypeScript, Prettier with organize-imports                                     |
 | `pnpm check:messages`                                 | Key parity across the five catalogs and literal key usage in code                      |
+| `pnpm knip`                                           | Unused files, exports and dependencies across the workspace (`knip.jsonc`)             |
 | `pnpm e2e`                                            | Playwright flows on desktop and phone against a fake upstream (run `pnpm build` first) |
 | `pnpm collect`                                        | Scheduled collector run (see above); holds a Redis lock so two runs never overlap      |
 | `pnpm import:csv -- <files>`                          | Import reference-collector CSVs (`.csv` or `.csv.gz`) as IMPORT runs                   |
@@ -96,10 +97,10 @@ What is built and what is still planned; the choices behind each piece are in DE
 - **API:** Express 5 REST on AWS Lambda (Web Adapter) behind CloudFront, with the same zod contract.
 - **Data:** Prisma on Postgres (Neon) with forecasts partitioned by issue time; Redis (Upstash) for the geocode and preview caches, rate limits and the collector lock; an S3 archive of raw upstream responses.
 - **Collector:** a scheduled Lambda function (EventBridge Scheduler, every 6 hours).
-- **Infrastructure and tooling:** one AWS CDK stack; a pnpm and Turborepo monorepo (`apps/web`, `apps/api`, `apps/collector`, `packages/shared`, `packages/charts`, `packages/ui`, `packages/db`, `packages/fixtures`, `infra`); CI runs lint, typecheck, tests, the catalog check, end-to-end tests, the build and `cdk synth`.
+- **Infrastructure and tooling:** one AWS CDK stack; a pnpm and Turborepo monorepo (`apps/web`, `apps/api`, `apps/collector`, `packages/shared`, `packages/charts`, `packages/ui`, `packages/db`, `packages/fixtures`, `infra`); CI runs lint, knip, typecheck, tests, the catalog check, end-to-end tests, the build and `cdk synth`.
 - **Optional:** a daily Gemini Flash brief with a claim checker.
 
-Built and running locally: the monorepo, Express, Prisma and Postgres with partitions, Redis, the collector with its Lambda handler, the S3 archive path and the CSV import. Also in place: CI (`.github/workflows/ci.yml`: format, catalog check, lint, typecheck, tests against Postgres and Redis services, build) and `pnpm check:messages`. Playwright covers the main flows and accessibility (`pnpm e2e`). The CDK stack (`infra/`) synthesizes and is tested, with the web app on Lambda instead of Amplify (DECISIONS P35, P36); it has not been deployed. Not yet: the first deployment and the Gemini brief. Truth, skill scores, the scoreboard and the evolution view are out of the MVP (DECISIONS P17, P20).
+Built and running locally: the monorepo, Express, Prisma and Postgres with partitions, Redis, the collector with its Lambda handler, the S3 archive path and the CSV import. Also in place: CI (`.github/workflows/ci.yml`: format, catalog check, lint, knip, typecheck, tests against Postgres and Redis services, build) and `pnpm check:messages`. Playwright covers the main flows and accessibility (`pnpm e2e`). The CDK stack (`infra/`) synthesizes and is tested, with the web app on Lambda instead of Amplify (DECISIONS P35, P36); it has not been deployed. Not yet: the first deployment and the Gemini brief. Truth, skill scores, the scoreboard and the evolution view are out of the MVP (DECISIONS P17, P20).
 
 ## Design decisions
 

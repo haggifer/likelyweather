@@ -1,0 +1,45 @@
+{
+    "$schema": "https://unpkg.com/knip@6/schema-jsonc.json",
+    "workspaces": {
+        ".": {
+            "entry": ["scripts/*.mjs"],
+        },
+        "apps/collector": {
+            // Bundled for Lambda by build.mjs (esbuild entryPoints).
+            "entry": ["src/handler.ts"],
+        },
+        "apps/e2e": {
+            // Started by playwright.config.ts as a webServer command.
+            "entry": ["fake-upstream.mjs"],
+        },
+        "apps/web": {},
+        "infra": {
+            // cdk.json runs the app as `npx tsx bin/forecast-arena.ts`.
+            "entry": ["bin/forecast-arena.ts"],
+            // tsx runs the CDK app; the workspace links make Turbo build the API and collector bundles before the
+            // stack tests read them.
+            "ignoreDependencies": ["tsx", "@fa/api", "@fa/collector"],
+        },
+        // Internal packages: a package export that no workspace imports is dead code, not public API.
+        "packages/charts": {
+            "includeEntryExports": true,
+        },
+        "packages/db": {
+            "includeEntryExports": true,
+            // Imported by the Prisma client generated into the git-ignored src/generated.
+            "ignoreDependencies": ["@prisma/client"],
+        },
+        "packages/fixtures": {},
+        "packages/server": {
+            "includeEntryExports": true,
+            // The tests read fixture files by path; the link makes Turbo rerun them when the fixtures change.
+            "ignoreDependencies": ["@fa/fixtures"],
+        },
+        "packages/shared": {
+            "includeEntryExports": true,
+        },
+        "packages/ui": {
+            "includeEntryExports": true,
+        },
+    },
+}

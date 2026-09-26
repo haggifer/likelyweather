@@ -11,6 +11,7 @@ pnpm db:up                   # Postgres and Redis in Docker
 pnpm db:deploy && pnpm db:seed
 pnpm dev                     # API :4000 and web :3000
 pnpm lint
+pnpm knip                    # unused files, exports and dependencies (knip.jsonc)
 pnpm typecheck
 pnpm test                    # database tests run when DATABASE_URL is reachable, and are skipped otherwise
 pnpm check:messages          # catalog key parity and literal key usage

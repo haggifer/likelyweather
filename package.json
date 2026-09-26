@@ -5,6 +5,7 @@
         "dev": "docker compose up -d --wait && turbo run dev --filter=@fa/api --filter=@fa/web",
         "build": "turbo run build",
         "lint": "turbo run lint",
+        "knip": "knip",
         "typecheck": "turbo run typecheck",
         "test": "turbo run test",
         "format": "prettier --write .",
@@ -23,13 +24,14 @@
         "cdk:bootstrap": "pnpm --filter @fa/infra run bootstrap"
     },
     "devDependencies": {
+        "eslint": "^9",
+        "eslint-plugin-react-hooks": "^7",
+        "knip": "6.38.0",
         "prettier": "^3.9.8",
         "prettier-plugin-organize-imports": "^4.3.0",
         "turbo": "^2.11.4",
         "typescript": "^5",
-        "eslint": "^9",
         "typescript-eslint": "^8",
-        "eslint-plugin-react-hooks": "^7",
         "vitest": "^5.0.1"
     },
     "packageManager": "pnpm@11.20.0"

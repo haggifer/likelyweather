@@ -45,6 +45,7 @@ jobs:
             - run: pnpm db:deploy
             - run: pnpm db:seed
             - run: pnpm lint
+            - run: pnpm knip
             - run: pnpm typecheck
             - run: pnpm test
             - run: pnpm build
