@@ -44,7 +44,7 @@ export default function VariableSwitch({ className }: IProps) {
                         value={id}
                         aria-label={t(id)}
                         title={t(id)}
-                        className="gap-1.5 px-2.5 text-xs pointer-coarse:h-9"
+                        className="gap-1.5 px-2.5 text-xs pointer-coarse:h-9 max-sm:flex-1"
                     >
                         <Icon className="size-3.5" />
                         <span className={cn(id !== variable && 'max-sm:sr-only')}>{t(id)}</span>

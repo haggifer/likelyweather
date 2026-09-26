@@ -40,8 +40,8 @@ export default function CityHeader({ city }: IProps) {
     const handleRefresh = () => void queryClient.refetchQueries({ queryKey: ['latest', city.slug], type: 'active' })
 
     return (
-        <div className="mb-(--card-gap) flex flex-col gap-3">
-            <Button asChild variant="ghost" size="sm" className="-ml-2 self-start text-muted-foreground">
+        <div className="mb-(--card-gap) flex flex-col gap-2 sm:gap-3">
+            <Button asChild variant="ghost" size="sm" className="-ml-2 self-start text-muted-foreground max-sm:hidden">
                 <Link href={`/?city=${city.slug}`}>
                     <ArrowLeft /> {t('back')}
                 </Link>
@@ -51,11 +51,23 @@ export default function CityHeader({ city }: IProps) {
             ) : (
                 <div className="flex min-h-12 flex-wrap items-center gap-x-4 gap-y-2">
                     <div className="flex min-w-0 items-center gap-1.5">
-                        <h1 className="flex min-w-0 items-center gap-2.5 text-2xl tracking-tight">
+                        <Button
+                            asChild
+                            variant="ghost"
+                            size="icon-sm"
+                            className="-ml-1.5 shrink-0 text-muted-foreground sm:hidden"
+                        >
+                            <Link href={`/?city=${city.slug}`} aria-label={t('back')} title={t('back')}>
+                                <ArrowLeft />
+                            </Link>
+                        </Button>
+                        <h1 className="flex min-w-0 items-center gap-2.5 text-xl tracking-tight sm:text-2xl">
                             <FlagIcon countryCode={city.countryCode} className="h-4 w-6 shrink-0" />
-                            <span className="truncate">
+                            <span className="truncate" title={region ? `${name}, ${region}` : name}>
                                 <span className="font-bold">{name}</span>
-                                {region && <span className="font-medium text-muted-foreground">, {region}</span>}
+                                {region && (
+                                    <span className="font-medium text-muted-foreground max-sm:hidden">, {region}</span>
+                                )}
                             </span>
                         </h1>
                         <Button
@@ -95,7 +107,8 @@ export default function CityHeader({ city }: IProps) {
                             disabled={isFetching}
                             title={t('refreshTitle')}
                         >
-                            <RefreshCw className={cn(isFetching && 'animate-spin')} /> {t('refresh')}
+                            <RefreshCw className={cn(isFetching && 'animate-spin')} />{' '}
+                            <span className="max-sm:sr-only">{t('refresh')}</span>
                         </Button>
                     </div>
                 </div>

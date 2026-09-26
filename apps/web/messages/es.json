@@ -96,7 +96,8 @@
         "unpin": "Soltar",
         "show": "Mostrar {model}",
         "hide": "Ocultar {model}",
-        "hint": "Pasa el cursor por un modelo para resaltarlo y haz clic para fijarlo. Las teclas 1–9 y 0 muestran u ocultan modelos."
+        "hint": "Pasa el cursor por un modelo para resaltarlo y haz clic para fijarlo. Las teclas 1–9 y 0 muestran u ocultan modelos.",
+        "hintTouch": "Toca un modelo para fijarlo; el ojo lo oculta."
     },
     "disagreement": {
         "title": "Discrepancia por día",

@@ -31,3 +31,19 @@ test('the dashboard chart labels its days', async ({ page }) => {
     await expect(labels.first()).toBeVisible()
     expect(await labels.count()).toBeGreaterThanOrEqual(3)
 })
+
+test('the variable switch stays in view and the model list sits under the chart', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'phone layout only')
+    await page.goto(`/city/${KYIV}`)
+    await expect(page.locator('main svg[role=img]').first()).toBeVisible()
+
+    const chartCard = page.locator('main [data-slot=card]').first()
+
+    await expect(chartCard.getByRole('button', { name: /^Hide / }).first()).toBeVisible()
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+
+    const box = await page.getByRole('radiogroup', { name: 'Variable' }).boundingBox()
+
+    expect(box?.y ?? -1).toBeGreaterThanOrEqual(0)
+    expect(box?.y ?? 999).toBeLessThan(140)
+})

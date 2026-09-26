@@ -26,7 +26,7 @@ interface SwatchProps {
 }
 
 const LineSwatch = ({ color, dash, width = 18 }: SwatchProps) => (
-    <svg width={width} height="6" aria-hidden="true" className="shrink-0">
+    <svg width={width} height="6" aria-hidden="true" className="shrink-0 max-sm:w-3">
         <line
             x1="1"
             x2={width - 1}
@@ -89,7 +89,7 @@ export default function ModelLegend({ series, median, readoutIndex, readoutLabel
                     <span className="text-xs font-normal text-muted-foreground">{unit}</span>
                 </span>
             </div>
-            <ul className="grid grid-cols-1 gap-x-3 gap-y-0.5 sm:grid-cols-2 lg:grid-cols-1">
+            <ul className="grid grid-cols-2 gap-x-3 gap-y-0.5 lg:grid-cols-1">
                 {rows.map(({ modelId, value, isHidden }) => {
                     const model = MODEL_BY_ID[modelId]
                     const isPinned = pinned.includes(modelId)
@@ -98,7 +98,7 @@ export default function ModelLegend({ series, median, readoutIndex, readoutLabel
                         <li
                             key={modelId}
                             className={cn(
-                                'group flex h-(--row-height) items-center gap-2 rounded-md px-1.5 text-[13px] hover:bg-muted',
+                                'group flex h-(--row-height) items-center gap-1.5 rounded-md px-1.5 text-[13px] max-sm:text-xs sm:gap-2 hover:bg-muted',
                                 isPinned && 'bg-accent',
                                 isHidden && 'opacity-45',
                             )}
@@ -115,13 +115,15 @@ export default function ModelLegend({ series, median, readoutIndex, readoutLabel
                                 title={isPinned ? t('unpin') : t('pin')}
                             >
                                 <LineSwatch color={model.color} dash={model.dash} />
-                                <span className={cn('truncate', isHidden && 'line-through')}>{model.name}</span>
+                                <span className={cn('truncate', isHidden && 'line-through')} title={model.name}>
+                                    {model.name}
+                                </span>
                                 {isPinned && <Pin className="size-3 shrink-0 text-muted-foreground" />}
-                                <kbd className="ml-auto hidden rounded border px-1 font-mono text-[10px] text-muted-foreground group-hover:inline">
+                                <kbd className="ml-auto hidden rounded border px-1 font-mono text-[10px] text-muted-foreground pointer-fine:group-hover:inline">
                                     {model.hotkey}
                                 </kbd>
                             </button>
-                            <span className="w-14 text-right font-medium">
+                            <span className="w-10 text-right font-medium sm:w-14">
                                 {isHidden ? '' : formatNumber(value, decimals)}
                             </span>
                             <Button
@@ -138,7 +140,10 @@ export default function ModelLegend({ series, median, readoutIndex, readoutLabel
                     )
                 })}
             </ul>
-            <p className="text-[11px] leading-snug text-muted-foreground">{t('hint')}</p>
+            <p className="text-[11px] leading-snug text-muted-foreground pointer-coarse:hidden">{t('hint')}</p>
+            <p className="hidden text-[11px] leading-snug text-muted-foreground pointer-coarse:block">
+                {t('hintTouch')}
+            </p>
         </div>
     )
 }

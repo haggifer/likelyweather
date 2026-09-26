@@ -96,7 +96,8 @@
         "unpin": "Unpin",
         "show": "Show {model}",
         "hide": "Hide {model}",
-        "hint": "Hover a model to highlight it, click to pin. Keys 1–9 and 0 toggle models."
+        "hint": "Hover a model to highlight it, click to pin. Keys 1–9 and 0 toggle models.",
+        "hintTouch": "Tap a model to pin it; the eye hides it."
     },
     "disagreement": {
         "title": "Disagreement by day",

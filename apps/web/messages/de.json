@@ -96,7 +96,8 @@
         "unpin": "Lösen",
         "show": "{model} zeigen",
         "hide": "{model} ausblenden",
-        "hint": "Maus über ein Modell hebt es hervor, Klick heftet es an. Die Tasten 1–9 und 0 blenden Modelle ein und aus."
+        "hint": "Maus über ein Modell hebt es hervor, Klick heftet es an. Die Tasten 1–9 und 0 blenden Modelle ein und aus.",
+        "hintTouch": "Tippen auf ein Modell heftet es an, das Auge blendet es aus."
     },
     "disagreement": {
         "title": "Uneinigkeit pro Tag",

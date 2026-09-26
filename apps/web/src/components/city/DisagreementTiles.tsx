@@ -33,9 +33,15 @@ export default function DisagreementTiles({ days, variable }: IProps) {
                     })}
                 </CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-[repeat(auto-fill,minmax(112px,1fr))] gap-2">
+            <CardContent
+                tabIndex={0}
+                className="grid grid-cols-[repeat(auto-fill,minmax(112px,1fr))] gap-2 max-sm:flex max-sm:snap-x max-sm:snap-mandatory max-sm:overflow-x-auto max-sm:pb-1"
+            >
                 {days.map((d) => (
-                    <div key={d.day} className="flex flex-col gap-1.5 rounded-md border p-2.5">
+                    <div
+                        key={d.day}
+                        className="flex flex-col gap-1.5 rounded-md border p-2.5 max-sm:w-28 max-sm:shrink-0 max-sm:snap-start"
+                    >
                         <span className="text-xs text-muted-foreground">
                             {formatTime(`${d.day}T12:00:00Z`, 'UTC', locale, {
                                 weekday: 'short',

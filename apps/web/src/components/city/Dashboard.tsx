@@ -72,7 +72,7 @@ const SeriesTable = ({
     <Table className="text-xs">
         <TableHeader>
             <TableRow>
-                <TableHead>{timeLabel}</TableHead>
+                <TableHead className="sticky left-0 z-[1] bg-card">{timeLabel}</TableHead>
                 <TableHead className="text-right">{medianLabel}</TableHead>
                 {series.map((s) => (
                     <TableHead key={s.modelId} className="text-right">
@@ -84,7 +84,9 @@ const SeriesTable = ({
         <TableBody>
             {steps.map((step, i) => (
                 <TableRow key={step}>
-                    <TableCell className="whitespace-nowrap">{formatStepLabel(step, timeZone, locale)}</TableCell>
+                    <TableCell className="sticky left-0 z-[1] bg-card whitespace-nowrap">
+                        {formatStepLabel(step, timeZone, locale)}
+                    </TableCell>
                     <TableCell className="text-right font-semibold">
                         {formatNumber(stats.median[i], decimals)}
                     </TableCell>
@@ -212,6 +214,13 @@ export default function Dashboard({ slug }: IProps) {
         return () => window.removeEventListener('keydown', handleKey)
     }, [latest, dispatch])
 
+    // On phones the switch stays under the top bar, so another variable is one tap away wherever the page is scrolled.
+    const variableBar = (
+        <div className="self-start max-sm:sticky max-sm:top-(--topbar-h) max-sm:z-20 max-sm:-mx-4 max-sm:self-stretch max-sm:bg-background/95 max-sm:px-4 max-sm:py-2 max-sm:backdrop-blur">
+            <VariableSwitch className="max-sm:w-full" />
+        </div>
+    )
+
     if (!city) return null
 
     const cityName = getCityName(city, locale)
@@ -219,7 +228,7 @@ export default function Dashboard({ slug }: IProps) {
     if (!latest || !derived || !now) {
         return (
             <div className="flex flex-col gap-(--card-gap)">
-                <VariableSwitch className="self-start" />
+                {variableBar}
                 <div className="flex items-center gap-2 text-sm text-muted-foreground" role="status">
                     <Loader2 className="size-4 animate-spin" />
                     {latestQuery.isError
@@ -284,7 +293,7 @@ export default function Dashboard({ slug }: IProps) {
 
     return (
         <div className="flex flex-col gap-(--card-gap)">
-            <VariableSwitch className="self-start" />
+            {variableBar}
             <div className="grid gap-(--card-gap) lg:grid-cols-[minmax(0,1fr)_320px]">
                 <ChartFrame
                     title={tv(variable)}
@@ -320,8 +329,9 @@ export default function Dashboard({ slug }: IProps) {
                     {variable === Variable.Wind && (
                         <p className="mt-1 text-xs text-muted-foreground">{t('windArrows')}</p>
                     )}
+                    <div className="mt-3 border-t pt-3 sm:hidden">{legend}</div>
                 </ChartFrame>
-                <div className="rounded-(--radius) border bg-card p-3">{legend}</div>
+                <div className="rounded-(--radius) border bg-card p-3 max-sm:hidden">{legend}</div>
             </div>
             <div className="grid gap-(--card-gap) lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
                 <DisagreementTiles days={derived.disagreement} variable={variable} />
