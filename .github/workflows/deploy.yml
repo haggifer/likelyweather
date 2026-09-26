@@ -33,7 +33,7 @@ jobs:
               with:
                   role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
                   aws-region: ${{ vars.AWS_REGION }}
-            - run: pnpm cdk:deploy -- --require-approval never
+            - run: pnpm cdk:deploy --require-approval never
               env:
                   BUDGET_EMAIL: ${{ secrets.BUDGET_EMAIL }}
                   GITHUB_REPO: ${{ github.repository }}
