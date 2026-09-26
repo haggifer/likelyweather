@@ -37,3 +37,5 @@ jobs:
               env:
                   BUDGET_EMAIL: ${{ secrets.BUDGET_EMAIL }}
                   GITHUB_REPO: ${{ github.repository }}
+                  # Set the variable to 0 on accounts whose Lambda concurrency limit is too low to reserve any
+                  COLLECTOR_RESERVED_CONCURRENCY: ${{ vars.COLLECTOR_RESERVED_CONCURRENCY || '1' }}
