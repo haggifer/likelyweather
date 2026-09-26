@@ -2,4 +2,7 @@
 node_modules
 pnpm-lock.yaml
 data
-docs/PROJECT_GUIDE.md
+cdk.out
+dist
+.turbo
+apps/web/src/vitest.d.ts

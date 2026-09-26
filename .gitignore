@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -11,14 +11,14 @@
 !.yarn/versions
 
 # testing
-/coverage
+coverage/
 
 # next.js
-/.next/
-/out/
+.next/
+out/
 
 # production
-/build
+build/
 
 # misc
 .DS_Store
@@ -41,9 +41,16 @@ yarn-error.log*
 next-env.d.ts
 
 # local data store (stands in for Postgres / S3 in the prototype)
-/data/
+data/
 !.env.example
 
 # Personal agent settings and notes (.claude/launch.json is shared and stays tracked)
 .claude/settings.local.json
 CLAUDE.local.md
+
+# build and tool output
+.turbo/
+dist/
+cdk.out/
+playwright-report/
+test-results/
