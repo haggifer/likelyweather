@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "dev": "next dev",
-        "build": "next build",
+        "build": "next build && node build-lambda.mjs",
         "start": "next start",
         "lint": "eslint",
         "typecheck": "next typegen && tsc --noEmit",
@@ -64,6 +64,7 @@
         "tsx": "^4.23.15",
         "typescript": "^5",
         "vitest": "^5.0.1",
-        "@fa/fixtures": "workspace:*"
+        "@fa/fixtures": "workspace:*",
+        "yazl": "^3.3.1"
     }
 }

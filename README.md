@@ -92,14 +92,14 @@ docs/             DECISIONS.md (design decisions), METHODOLOGY.md (grids, slots,
 
 What is built and what is still planned; the choices behind each piece are in DECISIONS P29 onwards.
 
-- **Web:** Next.js App Router, Tailwind v4 and shadcn/ui with a token system, Redux Toolkit for UI state, TanStack Query for server state, TanStack Table and Virtual, Recharts, D3 for the hero charts, next-intl (uk, en, es, de, fr). Hosted on Amplify.
+- **Web:** Next.js App Router, Tailwind v4 and shadcn/ui with a token system, Redux Toolkit for UI state, TanStack Query for server state, TanStack Table and Virtual, Recharts, D3 for the hero charts, next-intl (uk, en, es, de, fr). On Lambda behind CloudFront (the target named Amplify Hosting, which does not support Next.js 16).
 - **API:** Express 5 REST on AWS Lambda (Web Adapter) behind CloudFront, with the same zod contract.
 - **Data:** Prisma on Postgres (Neon) with forecasts partitioned by issue time; Redis (Upstash) for the geocode and preview caches, rate limits and the collector lock; an S3 archive of raw upstream responses.
 - **Collector:** a scheduled Lambda function (EventBridge Scheduler, every 6 hours).
 - **Infrastructure and tooling:** one AWS CDK stack; a pnpm and Turborepo monorepo (`apps/web`, `apps/api`, `apps/collector`, `packages/shared`, `packages/charts`, `packages/ui`, `packages/db`, `packages/fixtures`, `infra`); CI runs lint, typecheck, tests, the catalog check, end-to-end tests, the build and `cdk synth`.
 - **Optional:** a daily Gemini Flash brief with a claim checker.
 
-Built and running locally: the monorepo, Express, Prisma and Postgres with partitions, Redis, the collector with its Lambda handler, the S3 archive path and the CSV import. Also in place: CI (`.github/workflows/ci.yml`: format, catalog check, lint, typecheck, tests against Postgres and Redis services, build) and `pnpm check:messages`. Playwright covers the main flows and accessibility (`pnpm e2e`). Not yet: the CDK stack and deployment, and the Gemini brief. Truth, skill scores, the scoreboard and the evolution view are out of the MVP (DECISIONS P17, P20).
+Built and running locally: the monorepo, Express, Prisma and Postgres with partitions, Redis, the collector with its Lambda handler, the S3 archive path and the CSV import. Also in place: CI (`.github/workflows/ci.yml`: format, catalog check, lint, typecheck, tests against Postgres and Redis services, build) and `pnpm check:messages`. Playwright covers the main flows and accessibility (`pnpm e2e`). The CDK stack (`infra/`) synthesizes and is tested, with the web app on Lambda instead of Amplify (DECISIONS P35, P36); it has not been deployed. Not yet: the first deployment and the Gemini brief. Truth, skill scores, the scoreboard and the evolution view are out of the MVP (DECISIONS P17, P20).
 
 ## Design decisions
 

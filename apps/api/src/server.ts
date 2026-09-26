@@ -1,4 +1,9 @@
-import { createApp } from './app'
+import { loadSecrets } from '@fa/server/secrets'
+
+// Secrets first: the app's modules read process.env when they load.
+await loadSecrets()
+
+const { createApp } = await import('./app')
 
 // Locally the API listens on API_PORT; on Lambda the Web Adapter forwards requests to PORT (8080 by default).
 const port = Number(process.env.PORT ?? process.env.API_PORT ?? 4000)

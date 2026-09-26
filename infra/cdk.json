@@ -1,0 +1,5 @@
+{
+    "app": "npx tsx bin/forecast-arena.ts",
+    "watch": { "include": ["bin/**", "lib/**"] },
+    "context": {}
+}

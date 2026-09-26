@@ -10,3 +10,5 @@ allowBuilds:
   prisma: true
   sharp: false
   unrs-resolver: false
+minimumReleaseAgeExclude:
+  - aws-cdk-lib@2.271.0

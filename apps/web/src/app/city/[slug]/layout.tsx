@@ -1,26 +1,28 @@
 import CityShell from '@/components/city/CityShell'
-import { City } from '@fa/shared/api'
+import { getCountryName } from '@fa/shared/format'
 import type { Metadata } from 'next'
+import { getLocale } from 'next-intl/server'
 
-const API_ORIGIN = process.env.API_ORIGIN ?? 'http://localhost:4000'
+// "new-york-us-5128581" → "New York, United States". The slug carries the name and the country code, so the page
+// title needs no request to the API (the web server may not be able to reach it, see DECISIONS P35).
+const toTitle = (slug: string, locale: string) => {
+    const match = /^(.+)-([a-z]{2})-\d+$/.exec(slug)
 
-// The city list, not /cities/:slug, because that endpoint records a view.
-const findCity = async (slug: string) => {
-    try {
-        const res = await fetch(`${API_ORIGIN}/api/cities`, { next: { revalidate: 300 } })
-        const { items } = (await res.json()) as { items: City[] }
+    if (!match) return slug
 
-        return items.find((c) => c.slug === slug)
-    } catch {
-        return undefined
-    }
+    const [, name, countryCode] = match
+    const cityName = name
+        .split('-')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ')
+
+    return `${cityName}, ${getCountryName(countryCode, countryCode.toUpperCase(), locale)}`
 }
 
 export const generateMetadata = async ({ params }: LayoutProps<'/city/[slug]'>): Promise<Metadata> => {
     const { slug } = await params
-    const city = await findCity(slug)
 
-    return { title: city ? `${city.name}, ${city.country}` : slug }
+    return { title: toTitle(slug, await getLocale()) }
 }
 
 export default async function CityLayout({ children, params }: LayoutProps<'/city/[slug]'>) {

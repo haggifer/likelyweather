@@ -263,3 +263,26 @@ Decided by the author after comparing it with a Postgres-only design: Redis stay
 - **`/api/*` forwarding moved from `next.config` rewrites to `src/proxy.ts`.** Rewrites are fixed at build time, so a production build kept forwarding to the default API port; the proxy reads `API_ORIGIN` per request. The e2e suite found this, and also that `loadLocalEnv` replaced empty variables (an empty `REDIS_URL` meant "no Redis" but was overwritten from `.env`); it now only fills unset ones.
 - **Fixed from the axe run:** the search box's `aria-controls` pointed at a result list that was not rendered while the box was empty; the list is now always mounted and hidden.
 - **Not done: visual snapshots.** Baselines are platform-specific (fonts, antialiasing), so ones made on Windows would fail on the Linux runner. They should be generated on CI, for example with a manually triggered job that uploads them; the flows above already cover layout at both widths.
+
+## P35. The web app runs on Lambda, not Amplify Hosting (2026-09-26)
+
+Amplify Hosting documents Next.js support up to version 15, and Next.js 16 support is an open issue. The guide's fallback, Vercel, would add a second provider and account. Instead the web app runs like the API:
+
+- `output: 'standalone'`, packaged by `apps/web/build-lambda.mjs` into `.next/lambda.zip` with the static assets copied in and an executable `run.sh`, behind the Lambda Web Adapter, as a third function in the one CDK stack. CloudFront sends pages to it uncached (they depend on the language cookie and the time), `/_next/static/*` to it with long edge caching, and `/api/*` to the API.
+- **pnpm symlinks.** On Windows the standalone output links back to the repository's `node_modules`; the packager writes each link as a relative symlink to the traced copy inside the zip (6 MB, 64 MB unpacked). Checked by unzipping and running it in a `node:22-slim` container: pages return 200.
+- **Why the zip is built by hand:** CDK zips assets without the execute bit on Windows, and the Web Adapter runs `run.sh`. The API's `lambda.zip` is made the same way.
+- The city page title now comes from the slug (name and country code) instead of an API request, because the web function cannot call the IAM-protected API URL, and the CloudFront URL would be a circular reference in the stack.
+- Your setup no longer needs Amplify.
+
+## P36. The CDK stack (2026-09-26)
+
+`infra/lib/forecast-arena-stack.ts`, verified with `cdk synth` and 7 template tests (no deploy yet):
+
+- **Functions** (Node 22, arm64): web and API behind the Web Adapter (layer version 30) with IAM-authenticated function URLs reached only through CloudFront origin access control; the collector (`handler.handler`, 10 minutes, reserved concurrency 1, configurable to 0 for new accounts whose concurrency limit is still 10).
+- **Secrets** stay in SSM Parameter Store under `/forecast-arena`; the functions get only `SSM_PREFIX` and read them on a cold start (`packages/server/src/secrets.ts`), because Lambda environment variables cannot reference SecureStrings.
+- **POSTs through CloudFront** to an IAM-protected function URL need the body's SHA-256 in `x-amz-content-sha256`; the web client sends it (`apps/web/src/lib/api.ts`).
+- **Schedule**: EventBridge Scheduler `cron(0 0/6 * * ? *)`, 2 retries within an hour, then an SQS dead-letter queue; alarms on collector errors and on the queue, e-mailed through SNS.
+- **Storage**: a private, encrypted S3 bucket for run archives, Infrequent Access at 90 days, deleted at 400; logs kept 14 days.
+- **Deploys**: a GitHub OIDC provider and a role only the repository's default branch can assume, allowed only to assume CDK's bootstrap roles; `.github/workflows/deploy.yml` runs once the role ARN is set as a repository variable.
+- **Budget**: $5 a month, e-mail at 80 % actual and 100 % forecast. Template tests assert there is no VPC, NAT gateway, ElastiCache or RDS.
+- Not done: `cdk diff` on pull requests (the deploy role is limited to the default branch), a custom domain.

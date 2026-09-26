@@ -18,7 +18,8 @@
         "@fa/shared": "workspace:*",
         "es-toolkit": "^1.52.0",
         "ioredis": "^5.8.2",
-        "zod": "^4.6.5"
+        "zod": "^4.6.5",
+        "@aws-sdk/client-ssm": "^3.899.0"
     },
     "devDependencies": {
         "@types/node": "^22",

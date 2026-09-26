@@ -1,0 +1,28 @@
+{
+    "name": "@fa/infra",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "synth": "cdk synth --quiet",
+        "diff": "cdk diff",
+        "deploy": "cdk deploy",
+        "bootstrap": "cdk bootstrap",
+        "lint": "eslint .",
+        "typecheck": "tsc --noEmit",
+        "test": "vitest run"
+    },
+    "dependencies": {
+        "aws-cdk-lib": "^2.271.0",
+        "constructs": "^10.4.2"
+    },
+    "devDependencies": {
+        "@fa/api": "workspace:*",
+        "@fa/collector": "workspace:*",
+        "@types/node": "^22",
+        "aws-cdk": "^2.1143.0",
+        "eslint": "^9",
+        "tsx": "^4.23.15",
+        "typescript": "^5",
+        "vitest": "^5.0.1"
+    }
+}

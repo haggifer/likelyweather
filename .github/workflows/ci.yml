@@ -48,6 +48,8 @@ jobs:
             - run: pnpm typecheck
             - run: pnpm test
             - run: pnpm build
+            # Synthesizes the stack from the fresh bundles; no AWS credentials are needed.
+            - run: pnpm cdk:synth
 
     e2e:
         runs-on: ubuntu-latest

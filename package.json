@@ -16,7 +16,11 @@
         "collect": "pnpm --filter @fa/collector run collect",
         "import:csv": "pnpm --filter @fa/collector run import:csv",
         "check:messages": "node scripts/check-messages.mjs",
-        "e2e": "pnpm --filter @fa/e2e run e2e"
+        "e2e": "pnpm --filter @fa/e2e run e2e",
+        "cdk:synth": "pnpm --filter @fa/infra run synth",
+        "cdk:diff": "pnpm --filter @fa/infra run diff",
+        "cdk:deploy": "pnpm --filter @fa/infra run deploy",
+        "cdk:bootstrap": "pnpm --filter @fa/infra run bootstrap"
     },
     "devDependencies": {
         "prettier": "^3.9.8",

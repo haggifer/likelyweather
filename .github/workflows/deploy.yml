@@ -1,0 +1,39 @@
+name: Deploy
+
+# Deploys the CDK stack from the default branch through GitHub OIDC (no stored AWS keys). Inactive until the
+# repository variable AWS_DEPLOY_ROLE_ARN exists, which the first, manual `pnpm cdk:deploy` makes possible.
+on:
+    push:
+        branches: [main]
+    workflow_dispatch:
+
+permissions:
+    id-token: write
+    contents: read
+
+concurrency:
+    group: deploy
+    cancel-in-progress: false
+
+jobs:
+    deploy:
+        if: vars.AWS_DEPLOY_ROLE_ARN != ''
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        steps:
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: pnpm
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm build
+            - uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+                  aws-region: ${{ vars.AWS_REGION }}
+            - run: pnpm cdk:deploy -- --require-approval never
+              env:
+                  BUDGET_EMAIL: ${{ secrets.BUDGET_EMAIL }}
+                  GITHUB_REPO: ${{ github.repository }}
