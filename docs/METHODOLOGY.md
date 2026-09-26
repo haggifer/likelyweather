@@ -21,7 +21,7 @@ Every run is anchored at `issueTime = floor(now, 6 h)` (00, 06, 12, 18 UTC) and 
 
 ## Local 3-hour slots
 
-The client builds every chart (the landing overview, the city dashboard and compare) from the hourly grid (`src/shared/slots.ts`):
+The client builds every chart (the landing overview, the city dashboard and compare) from the hourly grid (`packages/shared/src/slots.ts`):
 
 - The chart starts at the local 3-hour slot the data arrived in (local 00, 03, 06…) and covers 72 hours on the overview (25 slots, 3 hours apart) and 96 hours on the dashboard and compare (33 slots). Slots stay on whole UTC hours, so a half-hour time zone gets slots at :30 local; after a DST change inside the window the later slots sit one hour off the local marks until the next refresh.
 - Instant values are read at each slot. Precipitation at a slot is the amount of the 3 hours after it, so the first readout of a fresh chart is the coming 3 hours. A sum with a missing hour is null.
@@ -34,7 +34,7 @@ The client builds every chart (the landing overview, the city dashboard and comp
 
 For each step, over the models with a value: median, quartiles (linear interpolation), min and max. Hidden models are hidden from view only; the median and bands always use every available model.
 
-- Disagreement per local day: for temperature, wind and pressure, the mean over the day's future steps of (max − min) across models; for precipitation, the range of the models' daily totals, each total attributed to the day of its last hour. Labels: Agree below the `agree` threshold, Split from the `split` threshold, Mixed between (`src/shared/variables.ts`).
+- Disagreement per local day: for temperature, wind and pressure, the mean over the day's future steps of (max − min) across models; for precipitation, the range of the models' daily totals, each total attributed to the day of its last hour. Labels: Agree below the `agree` threshold, Split from the `split` threshold, Mixed between (`packages/shared/src/variables.ts`).
 - Chance of rain per window: share of models above 0.2 mm in that 6-hour total of the precipitation panel.
 - Median wind direction: the circular median (the model direction that minimises the summed angular distance to the others).
 

@@ -1,8 +1,8 @@
 # Decisions
 
-The choices made while building the prototype (from 2026-09-23), including every place it deliberately departs from the target architecture in the [README](../README.md#target-architecture), and what it would take to converge. Each entry says what was decided, why, and what was rejected where that matters.
+The choices made while building the prototype (from 2026-09-23), including every place it deliberately departs from the target architecture in the [README](../README.md#target-architecture), and what it would take to converge. Each entry says what was decided, why, and what was rejected where that matters. Entries P1 to P28 describe the single-app prototype and keep its paths: `src/shared` is now `packages/shared/src`, `src/charts` is `packages/charts/src`, `src/server` is `packages/server/src`, and the rest of `src` is `apps/web/src`.
 
-## P1. One Next.js app instead of the pnpm + Turborepo monorepo
+## P1. One Next.js app instead of the pnpm + Turborepo monorepo (superseded by P29)
 
 The prototype is a single Next.js 16 app so it runs with `pnpm dev` and nothing else. The target's packages map onto folders:
 
@@ -17,17 +17,17 @@ The prototype is a single Next.js 16 app so it runs with `pnpm dev` and nothing 
 
 Converging: move each folder into its package; imports already go through `@/shared`, `@/server`, `@/charts`.
 
-## P2. Next.js route handlers instead of Express 5 on Lambda
+## P2. Next.js route handlers instead of Express 5 on Lambda (superseded by P32)
 
 Same REST paths, same zod schemas (`src/shared/api.ts`), same `{error: {code, message}}` shape, same `Cache-Control: public, max-age=300` on public reads and the same per-IP rate limits (120 reads/min, 30 geocode/min, 10 tracks/h). `src/server/http.ts` is the thin handler wrapper; moving to Express is a mechanical port of each `route.ts`.
 
-## P3. JSON files instead of Postgres and S3
+## P3. JSON files instead of Postgres and S3 (superseded by P30)
 
 Docker was not running on the build machine and the prototype should run without it. `src/server/store.ts` keeps the target's table shapes: `data/cities.json` (City), `data/runs.json` (CollectionRun), `data/forecasts/<cityId>/<issueTime>.json` (Forecast rows in columnar form per run and city), `data/raw/<runId>/*.json` (the S3 raw archive). Read-modify-write cycles take a cross-process file lock so the collector CLI and the dev server never interleave. `/api/runs/:id/archive` returns the raw JSON directly instead of a presigned URL.
 
 Converging: implement the same exported functions with Prisma; nothing above `store.ts` changes.
 
-## P4. In-process cache instead of Redis
+## P4. In-process cache instead of Redis (superseded by P31)
 
 `src/server/cache.ts` stands in for Redis with the same key names and TTLs: the geocode cache (24 h), fixed-window rate limits and request de-duplication. The previous-runs cache went with P20. The target's preview and `/latest` payload caches have no stand-in; the file store and de-duplication cover them locally. State lives on `globalThis`, so it is per process, which is exactly why the target uses Redis across Lambda instances; that is acceptable for a single local process. The collector lock is a lock file with a 10-minute expiry (`acquireJobLock`), the equivalent of `SET lock:collector NX EX 600`.
 
@@ -208,3 +208,48 @@ Left to the author's agent to decide. Measured at 375 × 812 before the change: 
 - **Precipitation panel.** When a 6-hour window gets less than 28 px, every other hour and chance label is shown; the tooltip still has every window.
 - **Legend.** Two columns while it sits under the chart (tablets), one beside it from `lg`. On phones it stays one column: the 36 px rows are the touch targets.
 - **Unchanged.** Data tables (cities, runs) scroll sideways inside their own container, which suits tables of that width; compare already fitted.
+
+## P29. The monorepo (2026-09-26)
+
+The prototype converged on the target layout: `apps/web`, `apps/api`, `apps/collector`, and `packages/shared`, `ui`, `charts`, `db`, `fixtures`.
+
+- **`packages/server` is an addition to the target layout.** The API's preview path and the collector run the same code (sources, collector, store, cache, quota, archive). Putting it in one package keeps both apps thin entry points; the alternative, one app importing the other, would couple two deployables.
+- **Packages ship TypeScript source**, with explicit `exports`: Next.js transpiles them (`transpilePackages`), `tsx` runs them in development, esbuild bundles them for Lambda, and Vitest reads them directly. There is no per-package build step except `prisma generate`. A new file in `ui` or `charts` needs an `exports` entry.
+- **Imports inside a package are relative**; the `@/` alias exists only in `apps/web`, because another package's tsconfig paths do not apply when it is imported.
+- **Tailwind** scans `packages/ui` and `packages/charts` through `@source` in the web app's `globals.css`.
+- **`apps/web/AGENTS.md`** holds the block `next dev` maintains; the repository rules stay in the root `AGENTS.md`.
+- **Line endings** are LF in the working tree (`.gitattributes`), matching Prettier.
+
+## P30. Postgres schema and partitions (2026-09-26)
+
+- **Forecast** has one row per city, issue time, model and hour, and its primary key is that natural key: a partitioned table needs the partition key (`issueTime`) in every unique constraint, so the target's surrogate `id` was dropped. With one hourly grid (P26) the `grid` column went too.
+- **Weekly RANGE partitions on `issueTime`**, Monday to Monday UTC. The init migration declares the partitioned table; `ensureForecastPartitions` creates the week of a write and the next one (once per week and process), and the scheduled run drops weeks older than `RETENTION_DAYS` (14) and their `Snapshot` rows. Runs are kept. Prisma sees no drift from the partitions (checked with `migrate diff`).
+- **A `Snapshot` table** (city and issue time → run, origin, fetch time, met.no `Last-Modified`) replaces the prototype's per-file metadata, and says which run's rows are current when a scheduled run replaces a preview of the same issue.
+- **Prisma 7 with the `pg` driver adapter everywhere.** Neon's pooled endpoint accepts ordinary TCP connections, so Docker, CI and Lambda share one adapter; the Neon-specific adapter was not needed.
+- **City list writes** keep the prototype's read-modify-write shape, serialized by a transaction-scoped advisory lock; only changed rows are written.
+- **Not created:** `GeocodeCache` (Redis is the cache; a miss simply asks the geocoder) and `Brief` (the optional phase 6 brief is not built).
+
+## P31. Redis stays, but never on the critical path (2026-09-26)
+
+Decided by the author after comparing it with a Postgres-only design: Redis stays, on Upstash's free plan only (no card, so no bill); ElastiCache, which bills a minimum even when idle, is never used.
+
+- **Uses:** the geocode cache (24 h), the `/latest` payload cache (5 min, keyed by run id so a new run never serves a stale entry), fixed-window rate limits, the daily quota (one atomic Lua check-and-increment for the client and the app), and the collector lock (`SET NX EX`).
+- **Fail-open.** Every Redis call has a one-second timeout and a fallback: no cache, no limit, lock granted. A refused or slow Redis costs latency, never availability. The collector's Lambda also runs with a concurrency of one, so a missing lock cannot double-run it.
+- **Without `REDIS_URL`** the same interface runs in process memory; tests use that.
+- Concurrent refreshes of one city are still de-duplicated in process; across Lambda instances a duplicate refresh writes the same run id and rows, so it only costs an extra upstream call.
+
+## P32. Express REST API (2026-09-26)
+
+- The Next.js route handlers became an Express 5 app with the same paths, zod schemas, error shape, cache headers and limits. Next.js forwards `/api/*` to it locally (`API_ORIGIN`); on AWS CloudFront routes `/api/*` before requests reach Next.js.
+- **Client identity** comes from `CloudFront-Viewer-Address`; `X-Forwarded-For` is only trusted when that header is absent (local development).
+- **Tracking a city no longer pre-fetches its preview in the background.** A Lambda function is frozen as soon as its response is sent, so background work would stall; the page's first `/latest` request fetches it.
+- **Run archives** are one JSON document per run (the run plus every raw response), written to `RAW_DIR` locally or to S3 when `RAW_BUCKET` is set. The archive endpoint serves the document locally and redirects to a 10-minute presigned S3 URL on AWS, so the web app's link works in both.
+- The city page's title reads the city list, not `/cities/:slug`, which records a view.
+- The API is bundled with esbuild into one ESM file; the same bundle runs under Node locally (`pnpm --filter @fa/api start`) and behind the Lambda Web Adapter.
+
+## P33. Collector app and CSV import (2026-09-26)
+
+- `runScheduled` (lock, dormancy and queue promotion, collection, retention) is shared by the CLI (`pnpm collect`) and the Lambda handler. A FAILED run throws so EventBridge Scheduler retries it and the dead-letter queue raises the alarm; PARTIAL runs succeed.
+- A run is stored before its snapshots, which reference it; if the process dies mid-write it stays FAILED.
+- **`pnpm import:csv`**, not `pnpm import`: `import` is a built-in pnpm command (it converts another package manager's lockfile) and deleted `pnpm-lock.yaml` when first tried.
+- The importer reads both header versions of the reference Python collector by column name, matches cities by coordinates within 0.05° (its CSVs spell "Odessa", the geocoder "Odesa"), takes the issue time from `issue_time` floored to 6 hours or from the file name, and keeps each 6-hourly row at its own valid time. Fixtures in `packages/fixtures/csv`; five of the six gzip files in the author's Drive folder failed their checksum, so the fixtures are small hand-made files in the same formats.
