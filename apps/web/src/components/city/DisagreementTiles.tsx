@@ -38,7 +38,7 @@ export default function DisagreementTiles({ days, variable }: IProps) {
                 tabIndex={days.length > 0 ? 0 : undefined}
                 role={days.length > 0 ? 'region' : undefined}
                 aria-label={days.length > 0 ? t('title') : undefined}
-                className="grid grid-cols-[repeat(auto-fill,minmax(112px,1fr))] gap-2 max-sm:flex max-sm:snap-x max-sm:snap-mandatory max-sm:overflow-x-auto max-sm:pb-1"
+                className="grid grid-cols-[repeat(auto-fill,minmax(112px,1fr))] gap-2 rounded-md outline-none max-sm:flex max-sm:snap-x max-sm:snap-mandatory max-sm:overflow-x-auto max-sm:pb-1 focus-visible:ring-2 focus-visible:ring-ring"
             >
                 {days.map((d) => (
                     <div

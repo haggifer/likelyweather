@@ -71,8 +71,8 @@ const SeriesTable = ({
 }: SeriesTableProps) => (
     <Table className="text-xs">
         <TableHeader>
-            <TableRow>
-                <TableHead className="sticky left-0 z-[1] bg-card">{timeLabel}</TableHead>
+            <TableRow className="group">
+                <TableHead className="sticky left-0 z-1 bg-card group-hover:bg-muted/50">{timeLabel}</TableHead>
                 <TableHead className="text-right">{medianLabel}</TableHead>
                 {series.map((s) => (
                     <TableHead key={s.modelId} className="text-right">
@@ -83,8 +83,8 @@ const SeriesTable = ({
         </TableHeader>
         <TableBody>
             {steps.map((step, i) => (
-                <TableRow key={step}>
-                    <TableCell className="sticky left-0 z-[1] bg-card whitespace-nowrap">
+                <TableRow key={step} className="group">
+                    <TableCell className="sticky left-0 z-1 bg-card whitespace-nowrap group-hover:bg-muted/50">
                         {formatStepLabel(step, timeZone, locale)}
                     </TableCell>
                     <TableCell className="text-right font-semibold">
@@ -237,7 +237,7 @@ export default function Dashboard({ slug }: IProps) {
                 </div>
                 <div className="grid gap-(--card-gap) lg:grid-cols-[minmax(0,1fr)_300px]">
                     <Skeleton className="h-[400px]" />
-                    <Skeleton className="h-[400px]" />
+                    <Skeleton className="h-[400px] max-sm:hidden" />
                 </div>
                 <div className="grid gap-(--card-gap) lg:grid-cols-2">
                     <Skeleton className="h-[220px]" />

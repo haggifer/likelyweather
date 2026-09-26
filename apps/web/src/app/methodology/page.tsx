@@ -36,8 +36,8 @@ export default async function MethodologyPage() {
                         {section === 'sources' && (
                             <ul className="mt-1 grid gap-1 sm:grid-cols-2">
                                 {MODELS.map((m) => (
-                                    <li key={m.id} className="grid grid-cols-[1rem_1fr] items-center gap-x-2">
-                                        <span className="h-0.5 w-4 rounded" style={{ background: m.color }} />
+                                    <li key={m.id} className="grid grid-cols-[1rem_1fr] items-start gap-x-2">
+                                        <span className="mt-2.5 h-0.5 w-4 rounded" style={{ background: m.color }} />
                                         <span>
                                             <span className="font-medium">{m.name}</span>{' '}
                                             <span className="text-muted-foreground">

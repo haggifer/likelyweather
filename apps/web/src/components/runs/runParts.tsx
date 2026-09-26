@@ -12,7 +12,11 @@ export const getRunOriginLabel = (run: Run, t: (key: string) => string, cityName
         ? `${t(`origins.${run.origin}`)} · ${cityNames.get(run.cityId) ?? run.cityId}`
         : t(`origins.${run.origin}`)
 
-export const RunArchiveLink = ({ run }: { run: Run }) =>
+interface IProps {
+    run: Run
+}
+
+export const RunArchiveLink = ({ run }: IProps) =>
     run.archivePath ? (
         <a
             href={`/api/runs/${run.id}/archive`}

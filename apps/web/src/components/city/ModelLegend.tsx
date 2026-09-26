@@ -120,7 +120,6 @@ export default function ModelLegend({ series, median, readoutIndex, readoutLabel
                                         'truncate max-sm:whitespace-normal max-sm:break-words max-sm:leading-tight',
                                         isHidden && 'line-through',
                                     )}
-                                    title={model.name}
                                 >
                                     {model.name}
                                 </span>
@@ -129,7 +128,7 @@ export default function ModelLegend({ series, median, readoutIndex, readoutLabel
                                     {model.hotkey}
                                 </kbd>
                             </button>
-                            <span className="w-10 text-right font-medium max-sm:w-8 sm:w-14">
+                            <span className="text-right font-medium max-sm:w-8 sm:w-14">
                                 {isHidden ? '' : formatNumber(value, decimals)}
                             </span>
                             <Button

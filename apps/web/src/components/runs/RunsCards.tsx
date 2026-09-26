@@ -40,7 +40,9 @@ export default function RunsCards({ runs, cityNames }: IProps) {
                             <dt className="text-muted-foreground">{t('cities')}</dt>
                             <dd>{run.citiesCount}</dd>
                             <dt className="text-muted-foreground">{t('warnings')}</dt>
-                            <dd>{run.warnings.length ? run.warnings.join('; ') : '0'}</dd>
+                            <dd className="min-w-0 wrap-anywhere">
+                                {run.warnings.length ? run.warnings.join('; ') : '0'}
+                            </dd>
                             <dt className="text-muted-foreground">{t('duration')}</dt>
                             <dd>{formatRunDuration(run)}</dd>
                             <dt className="text-muted-foreground">{t('archive')}</dt>
