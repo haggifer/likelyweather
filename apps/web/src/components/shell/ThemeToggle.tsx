@@ -1,19 +1,14 @@
 'use client'
 
 import { Button } from '@fa/ui/components/button'
-import { COLOR_MODE_EVENT, getColorMode, setColorMode } from '@fa/ui/lib/colorMode'
+import { getColorMode, setColorMode, subscribeColorMode } from '@fa/ui/lib/colorMode'
 import { Moon, Sun } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useSyncExternalStore } from 'react'
 
-const subscribe = (onChange: () => void) => {
-    window.addEventListener(COLOR_MODE_EVENT, onChange)
-    return () => window.removeEventListener(COLOR_MODE_EVENT, onChange)
-}
-
 export default function ThemeToggle() {
     const t = useTranslations('shell')
-    const mode = useSyncExternalStore(subscribe, getColorMode, () => 'light' as const)
+    const mode = useSyncExternalStore(subscribeColorMode, getColorMode, () => 'light' as const)
     const next = mode === 'dark' ? 'light' : 'dark'
 
     return (

@@ -1,15 +1,17 @@
 'use client'
 
 import { CircleCheckIcon, InfoIcon, Loader2Icon, OctagonXIcon, TriangleAlertIcon } from 'lucide-react'
-import { useTheme } from 'next-themes'
+import { useSyncExternalStore } from 'react'
 import { Toaster as Sonner, type ToasterProps } from 'sonner'
+import { getColorMode, subscribeColorMode } from '../lib/colorMode'
 
 const Toaster = ({ ...props }: ToasterProps) => {
-    const { theme = 'system' } = useTheme()
+    // The app's mode is the .dark class on <html>, not the OS preference
+    const theme = useSyncExternalStore(subscribeColorMode, getColorMode, () => 'light' as const)
 
     return (
         <Sonner
-            theme={theme as ToasterProps['theme']}
+            theme={theme}
             className="toaster group"
             icons={{
                 success: <CircleCheckIcon className="size-4" />,
