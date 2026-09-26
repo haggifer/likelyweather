@@ -116,4 +116,15 @@ describe('ForecastArenaStack web', () => {
             }),
         })
     })
+
+    it('forwards the viewer address to the API without headers CloudFront reserves for signing', () => {
+        template.hasResourceProperties('AWS::CloudFront::OriginRequestPolicy', {
+            OriginRequestPolicyConfig: Match.objectLike({
+                HeadersConfig: {
+                    HeaderBehavior: 'whitelist',
+                    Headers: ['CloudFront-Viewer-Address', 'Content-Type'],
+                },
+            }),
+        })
+    })
 })

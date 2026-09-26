@@ -213,12 +213,12 @@ export class ForecastArenaStack extends Stack {
             enableAcceptEncodingGzip: true,
             enableAcceptEncodingBrotli: true,
         })
-        // The viewer's address keys rate limits and the quota; the body hash lets CloudFront sign POSTs.
+        // The viewer's address keys rate limits and the quota. The client's x-amz-content-sha256, which OAC needs to
+        // sign POSTs, must not be listed: CloudFront rejects it in a policy and uses it for signing on its own.
         const apiRequest = new cloudfront.OriginRequestPolicy(this, 'ApiRequest', {
             queryStringBehavior: cloudfront.OriginRequestQueryStringBehavior.all(),
             headerBehavior: cloudfront.OriginRequestHeaderBehavior.allowList(
                 'CloudFront-Viewer-Address',
-                'x-amz-content-sha256',
                 'Content-Type',
             ),
         })
