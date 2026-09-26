@@ -159,13 +159,13 @@ const store = (): KeyValue =>
 
 const inflight = (globalCache.__faInflight ??= new Map())
 
-export const cacheGet = async <T>(key: string): Promise<T | undefined> => {
+const cacheGet = async <T>(key: string): Promise<T | undefined> => {
     const text = await safely(() => store().get(key), null)
 
     return text === null ? undefined : (JSON.parse(text) as T)
 }
 
-export const cacheSet = (key: string, value: unknown, ttlSeconds: number) =>
+const cacheSet = (key: string, value: unknown, ttlSeconds: number) =>
     safely(() => store().set(key, JSON.stringify(value), ttlSeconds), undefined)
 
 // Concurrent calls in one process share a single pending promise.

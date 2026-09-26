@@ -24,8 +24,6 @@ export const buildSteps = (start: Date, end: Date, stepHours = STEP_HOURS) => {
 
 export const compactIso = (iso: string) => iso.replace(/[-:]/g, '')
 
-export const toUtcDate = (date: Date) => date.toISOString().slice(0, 10)
-
 const DATE_KEY_FORMATTERS = new Map<string, Intl.DateTimeFormat>()
 
 export const getLocalDateKey = (iso: string, timeZone: string) => {

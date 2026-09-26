@@ -1,6 +1,5 @@
 export const STEP_HOURS = 6
 export const HOUR_MS = 3_600_000
-export const STEP_MS = STEP_HOURS * HOUR_MS
 
 // Each run is stored on one hourly grid. A chart starts at the local 3-hour slot the data arrived in, which can begin
 // up to 2 hours before the run's issue time, so the grid starts 3 hours early. It runs to 108 hours so a 96-hour

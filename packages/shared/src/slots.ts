@@ -4,7 +4,7 @@ import { addHours, floorToHours, getLocalHour, toIsoMinute } from './time'
 import { Aggregation } from './variables'
 
 export const SLOT_HOURS = 3
-export const OVERVIEW_HOURS = 72
+const OVERVIEW_HOURS = 72
 export const DASHBOARD_HOURS = 96
 
 // Start of the local 3-hour slot containing `date` (local 00, 03, 06…). Slots stay on whole UTC hours, where the

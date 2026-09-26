@@ -25,7 +25,7 @@ interface SwatchProps {
     width?: number
 }
 
-export const LineSwatch = ({ color, dash, width = 18 }: SwatchProps) => (
+const LineSwatch = ({ color, dash, width = 18 }: SwatchProps) => (
     <svg width={width} height="6" aria-hidden="true" className="shrink-0">
         <line
             x1="1"

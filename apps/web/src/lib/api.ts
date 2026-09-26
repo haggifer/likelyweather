@@ -1,6 +1,6 @@
 import { ApiError } from '@fa/shared/api'
 
-export class ApiRequestError extends Error {
+class ApiRequestError extends Error {
     constructor(
         public status: number,
         public code: string,

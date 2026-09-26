@@ -1,5 +1,4 @@
 import { City, Locale } from './api'
-import { Variable, VARIABLE_BY_ID } from './variables'
 
 const INTL_LOCALES: Record<Locale, string> = {
     [Locale.Uk]: 'uk-UA',
@@ -12,7 +11,7 @@ const INTL_LOCALES: Record<Locale, string> = {
 const FORMATTERS = new Map<string, Intl.DateTimeFormat>()
 const REGION_NAMES = new Map<string, Intl.DisplayNames>()
 
-export const getIntlLocale = (locale: string) => INTL_LOCALES[locale as Locale] ?? INTL_LOCALES[Locale.En]
+const getIntlLocale = (locale: string) => INTL_LOCALES[locale as Locale] ?? INTL_LOCALES[Locale.En]
 
 const getFormatter = (locale: string, timeZone: string, options: Intl.DateTimeFormatOptions) => {
     const key = `${locale}|${timeZone}|${JSON.stringify(options)}`
@@ -52,15 +51,6 @@ export const formatUtc = (iso: string, locale: string) =>
 
 export const formatNumber = (value: number | null | undefined, decimals = 1) =>
     value === null || value === undefined || Number.isNaN(value) ? '–' : value.toFixed(decimals)
-
-export const formatSigned = (value: number | null | undefined, decimals = 1) =>
-    value === null || value === undefined ? '–' : `${value > 0 ? '+' : ''}${value.toFixed(decimals)}`
-
-export const formatValue = (value: number | null | undefined, variable: Variable) => {
-    const { decimals, unit } = VARIABLE_BY_ID[variable]
-
-    return value === null || value === undefined ? '–' : `${value.toFixed(decimals)} ${unit}`
-}
 
 export const formatPercent = (value: number | null | undefined) =>
     value === null || value === undefined ? '–' : `${Math.round(value * 100)}%`

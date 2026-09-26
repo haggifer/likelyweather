@@ -43,7 +43,7 @@ export const getStandardDeviation = (values: number[]) => {
     return Math.sqrt(values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / values.length)
 }
 
-export const getStepValues = (series: (number | null)[][], index: number) =>
+const getStepValues = (series: (number | null)[][], index: number) =>
     series.map((values) => values[index]).filter((v): v is number => v !== null && v !== undefined)
 
 export const computeEnsemble = (series: (number | null)[][], stepCount: number): EnsembleStats => {

@@ -94,11 +94,9 @@ export const CitiesQuerySchema = z.strictObject({
     status: z.enum(CityStatus).optional(),
 })
 
-export const VariableQuerySchema = z.strictObject({
+export const LatestQuerySchema = z.strictObject({
     variable: VariableSchema.default(Variable.Temp),
 })
-
-export const LatestQuerySchema = VariableQuerySchema
 
 export const QuotaResponseSchema = z.object({ limit: z.number(), used: z.number(), resetsAt: z.string() })
 export type QuotaResponse = z.infer<typeof QuotaResponseSchema>

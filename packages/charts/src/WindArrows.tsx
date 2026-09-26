@@ -12,7 +12,7 @@ interface IProps {
 
 const ARROW = 'M0,-7 L4,3 L0,1 L-4,3 Z'
 
-export const getCompassLabel = (degrees: number, labels: string[]) =>
+const getCompassLabel = (degrees: number, labels: string[]) =>
     labels[Math.round((((degrees % 360) + 360) % 360) / (360 / labels.length)) % labels.length]
 
 // Meteorological direction is where the wind comes FROM; the arrow points where it blows to (+180°).

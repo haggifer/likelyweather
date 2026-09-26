@@ -52,7 +52,7 @@ const realignSeries = (series: ModelSeries, fromSteps: string[], toSteps: string
 const countRows = (snapshot: Snapshot) =>
     Object.values(snapshot.models).reduce((sum, series) => sum + series.temp.filter((v) => v !== null).length, 0)
 
-export interface FetchModelsOptions {
+interface FetchModelsOptions {
     previous?: Map<number, Snapshot | null>
     archive?: (name: string, body: unknown) => Promise<unknown>
     log?: (message: string) => void
@@ -60,7 +60,7 @@ export interface FetchModelsOptions {
 
 type ModelsByCity = Map<number, Partial<Record<ModelId, ModelSeries>>>
 
-export interface FetchModelsResult {
+interface FetchModelsResult {
     models: ModelsByCity
     metnoLastModified: Map<number, string>
     warnings: string[]
@@ -78,7 +78,7 @@ const getPreviousMetno = async (cityId: number): Promise<Snapshot | null> => {
 
 // Fetches and parses every source for the given cities onto the hourly grid, without touching the store. Partial
 // failures never throw: they become warnings.
-export const fetchModels = async (
+const fetchModels = async (
     cities: City[],
     steps: string[],
     { previous = new Map(), archive = async () => {}, log = () => {} }: FetchModelsOptions = {},

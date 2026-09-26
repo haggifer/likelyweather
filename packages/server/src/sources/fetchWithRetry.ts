@@ -8,7 +8,7 @@ interface RetryOptions {
     backoffMs?: number
 }
 
-export class UpstreamError extends Error {
+class UpstreamError extends Error {
     constructor(
         public url: string,
         public status: number,

@@ -2,7 +2,7 @@ import { formatDayLabel, getLocalMidnights } from '@fa/shared/format'
 import { ScaleTime } from 'd3-scale'
 import { useMemo } from 'react'
 
-export interface Span {
+interface Span {
     top: number
     bottom: number
 }

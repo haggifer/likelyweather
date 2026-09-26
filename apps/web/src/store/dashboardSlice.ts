@@ -2,7 +2,7 @@ import { ModelId } from '@fa/shared/models'
 import { Variable } from '@fa/shared/variables'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-export interface DashboardState {
+interface DashboardState {
     variable: Variable
     hoverStep: string | null
     highlightedModel: ModelId | null

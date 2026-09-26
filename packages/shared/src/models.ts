@@ -11,7 +11,7 @@ export enum ModelId {
     Metno = 'metno',
 }
 
-export type ModelSource = 'open-meteo' | 'met.no'
+type ModelSource = 'open-meteo' | 'met.no'
 
 export interface ModelInfo {
     id: ModelId
@@ -127,9 +127,3 @@ export const MODEL_BY_ID: Record<ModelId, ModelInfo> = Object.fromEntries(MODELS
 >
 
 export const OPEN_METEO_MODELS: ModelId[] = MODELS.filter((m) => m.source === 'open-meteo').map((m) => m.id)
-
-export const MODEL_IDS = MODELS.map((m) => m.id)
-
-export const getModelColor = (id: ModelId) => MODEL_BY_ID[id]?.color ?? '#64748B'
-
-export const getModelName = (id: ModelId) => MODEL_BY_ID[id]?.name ?? id

@@ -1,5 +1,9 @@
 {
     "$schema": "https://unpkg.com/knip@6/schema-jsonc.json",
+    "ignoreIssues": {
+        // The zod contract exports every schema next to its inferred type, whether or not a workspace parses with it.
+        "packages/shared/src/api.ts": ["exports"],
+    },
     "workspaces": {
         ".": {
             "entry": ["scripts/*.mjs"],

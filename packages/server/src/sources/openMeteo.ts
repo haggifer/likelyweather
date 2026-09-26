@@ -25,7 +25,7 @@ export const OPEN_METEO_BATCH_SIZE = 50
 
 const HOURLY_KEYS = SERIES_FIELDS.map((f) => f.openMeteoKey).join(',')
 
-export const buildForecastUrl = (locations: LatLon[], models: ModelId[] = OPEN_METEO_MODELS) => {
+const buildForecastUrl = (locations: LatLon[], models: ModelId[] = OPEN_METEO_MODELS) => {
     const params = new URLSearchParams({
         latitude: locations.map((l) => l.lat.toFixed(4)).join(','),
         longitude: locations.map((l) => l.lon.toFixed(4)).join(','),
