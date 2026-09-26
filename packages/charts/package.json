@@ -9,6 +9,7 @@
         "./PrecipPanel": "./src/PrecipPanel.tsx",
         "./SpaghettiChart": "./src/SpaghettiChart.tsx",
         "./WindArrows": "./src/WindArrows.tsx",
+        "./dayLabels": "./src/dayLabels.ts",
         "./scales": "./src/scales.ts",
         "./spaghettiGeometry": "./src/spaghettiGeometry.ts",
         "./theme": "./src/theme.ts",
