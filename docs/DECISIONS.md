@@ -296,3 +296,4 @@ Below 640 px (Tailwind `sm`) phones get their own layouts where the desktop ones
 - **Day labels** pick the longest form that fits ("Sat 26 Sept", "Sat 26", "Sat") instead of disappearing below a fixed width.
 - **Runs and cities** are card lists on phones; run history shows 30 runs at a time.
 - **Not done on purpose:** a bottom tab bar (it would promote secondary pages to the level of the forecast) and swiping between variables (it would fight touch scrubbing, P28).
+- **Landscape phones** are usually wider than 640 px and get the tablet layout; a height-based phone layer was left out.
