@@ -10,7 +10,11 @@
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "collect": "pnpm --filter @fa/web collect",
-        "seed": "pnpm --filter @fa/web seed"
+        "seed": "pnpm --filter @fa/web seed",
+        "db:up": "docker compose up -d --wait",
+        "db:migrate": "pnpm --filter @fa/db migrate",
+        "db:deploy": "pnpm --filter @fa/db deploy",
+        "db:seed": "pnpm --filter @fa/db seed"
     },
     "devDependencies": {
         "prettier": "^3.9.8",

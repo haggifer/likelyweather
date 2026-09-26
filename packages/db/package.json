@@ -1,0 +1,35 @@
+{
+    "name": "@fa/db",
+    "private": true,
+    "type": "module",
+    "exports": {
+        "./client": "./src/client.ts",
+        "./partitions": "./src/partitions.ts",
+        "./seed-data": "./src/seedData.ts"
+    },
+    "scripts": {
+        "generate": "prisma generate",
+        "build": "prisma generate",
+        "migrate": "prisma migrate dev",
+        "deploy": "prisma migrate deploy",
+        "seed": "tsx src/seed.ts",
+        "lint": "eslint .",
+        "typecheck": "prisma generate && tsc --noEmit",
+        "test": "prisma generate && vitest run"
+    },
+    "dependencies": {
+        "@fa/shared": "workspace:*",
+        "@prisma/adapter-pg": "7.10.0",
+        "@prisma/client": "7.10.0",
+        "pg": "^8.16.3"
+    },
+    "devDependencies": {
+        "@types/node": "^22",
+        "@types/pg": "^8.15.5",
+        "eslint": "^9",
+        "prisma": "7.10.0",
+        "tsx": "^4.23.15",
+        "typescript": "^5",
+        "vitest": "^5.0.1"
+    }
+}

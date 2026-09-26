@@ -1,0 +1,118 @@
+// Forecast Arena data model. Forecast is range-partitioned by week on issueTime (see the init migration and
+// src/partitions.ts); Prisma sees it as one table.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RunStatus {
+  OK
+  PARTIAL
+  FAILED
+}
+
+enum RunOrigin {
+  SCHEDULED
+  PREVIEW
+  IMPORT
+}
+
+enum CityStatus {
+  ACTIVE
+  DORMANT
+  QUEUED
+}
+
+model City {
+  id              Int        @id // Open-Meteo geocoding id
+  slug            String     @unique // "kharkiv-ua-706483"
+  name            String // English name from the geocoder
+  nameLocal       Json? // {uk: "Харків", es: "Járkov", ...}
+  admin1          String?
+  country         String
+  countryCode     String // ISO 3166-1 alpha-2
+  lat             Float
+  lon             Float
+  elevationM      Float?
+  timezone        String
+  population      Int?
+  status          CityStatus @default(ACTIVE)
+  availableModels String[] // model ids that returned data on the latest fetch
+  firstTrackedAt  DateTime   @default(now())
+  lastViewedAt    DateTime   @default(now())
+  viewCount       Int        @default(0)
+  runsCollected   Int        @default(0) // scheduled runs; 0 means "preview only"
+  forecasts       Forecast[]
+  snapshots       Snapshot[]
+
+  @@index([status, lastViewedAt])
+}
+
+model Model {
+  id        String     @id
+  source    String
+  name      String
+  color     String
+  regional  Boolean    @default(false) // icon_eu, arpege_europe
+  active    Boolean    @default(true)
+  forecasts Forecast[]
+}
+
+model CollectionRun {
+  id          String     @id // "scheduled-20260924T0600Z", "preview-<cityId>-<issue>"
+  issueTime   DateTime
+  origin      RunOrigin
+  cityId      Int? // set for PREVIEW runs
+  startedAt   DateTime
+  finishedAt  DateTime?
+  status      RunStatus
+  rows        Int        @default(0)
+  citiesCount Int        @default(0)
+  warnings    Json?
+  archivePath String?
+  snapshots   Snapshot[]
+
+  @@index([issueTime(sort: Desc)])
+  @@index([startedAt(sort: Desc)])
+}
+
+// The newest run stored for a city at one issue time, with what a conditional met.no request needs next time.
+model Snapshot {
+  cityId            Int
+  city              City          @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  issueTime         DateTime
+  runId             String
+  run               CollectionRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  origin            RunOrigin
+  fetchedAt         DateTime
+  metnoLastModified String?
+
+  @@id([cityId, issueTime])
+}
+
+// One model's value for one city and hour. Partitioned tables need the partition key in the primary key, so the
+// natural key is the primary key.
+model Forecast {
+  cityId      Int
+  city        City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  modelId     String
+  model       Model    @relation(fields: [modelId], references: [id])
+  issueTime   DateTime
+  validTime   DateTime
+  leadHours   Int
+  tempC       Float?
+  windMs      Float?
+  windDirDeg  Float?
+  pressureMsl Float?
+  pressureSfc Float?
+  precipMm    Float? // the hour ending at validTime
+  rainMm      Float?
+  snowCm      Float?
+
+  @@id([cityId, issueTime, modelId, validTime])
+}
