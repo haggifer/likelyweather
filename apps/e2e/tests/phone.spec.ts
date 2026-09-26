@@ -61,3 +61,15 @@ test('runs and cities are cards on phones and tables elsewhere', async ({ page, 
     await expect(page.getByRole('list', { name: 'Tracked cities' })).toBeVisible({ visible: isMobile })
     await expect(page.locator('main table')).toBeVisible({ visible: !isMobile })
 })
+
+test('the runs table renders rows after widening past the phone breakpoint', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'reproduces a phone-to-desktop resize')
+    // Opening a city makes sure at least one run exists.
+    await page.goto(`/city/${KYIV}`)
+    await expect(page.locator('main svg[role=img]').first()).toBeVisible()
+
+    await page.goto('/runs')
+    await page.setViewportSize({ width: 1280, height: 900 })
+
+    await expect(page.locator('main table tbody tr:not([aria-hidden])').first()).toBeVisible()
+})

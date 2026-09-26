@@ -7,6 +7,7 @@ import { useCities, useRuns, useTimeline } from '@/hooks/queries'
 import { getCityName } from '@fa/shared/format'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@fa/ui/components/card'
 import { Skeleton } from '@fa/ui/components/skeleton'
+import useMediaQuery from '@fa/ui/hooks/useMediaQuery'
 import useNow from '@fa/ui/hooks/useNow'
 import { useLocale, useTranslations } from 'next-intl'
 
@@ -14,6 +15,7 @@ export default function RunsView() {
     const t = useTranslations('runs')
     const locale = useLocale()
     const now = useNow()
+    const isDesktop = useMediaQuery('(min-width: 640px)')
     const { data: runs } = useRuns()
     const { data: timeline } = useTimeline(30)
     const { data: cities } = useCities()
@@ -45,9 +47,13 @@ export default function RunsView() {
                             <div className="sm:hidden">
                                 <RunsCards runs={runs.items} cityNames={cityNames} />
                             </div>
-                            <div className="max-sm:hidden">
+                            {isDesktop && (
+                                // useVirtualizer measures a 0×0 scroll element while its wrapper is
+                                // `display: none` and never recovers once the wrapper becomes visible again
+                                // (ResizeObserver does not fire for that transition), so the table is only
+                                // mounted once the viewport is actually wide enough to size it.
                                 <RunsTable runs={runs.items} cityNames={cityNames} />
-                            </div>
+                            )}
                         </>
                     ) : (
                         <Skeleton className="h-64" />
