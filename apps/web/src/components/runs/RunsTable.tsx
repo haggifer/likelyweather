@@ -1,12 +1,12 @@
 'use client'
 
-import StatusChip, { ChipTone } from '@/components/shell/StatusChip'
-import { Run, RunStatus } from '@fa/shared/api'
+import { formatRunDuration, getRunOriginLabel, RunArchiveLink, STATUS_TONES } from '@/components/runs/runParts'
+import StatusChip from '@/components/shell/StatusChip'
+import { Run } from '@fa/shared/api'
 import { formatUtc } from '@fa/shared/format'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@fa/ui/components/table'
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { ExternalLink } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useMemo, useRef } from 'react'
 
@@ -17,8 +17,6 @@ interface IProps {
 
 const ROW_HEIGHT = 38
 const VIEWPORT_HEIGHT = 480
-
-const STATUS_TONES: Record<RunStatus, ChipTone> = { OK: 'ok', PARTIAL: 'warn', FAILED: 'fail' }
 
 export default function RunsTable({ runs, cityNames }: IProps) {
     const t = useTranslations('runs')
@@ -37,13 +35,7 @@ export default function RunsTable({ runs, cityNames }: IProps) {
             {
                 id: 'origin',
                 header: t('origin'),
-                cell: ({ row }) => {
-                    const { origin, cityId } = row.original
-
-                    return origin === 'PREVIEW' && cityId
-                        ? `${t(`origins.${origin}`)} · ${cityNames.get(cityId) ?? cityId}`
-                        : t(`origins.${origin}`)
-                },
+                cell: ({ row }) => getRunOriginLabel(row.original, t, cityNames),
             },
             {
                 id: 'status',
@@ -74,30 +66,12 @@ export default function RunsTable({ runs, cityNames }: IProps) {
             {
                 id: 'duration',
                 header: t('duration'),
-                cell: ({ row }) => {
-                    const { startedAt, finishedAt } = row.original
-
-                    return finishedAt
-                        ? `${((new Date(finishedAt).getTime() - new Date(startedAt).getTime()) / 1000).toFixed(1)} s`
-                        : '–'
-                },
+                cell: ({ row }) => formatRunDuration(row.original),
             },
             {
                 id: 'archive',
                 header: t('archive'),
-                cell: ({ row }) =>
-                    row.original.archivePath ? (
-                        <a
-                            href={`/api/runs/${row.original.id}/archive`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-1 text-primary hover:underline"
-                        >
-                            JSON <ExternalLink className="size-3" />
-                        </a>
-                    ) : (
-                        '–'
-                    ),
+                cell: ({ row }) => <RunArchiveLink run={row.original} />,
             },
         ],
         [t, locale, cityNames],

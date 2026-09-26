@@ -134,6 +134,7 @@
         "warnings": "Попередження",
         "duration": "Тривалість",
         "archive": "Сирий архів",
+        "showMore": "Показати ще {count}",
         "empty": "Запусків ще немає. Виконайте pnpm collect або відкрийте місто.",
         "origins": {
             "SCHEDULED": "Плановий",

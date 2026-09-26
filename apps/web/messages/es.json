@@ -134,6 +134,7 @@
         "warnings": "Avisos",
         "duration": "Duración",
         "archive": "Archivo original",
+        "showMore": "Mostrar {count} más",
         "empty": "Aún no hay ejecuciones. Ejecuta pnpm collect o abre una ciudad.",
         "origins": {
             "SCHEDULED": "Programada",

@@ -134,6 +134,7 @@
         "warnings": "Avertissements",
         "duration": "Durée",
         "archive": "Archive brute",
+        "showMore": "Afficher {count} de plus",
         "empty": "Aucune exécution pour l’instant. Lancez pnpm collect ou ouvrez une ville.",
         "origins": {
             "SCHEDULED": "Programmée",

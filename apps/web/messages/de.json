@@ -134,6 +134,7 @@
         "warnings": "Warnungen",
         "duration": "Dauer",
         "archive": "Rohdaten",
+        "showMore": "{count} weitere anzeigen",
         "empty": "Noch keine Läufe. Führe pnpm collect aus oder öffne eine Stadt.",
         "origins": {
             "SCHEDULED": "Geplant",

@@ -47,3 +47,13 @@ test('the variable switch stays in view and the model list sits under the chart'
     expect(box?.y ?? -1).toBeGreaterThanOrEqual(0)
     expect(box?.y ?? 999).toBeLessThan(140)
 })
+
+test('runs and cities are cards on phones and tables elsewhere', async ({ page, isMobile }) => {
+    // Opening a city makes sure at least one run exists.
+    await page.goto(`/city/${KYIV}`)
+    await expect(page.locator('main svg[role=img]').first()).toBeVisible()
+
+    await page.goto('/runs')
+    await expect(page.getByRole('list', { name: 'Run history' })).toBeVisible({ visible: isMobile })
+    await expect(page.locator('main table').last()).toBeVisible({ visible: !isMobile })
+})

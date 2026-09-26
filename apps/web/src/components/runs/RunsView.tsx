@@ -1,5 +1,6 @@
 'use client'
 
+import RunsCards from '@/components/runs/RunsCards'
 import RunsTable from '@/components/runs/RunsTable'
 import RunsTimeline from '@/components/runs/RunsTimeline'
 import { useCities, useRuns, useTimeline } from '@/hooks/queries'
@@ -39,7 +40,18 @@ export default function RunsView() {
                     <CardDescription>{t('tableDescription', { count: runs?.items.length ?? 0 })}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {runs ? <RunsTable runs={runs.items} cityNames={cityNames} /> : <Skeleton className="h-64" />}
+                    {runs ? (
+                        <>
+                            <div className="sm:hidden">
+                                <RunsCards runs={runs.items} cityNames={cityNames} />
+                            </div>
+                            <div className="max-sm:hidden">
+                                <RunsTable runs={runs.items} cityNames={cityNames} />
+                            </div>
+                        </>
+                    ) : (
+                        <Skeleton className="h-64" />
+                    )}
                 </CardContent>
             </Card>
         </div>

@@ -7,6 +7,7 @@ import { toIsoMinute } from '@fa/shared/time'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@fa/ui/components/tooltip'
 import { cn } from '@fa/ui/lib/utils'
 import { useLocale, useTranslations } from 'next-intl'
+import { useCallback } from 'react'
 
 interface IProps {
     timeline: TimelineResponse
@@ -46,9 +47,14 @@ export default function RunsTimeline({ timeline, now }: IProps) {
     const dayCount = Math.ceil((new Date(timeline.to).getTime() - firstDay) / DAY_MS)
     const days = Array.from({ length: dayCount }, (_, i) => new Date(firstDay + i * DAY_MS))
 
+    // The grid runs oldest to newest and is wider than a phone, so it opens scrolled to today.
+    const scrollToEnd = useCallback((node: HTMLDivElement | null) => {
+        if (node) node.scrollLeft = node.scrollWidth
+    }, [])
+
     return (
         <div className="flex flex-col gap-3">
-            <div className="overflow-x-auto">
+            <div ref={scrollToEnd} className="overflow-x-auto">
                 <div
                     className="inline-grid gap-1"
                     style={{ gridTemplateColumns: `2.5rem repeat(${days.length}, 14px)` }}

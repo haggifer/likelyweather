@@ -134,6 +134,7 @@
         "warnings": "Warnings",
         "duration": "Duration",
         "archive": "Raw archive",
+        "showMore": "Show {count} more",
         "empty": "No runs yet. Run pnpm collect or open a city.",
         "origins": {
             "SCHEDULED": "Scheduled",
