@@ -206,8 +206,8 @@ Left to the author's agent to decide. Measured at 375 × 812 before the change: 
 - **Variable switch.** Phones show only the selected variable's name next to the icons, so the current choice is readable without a hover title.
 - **Header.** The quota meter drops its bar and label on phones and shows the count only.
 - **Precipitation panel.** When a 6-hour window gets less than 28 px, every other hour and chance label is shown; the tooltip still has every window.
-- **Legend.** Two columns while it sits under the chart (tablets), one beside it from `lg`. On phones it stays one column: the 36 px rows are the touch targets.
-- **Unchanged.** Data tables (cities, runs) scroll sideways inside their own container, which suits tables of that width; compare already fitted.
+- **Legend.** Two columns while it sits under the chart (tablets), one beside it from `lg`. On phones it stays one column: the 36 px rows are the touch targets. (superseded by P37)
+- **Unchanged.** Data tables (cities, runs) scroll sideways inside their own container, which suits tables of that width; compare already fitted. (superseded by P37)
 
 ## P29. The monorepo (2026-09-26)
 
@@ -289,7 +289,7 @@ Amplify Hosting documents Next.js support up to version 15, and Next.js 16 suppo
 
 ## P37. Phone layout (2026-09-26)
 
-Below 640 px (Tailwind `sm`) phones get their own layouts where the desktop ones did not fit; at 640 px and wider nothing changed. The frozen design (P25) stays: only layout, sizes and copy differ.
+Below 640 px (Tailwind `sm`) phones get their own layouts where the desktop ones did not fit; the layout at 640 px and wider is unchanged, while shorter day labels, the methodology model list and the sticky time column in the table view apply at every width. The frozen design (P25) stays: only layout, sizes and copy differ.
 
 - **CSS switching.** Phone and desktop variants are chosen with `max-sm:` / `sm:` utilities (tables and their card lists are both rendered, one hidden), so server HTML matches the first client render. Touch copy uses `pointer-coarse:`. The runs table is the one exception: it is mounted only at 640 px and wider (`useMediaQuery`), because a virtualized table that is mounted while hidden has no size to measure; its card list still switches in CSS like everything else.
 - **Dashboard.** A compact header, the variable switch pinned under the top bar, the model list inside the chart card in two columns, a swipeable row of disagreement tiles (a named, focusable `role="region"` so keyboards can scroll it), a sticky time column in the table view. The chart is 280 px high below 480 px of width.
