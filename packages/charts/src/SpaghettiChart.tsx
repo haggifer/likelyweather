@@ -49,6 +49,9 @@ const MAX_TICK_WIDTH = 16
 const HOVER_LABEL_HALF_WIDTH = 34
 const PERIOD_LABEL_HALF_WIDTH = 50
 const UNIT_LABEL_WIDTH = 28
+// Phones get a shorter plot so the model list under it stays in view while scrubbing.
+const NARROW_WIDTH = 480
+const NARROW_HEIGHT = 280
 
 const getMargin = (compact: boolean, hasArrows: boolean): Margin => ({
     top: compact ? 14 : 24,
@@ -69,7 +72,7 @@ export default function SpaghettiChart({
     onHoverIndex,
     emphasized = [],
     directions,
-    height = 340,
+    height: heightProp = 340,
     compact = false,
     showTooltip = false,
     yDomain,
@@ -80,6 +83,7 @@ export default function SpaghettiChart({
     const liveNow = useNow()
     const now = nowProp === undefined ? liveNow : nowProp
     const { ref, width } = useElementWidth<HTMLDivElement>()
+    const height = width < NARROW_WIDTH ? Math.min(heightProp, NARROW_HEIGHT) : heightProp
     const info = VARIABLE_BY_ID[variable]
     const hasArrows = Boolean(directions)
     const margin = useMemo(() => getMargin(compact, hasArrows), [compact, hasArrows])
@@ -216,7 +220,6 @@ export default function SpaghettiChart({
                     labelYs={[plotBottom + (compact ? 15 : 18)]}
                     lineColor={theme.border}
                     labelColor={theme.muted}
-                    minLabelWidth={compact ? 44 : 64}
                     fontSize={compact ? 10 : 11}
                 />
                 {!compact && (

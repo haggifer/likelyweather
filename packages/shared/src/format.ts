@@ -37,8 +37,16 @@ const CLOCK: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', 
 export const formatPeriodLabel = (start: string, end: string, timeZone: string, locale: string) =>
     `${formatStepLabel(start, timeZone, locale)}–${formatTime(end, timeZone, locale, CLOCK)}`
 
-export const formatDayLabel = (iso: string, timeZone: string, locale: string) =>
-    formatTime(iso, timeZone, locale, { weekday: 'short', day: 'numeric', month: 'short' })
+export type DayLabelStyle = 'long' | 'short' | 'narrow'
+
+const DAY_LABEL_OPTIONS: Record<DayLabelStyle, Intl.DateTimeFormatOptions> = {
+    long: { weekday: 'short', day: 'numeric', month: 'short' },
+    short: { weekday: 'short', day: 'numeric' },
+    narrow: { weekday: 'short' },
+}
+
+export const formatDayLabel = (iso: string, timeZone: string, locale: string, style: DayLabelStyle = 'long') =>
+    formatTime(iso, timeZone, locale, DAY_LABEL_OPTIONS[style])
 
 export const formatUtc = (iso: string, locale: string) =>
     formatTime(iso, 'UTC', locale, {

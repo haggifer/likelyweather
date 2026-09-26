@@ -1,6 +1,7 @@
-import { formatDayLabel, getLocalMidnights } from '@fa/shared/format'
+import { getLocalMidnights } from '@fa/shared/format'
 import { ScaleTime } from 'd3-scale'
 import { useMemo } from 'react'
+import { getDayLabel } from './dayLabels'
 
 interface Span {
     top: number
@@ -17,12 +18,11 @@ interface IProps {
     labelYs: number[]
     lineColor: string
     labelColor: string
-    minLabelWidth?: number
     fontSize?: number
 }
 
 // Day boundaries are drawn at local midnight of the city in every span (one per panel), with each day's label
-// centered in its span of time at every label row.
+// centered in its span of time at every label row, as long as the space allows ("Sat 26 Sept", "Sat 26", "Sat").
 export default function DayGrid({
     x,
     start,
@@ -33,16 +33,15 @@ export default function DayGrid({
     labelYs,
     lineColor,
     labelColor,
-    minLabelWidth = 64,
     fontSize = 11,
 }: IProps) {
     const midnights = useMemo(() => getLocalMidnights(start, end, timeZone), [start, end, timeZone])
-    const labels = [start, ...midnights]
-        .map((from, i, all) => {
-            const to = all[i + 1] ?? end
-            return { key: from.toISOString(), x: (x(from) + x(to)) / 2, width: x(to) - x(from), from }
-        })
-        .filter((d) => d.width > minLabelWidth)
+    const labels = [start, ...midnights].flatMap((from, i, all) => {
+        const to = all[i + 1] ?? end
+        const text = getDayLabel(from.toISOString(), x(to) - x(from), timeZone, locale, fontSize)
+
+        return text ? [{ key: from.toISOString(), x: (x(from) + x(to)) / 2, text }] : []
+    })
 
     return (
         <g aria-hidden="true">
@@ -69,7 +68,7 @@ export default function DayGrid({
                         fontSize={fontSize}
                         fill={labelColor}
                     >
-                        {formatDayLabel(d.from.toISOString(), timeZone, locale)}
+                        {d.text}
                     </text>
                 )),
             )}

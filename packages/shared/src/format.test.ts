@@ -1,4 +1,4 @@
-import { formatPeriodLabel, getLocalMidnights, getTimeZoneOffsetMinutes } from './format'
+import { formatDayLabel, formatPeriodLabel, getLocalMidnights, getTimeZoneOffsetMinutes } from './format'
 
 describe('time zones', () => {
     it('computes offsets including DST', () => {
@@ -22,5 +22,13 @@ describe('period labels', () => {
         expect(formatPeriodLabel('2026-09-26T01:00Z', '2026-09-26T04:00Z', 'America/New_York', 'en')).toBe(
             'Fri 21:00–00:00',
         )
+    })
+})
+
+describe('day labels', () => {
+    it('formats a day in three lengths', () => {
+        expect(formatDayLabel('2026-09-26T12:00Z', 'UTC', 'en')).toBe('Sat 26 Sept')
+        expect(formatDayLabel('2026-09-26T12:00Z', 'UTC', 'en', 'short')).toBe('Sat 26')
+        expect(formatDayLabel('2026-09-26T12:00Z', 'UTC', 'en', 'narrow')).toBe('Sat')
     })
 })
