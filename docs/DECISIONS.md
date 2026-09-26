@@ -286,3 +286,13 @@ Amplify Hosting documents Next.js support up to version 15, and Next.js 16 suppo
 - **Deploys**: a GitHub OIDC provider and a role only the repository's default branch can assume, allowed only to assume CDK's bootstrap roles; `.github/workflows/deploy.yml` runs once the role ARN is set as a repository variable.
 - **Budget**: $5 a month, e-mail at 80 % actual and 100 % forecast. Template tests assert there is no VPC, NAT gateway, ElastiCache or RDS.
 - Not done: `cdk diff` on pull requests (the deploy role is limited to the default branch), a custom domain.
+
+## P37. Phone layout (2026-09-26)
+
+Below 640 px (Tailwind `sm`) phones get their own layouts where the desktop ones did not fit; at 640 px and wider nothing changed. The frozen design (P25) stays: only layout, sizes and copy differ.
+
+- **CSS switching.** Phone and desktop variants are chosen with `max-sm:` / `sm:` utilities (tables and their card lists are both rendered, one hidden), so server HTML matches the first client render. Touch copy uses `pointer-coarse:`. The runs table is the one exception: it is mounted only at 640 px and wider (`useMediaQuery`), because a virtualized table that is mounted while hidden has no size to measure; its card list still switches in CSS like everything else.
+- **Dashboard.** A compact header, the variable switch pinned under the top bar, the model list inside the chart card in two columns, a swipeable row of disagreement tiles (a named, focusable `role="region"` so keyboards can scroll it), a sticky time column in the table view. The chart is 280 px high below 480 px of width.
+- **Day labels** pick the longest form that fits ("Sat 26 Sept", "Sat 26", "Sat") instead of disappearing below a fixed width.
+- **Runs and cities** are card lists on phones; run history shows 30 runs at a time.
+- **Not done on purpose:** a bottom tab bar (it would promote secondary pages to the level of the forecast) and swiping between variables (it would fight touch scrubbing, P28).
