@@ -56,4 +56,8 @@ test('runs and cities are cards on phones and tables elsewhere', async ({ page, 
     await page.goto('/runs')
     await expect(page.getByRole('list', { name: 'Run history' })).toBeVisible({ visible: isMobile })
     await expect(page.locator('main table').last()).toBeVisible({ visible: !isMobile })
+
+    await page.goto('/cities')
+    await expect(page.getByRole('list', { name: 'Tracked cities' })).toBeVisible({ visible: isMobile })
+    await expect(page.locator('main table')).toBeVisible({ visible: !isMobile })
 })

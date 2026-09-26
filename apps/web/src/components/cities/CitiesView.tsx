@@ -38,45 +38,84 @@ export default function CitiesView() {
                     {!data ? (
                         <Skeleton className="h-64" />
                     ) : (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>{t('city')}</TableHead>
-                                    <TableHead>{t('status')}</TableHead>
-                                    <TableHead>{t('firstTracked')}</TableHead>
-                                    <TableHead>{t('lastViewed')}</TableHead>
-                                    <TableHead className="text-right">{t('views')}</TableHead>
-                                    <TableHead className="text-right">{t('runs')}</TableHead>
-                                    <TableHead className="text-right">{t('models')}</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
+                        <>
+                            <ul aria-label={t('title')} className="flex flex-col gap-2 sm:hidden">
                                 {cities.map((c) => (
-                                    <TableRow key={c.id} className="h-(--row-height)">
-                                        <TableCell>
+                                    <li key={c.id} className="flex flex-col gap-1.5 rounded-md border p-3 text-[13px]">
+                                        <div className="flex items-center justify-between gap-2">
                                             <Link
                                                 href={`/city/${c.slug}`}
-                                                className="flex items-center gap-2 font-medium hover:underline"
+                                                className="flex min-w-0 items-center gap-2 font-medium hover:underline"
                                             >
                                                 <FlagIcon countryCode={c.countryCode} />
-                                                {getCityName(c, locale)}
-                                                <span className="font-normal text-muted-foreground">{c.country}</span>
+                                                <span className="truncate">{getCityName(c, locale)}</span>
                                             </Link>
-                                        </TableCell>
-                                        <TableCell>
                                             <StatusChip tone={STATUS_TONES[c.status]}>
                                                 {tc(`status.${c.status}`)}
                                             </StatusChip>
-                                        </TableCell>
-                                        <TableCell>{formatDate(c.firstTrackedAt)}</TableCell>
-                                        <TableCell>{formatDate(c.lastViewedAt)}</TableCell>
-                                        <TableCell className="text-right">{c.viewCount}</TableCell>
-                                        <TableCell className="text-right">{c.runsCollected}</TableCell>
-                                        <TableCell className="text-right">{c.availableModels.length || '–'}</TableCell>
-                                    </TableRow>
+                                        </div>
+                                        <span className="text-muted-foreground">{c.country}</span>
+                                        <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-xs">
+                                            <dt className="text-muted-foreground">{t('firstTracked')}</dt>
+                                            <dd>{formatDate(c.firstTrackedAt)}</dd>
+                                            <dt className="text-muted-foreground">{t('lastViewed')}</dt>
+                                            <dd>{formatDate(c.lastViewedAt)}</dd>
+                                            <dt className="text-muted-foreground">{t('views')}</dt>
+                                            <dd>{c.viewCount}</dd>
+                                            <dt className="text-muted-foreground">{t('runs')}</dt>
+                                            <dd>{c.runsCollected}</dd>
+                                            <dt className="text-muted-foreground">{t('models')}</dt>
+                                            <dd>{c.availableModels.length || '–'}</dd>
+                                        </dl>
+                                    </li>
                                 ))}
-                            </TableBody>
-                        </Table>
+                            </ul>
+                            <div className="max-sm:hidden">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>{t('city')}</TableHead>
+                                            <TableHead>{t('status')}</TableHead>
+                                            <TableHead>{t('firstTracked')}</TableHead>
+                                            <TableHead>{t('lastViewed')}</TableHead>
+                                            <TableHead className="text-right">{t('views')}</TableHead>
+                                            <TableHead className="text-right">{t('runs')}</TableHead>
+                                            <TableHead className="text-right">{t('models')}</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {cities.map((c) => (
+                                            <TableRow key={c.id} className="h-(--row-height)">
+                                                <TableCell>
+                                                    <Link
+                                                        href={`/city/${c.slug}`}
+                                                        className="flex items-center gap-2 font-medium hover:underline"
+                                                    >
+                                                        <FlagIcon countryCode={c.countryCode} />
+                                                        {getCityName(c, locale)}
+                                                        <span className="font-normal text-muted-foreground">
+                                                            {c.country}
+                                                        </span>
+                                                    </Link>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <StatusChip tone={STATUS_TONES[c.status]}>
+                                                        {tc(`status.${c.status}`)}
+                                                    </StatusChip>
+                                                </TableCell>
+                                                <TableCell>{formatDate(c.firstTrackedAt)}</TableCell>
+                                                <TableCell>{formatDate(c.lastViewedAt)}</TableCell>
+                                                <TableCell className="text-right">{c.viewCount}</TableCell>
+                                                <TableCell className="text-right">{c.runsCollected}</TableCell>
+                                                <TableCell className="text-right">
+                                                    {c.availableModels.length || '–'}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </>
                     )}
                 </CardContent>
             </Card>
