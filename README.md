@@ -96,7 +96,7 @@ What is built and what is still planned; the choices behind each piece are in DE
 - **Infrastructure and tooling:** one AWS CDK stack; a pnpm and Turborepo monorepo (`apps/web`, `apps/api`, `apps/collector`, `packages/shared`, `packages/charts`, `packages/ui`, `packages/db`, `packages/fixtures`, `infra`); CI runs lint, typecheck, tests, the catalog check, end-to-end tests, the build and `cdk synth`.
 - **Optional:** a daily Gemini Flash brief with a claim checker.
 
-Built and running locally: the monorepo, Express, Prisma and Postgres with partitions, Redis, the collector with its Lambda handler, the S3 archive path and the CSV import. Not yet: the CDK stack and deployment, CI, Playwright, `pnpm check:messages` and the Gemini brief. Truth, skill scores, the scoreboard and the evolution view are out of the MVP (DECISIONS P17, P20).
+Built and running locally: the monorepo, Express, Prisma and Postgres with partitions, Redis, the collector with its Lambda handler, the S3 archive path and the CSV import. Also in place: CI (`.github/workflows/ci.yml`: format, catalog check, lint, typecheck, tests against Postgres and Redis services, build) and `pnpm check:messages`. Not yet: the CDK stack and deployment, Playwright and the Gemini brief. Truth, skill scores, the scoreboard and the evolution view are out of the MVP (DECISIONS P17, P20).
 
 ## Design decisions
 

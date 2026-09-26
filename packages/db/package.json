@@ -11,11 +11,11 @@
         "generate": "prisma generate",
         "build": "prisma generate",
         "migrate": "prisma migrate dev",
-        "deploy": "prisma migrate deploy",
         "seed": "tsx src/seed.ts",
         "lint": "eslint .",
         "typecheck": "tsc --noEmit",
-        "test": "vitest run"
+        "test": "vitest run",
+        "migrate:deploy": "prisma migrate deploy"
     },
     "dependencies": {
         "@fa/shared": "workspace:*",

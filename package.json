@@ -10,11 +10,12 @@
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "db:up": "docker compose up -d --wait",
-        "db:migrate": "pnpm --filter @fa/db migrate",
-        "db:deploy": "pnpm --filter @fa/db deploy",
-        "db:seed": "pnpm --filter @fa/db seed",
+        "db:migrate": "pnpm --filter @fa/db run migrate",
+        "db:deploy": "pnpm --filter @fa/db run migrate:deploy",
+        "db:seed": "pnpm --filter @fa/db run seed",
         "collect": "pnpm --filter @fa/collector run collect",
-        "import:csv": "pnpm --filter @fa/collector run import:csv"
+        "import:csv": "pnpm --filter @fa/collector run import:csv",
+        "check:messages": "node scripts/check-messages.mjs"
     },
     "devDependencies": {
         "prettier": "^3.9.8",
