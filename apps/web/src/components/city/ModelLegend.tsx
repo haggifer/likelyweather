@@ -98,7 +98,7 @@ export default function ModelLegend({ series, median, readoutIndex, readoutLabel
                         <li
                             key={modelId}
                             className={cn(
-                                'group flex h-(--row-height) items-center gap-1.5 rounded-md px-1.5 text-[13px] max-sm:text-xs sm:gap-2 hover:bg-muted',
+                                'group flex h-(--row-height) items-center gap-1.5 rounded-md px-1.5 text-[13px] max-sm:h-auto max-sm:min-h-9 max-sm:py-1 max-sm:text-xs sm:gap-2 hover:bg-muted',
                                 isPinned && 'bg-accent',
                                 isHidden && 'opacity-45',
                             )}
@@ -115,7 +115,13 @@ export default function ModelLegend({ series, median, readoutIndex, readoutLabel
                                 title={isPinned ? t('unpin') : t('pin')}
                             >
                                 <LineSwatch color={model.color} dash={model.dash} />
-                                <span className={cn('truncate', isHidden && 'line-through')} title={model.name}>
+                                <span
+                                    className={cn(
+                                        'truncate max-sm:whitespace-normal max-sm:leading-tight',
+                                        isHidden && 'line-through',
+                                    )}
+                                    title={model.name}
+                                >
                                     {model.name}
                                 </span>
                                 {isPinned && <Pin className="size-3 shrink-0 text-muted-foreground" />}

@@ -48,6 +48,27 @@ test('the variable switch stays in view and the model list sits under the chart'
     expect(box?.y ?? 999).toBeLessThan(140)
 })
 
+test('model names in the phone legend wrap instead of clipping', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'phone layout only')
+    await page.goto(`/city/${KYIV}`)
+    await expect(page.locator('main svg[role=img]').first()).toBeVisible()
+
+    const chartCard = page.locator('main [data-slot=card]').first()
+    const rows = chartCard.locator('li')
+
+    await expect(rows.first()).toBeVisible()
+
+    const clippedNames = await rows.evaluateAll((lis) =>
+        lis
+            .filter((li) => (li as HTMLElement).offsetParent !== null)
+            .flatMap((li) => Array.from(li.querySelectorAll('span.truncate')))
+            .filter((span) => span.scrollWidth > span.clientWidth)
+            .map((span) => span.textContent),
+    )
+
+    expect(clippedNames).toEqual([])
+})
+
 test('runs and cities are cards on phones and tables elsewhere', async ({ page, isMobile }) => {
     // Opening a city makes sure at least one run exists.
     await page.goto(`/city/${KYIV}`)
