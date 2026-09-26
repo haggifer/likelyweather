@@ -24,6 +24,7 @@
         "@types/node": "^22",
         "eslint": "^9",
         "typescript": "^5",
-        "vitest": "^5.0.1"
+        "vitest": "^5.0.1",
+        "@fa/fixtures": "workspace:*"
     }
 }

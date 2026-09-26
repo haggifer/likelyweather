@@ -12,7 +12,9 @@
         "db:up": "docker compose up -d --wait",
         "db:migrate": "pnpm --filter @fa/db migrate",
         "db:deploy": "pnpm --filter @fa/db deploy",
-        "db:seed": "pnpm --filter @fa/db seed"
+        "db:seed": "pnpm --filter @fa/db seed",
+        "collect": "pnpm --filter @fa/collector run collect",
+        "import:csv": "pnpm --filter @fa/collector run import:csv"
     },
     "devDependencies": {
         "prettier": "^3.9.8",

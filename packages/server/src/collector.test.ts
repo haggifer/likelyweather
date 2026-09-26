@@ -1,0 +1,84 @@
+import { getPrisma, loadLocalEnv } from '@fa/db/client'
+import { City, CityStatus } from '@fa/shared/api'
+import { ModelId } from '@fa/shared/models'
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
+import { collect } from './collector'
+import { getLatestSnapshot } from './store'
+
+loadLocalEnv()
+
+const UPSTREAM = path.resolve(import.meta.dirname, '../../fixtures/upstream')
+const OPEN_METEO = readFileSync(path.join(UPSTREAM, 'open-meteo-new-york-20260924T1200Z.json'), 'utf8')
+const METNO = readFileSync(path.join(UPSTREAM, 'metno-new-york-20260924T1200Z.json'), 'utf8')
+const NOW = new Date('2026-09-24T13:30:00Z')
+
+// A test-only city at New York's coordinates, so the recorded responses fit.
+const CITY: City = {
+    id: 999_000_002,
+    slug: 'fixture-new-york-xx-999000002',
+    name: 'Fixture New York',
+    country: 'Testland',
+    countryCode: 'XX',
+    lat: 40.71427,
+    lon: -74.00597,
+    timezone: 'America/New_York',
+    status: CityStatus.Active,
+    availableModels: [],
+    firstTrackedAt: '2026-09-24T00:00:00.000Z',
+    lastViewedAt: '2026-09-24T00:00:00.000Z',
+    viewCount: 0,
+    runsCollected: 0,
+}
+
+const respond = (metnoStatus: number) =>
+    vi.fn(async (url: string | URL) =>
+        String(url).includes('api.met.no')
+            ? new Response(metnoStatus === 200 ? METNO : 'unavailable', { status: metnoStatus })
+            : new Response(OPEN_METEO, { status: 200 }),
+    )
+
+describe.runIf(Boolean(process.env.DATABASE_URL))('collect (database, recorded upstream)', () => {
+    const prisma = getPrisma()
+
+    beforeAll(async () => {
+        await prisma.city.upsert({
+            where: { id: CITY.id },
+            create: {
+                ...CITY,
+                firstTrackedAt: new Date(CITY.firstTrackedAt),
+                lastViewedAt: new Date(CITY.lastViewedAt),
+            },
+            update: {},
+        })
+    })
+
+    afterEach(() => vi.unstubAllGlobals())
+
+    afterAll(async () => {
+        await prisma.city.deleteMany({ where: { id: CITY.id } })
+        await prisma.collectionRun.deleteMany({ where: { id: { startsWith: `preview-${CITY.id}-` } } })
+    })
+
+    it('stores every model on the hourly grid when all sources answer', async () => {
+        vi.stubGlobal('fetch', respond(200))
+
+        const { run } = await collect({ origin: 'PREVIEW', cities: [CITY], now: NOW })
+        const snapshot = await getLatestSnapshot(CITY.id)
+
+        expect(run).toMatchObject({ id: `preview-${CITY.id}-20260924T1200Z`, status: 'OK', citiesCount: 1 })
+        expect(run.rows).toBeGreaterThan(500)
+        expect(snapshot?.steps).toHaveLength(112)
+        expect(Object.keys(snapshot!.models)).toContain(ModelId.Metno)
+    })
+
+    it('marks the run PARTIAL, not FAILED, when met.no is down', async () => {
+        vi.stubGlobal('fetch', respond(503))
+
+        const { run } = await collect({ origin: 'PREVIEW', cities: [CITY], now: NOW })
+
+        expect(run.status).toBe('PARTIAL')
+        expect(run.rows).toBeGreaterThan(500)
+        expect(run.warnings.join(' ')).toMatch(/met\.no failed/)
+    }, 30_000)
+})
