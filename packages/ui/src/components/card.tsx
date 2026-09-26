@@ -59,14 +59,4 @@ function CardContent({ className, ...props }: React.ComponentProps<'div'>) {
     return <div data-slot="card-content" className={cn('px-(--card-spacing)', className)} {...props} />
 }
 
-function CardFooter({ className, ...props }: React.ComponentProps<'div'>) {
-    return (
-        <div
-            data-slot="card-footer"
-            className={cn('flex items-center rounded-b-xl border-t bg-muted/50 p-(--card-spacing)', className)}
-            {...props}
-        />
-    )
-}
-
-export { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
+export { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle }
