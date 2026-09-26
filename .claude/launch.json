@@ -2,6 +2,12 @@
     "version": "0.0.1",
     "configurations": [
         {
+            "name": "api",
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": ["--filter", "@fa/api", "dev"],
+            "port": 4000
+        },
+        {
             "name": "forecast-arena",
             "runtimeExecutable": "pnpm",
             "runtimeArgs": ["--filter", "@fa/web", "dev", "--port", "3222"],

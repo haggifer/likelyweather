@@ -8,9 +8,7 @@
         "start": "next start",
         "lint": "eslint",
         "typecheck": "next typegen && tsc --noEmit",
-        "test": "vitest run",
-        "seed": "tsx scripts/seed.ts",
-        "collect": "tsx scripts/collect.ts",
+        "test": "vitest run --passWithNoTests",
         "flags": "node scripts/copy-flags.mjs"
     },
     "dependencies": {

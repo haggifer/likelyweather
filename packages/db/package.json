@@ -14,8 +14,8 @@
         "deploy": "prisma migrate deploy",
         "seed": "tsx src/seed.ts",
         "lint": "eslint .",
-        "typecheck": "prisma generate && tsc --noEmit",
-        "test": "prisma generate && vitest run"
+        "typecheck": "tsc --noEmit",
+        "test": "vitest run"
     },
     "dependencies": {
         "@fa/shared": "workspace:*",

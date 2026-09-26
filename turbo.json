@@ -4,7 +4,7 @@
     "tasks": {
         "build": {
             "dependsOn": ["^build"],
-            "outputs": [".next/**", "!.next/cache/**", "dist/**", "cdk.out/**"]
+            "outputs": [".next/**", "!.next/cache/**", "dist/**", "cdk.out/**", "src/generated/**"]
         },
         "dev": {
             "cache": false,
@@ -18,6 +18,15 @@
         },
         "test": {
             "dependsOn": ["^build"]
+        },
+        "@fa/db#typecheck": {
+            "dependsOn": ["build"]
+        },
+        "@fa/db#test": {
+            "dependsOn": ["build"]
+        },
+        "@fa/db#lint": {
+            "dependsOn": ["build"]
         }
     }
 }
