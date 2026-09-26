@@ -133,41 +133,43 @@ export default function SearchBox({
                     </kbd>
                 )}
             </div>
-            {isOpen && isEdited && query.trim().length > 0 && (
-                <div className="absolute top-full right-0 left-0 z-50 mt-1.5 overflow-hidden rounded-lg border bg-popover text-left shadow-lg">
-                    <CommandList>
-                        {!isQueryReady && <div className="px-3 py-2 text-xs text-muted-foreground">{t('hint')}</div>}
-                        {isQueryReady && isFetching && !results.length && (
-                            <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">
-                                <Loader2 className="size-3.5 animate-spin" /> {t('searching')}
-                            </div>
-                        )}
-                        {isQueryReady && isError && (
-                            <div className="px-3 py-2 text-xs text-destructive">{t('error')}</div>
-                        )}
-                        {isQueryReady && !isFetching && !isError && <CommandEmpty>{t('empty')}</CommandEmpty>}
-                        {results.length > 0 && (
-                            <CommandGroup heading={t('results')}>
-                                {results.map((place) => (
-                                    <CommandItem
-                                        key={place.id}
-                                        value={String(place.id)}
-                                        onSelect={() => handleSelect(place)}
-                                        onMouseDown={(e) => e.preventDefault()}
-                                        disabled={track.isPending}
-                                        className="flex items-center gap-2"
-                                    >
-                                        <FlagIcon countryCode={place.countryCode} />
-                                        <span className="truncate">
-                                            {[place.name, place.admin1, place.country].filter(Boolean).join(', ')}
-                                        </span>
-                                    </CommandItem>
-                                ))}
-                            </CommandGroup>
-                        )}
-                    </CommandList>
-                </div>
-            )}
+            {/* Always rendered, only hidden: the input's aria-controls points at this list. */}
+            <div
+                className={cn(
+                    'absolute top-full right-0 left-0 z-50 mt-1.5 overflow-hidden rounded-lg border bg-popover text-left shadow-lg',
+                    !(isOpen && isEdited && query.trim().length > 0) && 'hidden',
+                )}
+            >
+                <CommandList>
+                    {!isQueryReady && <div className="px-3 py-2 text-xs text-muted-foreground">{t('hint')}</div>}
+                    {isQueryReady && isFetching && !results.length && (
+                        <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">
+                            <Loader2 className="size-3.5 animate-spin" /> {t('searching')}
+                        </div>
+                    )}
+                    {isQueryReady && isError && <div className="px-3 py-2 text-xs text-destructive">{t('error')}</div>}
+                    {isQueryReady && !isFetching && !isError && <CommandEmpty>{t('empty')}</CommandEmpty>}
+                    {results.length > 0 && (
+                        <CommandGroup heading={t('results')}>
+                            {results.map((place) => (
+                                <CommandItem
+                                    key={place.id}
+                                    value={String(place.id)}
+                                    onSelect={() => handleSelect(place)}
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    disabled={track.isPending}
+                                    className="flex items-center gap-2"
+                                >
+                                    <FlagIcon countryCode={place.countryCode} />
+                                    <span className="truncate">
+                                        {[place.name, place.admin1, place.country].filter(Boolean).join(', ')}
+                                    </span>
+                                </CommandItem>
+                            ))}
+                        </CommandGroup>
+                    )}
+                </CommandList>
+            </div>
         </CommandPrimitive>
     )
 }

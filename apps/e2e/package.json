@@ -1,0 +1,17 @@
+{
+    "name": "@fa/e2e",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "e2e": "playwright test",
+        "lint": "eslint .",
+        "typecheck": "tsc --noEmit"
+    },
+    "devDependencies": {
+        "@axe-core/playwright": "^4.10.2",
+        "@playwright/test": "^1.63.0",
+        "@types/node": "^22",
+        "eslint": "^9",
+        "typescript": "^5"
+    }
+}

@@ -24,9 +24,14 @@ export const getClientIp = (req: Request) => {
     return req.get('x-forwarded-for')?.split(',')[0]?.trim() || req.socket.remoteAddress || 'local'
 }
 
+// Only the end-to-end suite sets this: all of its traffic comes from one address.
+const ARE_LIMITS_DISABLED = process.env.DISABLE_RATE_LIMITS === '1'
+
 export const rateLimit =
     (bucket: RateBucket): RequestHandler =>
     async (req, _res, next) => {
+        if (ARE_LIMITS_DISABLED) return next()
+
         const { limit, windowSeconds } = RATE_LIMITS[bucket]
         const count = await incrementWindow(`ratelimit:${bucket}:${getClientIp(req)}`, windowSeconds)
 

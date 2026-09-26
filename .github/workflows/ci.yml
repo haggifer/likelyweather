@@ -48,3 +48,37 @@ jobs:
             - run: pnpm typecheck
             - run: pnpm test
             - run: pnpm build
+
+    e2e:
+        runs-on: ubuntu-latest
+        timeout-minutes: 25
+        services:
+            postgres:
+                image: postgres:16-alpine
+                env:
+                    POSTGRES_USER: postgres
+                    POSTGRES_PASSWORD: postgres
+                    POSTGRES_DB: forecastarena
+                ports: ['5432:5432']
+                options: >-
+                    --health-cmd "pg_isready -U postgres -d forecastarena"
+                    --health-interval 2s --health-timeout 3s --health-retries 30
+        env:
+            DATABASE_URL: postgresql://postgres:postgres@localhost:5432/forecastarena
+        steps:
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: pnpm
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm build
+            - run: pnpm --filter @fa/e2e exec playwright install --with-deps chromium
+            # The suite runs against a fake upstream, never Open-Meteo or met.no (apps/e2e/fake-upstream.mjs).
+            - run: pnpm e2e
+            - uses: actions/upload-artifact@v4
+              if: failure()
+              with:
+                  name: playwright-report
+                  path: apps/e2e/playwright-report
