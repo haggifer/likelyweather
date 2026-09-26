@@ -14,6 +14,7 @@ pnpm lint
 pnpm typecheck
 pnpm test                    # database tests run when DATABASE_URL is reachable, and are skipped otherwise
 pnpm check:messages          # catalog key parity and literal key usage
+pnpm build && pnpm e2e       # Playwright against a fake upstream and its own database (<DATABASE_URL>_e2e)
 pnpm format
 pnpm build                   # Next.js, the API and collector Lambda bundles, the Prisma client
 pnpm collect [-- --cities a,b] [-- --loop]
@@ -55,3 +56,5 @@ pnpm db:migrate              # create a migration after editing packages/db/pris
 - `import` and `deploy` are built-in pnpm commands (`pnpm import` deletes and rewrites the lockfile), so scripts never use those names and root scripts call filtered packages through `pnpm --filter <pkg> run <script>`.
 - `prisma generate` runs as `@fa/db`'s build step; Turbo runs it before any package's typecheck or test. After editing the schema, run `pnpm --filter @fa/db build` if the editor reports missing types.
 - Local run archives land in `data/raw` at the repository root (git-ignored).
+- `next.config` rewrites are fixed at build time; runtime routing (like forwarding `/api/*` to `API_ORIGIN`) belongs in `apps/web/src/proxy.ts`.
+- The e2e suite runs the production web build: rebuild (`pnpm build`) after web changes before `pnpm e2e`.
