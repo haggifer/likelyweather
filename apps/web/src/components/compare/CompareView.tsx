@@ -79,7 +79,7 @@ export default function CompareView() {
                 <VariableSwitch />
                 {slugs.length < MAX_COMPARE_CITIES && (
                     <Select value="" onValueChange={handleAdd}>
-                        <SelectTrigger size="sm" className="w-56">
+                        <SelectTrigger size="sm" className="w-full sm:w-56">
                             <Plus className="size-3.5" />
                             <SelectValue placeholder={t('add')} />
                         </SelectTrigger>

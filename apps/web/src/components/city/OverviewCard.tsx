@@ -89,7 +89,13 @@ export default function OverviewCard({ city, hourly, anchor, now, isFetching, on
     const isStale = currentSlot > anchor
     const modelCount = hourly[Variable.Temp].series.length
     const refreshButton = (
-        <Button variant="outline" size="sm" onClick={onRefresh} disabled={!onRefresh || !isStale || isFetching}>
+        <Button
+            variant="outline"
+            size="sm"
+            onClick={onRefresh}
+            disabled={!onRefresh || !isStale || isFetching}
+            className="max-sm:w-full max-sm:flex-1"
+        >
             <RefreshCw className={cn(isFetching && 'animate-spin')} /> {t('refresh')}
         </Button>
     )
@@ -99,12 +105,12 @@ export default function OverviewCard({ city, hourly, anchor, now, isFetching, on
             <CardHeader>
                 <CardTitle className="flex min-w-0 items-center gap-2.5 text-xl tracking-tight">
                     <FlagIcon countryCode={city.countryCode} className="h-4 w-6 shrink-0" />
-                    <span className="truncate">
+                    <span className="min-w-0 sm:truncate">
                         <span className="font-bold">{name}</span>
                         {region && <span className="font-medium text-muted-foreground">, {region}</span>}
                     </span>
                 </CardTitle>
-                <CardAction className="flex items-center gap-2 max-sm:col-span-2 max-sm:col-start-1 max-sm:row-start-2 max-sm:justify-self-start">
+                <CardAction className="flex items-center gap-2 max-sm:col-span-2 max-sm:col-start-1 max-sm:row-start-2 max-sm:mt-2 max-sm:mb-3 max-sm:w-full max-sm:justify-self-stretch">
                     <UpdatedChip
                         issueTime={hourly[Variable.Temp].issueTime}
                         fetchedAt={hourly[Variable.Temp].fetchedAt}
@@ -120,7 +126,7 @@ export default function OverviewCard({ city, hourly, anchor, now, isFetching, on
                             <TooltipTrigger asChild>
                                 <span
                                     tabIndex={0}
-                                    className="inline-flex rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    className="inline-flex rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring max-sm:flex-1"
                                 >
                                     {refreshButton}
                                 </span>
@@ -128,7 +134,7 @@ export default function OverviewCard({ city, hourly, anchor, now, isFetching, on
                             <TooltipContent side="bottom">{t('upToDate')}</TooltipContent>
                         </Tooltip>
                     )}
-                    <Button asChild size="sm">
+                    <Button asChild size="sm" className="max-sm:flex-1">
                         <Link href={`/city/${city.slug}`}>
                             {t('details')} <ArrowRight />
                         </Link>
