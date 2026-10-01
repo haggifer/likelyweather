@@ -249,6 +249,17 @@ export class ForecastArenaStack extends Stack {
             },
         })
 
+        // Function URLs created since October 2025 also need lambda:InvokeFunction; the OAC origin above only grants
+        // lambda:InvokeFunctionUrl, so without this CloudFront gets 403 from both functions.
+        for (const fn of [web, api]) {
+            fn.addPermission('InvokeViaCloudFront', {
+                principal: new iam.ServicePrincipal('cloudfront.amazonaws.com'),
+                action: 'lambda:InvokeFunction',
+                sourceArn: `arn:aws:cloudfront::${this.account}:distribution/${distribution.distributionId}`,
+                invokedViaFunctionUrl: true,
+            })
+        }
+
         // ---- deploys from GitHub Actions through OIDC: no stored keys ----
         const github = new iam.OpenIdConnectProvider(this, 'GitHubOidc', {
             url: 'https://token.actions.githubusercontent.com',

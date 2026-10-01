@@ -117,6 +117,18 @@ describe('ForecastArenaStack web', () => {
         })
     })
 
+    it('lets CloudFront invoke both function URLs, which needs lambda:InvokeFunction as well', () => {
+        template.resourcePropertiesCountIs(
+            'AWS::Lambda::Permission',
+            {
+                Action: 'lambda:InvokeFunction',
+                Principal: 'cloudfront.amazonaws.com',
+                InvokedViaFunctionUrl: true,
+            },
+            2,
+        )
+    })
+
     it('forwards the viewer address to the API without headers CloudFront reserves for signing', () => {
         template.hasResourceProperties('AWS::CloudFront::OriginRequestPolicy', {
             OriginRequestPolicyConfig: Match.objectLike({
