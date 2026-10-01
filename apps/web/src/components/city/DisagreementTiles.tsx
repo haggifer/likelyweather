@@ -13,7 +13,7 @@ interface IProps {
     variable: Variable
 }
 
-const TONES: Record<DisagreementLabel, ChipTone> = { agree: 'ok', mixed: 'warn', split: 'fail' }
+const TONES: Record<DisagreementLabel, ChipTone> = { agree: ChipTone.Ok, mixed: ChipTone.Warn, split: ChipTone.Fail }
 
 export function DisagreementTiles({ days, variable }: IProps) {
     const t = useTranslations('disagreement')

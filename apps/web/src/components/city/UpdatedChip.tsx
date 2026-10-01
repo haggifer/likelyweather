@@ -1,6 +1,7 @@
 'use client'
 
 import { StatusChip } from '@/components/shell/StatusChip'
+import { ChipTone } from '@/components/types'
 import { STALE_AFTER_HOURS } from '@fa/shared/constants'
 import { formatTime } from '@fa/shared/format'
 import { hoursBetween } from '@fa/shared/time'
@@ -26,7 +27,7 @@ export function UpdatedChip({ issueTime, fetchedAt, timeZone, now, className }: 
 
     return (
         <StatusChip
-            tone={isStale ? 'warn' : 'ok'}
+            tone={isStale ? ChipTone.Warn : ChipTone.Ok}
             className={cn('h-7', className)}
             title={t('updatedTitle', { utc: `${utc} UTC`, local, fetched: fetchedAt ?? '' })}
         >

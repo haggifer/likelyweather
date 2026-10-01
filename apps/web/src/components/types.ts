@@ -1,1 +1,7 @@
-export type ChipTone = 'ok' | 'info' | 'warn' | 'fail' | 'muted'
+export enum ChipTone {
+    Ok = 'ok',
+    Info = 'info',
+    Warn = 'warn',
+    Fail = 'fail',
+    Muted = 'muted',
+}

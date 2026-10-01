@@ -12,7 +12,7 @@ interface IProps {
 // Tone colors and the tinted pill come from .fa-chip in globals.css.
 export function StatusChip({ tone, title, className, children }: IProps) {
     return (
-        <span className={cn('fa-chip', tone !== 'muted' && `fa-chip-${tone}`, className)} title={title}>
+        <span className={cn('fa-chip', tone !== ChipTone.Muted && `fa-chip-${tone}`, className)} title={title}>
             {children}
         </span>
     )

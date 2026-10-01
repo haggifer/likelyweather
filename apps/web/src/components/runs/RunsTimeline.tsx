@@ -13,7 +13,14 @@ interface IProps {
     now: Date
 }
 
-type SlotState = 'OK' | 'PARTIAL' | 'FAILED' | 'PREVIEW' | 'MISSING' | 'FUTURE'
+enum SlotState {
+    Ok = 'OK',
+    Partial = 'PARTIAL',
+    Failed = 'FAILED',
+    Preview = 'PREVIEW',
+    Missing = 'MISSING',
+    Future = 'FUTURE',
+}
 
 const DAY_MS = 86_400_000
 const SLOT_HOURS = [0, 6, 12, 18]
@@ -24,23 +31,23 @@ const scrollToEnd = (node: HTMLDivElement | null) => {
 }
 
 const SLOT_CLASSES: Record<SlotState, string> = {
-    OK: 'bg-success',
-    PARTIAL: 'bg-warning',
-    FAILED: 'bg-destructive',
-    PREVIEW: 'bg-info/45',
-    MISSING: 'border border-dashed border-muted-foreground/50 bg-transparent',
-    FUTURE: 'bg-muted',
+    [SlotState.Ok]: 'bg-success',
+    [SlotState.Partial]: 'bg-warning',
+    [SlotState.Failed]: 'bg-destructive',
+    [SlotState.Preview]: 'bg-info/45',
+    [SlotState.Missing]: 'border border-dashed border-muted-foreground/50 bg-transparent',
+    [SlotState.Future]: 'bg-muted',
 }
 
 const getSlotState = (issueTime: string, timeline: TimelineResponse, now: Date): SlotState => {
-    if (new Date(issueTime) > now) return 'FUTURE'
+    if (new Date(issueTime) > now) return SlotState.Future
 
     const runs = timeline.runs.filter((r) => r.issueTime === issueTime)
     const scheduled = runs.find((r) => r.origin === 'SCHEDULED')
 
-    if (scheduled) return scheduled.status
+    if (scheduled) return scheduled.status as SlotState
 
-    return runs.length ? 'PREVIEW' : 'MISSING'
+    return runs.length ? SlotState.Preview : SlotState.Missing
 }
 
 export function RunsTimeline({ timeline, now }: IProps) {

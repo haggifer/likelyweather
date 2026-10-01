@@ -4,6 +4,7 @@ import { UpdatedChip } from '@/components/city/UpdatedChip'
 import { FlagIcon } from '@/components/shell/FlagIcon'
 import { SearchBox } from '@/components/shell/SearchBox'
 import { StatusChip } from '@/components/shell/StatusChip'
+import { ChipTone } from '@/components/types'
 import { useLatest } from '@/hooks/useLatest'
 import { CityDetail, CityStatus } from '@fa/shared/api'
 import { getCityName, getCountryName } from '@fa/shared/format'
@@ -83,12 +84,12 @@ export function CityHeader({ city }: IProps) {
                     </div>
                     <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
                         {city.isPreviewOnly && (
-                            <StatusChip tone="info" title={t('previewTitle')} className="h-7">
+                            <StatusChip tone={ChipTone.Info} title={t('previewTitle')} className="h-7">
                                 {t('preview')}
                             </StatusChip>
                         )}
                         {city.status !== CityStatus.Active && (
-                            <StatusChip tone="warn" className="h-7">
+                            <StatusChip tone={ChipTone.Warn} className="h-7">
                                 {t(`status.${city.status}`)}
                             </StatusChip>
                         )}

@@ -14,9 +14,9 @@ import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 
 const STATUS_TONES: Record<CityStatus, ChipTone> = {
-    [CityStatus.Active]: 'ok',
-    [CityStatus.Dormant]: 'muted',
-    [CityStatus.Queued]: 'warn',
+    [CityStatus.Active]: ChipTone.Ok,
+    [CityStatus.Dormant]: ChipTone.Muted,
+    [CityStatus.Queued]: ChipTone.Warn,
 }
 
 export function CitiesView() {

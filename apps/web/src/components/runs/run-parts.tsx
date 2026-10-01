@@ -2,7 +2,11 @@ import { ChipTone } from '@/components/types'
 import { Run, RunStatus } from '@fa/shared/api'
 import { ExternalLink } from 'lucide-react'
 
-export const STATUS_TONES: Record<RunStatus, ChipTone> = { OK: 'ok', PARTIAL: 'warn', FAILED: 'fail' }
+export const STATUS_TONES: Record<RunStatus, ChipTone> = {
+    OK: ChipTone.Ok,
+    PARTIAL: ChipTone.Warn,
+    FAILED: ChipTone.Fail,
+}
 
 export const formatRunDuration = ({ startedAt, finishedAt }: Run) =>
     finishedAt ? `${((new Date(finishedAt).getTime() - new Date(startedAt).getTime()) / 1000).toFixed(1)} s` : '–'
