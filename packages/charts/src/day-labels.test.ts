@@ -1,4 +1,4 @@
-import { getDayLabel } from './dayLabels'
+import { getDayLabel } from './day-labels'
 
 const label = (width: number) => getDayLabel('2026-09-26T12:00Z', width, 'UTC', 'en', 11)
 

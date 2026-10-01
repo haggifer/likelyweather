@@ -1,7 +1,7 @@
 import { getLocalMidnights } from '@fa/shared/format'
 import { ScaleTime } from 'd3-scale'
 import { useMemo } from 'react'
-import { getDayLabel } from './dayLabels'
+import { getDayLabel } from './day-labels'
 
 interface Span {
     top: number
@@ -23,7 +23,7 @@ interface IProps {
 
 // Day boundaries are drawn at local midnight of the city in every span (one per panel), with each day's label
 // centered in its span of time at every label row, as long as the space allows ("Sat 26 Sept", "Sat 26", "Sat").
-export default function DayGrid({
+export function DayGrid({
     x,
     start,
     end,

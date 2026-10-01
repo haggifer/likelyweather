@@ -1,6 +1,6 @@
 'use client'
 
-import SpaghettiChart from '@fa/charts/SpaghettiChart'
+import { SpaghettiChart } from '@fa/charts/SpaghettiChart'
 import { City, LatestResponse } from '@fa/shared/api'
 import { computeEnsemble } from '@fa/shared/ensemble'
 import { Variable } from '@fa/shared/variables'

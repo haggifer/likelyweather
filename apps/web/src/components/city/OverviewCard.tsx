@@ -2,7 +2,7 @@
 
 import UpdatedChip from '@/components/city/UpdatedChip'
 import FlagIcon from '@/components/shell/FlagIcon'
-import MedianOverview, { MedianOverviewSkeleton, MedianSeries } from '@fa/charts/MedianOverview'
+import { MedianOverview, MedianOverviewSkeleton, MedianSeries } from '@fa/charts/MedianOverview'
 import { City, LatestResponse } from '@fa/shared/api'
 import { computeEnsemble, computeMedianDirection } from '@fa/shared/ensemble'
 import { getCityName, getCountryName } from '@fa/shared/format'

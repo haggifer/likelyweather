@@ -5,17 +5,17 @@ import { formatNumber, formatStepLabel } from '@fa/shared/format'
 import { SLOT_HOURS } from '@fa/shared/slots'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Skeleton } from '@fa/ui/components/skeleton'
-import useMediaQuery from '@fa/ui/hooks/useMediaQuery'
+import { useMediaQuery } from '@fa/ui/hooks/useMediaQuery'
 import { scaleLinear, scaleUtc } from 'd3-scale'
 import { area, curveMonotoneX, line } from 'd3-shape'
 import { useTranslations } from 'next-intl'
 import { CSSProperties, KeyboardEvent, PointerEvent, useId, useState } from 'react'
-import DayGrid from './DayGrid'
+import { DayGrid } from './DayGrid'
+import { useChartTheme } from './hooks/useChartTheme'
+import { useElementWidth } from './hooks/useElementWidth'
 import { getYDomain, getYTicks } from './scales'
-import { getNearestIndex } from './spaghettiGeometry'
-import useChartTheme from './useChartTheme'
-import useElementWidth from './useElementWidth'
-import WindArrows from './WindArrows'
+import { getNearestIndex } from './spaghetti-geometry'
+import { WindArrows } from './WindArrows'
 
 export interface MedianSeries {
     steps: string[]
@@ -114,7 +114,7 @@ export const MedianOverviewSkeleton = () => (
 // amount of the 3 hours after its slot. Readouts on the left follow the crosshair, or the first slot while the
 // chart is fresh; the hovered slot's time sits above the panels. `now` is set only once the chart has gone
 // stale: it draws the "now" line and shades the past.
-export default function MedianOverview({ series, directions, timeZone, locale, now, summaryStart, ariaLabel }: IProps) {
+export function MedianOverview({ series, directions, timeZone, locale, now, summaryStart, ariaLabel }: IProps) {
     const t = useTranslations('overview')
     const tv = useTranslations('variables')
     const tc = useTranslations('chart')

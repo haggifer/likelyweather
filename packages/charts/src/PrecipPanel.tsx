@@ -17,9 +17,9 @@ import {
     XAxis,
     YAxis,
 } from 'recharts'
+import { useChartTheme } from './hooks/useChartTheme'
+import { useElementWidth } from './hooks/useElementWidth'
 import { getYDomain, getYTicks } from './scales'
-import useChartTheme from './useChartTheme'
-import useElementWidth from './useElementWidth'
 
 interface IProps {
     steps: string[]
@@ -64,7 +64,7 @@ const ModelTick = ({ cx, cy, color }: ModelTickProps) =>
         <line x1={cx - 7} x2={cx + 7} y1={cy} y2={cy} stroke={color} strokeWidth={2} strokeLinecap="round" />
     )
 
-export default function PrecipPanel({
+export function PrecipPanel({
     steps,
     series,
     median,

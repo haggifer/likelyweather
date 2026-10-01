@@ -6,10 +6,13 @@ import { EnsembleStats } from '@fa/shared/ensemble'
 import { formatNumber, formatPeriodLabel, formatStepLabel } from '@fa/shared/format'
 import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
-import useNow from '@fa/ui/hooks/useNow'
+import { useNow } from '@fa/ui/hooks/useNow'
 import { useTranslations } from 'next-intl'
 import { KeyboardEvent, PointerEvent, useMemo } from 'react'
-import DayGrid from './DayGrid'
+import { DayGrid } from './DayGrid'
+import { useAnimatedDomain } from './hooks/useAnimatedDomain'
+import { useChartTheme } from './hooks/useChartTheme'
+import { useElementWidth } from './hooks/useElementWidth'
 import { getYDomain, getYTicks } from './scales'
 import {
     buildSpaghettiGeometry,
@@ -18,11 +21,8 @@ import {
     getSumBarCenter,
     getSumSpan,
     Margin,
-} from './spaghettiGeometry'
-import useAnimatedDomain from './useAnimatedDomain'
-import useChartTheme from './useChartTheme'
-import useElementWidth from './useElementWidth'
-import WindArrows from './WindArrows'
+} from './spaghetti-geometry'
+import { WindArrows } from './WindArrows'
 
 interface IProps {
     steps: string[]
@@ -60,7 +60,7 @@ const getMargin = (compact: boolean, hasArrows: boolean): Margin => ({
     left: compact ? 34 : 44,
 })
 
-export default function SpaghettiChart({
+export function SpaghettiChart({
     steps,
     series,
     stats,

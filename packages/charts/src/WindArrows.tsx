@@ -16,7 +16,7 @@ const getCompassLabel = (degrees: number, labels: string[]) =>
     labels[Math.round((((degrees % 360) + 360) % 360) / (360 / labels.length)) % labels.length]
 
 // Meteorological direction is where the wind comes FROM; the arrow points where it blows to (+180°).
-export default function WindArrows({ x, times, directions, y, color, mutedColor, compassLabels }: IProps) {
+export function WindArrows({ x, times, directions, y, color, mutedColor, compassLabels }: IProps) {
     return (
         <g aria-hidden="true">
             {directions.map((deg, i) => {

@@ -5,9 +5,7 @@ export interface UseElementWidthResult<T extends HTMLElement> {
     width: number
 }
 
-export default function useElementWidth<T extends HTMLElement = HTMLDivElement>(
-    initial = 640,
-): UseElementWidthResult<T> {
+export function useElementWidth<T extends HTMLElement = HTMLDivElement>(initial = 640): UseElementWidthResult<T> {
     const [width, setWidth] = useState(initial)
 
     const ref = useCallback<RefCallback<T>>((node) => {

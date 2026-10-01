@@ -9,13 +9,13 @@
         "./PrecipPanel": "./src/PrecipPanel.tsx",
         "./SpaghettiChart": "./src/SpaghettiChart.tsx",
         "./WindArrows": "./src/WindArrows.tsx",
-        "./dayLabels": "./src/dayLabels.ts",
+        "./day-labels": "./src/day-labels.ts",
         "./scales": "./src/scales.ts",
-        "./spaghettiGeometry": "./src/spaghettiGeometry.ts",
+        "./spaghetti-geometry": "./src/spaghetti-geometry.ts",
         "./theme": "./src/theme.ts",
-        "./useAnimatedDomain": "./src/useAnimatedDomain.ts",
-        "./useChartTheme": "./src/useChartTheme.ts",
-        "./useElementWidth": "./src/useElementWidth.ts"
+        "./hooks/useAnimatedDomain": "./src/hooks/useAnimatedDomain.ts",
+        "./hooks/useChartTheme": "./src/hooks/useChartTheme.ts",
+        "./hooks/useElementWidth": "./src/hooks/useElementWidth.ts"
     },
     "scripts": {
         "lint": "eslint .",

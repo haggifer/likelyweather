@@ -1,9 +1,11 @@
 import { interpolateNumber } from 'd3-interpolate'
 import { useEffect, useRef, useState } from 'react'
 
+export type UseAnimatedDomainResult = [number, number]
+
 interface AnimatedDomain {
     key: string
-    domain: [number, number]
+    domain: UseAnimatedDomainResult
 }
 
 const DURATION_MS = 180
@@ -13,7 +15,7 @@ const easeOut = (t: number) => 1 - Math.pow(1 - t, 3)
 // Tweens a y-domain with D3 interpolators inside requestAnimationFrame when the same series refreshes. A new
 // `resetKey` (another variable, with other units) jumps straight to the target: tweening between unrelated scales
 // shows nothing and re-renders the whole chart on every frame. Instant under reduced motion.
-export default function useAnimatedDomain(target: [number, number], resetKey = ''): [number, number] {
+export function useAnimatedDomain(target: UseAnimatedDomainResult, resetKey = ''): UseAnimatedDomainResult {
     const [state, setState] = useState<AnimatedDomain>({ key: resetKey, domain: target })
     const latest = useRef(state)
     const [lo, hi] = target

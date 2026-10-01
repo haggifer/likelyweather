@@ -2,7 +2,7 @@
 
 import { Button } from '@fa/ui/components/button'
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@fa/ui/components/card'
-import { cn } from '@fa/ui/lib/utils'
+import { cn } from '@fa/ui/lib/cn'
 import { BarChart3, Table2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { ReactNode, useState } from 'react'
@@ -19,7 +19,7 @@ interface IProps {
     children: ReactNode
 }
 
-export default function ChartFrame({
+export function ChartFrame({
     title,
     description,
     summary,

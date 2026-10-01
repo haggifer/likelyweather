@@ -7,9 +7,9 @@ import { useCity, useLatest } from '@/hooks/queries'
 import useUrlSync from '@/hooks/useUrlSync'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { setHoverStep, toggleHiddenModel } from '@/store/dashboardSlice'
-import ChartFrame from '@fa/charts/ChartFrame'
-import SpaghettiChart from '@fa/charts/SpaghettiChart'
-import { getNearestIndex } from '@fa/charts/spaghettiGeometry'
+import { ChartFrame } from '@fa/charts/ChartFrame'
+import { SpaghettiChart } from '@fa/charts/SpaghettiChart'
+import { getNearestIndex } from '@fa/charts/spaghetti-geometry'
 import { Series } from '@fa/shared/api'
 import {
     computeChanceOfRain,
@@ -55,7 +55,7 @@ const STICKY_TIME_CELL =
     'sticky left-0 z-1 bg-card group-hover:bg-[color-mix(in_srgb,var(--color-muted)_50%,var(--color-card))]'
 
 // Recharts is the heaviest chart library here and the panel sits below the fold, so it loads after the main chart.
-const PrecipPanel = dynamic(() => import('@fa/charts/PrecipPanel'), {
+const PrecipPanel = dynamic(() => import('@fa/charts/PrecipPanel').then((mod) => mod.PrecipPanel), {
     ssr: false,
     loading: () => <Skeleton className="h-[230px]" />,
 })
