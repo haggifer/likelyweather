@@ -1,4 +1,4 @@
-// Ingests CSVs from the reference Python collector as IMPORT runs.
+// Ingests CSVs from the Python collector this project grew out of as IMPORT runs.
 // Usage: pnpm import:csv -- ./packages/fixtures/csv/*.csv   (plain .csv or .csv.gz)
 import { getPrisma } from '@fa/db/client'
 import { closeCache } from '@fa/server/cache'

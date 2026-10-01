@@ -1,6 +1,6 @@
-// Ingests CSVs written by the reference Python collector as origin IMPORT runs. Both of its header versions are read
-// by column name: the current one (model, …, precip_mm, rain_mm, snowfall_cm) and the first one (source, model, …,
-// wind_ms, no precipitation). Rows are 6-hourly; each stays at its own valid time on the hourly grid.
+// Ingests CSVs written by the Python collector this project grew out of as origin IMPORT runs. Both of its header
+// versions are read by column name: the current one (model, …, precip_mm, rain_mm, snowfall_cm) and the first one
+// (source, model, …, wind_ms, no precipitation). Rows are 6-hourly; each stays at its own valid time on the hourly grid.
 import { City, Run } from '@fa/shared/api'
 import { ModelId, MODELS } from '@fa/shared/models'
 import { floorToStep, toIsoMinute } from '@fa/shared/time'
