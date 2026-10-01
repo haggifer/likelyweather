@@ -3,7 +3,7 @@
 import { useQuota } from '@/hooks/queries'
 import { formatTime } from '@fa/shared/format'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@fa/ui/components/tooltip'
-import { cn } from '@fa/ui/lib/utils'
+import { cn } from '@fa/ui/lib/cn'
 import { useLocale, useTranslations } from 'next-intl'
 
 const LOW_SHARE = 0.2

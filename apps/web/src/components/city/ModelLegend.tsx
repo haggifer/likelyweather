@@ -7,7 +7,7 @@ import { formatNumber } from '@fa/shared/format'
 import { MODEL_BY_ID } from '@fa/shared/models'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Button } from '@fa/ui/components/button'
-import { cn } from '@fa/ui/lib/utils'
+import { cn } from '@fa/ui/lib/cn'
 import { Eye, EyeOff, Pin } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 

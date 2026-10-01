@@ -1,4 +1,4 @@
-import { COLOR_MODE_EVENT } from '@fa/ui/lib/colorMode'
+import { COLOR_MODE_EVENT } from '@fa/ui/lib/color-mode'
 import { useSyncExternalStore } from 'react'
 import { ChartTheme, FALLBACK_CHART_THEME, readChartTheme } from './theme'
 

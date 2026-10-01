@@ -14,8 +14,8 @@
         "./components/toggle-group": "./src/components/toggle-group.tsx",
         "./components/toggle": "./src/components/toggle.tsx",
         "./components/tooltip": "./src/components/tooltip.tsx",
-        "./lib/colorMode": "./src/lib/colorMode.ts",
-        "./lib/utils": "./src/lib/utils.ts",
+        "./lib/color-mode": "./src/lib/color-mode.ts",
+        "./lib/cn": "./src/lib/cn.ts",
         "./hooks/useMediaQuery": "./src/hooks/useMediaQuery.ts",
         "./hooks/useNow": "./src/hooks/useNow.ts"
     },

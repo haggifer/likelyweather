@@ -10,7 +10,7 @@ import {
     DropdownMenuRadioItem,
     DropdownMenuTrigger,
 } from '@fa/ui/components/dropdown-menu'
-import { cn } from '@fa/ui/lib/utils'
+import { cn } from '@fa/ui/lib/cn'
 import { Languages } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'

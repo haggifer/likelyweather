@@ -7,7 +7,7 @@ import { getCityName } from '@fa/shared/format'
 import { getSlotStart } from '@fa/shared/slots'
 import { Variable, VARIABLES } from '@fa/shared/variables'
 import { Card, CardContent } from '@fa/ui/components/card'
-import useNow from '@fa/ui/hooks/useNow'
+import { useNow } from '@fa/ui/hooks/useNow'
 import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 

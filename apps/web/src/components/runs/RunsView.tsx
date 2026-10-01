@@ -7,8 +7,8 @@ import { useCities, useRuns, useTimeline } from '@/hooks/queries'
 import { getCityName } from '@fa/shared/format'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@fa/ui/components/card'
 import { Skeleton } from '@fa/ui/components/skeleton'
-import useMediaQuery from '@fa/ui/hooks/useMediaQuery'
-import useNow from '@fa/ui/hooks/useNow'
+import { useMediaQuery } from '@fa/ui/hooks/useMediaQuery'
+import { useNow } from '@fa/ui/hooks/useNow'
 import { useLocale, useTranslations } from 'next-intl'
 
 export default function RunsView() {

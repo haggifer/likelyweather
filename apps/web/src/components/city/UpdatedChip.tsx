@@ -4,7 +4,7 @@ import StatusChip from '@/components/shell/StatusChip'
 import { STALE_AFTER_HOURS } from '@fa/shared/constants'
 import { formatTime } from '@fa/shared/format'
 import { hoursBetween } from '@fa/shared/time'
-import { cn } from '@fa/ui/lib/utils'
+import { cn } from '@fa/ui/lib/cn'
 import { useLocale, useTranslations } from 'next-intl'
 
 interface IProps {

@@ -5,7 +5,7 @@ import { HOUR_MS } from '@fa/shared/constants'
 import { formatTime, formatUtc } from '@fa/shared/format'
 import { toIsoMinute } from '@fa/shared/time'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@fa/ui/components/tooltip'
-import { cn } from '@fa/ui/lib/utils'
+import { cn } from '@fa/ui/lib/cn'
 import { useLocale, useTranslations } from 'next-intl'
 import { useCallback } from 'react'
 

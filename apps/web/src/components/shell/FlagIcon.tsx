@@ -1,4 +1,4 @@
-import { cn } from '@fa/ui/lib/utils'
+import { cn } from '@fa/ui/lib/cn'
 import Image from 'next/image'
 
 interface IProps {

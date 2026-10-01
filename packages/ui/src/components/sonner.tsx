@@ -3,7 +3,7 @@
 import { CircleCheckIcon, InfoIcon, Loader2Icon, OctagonXIcon, TriangleAlertIcon } from 'lucide-react'
 import { useSyncExternalStore } from 'react'
 import { Toaster as Sonner, type ToasterProps } from 'sonner'
-import { getColorMode, subscribeColorMode } from '../lib/colorMode'
+import { getColorMode, subscribeColorMode } from '../lib/color-mode'
 
 const Toaster = ({ ...props }: ToasterProps) => {
     // The app's mode is the .dark class on <html>, not the OS preference

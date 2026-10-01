@@ -1,4 +1,4 @@
-import { cn } from '@fa/ui/lib/utils'
+import { cn } from '@fa/ui/lib/cn'
 import { ReactNode } from 'react'
 
 export type ChipTone = 'ok' | 'info' | 'warn' | 'fail' | 'muted'
