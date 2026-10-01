@@ -1,7 +1,7 @@
 import { GeocodeResult, Locale } from '@fa/shared/api'
 import { cached } from '../cache'
 import { env } from '../env'
-import { fetchJson } from './fetchWithRetry'
+import { fetchJson } from './fetch-with-retry'
 
 interface RawGeocode {
     id: number

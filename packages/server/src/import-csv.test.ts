@@ -4,7 +4,7 @@ import { City, CityStatus } from '@fa/shared/api'
 import { ModelId } from '@fa/shared/models'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
-import { importForecastCsv, parseForecastCsv } from './importCsv'
+import { importForecastCsv, parseForecastCsv } from './import-csv'
 
 loadLocalEnv()
 

@@ -5,7 +5,7 @@ import { ModelSeries } from '@fa/shared/variables'
 import { chunk } from 'es-toolkit'
 import { writeRunArchive } from './archive'
 import { fetchMetno, parseMetno } from './sources/metno'
-import { fetchOpenMeteoForecast, OPEN_METEO_BATCH_SIZE, parseOpenMeteoModels } from './sources/openMeteo'
+import { fetchOpenMeteoForecast, OPEN_METEO_BATCH_SIZE, parseOpenMeteoModels } from './sources/open-meteo'
 import {
     getLatestSnapshotMeta,
     getSnapshotGrid,

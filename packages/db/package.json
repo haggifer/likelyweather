@@ -5,7 +5,7 @@
     "exports": {
         "./client": "./src/client.ts",
         "./partitions": "./src/partitions.ts",
-        "./seed-data": "./src/seedData.ts"
+        "./seed-data": "./src/seed-data.ts"
     },
     "scripts": {
         "generate": "prisma generate",

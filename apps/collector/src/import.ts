@@ -2,7 +2,7 @@
 // Usage: pnpm import:csv -- ./packages/fixtures/csv/*.csv   (plain .csv or .csv.gz)
 import { getPrisma } from '@fa/db/client'
 import { closeCache } from '@fa/server/cache'
-import { importForecastCsv, parseForecastCsv } from '@fa/server/importCsv'
+import { importForecastCsv, parseForecastCsv } from '@fa/server/import-csv'
 import { getCities } from '@fa/server/store'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'

@@ -2,7 +2,7 @@ import { ModelId, OPEN_METEO_MODELS } from '@fa/shared/models'
 import { indexHourlyTimes, toStepSeries } from '@fa/shared/resample'
 import { ModelSeries, SERIES_FIELDS } from '@fa/shared/variables'
 import { env } from '../env'
-import { fetchJson } from './fetchWithRetry'
+import { fetchJson } from './fetch-with-retry'
 
 export interface LatLon {
     lat: number

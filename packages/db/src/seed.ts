@@ -1,5 +1,5 @@
 import { getPrisma } from './client'
-import { SEED_CITIES, SEED_MODELS } from './seedData'
+import { SEED_CITIES, SEED_MODELS } from './seed-data'
 
 // Idempotent: models are overwritten from the shared palette; seed cities are created once and keep their tracking
 // state, but pick up names added for newer locales.
