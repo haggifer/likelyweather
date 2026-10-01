@@ -45,7 +45,7 @@ Converging: once the collector has stored enough runs, evolution can read the ap
 
 ## P6. Hourly fetch aggregated to the 6-hour grid (superseded by P26)
 
-The reference collector used `temporal_resolution=hourly_6`, where precipitation at a step is the one-hour amount (its notes flag the undercount). The prototype fetches hourly data and aggregates on the server: instant variables are sampled at 00/06/12/18 UTC and precipitation is the six hours ending at the step. met.no precipitation uses `next_6_hours` of the entry six hours earlier (or the six `next_1_hours` blocks), so met.no joins the precipitation panel on the same basis. A sum with any missing hour is null rather than an undercount.
+The Python collector this project grew out of used `temporal_resolution=hourly_6`, where precipitation at a step is the one-hour amount (its notes flag the undercount). The prototype fetches hourly data and aggregates on the server: instant variables are sampled at 00/06/12/18 UTC and precipitation is the six hours ending at the step. met.no precipitation uses `next_6_hours` of the entry six hours earlier (or the six `next_1_hours` blocks), so met.no joins the precipitation panel on the same basis. A sum with any missing hour is null rather than an undercount.
 
 ## P7. A view refreshes a stale city (local stand-in for the scheduler)
 
@@ -199,7 +199,7 @@ Asked by the author: a strict daily limit per user, visible in the header, sized
 
 ## P28. Phone layout (2026-09-24)
 
-Left to the author's agent to decide. Measured at 375 × 812 before the change: no page scrolled sideways, but the landing overview's chart was 101 px wide next to its readout column, the overview title had about 110 px beside its two buttons, the header ran 14 px into its padding once the quota meter arrived, 11 of the 16 chance-of-rain labels in the precipitation panel touched, and the model legend took 432 px.
+Left open by the author and decided during implementation. Measured at 375 × 812 before the change: no page scrolled sideways, but the landing overview's chart was 101 px wide next to its readout column, the overview title had about 110 px beside its two buttons, the header ran 14 px into its padding once the quota meter arrived, 11 of the 16 chance-of-rain labels in the precipitation panel touched, and the model legend took 432 px.
 
 - **Landing overview.** Below `sm` (640 px) the readouts form a 2 × 2 grid above a full-width chart (309 px at 375), and each panel carries its name and unit in its top-left corner, since the readouts no longer sit beside the panels. The skeleton follows the same layout. The card's buttons move under the city name.
 - **Touch.** Charts take `touch-action: pan-y`, so a vertical swipe scrolls the page and a horizontal drag scrubs the chart; a tap selects the slot under the finger. On coarse pointers the header buttons and the variable switch grow to 36 px.
@@ -252,7 +252,7 @@ Decided by the author after comparing it with a Postgres-only design: Redis stay
 - `runScheduled` (lock, dormancy and queue promotion, collection, retention) is shared by the CLI (`pnpm collect`) and the Lambda handler. A FAILED run throws so EventBridge Scheduler retries it and the dead-letter queue raises the alarm; PARTIAL runs succeed.
 - A run is stored before its snapshots, which reference it; if the process dies mid-write it stays FAILED.
 - **`pnpm import:csv`**, not `pnpm import`: `import` is a built-in pnpm command (it converts another package manager's lockfile) and deleted `pnpm-lock.yaml` when first tried.
-- The importer reads both header versions of the reference Python collector by column name, matches cities by coordinates within 0.05° (its CSVs spell "Odessa", the geocoder "Odesa"), takes the issue time from `issue_time` floored to 6 hours or from the file name, and keeps each 6-hourly row at its own valid time. Fixtures in `packages/fixtures/csv`; five of the six gzip files in the author's Drive folder failed their checksum, so the fixtures are small hand-made files in the same formats.
+- The importer reads both header versions of the Python collector this project grew out of by column name, matches cities by coordinates within 0.05° (its CSVs spell "Odessa", the geocoder "Odesa"), takes the issue time from `issue_time` floored to 6 hours or from the file name, and keeps each 6-hourly row at its own valid time. Fixtures in `packages/fixtures/csv` are small hand-made files in the same formats.
 
 ## P34. End-to-end tests (2026-09-26)
 
@@ -260,7 +260,7 @@ Decided by the author after comparing it with a Postgres-only design: Redis stay
 - **A fake upstream** (`apps/e2e/fake-upstream.mjs`) replays the recorded New York responses for any location, shifted to today, and answers geocoding for one untracked city, so the collector and the preview path run for real and no test reaches Open-Meteo or met.no.
 - **Its own database**: the suite migrates and seeds `<DATABASE_URL>_e2e` in a global setup, so fake forecasts never land in the development database. Its API keeps caches and the quota in memory and turns rate limits off (`DISABLE_RATE_LIMITS`), since every test comes from one address.
 - **The production build** (`next start`) serves the web app, locally and in CI: closer to what ships, and Next.js 16 allows only one `next dev` per app.
-- **`/api/*` forwarding moved from `next.config` rewrites to `src/proxy.ts`.** Rewrites are fixed at build time, so a production build kept forwarding to the default API port; the proxy reads `API_ORIGIN` per request. The e2e suite found this, and also that `loadLocalEnv` replaced empty variables (an empty `REDIS_URL` meant "no Redis" but was overwritten from `.env`); it now only fills unset ones.
+- **`/api/*` forwarding moved from `next.config` rewrites to `apps/web/src/proxy.ts`.** Rewrites are fixed at build time, so a production build kept forwarding to the default API port; the proxy reads `API_ORIGIN` per request. The e2e suite found this, and also that `loadLocalEnv` replaced empty variables (an empty `REDIS_URL` meant "no Redis" but was overwritten from `.env`); it now only fills unset ones.
 - **Fixed from the axe run:** the search box's `aria-controls` pointed at a result list that was not rendered while the box was empty; the list is now always mounted and hidden.
 - **Not done: visual snapshots.** Baselines are platform-specific (fonts, antialiasing), so ones made on Windows would fail on the Linux runner. They should be generated on CI, for example with a manually triggered job that uploads them; the flows above already cover layout at both widths.
 

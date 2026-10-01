@@ -19,7 +19,7 @@ pnpm dev                  # web on http://localhost:3000, API on http://localhos
 
 Open any city and its forecast is fetched within a few seconds; search for any other city to start tracking it. The web app forwards `/api/*` to the API, so the browser sees one origin.
 
-Optional: fill the database for every active city now, keep a local 6-hourly schedule running, or load CSVs from the reference Python collector.
+Optional: fill the database for every active city now, keep a local 6-hourly schedule running, or load CSVs written by the Python collector this project grew out of (examples in `packages/fixtures/csv`).
 
 ```bash
 pnpm collect                                  # one scheduled run, all active cities
@@ -41,23 +41,26 @@ pnpm import:csv -- ./packages/fixtures/csv/*.csv
 
 A daily quota per user (60 new forecast requests, see DECISIONS P27) is shown as a meter in the top bar.
 
+Phones (below 640 px) get their own layouts where the desktop ones don't fit (DECISIONS P37): the dashboard pins the variable switch under the top bar and puts the model list under the chart, day labels shorten to fit, and runs and cities become card lists.
+
 Ukrainian, English, Spanish, German and French (language menu in the top bar; the non-English catalogs are machine-drafted and need a native review), light and dark mode.
 
 ## Scripts
 
-| Command                                               | What it does                                                                           |
-| ----------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `pnpm dev`                                            | Starts the Docker services, then the API (`tsx watch`) and the web app (Turbopack)     |
-| `pnpm db:up` / `db:deploy` / `db:migrate` / `db:seed` | Docker services; apply migrations; create a new migration; seed models and cities      |
-| `pnpm build`                                          | Next.js build, API and collector Lambda bundles (esbuild), Prisma client               |
-| `pnpm test`                                           | Vitest in every package; database tests run when `DATABASE_URL` is reachable           |
-| `pnpm lint` / `typecheck` / `format` / `format:check` | ESLint, TypeScript, Prettier with organize-imports                                     |
-| `pnpm check:messages`                                 | Key parity across the five catalogs and literal key usage in code                      |
-| `pnpm knip`                                           | Unused files, exports and dependencies across the workspace (`knip.jsonc`)             |
-| `pnpm e2e`                                            | Playwright flows on desktop and phone against a fake upstream (run `pnpm build` first) |
-| `pnpm collect`                                        | Scheduled collector run (see above); holds a Redis lock so two runs never overlap      |
-| `pnpm import:csv -- <files>`                          | Import reference-collector CSVs (`.csv` or `.csv.gz`) as IMPORT runs                   |
-| `pnpm --filter @fa/web flags`                         | Re-copy the SVG country flags into `apps/web/public/flags`                             |
+| Command                                                        | What it does                                                                              |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `pnpm dev`                                                     | Starts the Docker services, then the API (`tsx watch`) and the web app (Turbopack)        |
+| `pnpm db:up` / `db:deploy` / `db:migrate` / `db:seed`          | Docker services; apply migrations; create a new migration; seed models and cities         |
+| `pnpm build`                                                   | Next.js build, API and collector Lambda bundles (esbuild), Prisma client                  |
+| `pnpm test`                                                    | Vitest in every package; database tests run when `DATABASE_URL` is reachable              |
+| `pnpm lint` / `typecheck` / `format` / `format:check`          | ESLint, TypeScript, Prettier with organize-imports                                        |
+| `pnpm check:messages`                                          | Key parity across the five catalogs and literal key usage in code                         |
+| `pnpm knip`                                                    | Unused files, exports and dependencies across the workspace (`knip.jsonc`)                |
+| `pnpm e2e`                                                     | Playwright flows on desktop and phone against a fake upstream (run `pnpm build` first)    |
+| `pnpm collect`                                                 | Scheduled collector run (see above); holds a Redis lock so two runs never overlap         |
+| `pnpm import:csv -- <files>`                                   | Import CSVs in the earlier Python collector's format (`.csv` or `.csv.gz`) as IMPORT runs |
+| `pnpm cdk:synth` / `cdk:diff` / `cdk:deploy` / `cdk:bootstrap` | The AWS CDK stack in `infra/` (run `pnpm build` first; see [Deploy](#deploy))             |
+| `pnpm --filter @fa/web flags`                                  | Re-copy the SVG country flags into `apps/web/public/flags`                                |
 
 ## Architecture
 
@@ -100,7 +103,19 @@ What is built and what is still planned; the choices behind each piece are in DE
 - **Infrastructure and tooling:** one AWS CDK stack; a pnpm and Turborepo monorepo (`apps/web`, `apps/api`, `apps/collector`, `packages/shared`, `packages/charts`, `packages/ui`, `packages/db`, `packages/fixtures`, `infra`); CI runs lint, knip, typecheck, tests, the catalog check, end-to-end tests, the build and `cdk synth`.
 - **Optional:** a daily Gemini Flash brief with a claim checker.
 
-Built and running locally: the monorepo, Express, Prisma and Postgres with partitions, Redis, the collector with its Lambda handler, the S3 archive path and the CSV import. Also in place: CI (`.github/workflows/ci.yml`: format, catalog check, lint, knip, typecheck, tests against Postgres and Redis services, build) and `pnpm check:messages`. Playwright covers the main flows and accessibility (`pnpm e2e`). The CDK stack (`infra/`) synthesizes and is tested, with the web app on Lambda instead of Amplify (DECISIONS P35, P36); it has not been deployed. Not yet: the first deployment and the Gemini brief. Truth, skill scores, the scoreboard and the evolution view are out of the MVP (DECISIONS P17, P20).
+The web app runs on Lambda instead of Amplify (DECISIONS P35, P36). Truth, skill scores, the scoreboard and the evolution view are out of the MVP (DECISIONS P17, P20).
+
+## Deploy
+
+One CDK stack (`infra/`, in your AWS profile's region, `eu-central-1` if it has none) holds the web, API and collector functions, CloudFront, the S3 archive, the schedule with its dead-letter queue and alarms, the GitHub deploy role and a monthly budget alarm. Postgres (Neon) and Redis (Upstash) are external.
+
+1. Create three SecureString parameters the functions read at cold start: `/forecast-arena/DATABASE_URL` (the pooled connection string), `/forecast-arena/REDIS_URL` (`rediss://…`) and `/forecast-arena/METNO_USER_AGENT`.
+2. Apply migrations from your machine with the unpooled URL: `DIRECT_URL=<url> DATABASE_URL=<url> pnpm db:deploy` (deploys never migrate), then `pnpm db:seed` with the same variables.
+3. Once per account and region: `pnpm build && pnpm cdk:bootstrap --profile <profile>`.
+4. Deploy: `pnpm build && pnpm cdk:deploy --profile <profile> -c budgetEmail=<address> -c githubRepo=<owner>/<repo>`. Accounts with a low Lambda concurrency limit also need `-c collectorReservedConcurrency=0`.
+5. Confirm the alarm topic's subscription e-mail. The stack output `SiteUrl` is the site.
+
+After that, pushes to `main` deploy through GitHub OIDC (`.github/workflows/deploy.yml`) once the repository has the variables `AWS_DEPLOY_ROLE_ARN` (stack output `DeployRoleArn`) and `AWS_REGION`, the secret `BUDGET_EMAIL`, and, where needed, the variable `COLLECTOR_RESERVED_CONCURRENCY=0`.
 
 ## Design decisions
 
