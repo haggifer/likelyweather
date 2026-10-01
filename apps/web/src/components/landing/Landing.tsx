@@ -45,7 +45,7 @@ export function Landing() {
                                 onClick={() => void setSlug(city.slug)}
                                 aria-pressed={slug === city.slug}
                                 className={cn(
-                                    'inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-[13px] font-medium transition-colors hover:border-primary hover:text-primary',
+                                    'inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-[0.8125rem] font-medium transition-colors hover:border-primary hover:text-primary',
                                     slug === city.slug &&
                                         'border-primary bg-primary text-primary-foreground hover:text-primary-foreground',
                                 )}

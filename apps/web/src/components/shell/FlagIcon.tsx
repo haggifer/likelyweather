@@ -15,7 +15,7 @@ export function FlagIcon({ countryCode, className }: IProps) {
             height={12}
             unoptimized
             className={cn(
-                'inline-block h-3 w-[18px] shrink-0 rounded-[2px] object-cover ring-1 ring-border',
+                'inline-block h-3 w-[1.125rem] shrink-0 rounded-[0.125rem] object-cover ring-1 ring-border',
                 className,
             )}
         />

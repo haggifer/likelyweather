@@ -60,7 +60,7 @@ export function RunsTimeline({ timeline, now }: IProps) {
                 >
                     {SLOT_HOURS.map((hour) => (
                         <div key={hour} className="contents">
-                            <span className="pr-1 text-right text-[10px] leading-[14px] text-muted-foreground">
+                            <span className="pr-1 text-right text-[0.625rem] leading-[0.875rem] text-muted-foreground">
                                 {String(hour).padStart(2, '0')}Z
                             </span>
                             {days.map((day) => {
@@ -73,7 +73,7 @@ export function RunsTimeline({ timeline, now }: IProps) {
                                             <span
                                                 tabIndex={0}
                                                 aria-label={`${formatUtc(issueTime, locale)} UTC: ${t(`slot.${state}`)}`}
-                                                className={cn('size-3.5 rounded-[3px]', SLOT_CLASSES[state])}
+                                                className={cn('size-3.5 rounded-[0.1875rem]', SLOT_CLASSES[state])}
                                             />
                                         </TooltipTrigger>
                                         <TooltipContent>
@@ -86,16 +86,16 @@ export function RunsTimeline({ timeline, now }: IProps) {
                     ))}
                     <span />
                     {days.map((day, i) => (
-                        <span key={day.toISOString()} className="text-center text-[9px] text-muted-foreground">
+                        <span key={day.toISOString()} className="text-center text-[0.5625rem] text-muted-foreground">
                             {i % 5 === 0 ? formatTime(day, 'UTC', locale, { day: 'numeric', month: 'numeric' }) : ''}
                         </span>
                     ))}
                 </div>
             </div>
-            <div className="flex flex-wrap gap-3 text-[11px] text-muted-foreground">
+            <div className="flex flex-wrap gap-3 text-[0.6875rem] text-muted-foreground">
                 {(Object.keys(SLOT_CLASSES) as SlotState[]).map((state) => (
                     <span key={state} className="flex items-center gap-1.5">
-                        <span className={cn('size-3 rounded-[3px]', SLOT_CLASSES[state])} />
+                        <span className={cn('size-3 rounded-[0.1875rem]', SLOT_CLASSES[state])} />
                         {t(`slot.${state}`)}
                     </span>
                 ))}

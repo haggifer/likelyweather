@@ -55,7 +55,7 @@ export function ChartFrame({
                 </CardAction>
             </CardHeader>
             <CardContent className={cn('transition-opacity', isFetching && 'opacity-60')}>
-                {isTable && table ? <div className="max-h-[420px] overflow-auto">{table}</div> : children}
+                {isTable && table ? <div className="max-h-[26.25rem] overflow-auto">{table}</div> : children}
                 {summary && <p className="mt-2 text-xs text-muted-foreground">{summary}</p>}
                 {footer}
             </CardContent>

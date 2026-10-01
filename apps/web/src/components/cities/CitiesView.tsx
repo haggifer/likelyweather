@@ -44,7 +44,7 @@ export function CitiesView() {
                                 {cities.map((c) => (
                                     <li
                                         key={c.id}
-                                        className="flex flex-col gap-1.5 rounded-md border p-3 text-[13px]"
+                                        className="flex flex-col gap-1.5 rounded-md border p-3 text-[0.8125rem]"
                                     >
                                         <div className="flex items-center justify-between gap-2">
                                             <Link

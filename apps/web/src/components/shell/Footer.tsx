@@ -8,7 +8,7 @@ export async function Footer() {
 
     return (
         <footer className="border-t text-xs text-muted-foreground">
-            <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-x-4 gap-y-1 px-4 py-4 sm:px-(--pane-padding)">
+            <div className="mx-auto flex max-w-[87.5rem] flex-wrap items-center gap-x-4 gap-y-1 px-4 py-4 sm:px-(--pane-padding)">
                 <p>
                     {t.rich('attribution', {
                         openMeteo: (chunks) => (

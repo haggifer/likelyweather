@@ -34,7 +34,7 @@ export function CityShell({ slug, children }: IProps) {
             <div className="flex flex-col gap-3">
                 <Skeleton className="h-8 w-64" />
                 <Skeleton className="h-4 w-96" />
-                <Skeleton className="mt-4 h-[380px] w-full" />
+                <Skeleton className="mt-4 h-[23.75rem] w-full" />
             </div>
         )
     }

@@ -58,7 +58,7 @@ const STICKY_TIME_CELL =
 // Recharts is the heaviest chart library here and the panel sits below the fold, so it loads after the main chart.
 const PrecipPanel = dynamic(() => import('@fa/charts/PrecipPanel').then((mod) => mod.PrecipPanel), {
     ssr: false,
-    loading: () => <Skeleton className="h-[230px]" />,
+    loading: () => <Skeleton className="h-[14.375rem]" />,
 })
 
 // On phones the switch stays under the top bar, so another variable is one tap away wherever the page is scrolled.
@@ -211,7 +211,7 @@ export function Dashboard({ slug }: IProps) {
                     windowHours={PRECIP_WINDOW_HOURS}
                 />
             ) : (
-                <Skeleton className="h-[230px]" />
+                <Skeleton className="h-[14.375rem]" />
             ),
         [precip, timeZone, locale],
     )
@@ -244,13 +244,13 @@ export function Dashboard({ slug }: IProps) {
                         ? t('fetchFailed', { message: latestQuery.error.message })
                         : t('fetching', { name: cityName })}
                 </div>
-                <div className="grid gap-(--card-gap) lg:grid-cols-[minmax(0,1fr)_300px]">
-                    <Skeleton className="h-[400px]" />
-                    <Skeleton className="h-[400px] max-sm:hidden" />
+                <div className="grid gap-(--card-gap) lg:grid-cols-[minmax(0,1fr)_18.75rem]">
+                    <Skeleton className="h-[25rem]" />
+                    <Skeleton className="h-[25rem] max-sm:hidden" />
                 </div>
                 <div className="grid gap-(--card-gap) lg:grid-cols-2">
-                    <Skeleton className="h-[220px]" />
-                    <Skeleton className="h-[220px]" />
+                    <Skeleton className="h-[13.75rem]" />
+                    <Skeleton className="h-[13.75rem]" />
                 </div>
             </div>
         )
@@ -303,7 +303,7 @@ export function Dashboard({ slug }: IProps) {
     return (
         <div className="flex flex-col gap-(--card-gap)">
             {VARIABLE_BAR}
-            <div className="grid gap-(--card-gap) lg:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="grid gap-(--card-gap) lg:grid-cols-[minmax(0,1fr)_20rem]">
                 <ChartFrame
                     title={tv(variable)}
                     summary={summary}

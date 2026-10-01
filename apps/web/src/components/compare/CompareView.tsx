@@ -142,7 +142,7 @@ export function CompareView() {
                                         yDomain={sharedDomain}
                                     />
                                 ) : (
-                                    <Skeleton className="h-[220px]" />
+                                    <Skeleton className="h-[13.75rem]" />
                                 )}
                             </CardContent>
                         </Card>

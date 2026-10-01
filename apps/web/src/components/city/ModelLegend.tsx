@@ -69,7 +69,7 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
                     </Button>
                 )}
             </div>
-            <div className="flex items-center justify-between rounded-md bg-muted px-2 py-1.5 text-[13px]">
+            <div className="flex items-center justify-between rounded-md bg-muted px-2 py-1.5 text-[0.8125rem]">
                 <span className="flex items-center gap-2 font-semibold">
                     <svg width="18" height="6" aria-hidden="true">
                         <line
@@ -98,7 +98,7 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
                         <li
                             key={modelId}
                             className={cn(
-                                'group flex h-(--row-height) items-center gap-1.5 rounded-md px-1.5 text-[13px] max-sm:h-auto max-sm:min-h-9 max-sm:py-1 max-sm:text-xs sm:gap-2 hover:bg-muted',
+                                'group flex h-(--row-height) items-center gap-1.5 rounded-md px-1.5 text-[0.8125rem] max-sm:h-auto max-sm:min-h-9 max-sm:py-1 max-sm:text-xs sm:gap-2 hover:bg-muted',
                                 isPinned && 'bg-accent',
                                 isHidden && 'opacity-45',
                             )}
@@ -124,7 +124,7 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
                                     {model.name}
                                 </span>
                                 {isPinned && <Pin className="size-3 shrink-0 text-muted-foreground" />}
-                                <kbd className="ml-auto hidden rounded border px-1 font-mono text-[10px] text-muted-foreground pointer-fine:group-hover:inline">
+                                <kbd className="ml-auto hidden rounded border px-1 font-mono text-[0.625rem] text-muted-foreground pointer-fine:group-hover:inline">
                                     {model.hotkey}
                                 </kbd>
                             </button>
@@ -145,8 +145,8 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
                     )
                 })}
             </ul>
-            <p className="text-[11px] leading-snug text-muted-foreground pointer-coarse:hidden">{t('hint')}</p>
-            <p className="hidden text-[11px] leading-snug text-muted-foreground pointer-coarse:block">
+            <p className="text-[0.6875rem] leading-snug text-muted-foreground pointer-coarse:hidden">{t('hint')}</p>
+            <p className="hidden text-[0.6875rem] leading-snug text-muted-foreground pointer-coarse:block">
                 {t('hintTouch')}
             </p>
         </div>

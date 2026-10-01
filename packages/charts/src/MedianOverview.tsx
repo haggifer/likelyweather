@@ -190,7 +190,7 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                                     {isSum ? t('perSlot', { unit: info.unit, hours: SLOT_HOURS }) : info.unit}
                                 </span>
                             </span>
-                            <span className="text-[11px] text-muted-foreground">{summary}</span>
+                            <span className="text-[0.6875rem] text-muted-foreground">{summary}</span>
                         </div>
                     )
                 })}

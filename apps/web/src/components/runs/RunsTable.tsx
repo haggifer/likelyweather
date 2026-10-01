@@ -116,7 +116,7 @@ export function RunsTable({ runs, cityNames }: IProps) {
                         return (
                             <TableRow key={row.id} style={{ height: ROW_HEIGHT }}>
                                 {row.getVisibleCells().map((cell) => (
-                                    <TableCell key={cell.id} className="py-1 text-[13px]">
+                                    <TableCell key={cell.id} className="py-1 text-[0.8125rem]">
                                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                     </TableCell>
                                 ))}

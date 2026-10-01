@@ -28,7 +28,7 @@ export function RunsCards({ runs, cityNames }: IProps) {
         <div className="flex flex-col gap-2">
             <ul aria-label={t('tableTitle')} className="flex flex-col gap-2">
                 {runs.slice(0, count).map((run) => (
-                    <li key={run.id} className="flex flex-col gap-1.5 rounded-md border p-3 text-[13px]">
+                    <li key={run.id} className="flex flex-col gap-1.5 rounded-md border p-3 text-[0.8125rem]">
                         <div className="flex items-center justify-between gap-2">
                             <span className="font-medium">{formatUtc(run.issueTime, locale)} UTC</span>
                             <StatusChip tone={STATUS_TONES[run.status]}>{t(`statuses.${run.status}`)}</StatusChip>
