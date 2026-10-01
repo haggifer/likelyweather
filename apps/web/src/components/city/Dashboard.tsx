@@ -221,7 +221,10 @@ export default function Dashboard({ slug }: IProps) {
 
     // On phones the switch stays under the top bar, so another variable is one tap away wherever the page is scrolled.
     const variableBar = (
-        <div className="self-start max-sm:sticky max-sm:top-(--topbar-h) max-sm:z-20 max-sm:-mx-4 max-sm:self-stretch max-sm:bg-background/95 max-sm:px-4 max-sm:py-2 max-sm:backdrop-blur">
+        <div
+            data-pinned-bar
+            className="self-start max-sm:sticky max-sm:top-(--topbar-h) max-sm:z-20 max-sm:-mx-4 max-sm:self-stretch max-sm:bg-background/95 max-sm:px-4 max-sm:py-2 max-sm:backdrop-blur"
+        >
             <VariableSwitch className="max-sm:w-full" />
         </div>
     )

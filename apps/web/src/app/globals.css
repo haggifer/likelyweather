@@ -145,6 +145,14 @@
     }
     html {
         @apply font-sans;
+        /* Keyboard focus and anchor jumps stop below the sticky top bar instead of under it. */
+        scroll-padding-top: calc(var(--topbar-h) + 0.5rem);
+    }
+    /* On phones the dashboard also pins its variable switch under the top bar. */
+    @media (width < 40rem) {
+        html:has([data-pinned-bar]) {
+            scroll-padding-top: calc(var(--topbar-h) + 3.75rem);
+        }
     }
     body {
         @apply bg-background text-foreground;
