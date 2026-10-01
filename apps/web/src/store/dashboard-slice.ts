@@ -62,4 +62,4 @@ export const {
     markUrlHydrated,
 } = dashboardSlice.actions
 
-export default dashboardSlice.reducer
+export const dashboardReducer = dashboardSlice.reducer

@@ -1,7 +1,8 @@
 'use client'
 
-import OverviewCard, { OverviewCardSkeleton } from '@/components/city/OverviewCard'
-import { useCity, useHourlyAll } from '@/hooks/queries'
+import { OverviewCard, OverviewCardSkeleton } from '@/components/city/OverviewCard'
+import { useCity } from '@/hooks/useCity'
+import { useHourlyAll } from '@/hooks/useHourlyAll'
 import { LatestResponse } from '@fa/shared/api'
 import { getCityName } from '@fa/shared/format'
 import { getSlotStart } from '@fa/shared/slots'
@@ -15,7 +16,7 @@ interface IProps {
     slug: string
 }
 
-export default function CityOverview({ slug }: IProps) {
+export function CityOverview({ slug }: IProps) {
     const t = useTranslations('overview')
     const locale = useLocale()
     const now = useNow()

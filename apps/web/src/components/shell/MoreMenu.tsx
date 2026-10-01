@@ -11,7 +11,7 @@ import { BookOpen, Building2, Columns3, History, Menu } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 
-export default function MoreMenu() {
+export function MoreMenu() {
     const t = useTranslations('nav')
 
     return (

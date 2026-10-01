@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from '@/store'
-import { markUrlHydrated, setVariable } from '@/store/dashboardSlice'
+import { markUrlHydrated, setVariable } from '@/store/dashboard-slice'
 import { Variable } from '@fa/shared/variables'
 import { parseAsStringEnum, useQueryState } from 'nuqs'
 import { useEffect } from 'react'
@@ -13,7 +13,7 @@ const variableParser = parseAsStringEnum<Variable>(Object.values(Variable))
 // Redux owns the chosen variable; the URL mirrors it (`?v=`) so a dashboard or compare view is linkable. On mount
 // the URL is read once, then Redux writes back. Queries wait for `isHydrated` so a deep link never fires a wasted
 // request with the default variable first.
-export default function useUrlSync(): UseUrlSyncResult {
+export function useUrlSync(): UseUrlSyncResult {
     const dispatch = useAppDispatch()
     const variable = useAppSelector((s) => s.dashboard.variable)
     const isHydrated = useAppSelector((s) => s.dashboard.isUrlHydrated)

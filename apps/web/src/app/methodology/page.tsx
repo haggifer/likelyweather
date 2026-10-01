@@ -6,6 +6,7 @@ import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 
 const SECTIONS = ['sources', 'median', 'disagreement', 'limits'] as const
+const METHODOLOGY_VALUES = { rain: RAIN_THRESHOLD_MM }
 
 export const generateMetadata = async (): Promise<Metadata> => ({
     title: (await getTranslations('nav'))('methodology'),
@@ -14,7 +15,6 @@ export const generateMetadata = async (): Promise<Metadata> => ({
 export default async function MethodologyPage() {
     const t = await getTranslations('methodology')
     const tv = await getTranslations('variables')
-    const values = { rain: RAIN_THRESHOLD_MM }
 
     return (
         <article className="mx-auto flex max-w-3xl flex-col gap-(--card-gap)">
@@ -28,7 +28,7 @@ export default async function MethodologyPage() {
                         <CardTitle className="text-lg font-semibold">{t(`${section}.title`)}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-2 text-sm leading-relaxed">
-                        {t(`${section}.body`, values)
+                        {t(`${section}.body`, METHODOLOGY_VALUES)
                             .split('\n')
                             .map((paragraph) => (
                                 <p key={paragraph}>{paragraph}</p>

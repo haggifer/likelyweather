@@ -1,10 +1,10 @@
 'use client'
 
-import UpdatedChip from '@/components/city/UpdatedChip'
-import FlagIcon from '@/components/shell/FlagIcon'
-import SearchBox from '@/components/shell/SearchBox'
-import StatusChip from '@/components/shell/StatusChip'
-import { useLatest } from '@/hooks/queries'
+import { UpdatedChip } from '@/components/city/UpdatedChip'
+import { FlagIcon } from '@/components/shell/FlagIcon'
+import { SearchBox } from '@/components/shell/SearchBox'
+import { StatusChip } from '@/components/shell/StatusChip'
+import { useLatest } from '@/hooks/useLatest'
 import { CityDetail, CityStatus } from '@fa/shared/api'
 import { getCityName, getCountryName } from '@fa/shared/format'
 import { Variable } from '@fa/shared/variables'
@@ -23,7 +23,7 @@ interface IProps {
 
 // The city name doubles as a switcher: the pencil swaps it for a search box holding the current name, selected so
 // typing replaces it. Picking a result opens that city; Escape or clicking away keeps this one.
-export default function CityHeader({ city }: IProps) {
+export function CityHeader({ city }: IProps) {
     const t = useTranslations('city')
     const locale = useLocale()
     const now = useNow()

@@ -1,4 +1,4 @@
-import CitiesView from '@/components/cities/CitiesView'
+import { CitiesView } from '@/components/cities/CitiesView'
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 

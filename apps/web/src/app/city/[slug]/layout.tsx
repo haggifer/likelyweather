@@ -1,4 +1,4 @@
-import CityShell from '@/components/city/CityShell'
+import { CityShell } from '@/components/city/CityShell'
 import { getCountryName } from '@fa/shared/format'
 import type { Metadata } from 'next'
 import { getLocale } from 'next-intl/server'

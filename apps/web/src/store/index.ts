@@ -1,8 +1,8 @@
-import dashboard from '@/store/dashboardSlice'
+import { dashboardReducer } from '@/store/dashboard-slice'
 import { configureStore } from '@reduxjs/toolkit'
 import { useDispatch, useSelector } from 'react-redux'
 
-export const makeStore = () => configureStore({ reducer: { dashboard } })
+export const makeStore = () => configureStore({ reducer: { dashboard: dashboardReducer } })
 
 type AppStore = ReturnType<typeof makeStore>
 export type RootState = ReturnType<AppStore['getState']>

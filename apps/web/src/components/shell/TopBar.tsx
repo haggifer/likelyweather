@@ -1,11 +1,11 @@
-import LanguageSwitch from '@/components/shell/LanguageSwitch'
-import MoreMenu from '@/components/shell/MoreMenu'
-import QuotaMeter from '@/components/shell/QuotaMeter'
-import ThemeToggle from '@/components/shell/ThemeToggle'
+import { LanguageSwitch } from '@/components/shell/LanguageSwitch'
+import { MoreMenu } from '@/components/shell/MoreMenu'
+import { QuotaMeter } from '@/components/shell/QuotaMeter'
+import { ThemeToggle } from '@/components/shell/ThemeToggle'
 import { CloudSun } from 'lucide-react'
 import Link from 'next/link'
 
-export default function TopBar() {
+export function TopBar() {
     return (
         <header className="sticky top-0 z-30 border-b bg-background/90 backdrop-blur supports-backdrop-filter:bg-background/75">
             <div className="mx-auto flex h-(--topbar-h) max-w-[1400px] items-center gap-4 px-4 sm:px-(--pane-padding)">

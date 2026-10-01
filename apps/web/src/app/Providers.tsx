@@ -1,6 +1,6 @@
 'use client'
 
-import { makeQueryClient } from '@/lib/queryClient'
+import { makeQueryClient } from '@/lib/query-client'
 import { makeStore } from '@/store'
 import { Toaster } from '@fa/ui/components/sonner'
 import { TooltipProvider } from '@fa/ui/components/tooltip'
@@ -13,7 +13,7 @@ interface IProps {
     children: ReactNode
 }
 
-export default function Providers({ children }: IProps) {
+export function Providers({ children }: IProps) {
     const [store] = useState(makeStore)
     const [queryClient] = useState(makeQueryClient)
 

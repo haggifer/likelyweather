@@ -1,7 +1,7 @@
 'use client'
 
-import UpdatedChip from '@/components/city/UpdatedChip'
-import FlagIcon from '@/components/shell/FlagIcon'
+import { UpdatedChip } from '@/components/city/UpdatedChip'
+import { FlagIcon } from '@/components/shell/FlagIcon'
 import { MedianOverview, MedianOverviewSkeleton, MedianSeries } from '@fa/charts/MedianOverview'
 import { City, LatestResponse } from '@fa/shared/api'
 import { computeEnsemble, computeMedianDirection } from '@fa/shared/ensemble'
@@ -54,7 +54,7 @@ export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
 // Presentational: the landing page feeds it live queries, the Theme Lab gallery feeds it the static dump. The chart
 // starts at `anchor`, the local 3-hour slot the data arrived in; once `now` has moved into a later slot the chart is
 // stale, which shows the "now" line and enables the refresh.
-export default function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh }: IProps) {
+export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh }: IProps) {
     const t = useTranslations('overview')
     const locale = useLocale()
     const name = getCityName(city, locale)

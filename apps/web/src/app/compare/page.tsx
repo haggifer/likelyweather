@@ -1,4 +1,4 @@
-import CompareView from '@/components/compare/CompareView'
+import { CompareView } from '@/components/compare/CompareView'
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 

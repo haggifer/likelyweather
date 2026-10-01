@@ -1,7 +1,7 @@
 'use client'
 
-import { formatRunDuration, getRunOriginLabel, RunArchiveLink, STATUS_TONES } from '@/components/runs/runParts'
-import StatusChip from '@/components/shell/StatusChip'
+import { formatRunDuration, getRunOriginLabel, RunArchiveLink, STATUS_TONES } from '@/components/runs/run-parts'
+import { StatusChip } from '@/components/shell/StatusChip'
 import { Run } from '@fa/shared/api'
 import { formatUtc } from '@fa/shared/format'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@fa/ui/components/table'
@@ -18,7 +18,7 @@ interface IProps {
 const ROW_HEIGHT = 38
 const VIEWPORT_HEIGHT = 480
 
-export default function RunsTable({ runs, cityNames }: IProps) {
+export function RunsTable({ runs, cityNames }: IProps) {
     const t = useTranslations('runs')
     const locale = useLocale()
     const viewportRef = useRef<HTMLDivElement>(null)

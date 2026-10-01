@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 const REPO_URL = process.env.NEXT_PUBLIC_REPO_URL
 
-export default async function Footer() {
+export async function Footer() {
     const t = await getTranslations('footer')
 
     return (

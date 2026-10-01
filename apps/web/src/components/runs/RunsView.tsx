@@ -1,9 +1,11 @@
 'use client'
 
-import RunsCards from '@/components/runs/RunsCards'
-import RunsTable from '@/components/runs/RunsTable'
-import RunsTimeline from '@/components/runs/RunsTimeline'
-import { useCities, useRuns, useTimeline } from '@/hooks/queries'
+import { RunsCards } from '@/components/runs/RunsCards'
+import { RunsTable } from '@/components/runs/RunsTable'
+import { RunsTimeline } from '@/components/runs/RunsTimeline'
+import { useCities } from '@/hooks/useCities'
+import { useRuns } from '@/hooks/useRuns'
+import { useTimeline } from '@/hooks/useTimeline'
 import { getCityName } from '@fa/shared/format'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@fa/ui/components/card'
 import { Skeleton } from '@fa/ui/components/skeleton'
@@ -11,7 +13,7 @@ import { useMediaQuery } from '@fa/ui/hooks/useMediaQuery'
 import { useNow } from '@fa/ui/hooks/useNow'
 import { useLocale, useTranslations } from 'next-intl'
 
-export default function RunsView() {
+export function RunsView() {
     const t = useTranslations('runs')
     const locale = useLocale()
     const now = useNow()

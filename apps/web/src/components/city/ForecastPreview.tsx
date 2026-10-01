@@ -18,7 +18,7 @@ interface IProps {
 }
 
 // `latest` is already on local 3-hour slots; a precipitation bar covers the 3 hours after its slot.
-export default function ForecastPreview({ city, latest, variable, ariaLabel, now, height = 220, yDomain }: IProps) {
+export function ForecastPreview({ city, latest, variable, ariaLabel, now, height = 220, yDomain }: IProps) {
     const locale = useLocale()
     const [hoverIndex, setHoverIndex] = useState<number | null>(null)
     const stats = useMemo(

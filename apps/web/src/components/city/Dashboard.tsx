@@ -1,12 +1,13 @@
 'use client'
 
-import DisagreementTiles from '@/components/city/DisagreementTiles'
-import ModelLegend from '@/components/city/ModelLegend'
-import VariableSwitch from '@/components/city/VariableSwitch'
-import { useCity, useLatest } from '@/hooks/queries'
-import useUrlSync from '@/hooks/useUrlSync'
+import { DisagreementTiles } from '@/components/city/DisagreementTiles'
+import { ModelLegend } from '@/components/city/ModelLegend'
+import { VariableSwitch } from '@/components/city/VariableSwitch'
+import { useCity } from '@/hooks/useCity'
+import { useLatest } from '@/hooks/useLatest'
+import { useUrlSync } from '@/hooks/useUrlSync'
 import { useAppDispatch, useAppSelector } from '@/store'
-import { setHoverStep, toggleHiddenModel } from '@/store/dashboardSlice'
+import { setHoverStep, toggleHiddenModel } from '@/store/dashboard-slice'
 import { ChartFrame } from '@fa/charts/ChartFrame'
 import { SpaghettiChart } from '@fa/charts/SpaghettiChart'
 import { getNearestIndex } from '@fa/charts/spaghetti-geometry'
@@ -60,6 +61,16 @@ const PrecipPanel = dynamic(() => import('@fa/charts/PrecipPanel').then((mod) =>
     loading: () => <Skeleton className="h-[230px]" />,
 })
 
+// On phones the switch stays under the top bar, so another variable is one tap away wherever the page is scrolled.
+const VARIABLE_BAR = (
+    <div
+        data-pinned-bar
+        className="self-start max-sm:sticky max-sm:top-(--topbar-h) max-sm:z-20 max-sm:-mx-4 max-sm:self-stretch max-sm:bg-background/95 max-sm:px-4 max-sm:py-2 max-sm:backdrop-blur"
+    >
+        <VariableSwitch className="max-sm:w-full" />
+    </div>
+)
+
 const isTypingTarget = (target: EventTarget | null) =>
     target instanceof HTMLElement &&
     (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
@@ -106,7 +117,7 @@ const SeriesTable = ({
     </Table>
 )
 
-export default function Dashboard({ slug }: IProps) {
+export function Dashboard({ slug }: IProps) {
     const t = useTranslations('dashboard')
     const tv = useTranslations('variables')
     const locale = useLocale()
@@ -219,16 +230,6 @@ export default function Dashboard({ slug }: IProps) {
         return () => window.removeEventListener('keydown', handleKey)
     }, [latest, dispatch])
 
-    // On phones the switch stays under the top bar, so another variable is one tap away wherever the page is scrolled.
-    const variableBar = (
-        <div
-            data-pinned-bar
-            className="self-start max-sm:sticky max-sm:top-(--topbar-h) max-sm:z-20 max-sm:-mx-4 max-sm:self-stretch max-sm:bg-background/95 max-sm:px-4 max-sm:py-2 max-sm:backdrop-blur"
-        >
-            <VariableSwitch className="max-sm:w-full" />
-        </div>
-    )
-
     if (!city) return null
 
     const cityName = getCityName(city, locale)
@@ -236,7 +237,7 @@ export default function Dashboard({ slug }: IProps) {
     if (!latest || !derived || !now) {
         return (
             <div className="flex flex-col gap-(--card-gap)">
-                {variableBar}
+                {VARIABLE_BAR}
                 <div className="flex items-center gap-2 text-sm text-muted-foreground" role="status">
                     <Loader2 className="size-4 animate-spin" />
                     {latestQuery.isError
@@ -301,7 +302,7 @@ export default function Dashboard({ slug }: IProps) {
 
     return (
         <div className="flex flex-col gap-(--card-gap)">
-            {variableBar}
+            {VARIABLE_BAR}
             <div className="grid gap-(--card-gap) lg:grid-cols-[minmax(0,1fr)_320px]">
                 <ChartFrame
                     title={tv(variable)}

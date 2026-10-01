@@ -1,7 +1,6 @@
+import { ChipTone } from '@/components/types'
 import { cn } from '@fa/ui/lib/cn'
 import { ReactNode } from 'react'
-
-export type ChipTone = 'ok' | 'info' | 'warn' | 'fail' | 'muted'
 
 interface IProps {
     tone: ChipTone
@@ -11,7 +10,7 @@ interface IProps {
 }
 
 // Tone colors and the tinted pill come from .fa-chip in globals.css.
-export default function StatusChip({ tone, title, className, children }: IProps) {
+export function StatusChip({ tone, title, className, children }: IProps) {
     return (
         <span className={cn('fa-chip', tone !== 'muted' && `fa-chip-${tone}`, className)} title={title}>
             {children}

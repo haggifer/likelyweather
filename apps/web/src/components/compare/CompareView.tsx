@@ -1,10 +1,11 @@
 'use client'
 
-import ForecastPreview from '@/components/city/ForecastPreview'
-import VariableSwitch from '@/components/city/VariableSwitch'
-import FlagIcon from '@/components/shell/FlagIcon'
-import { useCities, useCompare } from '@/hooks/queries'
-import useUrlSync from '@/hooks/useUrlSync'
+import { ForecastPreview } from '@/components/city/ForecastPreview'
+import { VariableSwitch } from '@/components/city/VariableSwitch'
+import { FlagIcon } from '@/components/shell/FlagIcon'
+import { useCities } from '@/hooks/useCities'
+import { useCompare } from '@/hooks/useCompare'
+import { useUrlSync } from '@/hooks/useUrlSync'
 import { useAppSelector } from '@/store'
 import { getYDomain } from '@fa/charts/scales'
 import { MAX_COMPARE_CITIES, SEED_CITY_IDS } from '@fa/shared/constants'
@@ -24,7 +25,7 @@ import { useMemo } from 'react'
 
 const citiesParser = parseAsArrayOf(parseAsString).withDefault([])
 
-export default function CompareView() {
+export function CompareView() {
     const t = useTranslations('compare')
     const locale = useLocale()
     const { isHydrated } = useUrlSync()

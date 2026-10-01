@@ -1,8 +1,9 @@
 'use client'
 
-import FlagIcon from '@/components/shell/FlagIcon'
-import { useGeocode, useTrackCity } from '@/hooks/queries'
-import useDebouncedValue from '@/hooks/useDebouncedValue'
+import { FlagIcon } from '@/components/shell/FlagIcon'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
+import { useGeocode } from '@/hooks/useGeocode'
+import { useTrackCity } from '@/hooks/useTrackCity'
 import { GeocodeResult, Locale } from '@fa/shared/api'
 import { CommandEmpty, CommandGroup, CommandItem, CommandList } from '@fa/ui/components/command'
 import { cn } from '@fa/ui/lib/cn'
@@ -34,7 +35,7 @@ const getServerShortcutLabel = () => null
 // Selecting a place tracks it and then hands the slug to `onSelectCity`; without a handler the
 // box navigates to the city dashboard. With an `initialQuery` (the current city) the text starts selected, so
 // typing replaces it, and results only appear once it has been edited. `onDismiss` fires on Escape and on blur.
-export default function SearchBox({
+export function SearchBox({
     enableShortcut = false,
     initialQuery = '',
     autoFocus = false,
@@ -128,7 +129,7 @@ export default function SearchBox({
                 />
                 {track.isPending && <Loader2 className="size-4 shrink-0 animate-spin text-muted-foreground" />}
                 {enableShortcut && shortcutLabel && !track.isPending && (
-                    <kbd className="hidden shrink-0 rounded border bg-muted px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground sm:inline">
+                    <kbd className="hidden shrink-0 rounded border bg-muted px-1.5 py-0.5 font-mono text-[0.6875rem] text-muted-foreground sm:inline">
                         {shortcutLabel}
                     </kbd>
                 )}

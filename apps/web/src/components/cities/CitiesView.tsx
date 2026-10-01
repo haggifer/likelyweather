@@ -1,8 +1,9 @@
 'use client'
 
-import FlagIcon from '@/components/shell/FlagIcon'
-import StatusChip, { ChipTone } from '@/components/shell/StatusChip'
-import { useCities } from '@/hooks/queries'
+import { FlagIcon } from '@/components/shell/FlagIcon'
+import { StatusChip } from '@/components/shell/StatusChip'
+import { ChipTone } from '@/components/types'
+import { useCities } from '@/hooks/useCities'
 import { CityStatus } from '@fa/shared/api'
 import { formatTime, getCityName } from '@fa/shared/format'
 import { Card, CardContent } from '@fa/ui/components/card'
@@ -18,7 +19,7 @@ const STATUS_TONES: Record<CityStatus, ChipTone> = {
     [CityStatus.Queued]: 'warn',
 }
 
-export default function CitiesView() {
+export function CitiesView() {
     const t = useTranslations('cities')
     const tc = useTranslations('city')
     const locale = useLocale()
@@ -41,7 +42,10 @@ export default function CitiesView() {
                         <>
                             <ul aria-label={t('title')} className="flex flex-col gap-2 sm:hidden">
                                 {cities.map((c) => (
-                                    <li key={c.id} className="flex flex-col gap-1.5 rounded-md border p-3 text-[13px]">
+                                    <li
+                                        key={c.id}
+                                        className="flex flex-col gap-1.5 rounded-md border p-3 text-[13px]"
+                                    >
                                         <div className="flex items-center justify-between gap-2">
                                             <Link
                                                 href={`/city/${c.slug}`}

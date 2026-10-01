@@ -1,7 +1,7 @@
 'use client'
 
 import { useAppDispatch, useAppSelector } from '@/store'
-import { setVariable } from '@/store/dashboardSlice'
+import { setVariable } from '@/store/dashboard-slice'
 import { Variable, VARIABLES } from '@fa/shared/variables'
 import { ToggleGroup, ToggleGroupItem } from '@fa/ui/components/toggle-group'
 import { cn } from '@fa/ui/lib/cn'
@@ -19,7 +19,7 @@ const ICONS: Record<Variable, LucideIcon> = {
     [Variable.Precip]: CloudRain,
 }
 
-export default function VariableSwitch({ className }: IProps) {
+export function VariableSwitch({ className }: IProps) {
     const t = useTranslations('variables')
     const dispatch = useAppDispatch()
     const variable = useAppSelector((s) => s.dashboard.variable)

@@ -7,7 +7,6 @@ import { toIsoMinute } from '@fa/shared/time'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@fa/ui/components/tooltip'
 import { cn } from '@fa/ui/lib/cn'
 import { useLocale, useTranslations } from 'next-intl'
-import { useCallback } from 'react'
 
 interface IProps {
     timeline: TimelineResponse
@@ -18,6 +17,11 @@ type SlotState = 'OK' | 'PARTIAL' | 'FAILED' | 'PREVIEW' | 'MISSING' | 'FUTURE'
 
 const DAY_MS = 86_400_000
 const SLOT_HOURS = [0, 6, 12, 18]
+
+// The grid runs oldest to newest and is wider than a phone, so it opens scrolled to today.
+const scrollToEnd = (node: HTMLDivElement | null) => {
+    if (node) node.scrollLeft = node.scrollWidth
+}
 
 const SLOT_CLASSES: Record<SlotState, string> = {
     OK: 'bg-success',
@@ -39,18 +43,13 @@ const getSlotState = (issueTime: string, timeline: TimelineResponse, now: Date):
     return runs.length ? 'PREVIEW' : 'MISSING'
 }
 
-export default function RunsTimeline({ timeline, now }: IProps) {
+export function RunsTimeline({ timeline, now }: IProps) {
     const t = useTranslations('runs')
     const locale = useLocale()
     const start = new Date(timeline.from)
     const firstDay = Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate())
     const dayCount = Math.ceil((new Date(timeline.to).getTime() - firstDay) / DAY_MS)
     const days = Array.from({ length: dayCount }, (_, i) => new Date(firstDay + i * DAY_MS))
-
-    // The grid runs oldest to newest and is wider than a phone, so it opens scrolled to today.
-    const scrollToEnd = useCallback((node: HTMLDivElement | null) => {
-        if (node) node.scrollLeft = node.scrollWidth
-    }, [])
 
     return (
         <div className="flex flex-col gap-3">

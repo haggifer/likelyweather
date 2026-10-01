@@ -6,7 +6,7 @@ import { Moon, Sun } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useSyncExternalStore } from 'react'
 
-export default function ThemeToggle() {
+export function ThemeToggle() {
     const t = useTranslations('shell')
     const mode = useSyncExternalStore(subscribeColorMode, getColorMode, () => 'light' as const)
     const next = mode === 'dark' ? 'light' : 'dark'

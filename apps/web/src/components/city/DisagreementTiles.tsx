@@ -1,6 +1,7 @@
 'use client'
 
-import StatusChip, { ChipTone } from '@/components/shell/StatusChip'
+import { StatusChip } from '@/components/shell/StatusChip'
+import { ChipTone } from '@/components/types'
 import { DayDisagreement, DisagreementLabel } from '@fa/shared/ensemble'
 import { formatNumber, formatTime } from '@fa/shared/format'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
@@ -14,7 +15,7 @@ interface IProps {
 
 const TONES: Record<DisagreementLabel, ChipTone> = { agree: 'ok', mixed: 'warn', split: 'fail' }
 
-export default function DisagreementTiles({ days, variable }: IProps) {
+export function DisagreementTiles({ days, variable }: IProps) {
     const t = useTranslations('disagreement')
     const tv = useTranslations('variables')
     const locale = useLocale()

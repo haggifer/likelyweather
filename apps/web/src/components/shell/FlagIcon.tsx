@@ -6,7 +6,7 @@ interface IProps {
     className?: string
 }
 
-export default function FlagIcon({ countryCode, className }: IProps) {
+export function FlagIcon({ countryCode, className }: IProps) {
     return (
         <Image
             src={`/flags/${countryCode.toUpperCase()}.svg`}

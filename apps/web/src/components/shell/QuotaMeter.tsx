@@ -1,6 +1,6 @@
 'use client'
 
-import { useQuota } from '@/hooks/queries'
+import { useQuota } from '@/hooks/useQuota'
 import { formatTime } from '@fa/shared/format'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@fa/ui/components/tooltip'
 import { cn } from '@fa/ui/lib/cn'
@@ -9,7 +9,7 @@ import { useLocale, useTranslations } from 'next-intl'
 const LOW_SHARE = 0.2
 
 // Requests left today out of the daily quota. The reset time is shown in the viewer's own time zone.
-export default function QuotaMeter() {
+export function QuotaMeter() {
     const t = useTranslations('shell.quota')
     const locale = useLocale()
     const { data } = useQuota()

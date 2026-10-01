@@ -1,6 +1,6 @@
 'use client'
 
-import StatusChip from '@/components/shell/StatusChip'
+import { StatusChip } from '@/components/shell/StatusChip'
 import { STALE_AFTER_HOURS } from '@fa/shared/constants'
 import { formatTime } from '@fa/shared/format'
 import { hoursBetween } from '@fa/shared/time'
@@ -17,7 +17,7 @@ interface IProps {
 
 const TIME_FORMAT: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
 
-export default function UpdatedChip({ issueTime, fetchedAt, timeZone, now, className }: IProps) {
+export function UpdatedChip({ issueTime, fetchedAt, timeZone, now, className }: IProps) {
     const t = useTranslations('city')
     const locale = useLocale()
     const isStale = now ? hoursBetween(issueTime, now) > STALE_AFTER_HOURS : false

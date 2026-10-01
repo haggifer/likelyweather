@@ -1,8 +1,8 @@
 'use client'
 
-import CityOverview from '@/components/landing/CityOverview'
-import FlagIcon from '@/components/shell/FlagIcon'
-import SearchBox from '@/components/shell/SearchBox'
+import { CityOverview } from '@/components/landing/CityOverview'
+import { FlagIcon } from '@/components/shell/FlagIcon'
+import { SearchBox } from '@/components/shell/SearchBox'
 import { getCityName } from '@fa/shared/format'
 import { SEEDS, slugify, START_WITH_IDS } from '@fa/shared/seeds'
 import { Card, CardContent, CardHeader, CardTitle } from '@fa/ui/components/card'
@@ -19,7 +19,7 @@ const START_WITH = START_WITH_IDS.map((id) => SEEDS.find((s) => s.id === id)!).m
 
 const cityParser = parseAsString.withDefault(START_WITH[0].slug)
 
-export default function Landing() {
+export function Landing() {
     const t = useTranslations('landing')
     const locale = useLocale()
     const [slug, setSlug] = useQueryState('city', cityParser)

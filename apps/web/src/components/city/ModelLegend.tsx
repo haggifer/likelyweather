@@ -1,7 +1,7 @@
 'use client'
 
 import { useAppDispatch, useAppSelector } from '@/store'
-import { setHighlightedModel, showAllModels, toggleHiddenModel, togglePinnedModel } from '@/store/dashboardSlice'
+import { setHighlightedModel, showAllModels, toggleHiddenModel, togglePinnedModel } from '@/store/dashboard-slice'
 import { Series } from '@fa/shared/api'
 import { formatNumber } from '@fa/shared/format'
 import { MODEL_BY_ID } from '@fa/shared/models'
@@ -40,7 +40,7 @@ const LineSwatch = ({ color, dash, width = 18 }: SwatchProps) => (
     </svg>
 )
 
-export default function ModelLegend({ series, median, readoutIndex, readoutLabel, variable }: IProps) {
+export function ModelLegend({ series, median, readoutIndex, readoutLabel, variable }: IProps) {
     const t = useTranslations('legend')
     const dispatch = useAppDispatch()
     const hidden = useAppSelector((s) => s.dashboard.hiddenModels)

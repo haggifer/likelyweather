@@ -1,8 +1,8 @@
 'use client'
 
-import CityHeader from '@/components/city/CityHeader'
-import SearchBox from '@/components/shell/SearchBox'
-import { useCity } from '@/hooks/queries'
+import { CityHeader } from '@/components/city/CityHeader'
+import { SearchBox } from '@/components/shell/SearchBox'
+import { useCity } from '@/hooks/useCity'
 import { formatTime, getCityName } from '@fa/shared/format'
 import { Skeleton } from '@fa/ui/components/skeleton'
 import { Radar } from 'lucide-react'
@@ -14,7 +14,7 @@ interface IProps {
     children: ReactNode
 }
 
-export default function CityShell({ slug, children }: IProps) {
+export function CityShell({ slug, children }: IProps) {
     const t = useTranslations('city')
     const locale = useLocale()
     const { data: city, error } = useCity(slug)

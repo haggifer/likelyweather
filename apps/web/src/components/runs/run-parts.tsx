@@ -1,4 +1,4 @@
-import { ChipTone } from '@/components/shell/StatusChip'
+import { ChipTone } from '@/components/types'
 import { Run, RunStatus } from '@fa/shared/api'
 import { ExternalLink } from 'lucide-react'
 

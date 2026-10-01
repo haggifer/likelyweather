@@ -28,7 +28,7 @@ const LANGUAGE_NAMES: Record<Locale, string> = {
     [Locale.Fr]: 'Français',
 }
 
-export default function LanguageSwitch() {
+export function LanguageSwitch() {
     const t = useTranslations('shell')
     const locale = useLocale()
     const router = useRouter()

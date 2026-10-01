@@ -1,7 +1,7 @@
 'use client'
 
-import { formatRunDuration, getRunOriginLabel, RunArchiveLink, STATUS_TONES } from '@/components/runs/runParts'
-import StatusChip from '@/components/shell/StatusChip'
+import { formatRunDuration, getRunOriginLabel, RunArchiveLink, STATUS_TONES } from '@/components/runs/run-parts'
+import { StatusChip } from '@/components/shell/StatusChip'
 import { Run } from '@fa/shared/api'
 import { formatUtc } from '@fa/shared/format'
 import { Button } from '@fa/ui/components/button'
@@ -16,7 +16,7 @@ interface IProps {
 // Up to 500 runs arrive at once; a phone renders them in pages instead of one long list.
 const PAGE_SIZE = 30
 
-export default function RunsCards({ runs, cityNames }: IProps) {
+export function RunsCards({ runs, cityNames }: IProps) {
     const t = useTranslations('runs')
     const locale = useLocale()
     const [count, setCount] = useState(PAGE_SIZE)
