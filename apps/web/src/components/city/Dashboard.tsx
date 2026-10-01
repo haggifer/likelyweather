@@ -49,6 +49,11 @@ interface SeriesTableProps {
 
 const PRECIP_WINDOW_HOURS = 6
 
+// Model columns scroll under the time column, so its background stays opaque: the hover colour is the row's
+// muted/50 tint mixed into the card colour instead of laid over it.
+const STICKY_TIME_CELL =
+    'sticky left-0 z-1 bg-card group-hover:bg-[color-mix(in_srgb,var(--color-muted)_50%,var(--color-card))]'
+
 // Recharts is the heaviest chart library here and the panel sits below the fold, so it loads after the main chart.
 const PrecipPanel = dynamic(() => import('@fa/charts/PrecipPanel'), {
     ssr: false,
@@ -72,7 +77,7 @@ const SeriesTable = ({
     <Table className="text-xs">
         <TableHeader>
             <TableRow className="group">
-                <TableHead className="sticky left-0 z-1 bg-card group-hover:bg-muted/50">{timeLabel}</TableHead>
+                <TableHead className={STICKY_TIME_CELL}>{timeLabel}</TableHead>
                 <TableHead className="text-right">{medianLabel}</TableHead>
                 {series.map((s) => (
                     <TableHead key={s.modelId} className="text-right">
@@ -84,7 +89,7 @@ const SeriesTable = ({
         <TableBody>
             {steps.map((step, i) => (
                 <TableRow key={step} className="group">
-                    <TableCell className="sticky left-0 z-1 bg-card whitespace-nowrap group-hover:bg-muted/50">
+                    <TableCell className={`${STICKY_TIME_CELL} whitespace-nowrap`}>
                         {formatStepLabel(step, timeZone, locale)}
                     </TableCell>
                     <TableCell className="text-right font-semibold">
