@@ -25,11 +25,6 @@ enum SlotState {
 const DAY_MS = 86_400_000
 const SLOT_HOURS = [0, 6, 12, 18]
 
-// The grid runs oldest to newest and is wider than a phone, so it opens scrolled to today.
-const scrollToEnd = (node: HTMLDivElement | null) => {
-    if (node) node.scrollLeft = node.scrollWidth
-}
-
 const SLOT_CLASSES: Record<SlotState, string> = {
     [SlotState.Ok]: 'bg-success',
     [SlotState.Partial]: 'bg-warning',
@@ -37,6 +32,11 @@ const SLOT_CLASSES: Record<SlotState, string> = {
     [SlotState.Preview]: 'bg-info/45',
     [SlotState.Missing]: 'border border-dashed border-muted-foreground/50 bg-transparent',
     [SlotState.Future]: 'bg-muted',
+}
+
+// The grid runs oldest to newest and is wider than a phone, so it opens scrolled to today.
+const scrollToEnd = (node: HTMLDivElement | null) => {
+    if (node) node.scrollLeft = node.scrollWidth
 }
 
 const getSlotState = (issueTime: string, timeline: TimelineResponse, now: Date): SlotState => {
@@ -63,7 +63,7 @@ export function RunsTimeline({ timeline, now }: IProps) {
             <div ref={scrollToEnd} className="overflow-x-auto">
                 <div
                     className="inline-grid gap-1"
-                    style={{ gridTemplateColumns: `2.5rem repeat(${days.length}, 14px)` }}
+                    style={{ gridTemplateColumns: `2.5rem repeat(${days.length}, 0.875rem)` }}
                 >
                     {SLOT_HOURS.map((hour) => (
                         <div key={hour} className="contents">
