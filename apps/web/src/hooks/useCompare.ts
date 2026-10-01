@@ -1,5 +1,5 @@
 import { apiGet } from '@/lib/api'
-import { MINUTE } from '@/lib/query-keys'
+import { MINUTE } from '@/lib/latest-query'
 import { CompareResponse } from '@fa/shared/api'
 import { Variable } from '@fa/shared/variables'
 import { keepPreviousData, useQuery, UseQueryResult } from '@tanstack/react-query'

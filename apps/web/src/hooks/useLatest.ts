@@ -1,4 +1,4 @@
-import { getLatestQuery, LATEST_REFETCH_MS, MINUTE } from '@/lib/query-keys'
+import { getLatestQuery, LATEST_REFETCH_MS, MINUTE } from '@/lib/latest-query'
 import { LatestResponse } from '@fa/shared/api'
 import { Variable } from '@fa/shared/variables'
 import { keepPreviousData, useQuery, UseQueryResult } from '@tanstack/react-query'

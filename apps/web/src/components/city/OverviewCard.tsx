@@ -51,9 +51,8 @@ export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
     </Card>
 )
 
-// Presentational: the landing page feeds it live queries, the Theme Lab gallery feeds it the static dump. The chart
-// starts at `anchor`, the local 3-hour slot the data arrived in; once `now` has moved into a later slot the chart is
-// stale, which shows the "now" line and enables the refresh.
+// The chart starts at `anchor`, the local 3-hour slot the data arrived in; once `now` has moved into a later slot
+// the chart is stale, which shows the "now" line and enables the refresh.
 export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh }: IProps) {
     const t = useTranslations('overview')
     const locale = useLocale()

@@ -1,5 +1,5 @@
 import { apiGet } from '@/lib/api'
-import { MINUTE } from '@/lib/query-keys'
+import { MINUTE } from '@/lib/latest-query'
 import { GeocodeResponse, Locale } from '@fa/shared/api'
 import { keepPreviousData, useQuery, UseQueryResult } from '@tanstack/react-query'
 
