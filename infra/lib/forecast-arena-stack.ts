@@ -133,6 +133,9 @@ export class ForecastArenaStack extends Stack {
                 ...environment,
                 AWS_LAMBDA_EXEC_WRAPPER: '/opt/bootstrap',
                 AWS_LWA_PORT: '8080',
+                // The server listens on PORT; without it it falls back to the local API_PORT default and the adapter
+                // never sees it become ready.
+                PORT: '8080',
                 AWS_LWA_READINESS_CHECK_PATH: '/api/models',
             },
             logGroup: new logs.LogGroup(this, 'ApiLogs', {

@@ -117,6 +117,17 @@ describe('ForecastArenaStack web', () => {
         })
     })
 
+    it('starts both Web Adapter apps on the port the adapter waits for', () => {
+        template.resourcePropertiesCountIs(
+            'AWS::Lambda::Function',
+            {
+                Handler: 'run.sh',
+                Environment: { Variables: Match.objectLike({ AWS_LWA_PORT: '8080', PORT: '8080' }) },
+            },
+            2,
+        )
+    })
+
     it('lets CloudFront invoke both function URLs, which needs lambda:InvokeFunction as well', () => {
         template.resourcePropertiesCountIs(
             'AWS::Lambda::Permission',
