@@ -224,5 +224,11 @@
         "failed": "No se pudo cargar esta ciudad: {message}",
         "perSlot": "{unit} / próx. {hours} h",
         "unavailable": "Todavía no hay pronóstico horario para esta ciudad. Inténtalo de nuevo en un minuto."
+    },
+    "legal": {
+        "privacy": "Política de privacidad",
+        "terms": "Términos de uso",
+        "lastUpdated": "Última actualización: {date}",
+        "englishOnly": "Este documento solo está disponible en inglés."
     }
 }

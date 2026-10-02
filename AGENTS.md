@@ -37,6 +37,7 @@ pnpm cdk:synth               # also cdk:diff, cdk:deploy, cdk:bootstrap; needs p
 - **Shared server code.** Anything the API and the collector both need lives in `packages/server`; the apps stay thin entry points. Database access goes through `packages/server/src/store.ts`, shared expiring state through `packages/server/src/cache.ts`.
 - **Redis is optional at runtime.** Every Redis call must degrade (no cache, no limit, lock granted) rather than fail a request (DECISIONS P31). Never add ElastiCache.
 - **Schema changes** go through Prisma migrations in `packages/db`. `Forecast` is partitioned by week: keep `issueTime` in its primary key and never write to it without `ensureForecastPartitions` (the store does this).
+- **Legal pages.** `apps/web/src/content/legal/{privacy,terms}.mdx` describe what the app stores, logs and shares, its cookies and its providers. A change to any of these updates them and their "last updated" date in the same commit (DECISIONS P40).
 - **Scope.** The MVP compares models with each other, not with observations. Truth, skill scores and the scoreboard are post-MVP (DECISIONS P17, P20).
 
 ## Conventions

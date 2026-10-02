@@ -224,5 +224,11 @@
         "failed": "Impossible de charger cette ville : {message}",
         "perSlot": "{unit} / {hours} h à venir",
         "unavailable": "Aucune prévision horaire n’est encore disponible pour cette ville. Réessayez dans une minute."
+    },
+    "legal": {
+        "privacy": "Politique de confidentialité",
+        "terms": "Conditions d’utilisation",
+        "lastUpdated": "Dernière mise à jour : {date}",
+        "englishOnly": "Ce document est disponible uniquement en anglais."
     }
 }

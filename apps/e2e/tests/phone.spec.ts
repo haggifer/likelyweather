@@ -2,7 +2,16 @@ import { expect, Page, test } from '@playwright/test'
 
 const KYIV = 'kyiv-ua-703448'
 const LONDON = 'london-gb-2643743'
-const PAGES = ['/', `/city/${KYIV}`, `/compare?cities=${KYIV},${LONDON}`, '/runs', '/cities', '/methodology']
+const PAGES = [
+    '/',
+    `/city/${KYIV}`,
+    `/compare?cities=${KYIV},${LONDON}`,
+    '/runs',
+    '/cities',
+    '/methodology',
+    '/privacy',
+    '/terms',
+]
 const WEEKDAY = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)/
 
 const expectNoSideScroll = async (page: Page) => {

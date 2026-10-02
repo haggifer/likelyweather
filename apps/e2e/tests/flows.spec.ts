@@ -70,3 +70,19 @@ for (const path of ['/', `/city/${KYIV}`]) {
         expect(serious.map((v) => `${v.id}: ${v.nodes.length} nodes`)).toEqual([])
     })
 }
+
+test('the footer links to the privacy policy and the terms', async ({ page }) => {
+    for (const [link, heading] of [
+        ['Privacy Policy', 'Privacy Policy'],
+        ['Terms of Use', 'Terms of Use'],
+    ]) {
+        await page.goto('/methodology')
+        await page.getByRole('contentinfo').getByRole('link', { name: link }).click()
+        await expect(page.getByRole('heading', { level: 1 })).toHaveText(heading)
+
+        const { violations } = await new AxeBuilder({ page }).analyze()
+        const serious = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
+
+        expect(serious.map((v) => `${v.id}: ${v.nodes.length} nodes`)).toEqual([])
+    }
+})

@@ -224,5 +224,11 @@
         "failed": "Diese Stadt konnte nicht geladen werden: {message}",
         "perSlot": "{unit} / nächste {hours} h",
         "unavailable": "Für diese Stadt gibt es noch keine stündliche Vorhersage. Versuche es in einer Minute erneut."
+    },
+    "legal": {
+        "privacy": "Datenschutzerklärung",
+        "terms": "Nutzungsbedingungen",
+        "lastUpdated": "Zuletzt aktualisiert: {date}",
+        "englishOnly": "Dieses Dokument ist nur auf Englisch verfügbar."
     }
 }

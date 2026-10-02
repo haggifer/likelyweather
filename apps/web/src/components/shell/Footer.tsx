@@ -5,6 +5,7 @@ const REPO_URL = process.env.NEXT_PUBLIC_REPO_URL
 
 export async function Footer() {
     const t = await getTranslations('footer')
+    const tl = await getTranslations('legal')
 
     return (
         <footer className="border-t text-xs text-muted-foreground">
@@ -33,12 +34,18 @@ export async function Footer() {
                         ),
                     })}
                 </p>
-                <nav className="ml-auto flex gap-4">
+                <nav className="ml-auto flex flex-wrap gap-x-4 gap-y-1">
                     <Link href="/methodology" className="hover:text-foreground">
                         {t('methodology')}
                     </Link>
                     <Link href="/runs" className="hover:text-foreground">
                         {t('runs')}
+                    </Link>
+                    <Link href="/privacy" className="hover:text-foreground">
+                        {tl('privacy')}
+                    </Link>
+                    <Link href="/terms" className="hover:text-foreground">
+                        {tl('terms')}
                     </Link>
                     {REPO_URL && (
                         <a href={REPO_URL} className="hover:text-foreground" target="_blank" rel="noreferrer">

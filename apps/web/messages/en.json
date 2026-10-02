@@ -224,5 +224,11 @@
         "failed": "Could not load this city: {message}",
         "perSlot": "{unit} / next {hours} h",
         "unavailable": "No hourly forecast is available for this city yet. Try again in a minute."
+    },
+    "legal": {
+        "privacy": "Privacy Policy",
+        "terms": "Terms of Use",
+        "lastUpdated": "Last updated {date}",
+        "englishOnly": "This document is available in English only."
     }
 }
