@@ -2,9 +2,9 @@
 
 import { StatusChip } from '@/components/shell/StatusChip'
 import { ChipTone } from '@/components/types'
-import { STALE_AFTER_HOURS } from '@fa/shared/constants'
+import { REFRESH_AFTER_HOURS, STALE_AFTER_HOURS } from '@fa/shared/constants'
 import { formatStepLabel, formatTime } from '@fa/shared/format'
-import { hoursBetween } from '@fa/shared/time'
+import { getAgeHours } from '@fa/shared/time'
 import { cn } from '@fa/ui/lib/cn'
 import { useLocale, useTranslations } from 'next-intl'
 
@@ -18,15 +18,17 @@ interface IProps {
 
 const CLOCK: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
 
-// How long ago the data on screen was fetched, the moment the chart starts at. An age reads the same in every time
-// zone, unlike a clock time that is the city's; the run's times, city and UTC, are in the tooltip.
+// How long ago the data on screen was fetched, the moment the chart starts at, shown once it is REFRESH_AFTER_HOURS
+// old (when Refresh turns on). An age reads the same in every time zone, unlike a clock time that is the city's; the
+// run's times, city and UTC, are in the tooltip.
 export function UpdatedChip({ issueTime, fetchedAt, timeZone, now, className }: IProps) {
     const t = useTranslations('city')
     const locale = useLocale()
 
-    if (!now) return null
+    const hours = now ? getAgeHours(fetchedAt, now) : 0
 
-    const hours = hoursBetween(fetchedAt, now)
+    if (hours < REFRESH_AFTER_HOURS) return null
+
     const isStale = hours > STALE_AFTER_HOURS
     const title = t('forecastTitle', {
         time: formatStepLabel(issueTime, timeZone, locale),

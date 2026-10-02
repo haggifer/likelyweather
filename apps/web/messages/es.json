@@ -62,6 +62,7 @@
         "forecastOldTitle": "Aún no hay una ejecución más reciente; Actualizar la busca.",
         "refresh": "Actualizar",
         "refreshTitle": "Buscar una emisión más reciente y empezar el gráfico en la hora actual",
+        "upToDate": "Al día: obtenido hace menos de {hours} horas.",
         "preview": "Vista previa",
         "previewTitle": "Por ahora solo hay ejecuciones bajo demanda; las ejecuciones programadas cada 6 horas empiezan con la próxima recogida.",
         "status": {
@@ -222,8 +223,6 @@
         "loading": "Cargando…",
         "failed": "No se pudo cargar esta ciudad: {message}",
         "perSlot": "{unit} / próx. {hours} h",
-        "refresh": "Actualizar",
-        "upToDate": "Ya está actualizado",
         "unavailable": "Todavía no hay pronóstico horario para esta ciudad. Inténtalo de nuevo en un minuto."
     }
 }

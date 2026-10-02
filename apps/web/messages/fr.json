@@ -62,6 +62,7 @@
         "forecastOldTitle": "Aucune exécution plus récente pour l’instant ; Actualiser la cherche.",
         "refresh": "Actualiser",
         "refreshTitle": "Chercher une émission plus récente et faire commencer le graphique maintenant",
+        "upToDate": "À jour : récupéré il y a moins de {hours} heures.",
         "preview": "Aperçu",
         "previewTitle": "Seulement des exécutions à la demande pour l’instant ; les exécutions programmées toutes les 6 heures commencent à la prochaine collecte.",
         "status": {
@@ -222,8 +223,6 @@
         "loading": "Chargement…",
         "failed": "Impossible de charger cette ville : {message}",
         "perSlot": "{unit} / {hours} h à venir",
-        "refresh": "Actualiser",
-        "upToDate": "Déjà à jour",
         "unavailable": "Aucune prévision horaire n’est encore disponible pour cette ville. Réessayez dans une minute."
     }
 }

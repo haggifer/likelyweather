@@ -1,5 +1,6 @@
 'use client'
 
+import { RefreshButton } from '@/components/city/RefreshButton'
 import { UpdatedChip } from '@/components/city/UpdatedChip'
 import { FlagIcon } from '@/components/shell/FlagIcon'
 import { SearchBox } from '@/components/shell/SearchBox'
@@ -7,13 +8,14 @@ import { StatusChip } from '@/components/shell/StatusChip'
 import { ChipTone } from '@/components/types'
 import { useLatest } from '@/hooks/useLatest'
 import { CityDetail, CityStatus } from '@fa/shared/api'
+import { REFRESH_AFTER_HOURS } from '@fa/shared/constants'
 import { getCityName, getCountryName } from '@fa/shared/format'
+import { getAgeHours } from '@fa/shared/time'
 import { Variable } from '@fa/shared/variables'
 import { Button } from '@fa/ui/components/button'
 import { useNow } from '@fa/ui/hooks/useNow'
-import { cn } from '@fa/ui/lib/cn'
 import { useIsFetching, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Pencil, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Pencil } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useState } from 'react'
@@ -36,8 +38,9 @@ export function CityHeader({ city }: IProps) {
     const name = getCityName(city, locale)
     const region = [city.admin1, getCountryName(city.countryCode, city.country, locale)].filter(Boolean).join(', ')
 
-    // Refetching moves the dashboard chart only when a newer run arrives. The server only calls the upstream sources
-    // when a newer run exists, so unlike the landing card the button is not gated on the chart being stale.
+    const isOutdated = latest && now ? getAgeHours(latest.fetchedAt, now) >= REFRESH_AFTER_HOURS : false
+
+    // Refetching moves the dashboard chart only when a newer run arrives.
     const handleRefresh = () => void queryClient.refetchQueries({ queryKey: ['latest', city.slug], type: 'active' })
 
     return (
@@ -101,16 +104,12 @@ export function CityHeader({ city }: IProps) {
                                 now={now}
                             />
                         )}
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleRefresh}
-                            disabled={isFetching}
-                            title={t('refreshTitle')}
-                        >
-                            <RefreshCw className={cn(isFetching && 'animate-spin')} />{' '}
-                            <span className="max-sm:sr-only">{t('refresh')}</span>
-                        </Button>
+                        <RefreshButton
+                            isAvailable={isOutdated}
+                            isFetching={isFetching}
+                            onRefresh={handleRefresh}
+                            labelClassName="max-sm:sr-only"
+                        />
                     </div>
                 </div>
             )}

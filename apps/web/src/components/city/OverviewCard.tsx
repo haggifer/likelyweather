@@ -1,19 +1,21 @@
 'use client'
 
+import { RefreshButton } from '@/components/city/RefreshButton'
 import { UpdatedChip } from '@/components/city/UpdatedChip'
 import { FlagIcon } from '@/components/shell/FlagIcon'
 import { MedianOverview, MedianOverviewSkeleton, MedianSeries } from '@fa/charts/MedianOverview'
 import { City, LatestResponse } from '@fa/shared/api'
+import { REFRESH_AFTER_HOURS } from '@fa/shared/constants'
 import { computeEnsemble, computeMedianDirection } from '@fa/shared/ensemble'
 import { getCityName, getCountryName } from '@fa/shared/format'
 import { buildSlots, getSlotStart, toSlotSeries } from '@fa/shared/slots'
+import { getAgeHours } from '@fa/shared/time'
 import { Variable, VARIABLES } from '@fa/shared/variables'
 import { Button } from '@fa/ui/components/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@fa/ui/components/card'
 import { Skeleton } from '@fa/ui/components/skeleton'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@fa/ui/components/tooltip'
 import { cn } from '@fa/ui/lib/cn'
-import { ArrowRight, Loader2, RefreshCw } from 'lucide-react'
+import { ArrowRight, Loader2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useMemo } from 'react'
@@ -40,7 +42,7 @@ export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
                 <span className="text-sm">{status}</span>
             </CardTitle>
             <CardAction className="flex items-center gap-2 max-sm:col-span-2 max-sm:col-start-1 max-sm:row-start-2 max-sm:justify-self-start">
-                <Skeleton className="hidden h-7 w-53 rounded-full lg:block" />
+                <Skeleton className="hidden h-7 w-28 rounded-full lg:block" />
                 <Skeleton className="h-7 w-22" />
                 <Skeleton className="h-7 w-30" />
             </CardAction>
@@ -52,7 +54,7 @@ export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
 )
 
 // The chart starts at `anchor`, the local 3-hour slot the run was fetched in, and the "now" line shows how far into it
-// the present is. Once `now` has moved into a later slot a newer run may exist, so the refresh is enabled.
+// the present is.
 export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh }: IProps) {
     const t = useTranslations('overview')
     const locale = useLocale()
@@ -85,19 +87,8 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
             : null
     }, [hourly, slots])
     const currentSlot = now ? getSlotStart(now, city.timezone) : anchor
-    const isStale = currentSlot > anchor
+    const isOutdated = now ? getAgeHours(hourly[Variable.Temp].fetchedAt, now) >= REFRESH_AFTER_HOURS : false
     const modelCount = hourly[Variable.Temp].series.length
-    const refreshButton = (
-        <Button
-            variant="outline"
-            size="sm"
-            onClick={onRefresh}
-            disabled={!onRefresh || !isStale || isFetching}
-            className="max-sm:w-full max-sm:flex-1"
-        >
-            <RefreshCw className={cn(isFetching && 'animate-spin')} /> {t('refresh')}
-        </Button>
-    )
 
     return (
         <Card className={cn('gap-0 transition-opacity', isFetching && 'opacity-70')}>
@@ -117,22 +108,13 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
                         now={now}
                         className="hidden lg:inline-flex"
                     />
-                    {isStale ? (
-                        refreshButton
-                    ) : (
-                        // A disabled button gets no pointer events, so the tooltip hangs on a focusable wrapper.
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span
-                                    tabIndex={0}
-                                    className="inline-flex rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring max-sm:flex-1"
-                                >
-                                    {refreshButton}
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent side="bottom">{t('upToDate')}</TooltipContent>
-                        </Tooltip>
-                    )}
+                    <RefreshButton
+                        isAvailable={isOutdated}
+                        isFetching={isFetching}
+                        onRefresh={onRefresh}
+                        className="max-sm:w-full max-sm:flex-1"
+                        wrapperClassName="max-sm:flex-1"
+                    />
                     <Button asChild size="sm" className="max-sm:flex-1">
                         <Link href={`/city/${city.slug}`}>
                             {t('details')} <ArrowRight />

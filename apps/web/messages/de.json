@@ -62,6 +62,7 @@
         "forecastOldTitle": "Noch kein neuerer Lauf gespeichert; Aktualisieren sucht danach.",
         "refresh": "Aktualisieren",
         "refreshTitle": "Nach einem neueren Lauf suchen und das Diagramm ab jetzt beginnen",
+        "upToDate": "Aktuell: vor weniger als {hours} Stunden abgerufen.",
         "preview": "Vorschau",
         "previewTitle": "Bisher nur Läufe auf Abruf; die geplanten Läufe alle 6 Stunden beginnen mit der nächsten Sammlung.",
         "status": {
@@ -222,8 +223,6 @@
         "loading": "Lädt…",
         "failed": "Diese Stadt konnte nicht geladen werden: {message}",
         "perSlot": "{unit} / nächste {hours} h",
-        "refresh": "Aktualisieren",
-        "upToDate": "Bereits aktuell",
         "unavailable": "Für diese Stadt gibt es noch keine stündliche Vorhersage. Versuche es in einer Minute erneut."
     }
 }

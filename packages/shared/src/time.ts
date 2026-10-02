@@ -9,6 +9,10 @@ export const floorToStep = (date: Date) => floorToHours(date, STEP_HOURS)
 
 export const addHours = (date: Date, hours: number) => new Date(date.getTime() + hours * HOUR_MS)
 
+// Whole hours elapsed, rounded down, so an age never reads older than it is.
+export const getAgeHours = (from: string | Date, now: Date) =>
+    Math.floor((now.getTime() - new Date(from).getTime()) / HOUR_MS)
+
 export const hoursBetween = (from: string | Date, to: string | Date) =>
     Math.round((new Date(to).getTime() - new Date(from).getTime()) / HOUR_MS)
 

@@ -62,6 +62,7 @@
         "forecastOldTitle": "No newer run is stored yet; Refresh checks for one.",
         "refresh": "Refresh",
         "refreshTitle": "Check for a newer run and restart the chart at the current time",
+        "upToDate": "Up to date: fetched less than {hours} hours ago.",
         "preview": "Preview",
         "previewTitle": "Only on-demand preview runs so far; scheduled 6-hourly runs start with the next collection.",
         "status": {
@@ -222,8 +223,6 @@
         "loading": "Loading…",
         "failed": "Could not load this city: {message}",
         "perSlot": "{unit} / next {hours} h",
-        "refresh": "Refresh",
-        "upToDate": "Already up to date",
         "unavailable": "No hourly forecast is available for this city yet. Try again in a minute."
     }
 }
