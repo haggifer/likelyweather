@@ -2,16 +2,14 @@
 
 import { OverviewCardSkeleton } from '@/components/city/OverviewCard'
 import { CityOverview } from '@/components/landing/CityOverview'
-import { FlagIcon } from '@/components/shell/FlagIcon'
+import { PlaceChip } from '@/components/landing/PlaceChip'
 import { SearchBox } from '@/components/shell/SearchBox'
 import { usePlaces } from '@/hooks/usePlaces'
 import { DEFAULT_PLACES, getPlaceChips, isFavorite, MAX_PLACES } from '@/lib/places'
-import { getCityName } from '@fa/shared/format'
 import { Card, CardContent, CardHeader, CardTitle } from '@fa/ui/components/card'
 import { Skeleton } from '@fa/ui/components/skeleton'
-import { cn } from '@fa/ui/lib/cn'
-import { BookOpen, Columns3, Split, Star } from 'lucide-react'
-import { useLocale, useTranslations } from 'next-intl'
+import { BookOpen, Columns3, Split } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { parseAsString, useQueryState } from 'nuqs'
 
@@ -27,7 +25,6 @@ const getTiles = (slug: string) =>
 export function Landing() {
     const t = useTranslations('landing')
     const to = useTranslations('overview')
-    const locale = useLocale()
     const places = usePlaces()
     const [urlSlug, setSlug] = useQueryState('city', parseAsString)
 
@@ -43,26 +40,22 @@ export function Landing() {
                 <p className="max-w-2xl text-base text-pretty text-muted-foreground">{t('sub')}</p>
                 <div className="flex w-full flex-col items-center gap-3">
                     <SearchBox enableShortcut onSelectCity={(next) => void setSlug(next)} />
-                    <div className="flex flex-wrap items-center justify-center gap-2">
-                        <span className="text-xs font-medium text-muted-foreground">{t('seeds')}</span>
-                        {chips?.map((city) => (
-                            <button
-                                key={city.id}
-                                type="button"
-                                onClick={() => void setSlug(city.slug)}
-                                aria-pressed={slug === city.slug}
-                                className={cn(
-                                    'inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-[0.8125rem] font-medium transition-colors hover:border-primary hover:text-primary',
-                                    slug === city.slug &&
-                                        'border-primary bg-primary text-primary-foreground hover:text-primary-foreground',
-                                )}
-                            >
-                                <FlagIcon countryCode={city.countryCode} />
-                                {getCityName(city, locale)}
-                                {places && isFavorite(places, city.id) && (
-                                    <Star className="size-3 fill-favorite text-favorite" aria-hidden="true" />
-                                )}
-                            </button>
+                    <div
+                        role="group"
+                        aria-label={t('seeds')}
+                        className="flex flex-wrap items-center justify-center gap-2"
+                    >
+                        <span className="text-xs font-medium text-muted-foreground" aria-hidden="true">
+                            {t('seeds')}
+                        </span>
+                        {chips?.map((place) => (
+                            <PlaceChip
+                                key={place.id}
+                                place={place}
+                                isSelected={slug === place.slug}
+                                isPinned={Boolean(places && isFavorite(places, place.id))}
+                                onSelect={(next) => void setSlug(next)}
+                            />
                         ))}
                         {!chips && CHIP_PLACEHOLDERS.map((i) => <Skeleton key={i} className="h-7 w-24 rounded-full" />)}
                     </div>

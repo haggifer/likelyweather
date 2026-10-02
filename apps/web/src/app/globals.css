@@ -79,7 +79,7 @@
     --info: #1e5eff;
     --warning: #b45309;
     /* A filled star needs 3:1 against the card (WCAG 1.4.11); amber-500 has only 2.1:1 on white. */
-    --favorite: #d97706;
+    --favorite: #dddd77;
     --success: #15803d;
     --code-background: #eef2f8;
     --chart-1: #1e5eff;

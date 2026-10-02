@@ -5,7 +5,7 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { useGeocode } from '@/hooks/useGeocode'
 import { usePlaces } from '@/hooks/usePlaces'
 import { useTrackCity } from '@/hooks/useTrackCity'
-import { addRecent, getPlaceChips, isFavorite, Place, Places, rankByFavorite, toPlace } from '@/lib/places'
+import { addRecent, getPlaceList, isFavorite, Place, Places, rankByFavorite, toPlace } from '@/lib/places'
 import { updatePlaces } from '@/lib/places-store'
 import { GeocodeResult, Locale } from '@fa/shared/api'
 import { getCityLabel } from '@fa/shared/format'
@@ -182,7 +182,7 @@ export function SearchBox({
                 <CommandList>
                     {isPlacesView && places && (
                         <CommandGroup heading={t('places')}>
-                            {getPlaceChips(places).map((place) => (
+                            {getPlaceList(places).map((place) => (
                                 <CommandItem
                                     key={place.id}
                                     value={`place-${place.id}`}

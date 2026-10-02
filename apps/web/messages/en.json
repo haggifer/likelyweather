@@ -79,6 +79,8 @@
         "change": "Change city",
         "pin": "Add to favorites",
         "unpin": "Remove from favorites",
+        "pinCity": "Add {name} to favorites",
+        "unpinCity": "Remove {name} from favorites",
         "pinLimit": "You already have {max} favorites, all shown first under the search. Remove one to add this place."
     },
     "dashboard": {

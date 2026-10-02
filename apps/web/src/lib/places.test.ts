@@ -3,12 +3,14 @@ import {
     addRecent,
     DEFAULT_PLACES,
     getPlaceChips,
+    getPlaceList,
     isPinnable,
     parsePlaces,
     pinPlace,
     Place,
     Places,
     rankByFavorite,
+    togglePlace,
     unpinPlace,
 } from './places'
 
@@ -31,6 +33,9 @@ const SYDNEY = place(7, 'Sydney')
 const START: Places = { favorites: [], recents: [NEW_YORK, LONDON, PARIS, KYIV] }
 
 const names = (places: Places) => getPlaceChips(places).map((p) => p.name)
+
+const searchMany = (count: number) =>
+    Array.from({ length: count }, (_, i) => place(100 + i, `City ${i}`)).reduce(addRecent, START)
 
 describe('places', () => {
     it('replaces the oldest chip with each new search, newest first', () => {
@@ -104,5 +109,26 @@ describe('places', () => {
             DEFAULT_PLACES.recents[0].id,
             DEFAULT_PLACES.recents[1].id,
         ])
+    })
+
+    it('keeps up to 50 searched places for the search list, while the chips show four', () => {
+        const searched = searchMany(60)
+
+        expect(searched.recents).toHaveLength(50)
+        expect(getPlaceChips(searched).map((p) => p.name)).toEqual(['City 59', 'City 58', 'City 57', 'City 56'])
+        expect(getPlaceList(searched)).toHaveLength(50)
+    })
+
+    it('lists favorites first, then searched places', () => {
+        const list = getPlaceList(pinPlace(searchMany(5), PARIS))
+
+        expect(list.map((p) => p.name).slice(0, 3)).toEqual(['Paris', 'City 4', 'City 3'])
+    })
+
+    it('toggles a favorite both ways', () => {
+        const pinned = togglePlace(START, LONDON)
+
+        expect(pinned.favorites).toEqual([LONDON])
+        expect(togglePlace(pinned, LONDON).favorites).toEqual([])
     })
 })

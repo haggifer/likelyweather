@@ -1,16 +1,13 @@
 'use client'
 
 import { usePlaces } from '@/hooks/usePlaces'
-import { isFavorite, isPinnable, MAX_PLACES, pinPlace, Place, Places, unpinPlace } from '@/lib/places'
+import { isFavorite, isPinnable, MAX_PLACES, Place, togglePlace } from '@/lib/places'
 import { updatePlaces } from '@/lib/places-store'
 import { Button } from '@fa/ui/components/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@fa/ui/components/tooltip'
 import { cn } from '@fa/ui/lib/cn'
 import { Star } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-
-const togglePin = (places: Places, place: Place) =>
-    isFavorite(places, place.id) ? unpinPlace(places, place) : pinPlace(places, place)
 
 interface IProps {
     place: Place
@@ -27,7 +24,7 @@ export function FavoriteToggle({ place, className }: IProps) {
     const isAvailable = places ? isPinnable(places, place.id) : true
     const label = t(isPinned ? 'unpin' : 'pin')
 
-    const handleToggle = () => updatePlaces((current) => togglePin(current, place))
+    const handleToggle = () => updatePlaces((current) => togglePlace(current, place))
 
     const button = (
         <Button
@@ -40,7 +37,7 @@ export function FavoriteToggle({ place, className }: IProps) {
             title={isAvailable ? label : undefined}
             className={cn('shrink-0', !places && 'invisible', className)}
         >
-            <Star className={isPinned ? 'fill-favorite text-favorite' : 'text-muted-foreground'} />
+            <Star className={cn('size-5', isPinned ? 'fill-favorite text-favorite' : 'text-muted-foreground')} />
         </Button>
     )
 

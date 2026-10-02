@@ -79,6 +79,8 @@
         "change": "Stadt wechseln",
         "pin": "Zu Favoriten hinzufügen",
         "unpin": "Aus Favoriten entfernen",
+        "pinCity": "{name} zu Favoriten hinzufügen",
+        "unpinCity": "{name} aus Favoriten entfernen",
         "pinLimit": "Du hast bereits {max} Favoriten, die zuerst unter der Suche stehen. Entferne einen, um diesen Ort hinzuzufügen."
     },
     "dashboard": {

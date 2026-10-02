@@ -7,8 +7,9 @@ const LONDON = 'london-gb-2643743'
 // The overview card is the first card on the landing page; its title names the city.
 const getOverviewTitle = (page: Page) => page.locator('[data-slot=card] [data-slot=card-title]').first()
 
-// The landing chips are the only toggle buttons on the page.
-const getChipNames = (page: Page) => page.locator('main button[aria-pressed]').allInnerTexts()
+// A chip is a city button and a star button; the stars have only an aria-label.
+const getChipNames = (page: Page) =>
+    page.getByRole('group', { name: 'Start with' }).locator('button[aria-pressed]:not([aria-label])').allInnerTexts()
 
 const toStoredPlace = (id: number, name: string) => ({
     id,
@@ -49,7 +50,7 @@ test('search tracks a new city, shows its overview, then its dashboard', async (
 
 test('a "Start with" chip switches the overview in place', async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('button', { name: 'London' }).click()
+    await page.getByRole('button', { name: 'London', exact: true }).click()
 
     await expect(page).toHaveURL(new RegExp(`city=${LONDON}`))
     await expect(getOverviewTitle(page)).toContainText('London')
@@ -160,4 +161,36 @@ test('the empty search box offers your places', async ({ page }) => {
         /Paris/,
         /Kyiv/,
     ])
+})
+
+test('the star on a chip pins the city to the front and unpins it again', async ({ page }) => {
+    await page.goto('/')
+    await expect.poll(() => getChipNames(page)).toEqual(['New York', 'London', 'Paris', 'Kyiv'])
+
+    await page.getByRole('button', { name: 'Add Paris to favorites' }).click()
+
+    await expect.poll(() => getChipNames(page)).toEqual(['Paris', 'New York', 'London', 'Kyiv'])
+    await expect(page.getByRole('button', { name: 'Remove Paris from favorites' })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+    )
+
+    await page.getByRole('button', { name: 'Remove Paris from favorites' }).click()
+
+    await expect(page.getByRole('button', { name: 'Add Paris to favorites' })).toHaveAttribute('aria-pressed', 'false')
+})
+
+test('the empty search box lists more searched places than the chips show', async ({ page }) => {
+    const recents = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta'].map((name, i) => toStoredPlace(i + 1, name))
+
+    await page.addInitScript(
+        (value) => localStorage.setItem('fa.places', value),
+        JSON.stringify({ favorites: [], recents }),
+    )
+
+    await page.goto('/')
+    await page.getByRole('combobox', { name: 'Search any city' }).focus()
+
+    await expect(page.getByRole('group', { name: 'Your places' }).getByRole('option')).toHaveCount(6)
+    await expect.poll(() => getChipNames(page)).toEqual(['Alpha', 'Beta', 'Gamma', 'Delta'])
 })
