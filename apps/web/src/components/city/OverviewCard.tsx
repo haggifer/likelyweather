@@ -53,8 +53,7 @@ export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
     </Card>
 )
 
-// The chart starts at `anchor`, the local 3-hour slot the run was fetched in, and the "now" line shows how far into it
-// the present is.
+// `anchor` is the local 3-hour slot the run was fetched in, where the chart starts.
 export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh }: IProps) {
     const t = useTranslations('overview')
     const locale = useLocale()

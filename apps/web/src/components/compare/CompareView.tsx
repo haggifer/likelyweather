@@ -33,22 +33,21 @@ export function CompareView() {
     const [slugs, setSlugs] = useQueryState('cities', citiesParser)
     const { data: cities } = useCities()
     const now = useNow()
-    const { data, dataUpdatedAt, isFetching } = useCompare(isHydrated ? slugs : [], variable)
+    const { data, isFetching } = useCompare(isHydrated ? slugs : [], variable)
     const available = (cities?.items ?? []).filter((c) => !slugs.includes(c.slug))
-    // Like the dashboard, each chart starts at its city's local 3-hour slot its run was fetched in.
     const items = useMemo(
         () =>
-            (data?.items ?? []).map((item) => {
-                const anchor = getSlotStart(new Date(item.latest?.fetchedAt ?? dataUpdatedAt), item.city.timezone)
-                const slots = buildSlots(anchor, DASHBOARD_HOURS)
-
-                return {
-                    ...item,
-                    anchor,
-                    latest: item.latest && toSlotLatest(item.latest, slots, VARIABLE_BY_ID[variable].aggregation),
-                }
-            }),
-        [data, dataUpdatedAt, variable],
+            (data?.items ?? []).map((item) => ({
+                ...item,
+                latest:
+                    item.latest &&
+                    toSlotLatest(
+                        item.latest,
+                        buildSlots(getSlotStart(new Date(item.latest.fetchedAt), item.city.timezone), DASHBOARD_HOURS),
+                        VARIABLE_BY_ID[variable].aggregation,
+                    ),
+            })),
+        [data, variable],
     )
     const sharedDomain = useMemo(
         () =>
