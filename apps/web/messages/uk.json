@@ -57,8 +57,7 @@
         "precip": "Опади"
     },
     "city": {
-        "forecastFrom": "Прогноз від {time}",
-        "forecastFromOld": "Прогноз від {time}, {hours} год тому",
+        "forecastAge": "Прогнозу {hours, plural, one {# година} few {# години} many {# годин} other {# години}}",
         "forecastTitle": "Моделі почали цей запуск: {time} за часом міста ({utc}). Отримано: {fetched}. Новий запуск стартує кожні 6 годин.",
         "forecastOldTitle": "Новішого запуску ще немає; «Оновити» перевіряє, чи він з’явився.",
         "refresh": "Оновити",

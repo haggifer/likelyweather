@@ -57,8 +57,7 @@
         "precip": "Precipitation"
     },
     "city": {
-        "forecastFrom": "Forecast from {time}",
-        "forecastFromOld": "Forecast from {time}, {hours} h old",
+        "forecastAge": "{hours, plural, one {# hour old} other {# hours old}}",
         "forecastTitle": "The models started this run at {time} city time ({utc}), and it was collected at {fetched}. A new run starts every 6 hours.",
         "forecastOldTitle": "No newer run is stored yet; Refresh checks for one.",
         "refresh": "Refresh",

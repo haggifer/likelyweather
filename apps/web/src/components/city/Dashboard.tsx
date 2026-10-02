@@ -146,7 +146,7 @@ export function Dashboard({ slug }: IProps) {
         () => (latestQuery.data && slots ? toSlotLatest(latestQuery.data, slots, info.aggregation) : null),
         [latestQuery.data, slots, info.aggregation],
     )
-    const chartNow = now && anchor && getSlotStart(now, timeZone) > anchor ? now : null
+    const chartNow = anchor ? now : null
 
     const derived = useMemo(() => {
         if (!latest || !now) return null

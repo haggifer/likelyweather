@@ -146,7 +146,7 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
                     directions={directions}
                     timeZone={city.timezone}
                     locale={locale}
-                    now={isStale ? now : null}
+                    now={now}
                     summaryStart={currentSlot}
                     ariaLabel={t('aria', { name, count: modelCount })}
                 />

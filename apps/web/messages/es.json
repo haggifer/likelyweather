@@ -57,8 +57,7 @@
         "precip": "Precipitación"
     },
     "city": {
-        "forecastFrom": "Pronóstico del {time}",
-        "forecastFromOld": "Pronóstico del {time}, hace {hours} h",
+        "forecastAge": "{hours, plural, one {De hace # hora} other {De hace # horas}}",
         "forecastTitle": "Los modelos iniciaron esta ejecución el {time}, hora de la ciudad ({utc}), y se obtuvo el {fetched}. Cada 6 horas empieza una ejecución nueva.",
         "forecastOldTitle": "Aún no hay una ejecución más reciente; Actualizar la busca.",
         "refresh": "Actualizar",

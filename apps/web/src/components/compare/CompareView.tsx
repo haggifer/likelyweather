@@ -138,7 +138,7 @@ export function CompareView() {
                                         latest={item.latest}
                                         variable={variable}
                                         ariaLabel={getCityName(item.city, locale)}
-                                        now={now && getSlotStart(now, item.city.timezone) > item.anchor ? now : null}
+                                        now={now}
                                         yDomain={sharedDomain}
                                     />
                                 ) : (

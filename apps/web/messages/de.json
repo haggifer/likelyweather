@@ -57,8 +57,7 @@
         "precip": "Niederschlag"
     },
     "city": {
-        "forecastFrom": "Vorhersage von {time}",
-        "forecastFromOld": "Vorhersage von {time}, {hours} h alt",
+        "forecastAge": "{hours, plural, one {# Stunde alt} other {# Stunden alt}}",
         "forecastTitle": "Die Modelle haben diesen Lauf am {time} Ortszeit der Stadt gestartet ({utc}), abgerufen am {fetched}. Alle 6 Stunden startet ein neuer Lauf.",
         "forecastOldTitle": "Noch kein neuerer Lauf gespeichert; Aktualisieren sucht danach.",
         "refresh": "Aktualisieren",

@@ -111,9 +111,9 @@ export const MedianOverviewSkeleton = () => (
 )
 
 // Median of all models for every tracked variable on one time axis of 3-hour slots; a precipitation bar is the
-// amount of the 3 hours after its slot. Readouts on the left follow the crosshair, or the first slot while the
-// chart is fresh; the hovered slot's time sits above the panels. `now` is set only once the chart has gone
-// stale: it draws the "now" line and shades the past.
+// amount of the 3 hours after its slot. Readouts on the left follow the crosshair, or the slot nearest to `now`;
+// the hovered slot's time sits above the panels. `now` draws the "now" line at the exact current time, which is
+// inside the first slot right after a refresh, and shades the past.
 export function MedianOverview({ series, directions, timeZone, locale, now, summaryStart, ariaLabel }: IProps) {
     const t = useTranslations('overview')
     const tv = useTranslations('variables')
