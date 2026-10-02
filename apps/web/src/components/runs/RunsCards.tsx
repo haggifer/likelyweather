@@ -1,9 +1,15 @@
 'use client'
 
-import { formatRunDuration, getRunOriginLabel, RunArchiveLink, STATUS_TONES } from '@/components/runs/run-parts'
+import {
+    formatRunDuration,
+    formatRunTime,
+    formatRunTimeUtc,
+    getRunOriginLabel,
+    RunArchiveLink,
+    STATUS_TONES,
+} from '@/components/runs/run-parts'
 import { StatusChip } from '@/components/shell/StatusChip'
 import { Run } from '@fa/shared/api'
-import { formatUtc } from '@fa/shared/format'
 import { Button } from '@fa/ui/components/button'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
@@ -30,7 +36,9 @@ export function RunsCards({ runs, cityNames }: IProps) {
                 {runs.slice(0, count).map((run) => (
                     <li key={run.id} className="flex flex-col gap-1.5 rounded-md border p-3 text-[0.8125rem]">
                         <div className="flex items-center justify-between gap-2">
-                            <span className="font-medium">{formatUtc(run.issueTime, locale)} UTC</span>
+                            <span title={formatRunTimeUtc(run.issueTime, locale)} className="font-medium">
+                                {formatRunTime(run.issueTime, locale)}
+                            </span>
                             <StatusChip tone={STATUS_TONES[run.status]}>{t(`statuses.${run.status}`)}</StatusChip>
                         </div>
                         <span className="text-muted-foreground">{getRunOriginLabel(run, t, cityNames)}</span>

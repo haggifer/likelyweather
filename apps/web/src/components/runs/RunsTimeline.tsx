@@ -1,9 +1,9 @@
 'use client'
 
+import { formatRunTime, formatRunTimeUtc } from '@/components/runs/run-parts'
+import { buildTimelineGrid, toCellKey } from '@/components/runs/timeline-grid'
 import { TimelineResponse } from '@fa/shared/api'
-import { HOUR_MS } from '@fa/shared/constants'
-import { formatTime, formatUtc } from '@fa/shared/format'
-import { toIsoMinute } from '@fa/shared/time'
+import { formatTime, getViewerTimeZone } from '@fa/shared/format'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@fa/ui/components/tooltip'
 import { cn } from '@fa/ui/lib/cn'
 import { useLocale, useTranslations } from 'next-intl'
@@ -21,9 +21,6 @@ enum SlotState {
     Missing = 'MISSING',
     Future = 'FUTURE',
 }
-
-const DAY_MS = 86_400_000
-const SLOT_HOURS = [0, 6, 12, 18]
 
 const SLOT_CLASSES: Record<SlotState, string> = {
     [SlotState.Ok]: 'bg-success',
@@ -53,10 +50,7 @@ const getSlotState = (issueTime: string, timeline: TimelineResponse, now: Date):
 export function RunsTimeline({ timeline, now }: IProps) {
     const t = useTranslations('runs')
     const locale = useLocale()
-    const start = new Date(timeline.from)
-    const firstDay = Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate())
-    const dayCount = Math.ceil((new Date(timeline.to).getTime() - firstDay) / DAY_MS)
-    const days = Array.from({ length: dayCount }, (_, i) => new Date(firstDay + i * DAY_MS))
+    const { days, rows, cells } = buildTimelineGrid(timeline.from, timeline.to, now, getViewerTimeZone(), locale)
 
     return (
         <div className="flex flex-col gap-3">
@@ -65,26 +59,30 @@ export function RunsTimeline({ timeline, now }: IProps) {
                     className="inline-grid gap-1"
                     style={{ gridTemplateColumns: `2.5rem repeat(${days.length}, 0.875rem)` }}
                 >
-                    {SLOT_HOURS.map((hour) => (
-                        <div key={hour} className="contents">
+                    {rows.map(({ cycleHour, label }) => (
+                        <div key={cycleHour} className="contents">
                             <span className="pr-1 text-right text-[0.625rem] leading-[0.875rem] text-muted-foreground">
-                                {String(hour).padStart(2, '0')}Z
+                                {label}
                             </span>
                             {days.map((day) => {
-                                const issueTime = toIsoMinute(new Date(day.getTime() + hour * HOUR_MS))
+                                const issueTime = cells.get(toCellKey(day, cycleHour))
+
+                                if (!issueTime) return <span key={day} />
+
                                 const state = getSlotState(issueTime, timeline, now)
+                                const text = `${formatRunTime(issueTime, locale)} · ${t(`slot.${state}`)}`
 
                                 return (
-                                    <Tooltip key={issueTime}>
+                                    <Tooltip key={day}>
                                         <TooltipTrigger asChild>
                                             <span
                                                 tabIndex={0}
-                                                aria-label={`${formatUtc(issueTime, locale)} UTC: ${t(`slot.${state}`)}`}
+                                                aria-label={text}
                                                 className={cn('size-3.5 rounded-[0.1875rem]', SLOT_CLASSES[state])}
                                             />
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            {formatUtc(issueTime, locale)} UTC · {t(`slot.${state}`)}
+                                            {text} ({formatRunTimeUtc(issueTime, locale)})
                                         </TooltipContent>
                                     </Tooltip>
                                 )
@@ -93,8 +91,10 @@ export function RunsTimeline({ timeline, now }: IProps) {
                     ))}
                     <span />
                     {days.map((day, i) => (
-                        <span key={day.toISOString()} className="text-center text-[0.5625rem] text-muted-foreground">
-                            {i % 5 === 0 ? formatTime(day, 'UTC', locale, { day: 'numeric', month: 'numeric' }) : ''}
+                        <span key={day} className="text-center text-[0.5625rem] text-muted-foreground">
+                            {i % 5 === 0
+                                ? formatTime(`${day}T12:00:00Z`, 'UTC', locale, { day: 'numeric', month: 'numeric' })
+                                : ''}
                         </span>
                     ))}
                 </div>

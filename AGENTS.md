@@ -30,7 +30,7 @@ pnpm cdk:synth               # also cdk:diff, cdk:deploy, cdk:bootstrap; needs p
 - **Model palette.** `packages/shared/src/models.ts` fixes one color per model; never reassign it. ECMWF AIFS and met.no keep their dash patterns as a second encoding.
 - **API contract.** The zod schemas in `packages/shared/src/api.ts` are the contract; change them first. The server returns stored data; the client derives medians, slots, labels and formatting with `packages/shared`.
 - **Upstream calls.** The browser never calls Open-Meteo or met.no. The API proxies geocoding and performs preview fetches, and only calls upstream when a newer 6-hour run exists. Every upstream request made for a client spends its daily quota first (`packages/server/src/quota.ts`, DECISIONS P27).
-- **Time.** Timestamps are UTC in storage and the API, and displayed in the city's local time.
+- **Time.** Timestamps are UTC in storage and the API. The UI shows local time first: the city's zone for anything about a city, the viewer's zone for what belongs to no city (runs, the quota reset), and UTC only as hover text (DECISIONS P39).
 - **Precipitation** is always present in the schema and the UI.
 - **State.** Redux holds UI state only; TanStack Query holds server state. The landing overview's queries never refetch in the background, because a refetch re-anchors the chart; only Refresh does.
 - **Catalogs.** `apps/web/messages/{uk,en,es,de,fr}.json` keep identical keys.

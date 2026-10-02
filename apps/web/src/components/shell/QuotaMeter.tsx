@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuota } from '@/hooks/useQuota'
-import { formatTime } from '@fa/shared/format'
+import { formatTime, getViewerTimeZone } from '@fa/shared/format'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@fa/ui/components/tooltip'
 import { cn } from '@fa/ui/lib/cn'
 import { useLocale, useTranslations } from 'next-intl'
@@ -18,7 +18,7 @@ export function QuotaMeter() {
 
     const left = Math.max(0, data.limit - data.used)
     const share = left / data.limit
-    const resetsAt = formatTime(data.resetsAt, Intl.DateTimeFormat().resolvedOptions().timeZone, locale, {
+    const resetsAt = formatTime(data.resetsAt, getViewerTimeZone(), locale, {
         hour: '2-digit',
         minute: '2-digit',
         hourCycle: 'h23',

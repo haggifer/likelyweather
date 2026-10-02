@@ -48,14 +48,12 @@ const DAY_LABEL_OPTIONS: Record<DayLabelStyle, Intl.DateTimeFormatOptions> = {
 export const formatDayLabel = (iso: string, timeZone: string, locale: string, style: DayLabelStyle = 'long') =>
     formatTime(iso, timeZone, locale, DAY_LABEL_OPTIONS[style])
 
-export const formatUtc = (iso: string, locale: string) =>
-    formatTime(iso, 'UTC', locale, {
-        day: 'numeric',
-        month: 'short',
-        hour: '2-digit',
-        minute: '2-digit',
-        hourCycle: 'h23',
-    })
+export const formatDateTime = (iso: string, timeZone: string, locale: string) =>
+    formatTime(iso, timeZone, locale, { day: 'numeric', month: 'short', ...CLOCK })
+
+// The viewer's own zone, for times that belong to no city (runs, the quota reset). Read it only after mount: the
+// server renders in UTC, so using it in the first render would mismatch on hydration.
+export const getViewerTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone
 
 export const formatNumber = (value: number | null | undefined, decimals = 1) =>
     value === null || value === undefined || Number.isNaN(value) ? '–' : value.toFixed(decimals)

@@ -19,14 +19,15 @@ const STATUS_TONES: Record<CityStatus, ChipTone> = {
     [CityStatus.Queued]: ChipTone.Warn,
 }
 
+const formatCityDate = (iso: string, timeZone: string, locale: string) =>
+    formatTime(iso, timeZone, locale, { day: 'numeric', month: 'short', year: 'numeric' })
+
 export function CitiesView() {
     const t = useTranslations('cities')
     const tc = useTranslations('city')
     const locale = useLocale()
     const { data } = useCities()
     const cities = sortBy(data?.items ?? [], [(c) => -c.viewCount, (c) => c.name])
-    const formatDate = (iso: string) =>
-        formatTime(iso, 'UTC', locale, { day: 'numeric', month: 'short', year: 'numeric' })
 
     return (
         <div className="flex flex-col gap-(--card-gap)">
@@ -61,9 +62,9 @@ export function CitiesView() {
                                         <span className="text-muted-foreground">{c.country}</span>
                                         <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-xs">
                                             <dt className="text-muted-foreground">{t('firstTracked')}</dt>
-                                            <dd>{formatDate(c.firstTrackedAt)}</dd>
+                                            <dd>{formatCityDate(c.firstTrackedAt, c.timezone, locale)}</dd>
                                             <dt className="text-muted-foreground">{t('lastViewed')}</dt>
-                                            <dd>{formatDate(c.lastViewedAt)}</dd>
+                                            <dd>{formatCityDate(c.lastViewedAt, c.timezone, locale)}</dd>
                                             <dt className="text-muted-foreground">{t('views')}</dt>
                                             <dd>{c.viewCount}</dd>
                                             <dt className="text-muted-foreground">{t('runs')}</dt>
@@ -107,8 +108,12 @@ export function CitiesView() {
                                                         {tc(`status.${c.status}`)}
                                                     </StatusChip>
                                                 </TableCell>
-                                                <TableCell>{formatDate(c.firstTrackedAt)}</TableCell>
-                                                <TableCell>{formatDate(c.lastViewedAt)}</TableCell>
+                                                <TableCell>
+                                                    {formatCityDate(c.firstTrackedAt, c.timezone, locale)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {formatCityDate(c.lastViewedAt, c.timezone, locale)}
+                                                </TableCell>
                                                 <TableCell className="text-right">{c.viewCount}</TableCell>
                                                 <TableCell className="text-right">{c.runsCollected}</TableCell>
                                                 <TableCell className="text-right">

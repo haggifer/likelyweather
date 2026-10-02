@@ -1,9 +1,15 @@
 'use client'
 
-import { formatRunDuration, getRunOriginLabel, RunArchiveLink, STATUS_TONES } from '@/components/runs/run-parts'
+import {
+    formatRunDuration,
+    formatRunTime,
+    formatRunTimeUtc,
+    getRunOriginLabel,
+    RunArchiveLink,
+    STATUS_TONES,
+} from '@/components/runs/run-parts'
 import { StatusChip } from '@/components/shell/StatusChip'
 import { Run } from '@fa/shared/api'
-import { formatUtc } from '@fa/shared/format'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@fa/ui/components/table'
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 import { useVirtualizer } from '@tanstack/react-virtual'
@@ -29,7 +35,9 @@ export function RunsTable({ runs, cityNames }: IProps) {
                 id: 'issueTime',
                 header: t('issueTime'),
                 cell: ({ row }) => (
-                    <span className="whitespace-nowrap">{formatUtc(row.original.issueTime, locale)} UTC</span>
+                    <span title={formatRunTimeUtc(row.original.issueTime, locale)} className="whitespace-nowrap">
+                        {formatRunTime(row.original.issueTime, locale)}
+                    </span>
                 ),
             },
             {
