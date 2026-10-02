@@ -25,7 +25,9 @@ const PAGE_SIZE = 30
 export function RunsCards({ runs, cityNames }: IProps) {
     const t = useTranslations('runs')
     const locale = useLocale()
+
     const [count, setCount] = useState(PAGE_SIZE)
+
     const rest = runs.length - count
 
     if (!runs.length) return <p className="p-6 text-center text-sm text-muted-foreground">{t('empty')}</p>

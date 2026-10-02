@@ -1,4 +1,4 @@
-import { formatDayLabel, formatPeriodLabel, getLocalMidnights, getTimeZoneOffsetMinutes } from './format'
+import { formatDateKey, formatDayLabel, formatPeriodLabel, getLocalMidnights, getTimeZoneOffsetMinutes } from './format'
 
 describe('time zones', () => {
     it('computes offsets including DST', () => {
@@ -30,5 +30,11 @@ describe('day labels', () => {
         expect(formatDayLabel('2026-09-26T12:00Z', 'UTC', 'en')).toBe('Sat 26 Sept')
         expect(formatDayLabel('2026-09-26T12:00Z', 'UTC', 'en', 'short')).toBe('Sat 26')
         expect(formatDayLabel('2026-09-26T12:00Z', 'UTC', 'en', 'narrow')).toBe('Sat')
+    })
+})
+
+describe('formatDateKey', () => {
+    it('formats a local date key as that calendar day in any time zone', () => {
+        expect(formatDateKey('2026-10-02', 'en', { weekday: 'long', day: 'numeric' })).toBe('Friday 2')
     })
 })

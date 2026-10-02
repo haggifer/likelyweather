@@ -18,9 +18,11 @@ export function RunsView() {
     const locale = useLocale()
     const now = useNow()
     const isDesktop = useMediaQuery('(width >= 40rem)')
+
     const { data: runs } = useRuns()
     const { data: timeline } = useTimeline(30)
     const { data: cities } = useCities()
+
     const cityNames = new Map(cities?.items.map((c) => [c.id, getCityName(c, locale)]))
 
     return (

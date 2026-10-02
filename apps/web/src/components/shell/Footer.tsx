@@ -1,7 +1,14 @@
 import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
+import { ReactNode } from 'react'
 
 const REPO_URL = process.env.NEXT_PUBLIC_REPO_URL
+
+const renderExternalLink = (href: string, chunks: ReactNode) => (
+    <a href={href} className="underline underline-offset-2" target="_blank" rel="noreferrer">
+        {chunks}
+    </a>
+)
 
 export async function Footer() {
     const t = await getTranslations('footer')
@@ -12,26 +19,8 @@ export async function Footer() {
             <div className="mx-auto flex max-w-[87.5rem] flex-wrap items-center gap-x-4 gap-y-1 px-4 py-4 sm:px-(--pane-padding)">
                 <p>
                     {t.rich('attribution', {
-                        openMeteo: (chunks) => (
-                            <a
-                                href="https://open-meteo.com/"
-                                className="underline underline-offset-2"
-                                target="_blank"
-                                rel="noreferrer"
-                            >
-                                {chunks}
-                            </a>
-                        ),
-                        metno: (chunks) => (
-                            <a
-                                href="https://api.met.no/"
-                                className="underline underline-offset-2"
-                                target="_blank"
-                                rel="noreferrer"
-                            >
-                                {chunks}
-                            </a>
-                        ),
+                        openMeteo: (chunks) => renderExternalLink('https://open-meteo.com/', chunks),
+                        metno: (chunks) => renderExternalLink('https://api.met.no/', chunks),
                     })}
                 </p>
                 <nav className="ml-auto flex flex-wrap gap-x-4 gap-y-1">

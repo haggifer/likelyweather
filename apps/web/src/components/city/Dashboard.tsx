@@ -1,5 +1,17 @@
 'use client'
 
+import {
+    countRainySteps,
+    getDashboardStats,
+    getFutureRange,
+    getPrecipTotals,
+    getReadoutIndex,
+    getSlotEnd,
+    PRECIP_WINDOW_HOURS,
+    PrecipTotals,
+    sumValues,
+} from '@/components/city/dashboard-stats'
+import { formatSpread } from '@/components/city/disagreement-format'
 import { DisagreementTiles } from '@/components/city/DisagreementTiles'
 import { ModelLegend } from '@/components/city/ModelLegend'
 import { VariableSwitch } from '@/components/city/VariableSwitch'
@@ -10,20 +22,11 @@ import { useAppDispatch, useAppSelector } from '@/store'
 import { setHoverStep, toggleHiddenModel } from '@/store/dashboard-slice'
 import { ChartFrame } from '@fa/charts/ChartFrame'
 import { SpaghettiChart } from '@fa/charts/SpaghettiChart'
-import { getNearestIndex } from '@fa/charts/spaghetti-geometry'
 import { Series } from '@fa/shared/api'
-import {
-    computeChanceOfRain,
-    computeDisagreement,
-    computeEnsemble,
-    computeMedianDirection,
-    EnsembleStats,
-} from '@fa/shared/ensemble'
-import { formatNumber, formatPeriodLabel, formatStepLabel, formatTime, getCityName } from '@fa/shared/format'
+import { EnsembleStats } from '@fa/shared/ensemble'
+import { formatDateKey, formatNumber, formatPeriodLabel, formatStepLabel, getCityName } from '@fa/shared/format'
 import { MODEL_BY_ID, ModelId, MODELS } from '@fa/shared/models'
-import { indexSteps, toStepSeries } from '@fa/shared/resample'
-import { buildSlots, DASHBOARD_HOURS, getChartStart, SLOT_HOURS, toSlotLatest } from '@fa/shared/slots'
-import { addHours, toIsoMinute } from '@fa/shared/time'
+import { buildSlots, DASHBOARD_HOURS, getChartStart, toSlotLatest } from '@fa/shared/slots'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Skeleton } from '@fa/ui/components/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@fa/ui/components/table'
@@ -47,8 +50,6 @@ interface SeriesTableProps {
     medianLabel: string
     timeLabel: string
 }
-
-const PRECIP_WINDOW_HOURS = 6
 
 // Model columns scroll under the time column, so its background stays opaque: the hover colour is the row's
 // muted/50 tint mixed into the card colour instead of laid over it.
@@ -74,6 +75,26 @@ const VARIABLE_BAR = (
 const isTypingTarget = (target: EventTarget | null) =>
     target instanceof HTMLElement &&
     (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
+
+const getReadoutLabel = (step: string, variable: Variable, timeZone: string, locale: string) =>
+    variable === Variable.Precip
+        ? formatPeriodLabel(step, getSlotEnd(step), timeZone, locale)
+        : formatStepLabel(step, timeZone, locale)
+
+const renderPrecipChart = (precip: PrecipTotals | null, timeZone: string, locale: string) =>
+    precip ? (
+        <PrecipPanel
+            steps={precip.steps}
+            series={precip.series}
+            median={precip.median}
+            chance={precip.chance}
+            timeZone={timeZone}
+            locale={locale}
+            windowHours={PRECIP_WINDOW_HOURS}
+        />
+    ) : (
+        <Skeleton className="h-[14.375rem]" />
+    )
 
 const SeriesTable = ({
     steps,
@@ -129,9 +150,11 @@ export function Dashboard({ slug }: IProps) {
     const highlighted = useAppSelector((s) => s.dashboard.highlightedModel)
     const pinned = useAppSelector((s) => s.dashboard.pinnedModels)
     const hidden = useAppSelector((s) => s.dashboard.hiddenModels)
+
     const { data: city } = useCity(slug)
     const latestQuery = useLatest(slug, variable, isHydrated)
     const precipQuery = useLatest(slug, Variable.Precip, isHydrated)
+
     const info = VARIABLE_BY_ID[variable]
     const timeZone = city?.timezone ?? 'UTC'
     // The precipitation query is shared by every variable, so its run anchors the chart; a newer run re-anchors it.
@@ -145,75 +168,18 @@ export function Dashboard({ slug }: IProps) {
         () => (latestQuery.data && slots ? toSlotLatest(latestQuery.data, slots, info.aggregation) : null),
         [latestQuery.data, slots, info.aggregation],
     )
-    const chartNow = anchor ? now : null
-
-    const derived = useMemo(() => {
-        if (!latest || !now) return null
-
-        const values = latest.series.map((s) => s.values)
-        const stats = computeEnsemble(values, latest.steps.length)
-
-        // A slot's precipitation covers the 3 hours after it; computeDisagreement files a sum under the day it ends.
-        const disagreementSteps =
-            variable === Variable.Precip
-                ? latest.steps.map((s) => toIsoMinute(addHours(new Date(s), SLOT_HOURS)))
-                : latest.steps
-
-        return {
-            stats,
-            disagreement: computeDisagreement(disagreementSteps, values, variable, timeZone, now),
-            directions: latest.directions
-                ? computeMedianDirection(
-                      latest.directions.map((d) => d.values),
-                      latest.steps.length,
-                  )
-                : null,
-        }
-    }, [latest, variable, timeZone, now])
-
-    const precip = useMemo(() => {
-        const data = precipQuery.data
-
-        if (!data || !anchor) return null
-
-        // 6-hour totals from the chart start, each labelled by the hour it ends, so the labels stay on the 3-hour grid.
-        const steps = Array.from({ length: DASHBOARD_HOURS / PRECIP_WINDOW_HOURS }, (_, k) =>
-            toIsoMinute(addHours(anchor, (k + 1) * PRECIP_WINDOW_HOURS)),
-        )
-        const timeIndex = indexSteps(data.steps)
-        const series = data.series.map((s) => ({
-            modelId: s.modelId,
-            values: toStepSeries(timeIndex, s.values, steps, 'sum', PRECIP_WINDOW_HOURS),
-        }))
-        const values = series.map((s) => s.values)
-
-        return {
-            steps,
-            series,
-            median: computeEnsemble(values, steps.length).median,
-            chance: computeChanceOfRain(values, steps.length),
-        }
-    }, [precipQuery.data, anchor])
-
+    const derived = useMemo(
+        () => (latest && now ? getDashboardStats(latest, variable, timeZone, now) : null),
+        [latest, variable, timeZone, now],
+    )
+    const precip = useMemo(
+        () => (precipQuery.data && anchor ? getPrecipTotals(precipQuery.data, anchor) : null),
+        [precipQuery.data, anchor],
+    )
     // The precipitation panel does not depend on the selected variable; a stable element keeps a variable switch
     // from re-rendering the Recharts tree.
-    const precipChart = useMemo(
-        () =>
-            precip ? (
-                <PrecipPanel
-                    steps={precip.steps}
-                    series={precip.series}
-                    median={precip.median}
-                    chance={precip.chance}
-                    timeZone={timeZone}
-                    locale={locale}
-                    windowHours={PRECIP_WINDOW_HOURS}
-                />
-            ) : (
-                <Skeleton className="h-[14.375rem]" />
-            ),
-        [precip, timeZone, locale],
-    )
+    const precipChart = useMemo(() => renderPrecipChart(precip, timeZone, locale), [precip, timeZone, locale])
+    const chartNow = anchor ? now : null
 
     useEffect(() => {
         const available = new Set(latest?.series.map((s) => s.modelId))
@@ -258,43 +224,30 @@ export function Dashboard({ slug }: IProps) {
     const visibleSeries = latest.series.filter((s) => !hidden.includes(s.modelId))
     const emphasized: ModelId[] = [...pinned, ...(highlighted ? [highlighted] : [])]
     const hoverIndex = hoverStep ? latest.steps.indexOf(hoverStep) : -1
-    const readoutIndex =
-        hoverIndex >= 0
-            ? hoverIndex
-            : chartNow
-              ? getNearestIndex(
-                    latest.steps.map((s) => new Date(s)),
-                    chartNow,
-                )
-              : 0
-    const futureMedian = derived.stats.median
-        .filter((_, i) => new Date(latest.steps[i]) > now)
-        .filter((v): v is number => v !== null)
+    const readoutIndex = getReadoutIndex(latest.steps, hoverIndex, chartNow)
+    const futureRange = getFutureRange(derived.stats.median, latest.steps, now)
     const mostSplit = [...derived.disagreement].sort((a, b) => b.spread - a.spread)[0]
     const summary = t('summary', {
         variable: tv(variable).toLowerCase(),
         count: latest.series.length,
-        min: formatNumber(futureMedian.length ? Math.min(...futureMedian) : null, info.decimals),
-        max: formatNumber(futureMedian.length ? Math.max(...futureMedian) : null, info.decimals),
+        min: formatNumber(futureRange.min, info.decimals),
+        max: formatNumber(futureRange.max, info.decimals),
         unit: info.unit,
-        day: mostSplit ? formatTime(`${mostSplit.day}T12:00:00Z`, 'UTC', locale, { weekday: 'long' }) : '–',
-        spread: formatNumber(mostSplit?.spread, info.decimals === 0 ? 1 : info.decimals),
+        day: mostSplit ? formatDateKey(mostSplit.day, locale, { weekday: 'long' }) : '–',
+        spread: formatSpread(mostSplit?.spread, info.decimals),
     })
+    const precipSummary = precip
+        ? t('precipSummary', {
+              steps: countRainySteps(precip.chance),
+              total: formatNumber(sumValues(precip.median), 1),
+          })
+        : undefined
     const legend = (
         <ModelLegend
             series={latest.series}
             median={derived.stats.median[readoutIndex]}
             readoutIndex={readoutIndex}
-            readoutLabel={
-                variable === Variable.Precip
-                    ? formatPeriodLabel(
-                          latest.steps[readoutIndex],
-                          toIsoMinute(addHours(new Date(latest.steps[readoutIndex]), SLOT_HOURS)),
-                          timeZone,
-                          locale,
-                      )
-                    : formatStepLabel(latest.steps[readoutIndex], timeZone, locale)
-            }
+            readoutLabel={getReadoutLabel(latest.steps[readoutIndex], variable, timeZone, locale)}
             variable={variable}
         />
     )
@@ -343,21 +296,7 @@ export function Dashboard({ slug }: IProps) {
             </div>
             <div className="grid gap-(--card-gap) lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
                 <DisagreementTiles days={derived.disagreement} variable={variable} />
-                <ChartFrame
-                    title={t('precipTitle')}
-                    description={t('precipDescription')}
-                    summary={
-                        precip
-                            ? t('precipSummary', {
-                                  steps: precip.chance.filter((c) => (c ?? 0) >= 0.5).length,
-                                  total: formatNumber(
-                                      precip.median.reduce<number>((sum, v) => sum + (v ?? 0), 0),
-                                      1,
-                                  ),
-                              })
-                            : undefined
-                    }
-                >
+                <ChartFrame title={t('precipTitle')} description={t('precipDescription')} summary={precipSummary}>
                     {precipChart}
                 </ChartFrame>
             </div>

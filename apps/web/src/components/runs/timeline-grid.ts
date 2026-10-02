@@ -21,6 +21,15 @@ export const toCellKey = (day: string, cycleHour: number) => `${day}|${cycleHour
 
 const getUtcMidnight = (date: Date) => Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
 
+const getTimelineRows = (now: Date, timeZone: string, locale: string): TimelineRow[] => {
+    const today = getUtcMidnight(now)
+
+    return CYCLE_HOURS.map((cycleHour) => ({
+        cycleHour,
+        label: formatTime(new Date(today + cycleHour * HOUR_MS), timeZone, locale, CLOCK),
+    })).sort((a, b) => a.label.localeCompare(b.label))
+}
+
 // Model runs start at 00, 06, 12 and 18 UTC. The grid puts them on the viewer's calendar: a column per local day and
 // a row per run in local clock order, so a run that starts after local midnight sits in the next day's column. Row
 // labels use today's offset; after a daylight-saving change, older cells sit an hour off their label, and their
@@ -47,11 +56,7 @@ export const buildTimelineGrid = (
         }
     }
 
-    const today = getUtcMidnight(now)
-    const rows = CYCLE_HOURS.map((cycleHour) => ({
-        cycleHour,
-        label: formatTime(new Date(today + cycleHour * HOUR_MS), timeZone, locale, CLOCK),
-    })).sort((a, b) => a.label.localeCompare(b.label))
+    const rows = getTimelineRows(now, timeZone, locale)
 
     return { days: [...days].sort(), rows, cells }
 }

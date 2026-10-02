@@ -7,13 +7,16 @@ import { formatNumber, formatPeriodLabel, formatStepLabel } from '@fa/shared/for
 import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { useNow } from '@fa/ui/hooks/useNow'
+import { ScaleTime } from 'd3-scale'
 import { useTranslations } from 'next-intl'
 import { KeyboardEvent, PointerEvent, useMemo } from 'react'
+import { getArrowStep } from './arrow-keys'
 import { DayGrid } from './DayGrid'
 import { useAnimatedDomain } from './hooks/useAnimatedDomain'
 import { useChartTheme } from './hooks/useChartTheme'
 import { useElementWidth } from './hooks/useElementWidth'
-import { getYDomain, getYTicks } from './scales'
+import { clamp, getBarWidth, getNowX, getPointerTime } from './plot-geometry'
+import { formatYTick, getYDomain, getYTicks } from './scales'
 import {
     buildSpaghettiGeometry,
     getNearestIndex,
@@ -43,8 +46,17 @@ interface IProps {
     now?: Date | null
 }
 
+interface DrawnBar {
+    i: number
+    center: number
+}
+
+interface TooltipRow {
+    modelId: ModelId
+    value: number
+}
+
 const ARROW_ROW = 26
-const BAR_RATIO = 0.62
 const MAX_TICK_WIDTH = 16
 const HOVER_LABEL_HALF_WIDTH = 34
 const PERIOD_LABEL_HALF_WIDTH = 50
@@ -59,6 +71,35 @@ const getMargin = (compact: boolean, hasArrows: boolean): Margin => ({
     bottom: (compact ? 22 : 30) + (hasArrows ? ARROW_ROW : 0),
     left: compact ? 34 : 44,
 })
+
+const getSeriesYDomain = (series: Series[], variable: Variable) =>
+    getYDomain(
+        series.flatMap((s) => s.values),
+        variable,
+    )
+
+// Bars that would overflow the plot are not drawn.
+const getDrawnBars = (
+    times: Date[],
+    x: ScaleTime<number, number>,
+    stepMs: number,
+    barWidth: number,
+    [left, right]: [number, number],
+): DrawnBar[] =>
+    times
+        .map((time, i) => ({ i, center: x(getSumBarCenter(time, stepMs)) }))
+        .filter(({ center }) => center - barWidth / 2 >= left && center + barWidth / 2 <= right)
+
+const getHoverLabel = (step: string, span: [Date, Date] | null, timeZone: string, locale: string) =>
+    span
+        ? formatPeriodLabel(span[0].toISOString(), span[1].toISOString(), timeZone, locale)
+        : formatStepLabel(step, timeZone, locale)
+
+const getTooltipRows = (series: Series[], index: number) =>
+    series
+        .map((s) => ({ modelId: s.modelId, value: s.values[index] }))
+        .filter((r): r is TooltipRow => r.value !== null)
+        .sort((a, b) => b.value - a.value)
 
 export function SpaghettiChart({
     steps,
@@ -81,91 +122,67 @@ export function SpaghettiChart({
     const t = useTranslations('chart')
     const theme = useChartTheme()
     const liveNow = useNow()
-    const now = nowProp === undefined ? liveNow : nowProp
+
     const { ref, width } = useElementWidth<HTMLDivElement>()
+
+    const now = nowProp === undefined ? liveNow : nowProp
     const height = width < NARROW_WIDTH ? Math.min(heightProp, NARROW_HEIGHT) : heightProp
     const info = VARIABLE_BY_ID[variable]
+    const isBars = variable === Variable.Precip
     const hasArrows = Boolean(directions)
     const margin = useMemo(() => getMargin(compact, hasArrows), [compact, hasArrows])
-    const target = useMemo(
-        () =>
-            yDomain ??
-            getYDomain(
-                series.flatMap((s) => s.values),
-                variable,
-            ),
-        [yDomain, series, variable],
-    )
+    const target = useMemo(() => yDomain ?? getSeriesYDomain(series, variable), [yDomain, series, variable])
     const domain = useAnimatedDomain(target, variable)
-
     const geometry = useMemo(
         () => buildSpaghettiGeometry({ steps, series, stats, width, height, domain, margin }),
         [steps, series, stats, width, height, domain, margin],
     )
+
     const { x, y, times } = geometry
     const plotBottom = height - margin.bottom
-    const nowX = now ? Math.max(margin.left, Math.min(width - margin.right, x(now))) : null
+    const plotRight = width - margin.right
+    const nowX = getNowX(x, now, margin.left, plotRight)
     const yTicks = getYTicks(domain, variable, compact ? 3 : 5)
-    const isDimmed = (id: ModelId) => emphasized.length > 0 && !emphasized.includes(id)
-    const isBars = variable === Variable.Precip
     const stepMs = times.length > 1 ? times[1].getTime() - times[0].getTime() : 3 * HOUR_MS
-    const barWidth = Math.max(2, (x(new Date(times[0].getTime() + stepMs)) - x(times[0])) * BAR_RATIO)
+    const barWidth = getBarWidth(x, times[0], stepMs)
     const tickWidth = Math.min(barWidth, MAX_TICK_WIDTH)
-    const bars = isBars
-        ? times
-              .map((time, i) => ({ i, center: x(getSumBarCenter(time, stepMs)) }))
-              .filter(
-                  ({ center }) => center - barWidth / 2 >= margin.left && center + barWidth / 2 <= width - margin.right,
-              )
-        : []
-    // Bars that would overflow the plot are not drawn, so hovering and stepping stay within the drawn ones.
+    const bars = isBars ? getDrawnBars(times, x, stepMs, barWidth, [margin.left, plotRight]) : []
+    // Hovering and stepping stay within the drawn bars.
     const minIndex = isBars && bars.length ? bars[0].i : 0
     const maxIndex = isBars && bars.length ? bars[bars.length - 1].i : times.length - 1
-
-    const handlePointerMove = (e: PointerEvent<SVGRectElement>) => {
-        const box = e.currentTarget.getBoundingClientRect()
-        const at = x.invert(e.clientX - box.left + margin.left)
-        const index = isBars ? getSpanIndex(times, at, stepMs) : getNearestIndex(times, at)
-
-        onHoverIndex?.(Math.max(minIndex, Math.min(maxIndex, index)))
-    }
-
-    const handleKeyDown = (e: KeyboardEvent<SVGSVGElement>) => {
-        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
-
-        e.preventDefault()
-        const current = hoverIndex ?? getNearestIndex(times, now ?? times[0])
-        onHoverIndex?.(Math.max(minIndex, Math.min(maxIndex, current + (e.key === 'ArrowRight' ? 1 : -1))))
-    }
-
     const hover = hoverIndex !== null && times[hoverIndex] ? hoverIndex : null
     // A sum is hovered as the period it covers: shaded across, labelled with its start and end.
     const hoverSpan = hover !== null && isBars ? getSumSpan(times[hover], stepMs) : null
     const hoverTime = hover === null ? null : hoverSpan ? getSumBarCenter(times[hover], stepMs) : times[hover]
     const hoverX = hoverTime ? x(hoverTime) : null
-    const hoverLabel =
-        hover === null
-            ? null
-            : hoverSpan
-              ? formatPeriodLabel(hoverSpan[0].toISOString(), hoverSpan[1].toISOString(), timeZone, locale)
-              : formatStepLabel(steps[hover], timeZone, locale)
+    const hoverLabel = hover === null ? null : getHoverLabel(steps[hover], hoverSpan, timeZone, locale)
     const labelHalfWidth = hoverSpan ? PERIOD_LABEL_HALF_WIDTH : HOVER_LABEL_HALF_WIDTH
     const hoverLabelX =
         hoverX === null
             ? null
-            : Math.max(
-                  margin.left + UNIT_LABEL_WIDTH + labelHalfWidth,
-                  Math.min(width - margin.right - labelHalfWidth, hoverX),
-              )
+            : clamp(hoverX, margin.left + UNIT_LABEL_WIDTH + labelHalfWidth, plotRight - labelHalfWidth)
     const spanLeft = hoverSpan ? Math.max(margin.left, x(hoverSpan[0])) : 0
-    const spanRight = hoverSpan ? Math.min(width - margin.right, x(hoverSpan[1])) : 0
-    const tooltipRows =
-        hover !== null
-            ? series
-                  .map((s) => ({ modelId: s.modelId, value: s.values[hover] }))
-                  .filter((r): r is { modelId: ModelId; value: number } => r.value !== null)
-                  .sort((a, b) => b.value - a.value)
-            : []
+    const spanRight = hoverSpan ? Math.min(plotRight, x(hoverSpan[1])) : 0
+    const tooltipRows = hover !== null ? getTooltipRows(series, hover) : []
+    const isDimmed = (id: ModelId) => emphasized.length > 0 && !emphasized.includes(id)
+
+    const handlePointerMove = (e: PointerEvent<SVGRectElement>) => {
+        const at = getPointerTime(e, x, margin.left)
+        const index = isBars ? getSpanIndex(times, at, stepMs) : getNearestIndex(times, at)
+
+        onHoverIndex?.(clamp(index, minIndex, maxIndex))
+    }
+
+    const handleKeyDown = (e: KeyboardEvent<SVGSVGElement>) => {
+        const step = getArrowStep(e.key)
+
+        if (!step) return
+
+        const current = hoverIndex ?? getNearestIndex(times, now ?? times[0])
+
+        e.preventDefault()
+        onHoverIndex?.(clamp(current + step, minIndex, maxIndex))
+    }
 
     return (
         <div ref={ref} className="relative w-full select-none">
@@ -191,13 +208,7 @@ export function SpaghettiChart({
                 )}
                 {yTicks.map((tick) => (
                     <g key={tick}>
-                        <line
-                            x1={margin.left}
-                            x2={width - margin.right}
-                            y1={y(tick)}
-                            y2={y(tick)}
-                            stroke={theme.grid}
-                        />
+                        <line x1={margin.left} x2={plotRight} y1={y(tick)} y2={y(tick)} stroke={theme.grid} />
                         <text
                             x={margin.left - 6}
                             y={y(tick)}
@@ -206,7 +217,7 @@ export function SpaghettiChart({
                             fontSize={compact ? 10 : 11}
                             fill={theme.muted}
                         >
-                            {formatNumber(tick, info.decimals === 0 ? 0 : Number.isInteger(tick) ? 0 : 1)}
+                            {formatYTick(tick, info.decimals === 0)}
                         </text>
                     </g>
                 ))}

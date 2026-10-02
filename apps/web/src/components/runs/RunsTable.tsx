@@ -24,66 +24,65 @@ interface IProps {
 const ROW_HEIGHT = 38
 const VIEWPORT_HEIGHT = 480
 
+const getRunColumns = (
+    t: (key: string) => string,
+    locale: string,
+    cityNames: Map<number, string>,
+): ColumnDef<Run>[] => [
+    {
+        id: 'issueTime',
+        header: t('issueTime'),
+        cell: ({ row }) => (
+            <span title={formatRunTimeUtc(row.original.issueTime, locale)} className="whitespace-nowrap">
+                {formatRunTime(row.original.issueTime, locale)}
+            </span>
+        ),
+    },
+    {
+        id: 'origin',
+        header: t('origin'),
+        cell: ({ row }) => getRunOriginLabel(row.original, t, cityNames),
+    },
+    {
+        id: 'status',
+        header: t('status'),
+        cell: ({ row }) => (
+            <StatusChip tone={STATUS_TONES[row.original.status]}>{t(`statuses.${row.original.status}`)}</StatusChip>
+        ),
+    },
+    { id: 'rows', header: t('rows'), cell: ({ row }) => row.original.rows.toLocaleString(locale) },
+    { id: 'cities', header: t('cities'), cell: ({ row }) => row.original.citiesCount },
+    {
+        id: 'warnings',
+        header: t('warnings'),
+        cell: ({ row }) =>
+            row.original.warnings.length ? (
+                <span title={row.original.warnings.join('\n')} className="cursor-help underline decoration-dotted">
+                    {row.original.warnings.length}
+                </span>
+            ) : (
+                '0'
+            ),
+    },
+    {
+        id: 'duration',
+        header: t('duration'),
+        cell: ({ row }) => formatRunDuration(row.original),
+    },
+    {
+        id: 'archive',
+        header: t('archive'),
+        cell: ({ row }) => <RunArchiveLink run={row.original} />,
+    },
+]
+
 export function RunsTable({ runs, cityNames }: IProps) {
     const t = useTranslations('runs')
     const locale = useLocale()
+
     const viewportRef = useRef<HTMLDivElement>(null)
 
-    const columns = useMemo<ColumnDef<Run>[]>(
-        () => [
-            {
-                id: 'issueTime',
-                header: t('issueTime'),
-                cell: ({ row }) => (
-                    <span title={formatRunTimeUtc(row.original.issueTime, locale)} className="whitespace-nowrap">
-                        {formatRunTime(row.original.issueTime, locale)}
-                    </span>
-                ),
-            },
-            {
-                id: 'origin',
-                header: t('origin'),
-                cell: ({ row }) => getRunOriginLabel(row.original, t, cityNames),
-            },
-            {
-                id: 'status',
-                header: t('status'),
-                cell: ({ row }) => (
-                    <StatusChip tone={STATUS_TONES[row.original.status]}>
-                        {t(`statuses.${row.original.status}`)}
-                    </StatusChip>
-                ),
-            },
-            { id: 'rows', header: t('rows'), cell: ({ row }) => row.original.rows.toLocaleString(locale) },
-            { id: 'cities', header: t('cities'), cell: ({ row }) => row.original.citiesCount },
-            {
-                id: 'warnings',
-                header: t('warnings'),
-                cell: ({ row }) =>
-                    row.original.warnings.length ? (
-                        <span
-                            title={row.original.warnings.join('\n')}
-                            className="cursor-help underline decoration-dotted"
-                        >
-                            {row.original.warnings.length}
-                        </span>
-                    ) : (
-                        '0'
-                    ),
-            },
-            {
-                id: 'duration',
-                header: t('duration'),
-                cell: ({ row }) => formatRunDuration(row.original),
-            },
-            {
-                id: 'archive',
-                header: t('archive'),
-                cell: ({ row }) => <RunArchiveLink run={row.original} />,
-            },
-        ],
-        [t, locale, cityNames],
-    )
+    const columns = useMemo(() => getRunColumns(t, locale, cityNames), [t, locale, cityNames])
 
     // eslint-disable-next-line react-hooks/incompatible-library
     const table = useReactTable({ data: runs, columns, getCoreRowModel: getCoreRowModel() })
@@ -94,6 +93,7 @@ export function RunsTable({ runs, cityNames }: IProps) {
         estimateSize: () => ROW_HEIGHT,
         overscan: 12,
     })
+
     const items = virtualizer.getVirtualItems()
     const paddingTop = items[0]?.start ?? 0
     const paddingBottom = virtualizer.getTotalSize() - (items.at(-1)?.end ?? 0)

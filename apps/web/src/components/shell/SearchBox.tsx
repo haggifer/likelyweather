@@ -11,7 +11,7 @@ import { Command as CommandPrimitive } from 'cmdk'
 import { Loader2, Search } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { KeyboardEvent as ReactKeyboardEvent, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { toast } from 'sonner'
 
 interface IProps {
@@ -46,16 +46,54 @@ export function SearchBox({
     const t = useTranslations('search')
     const locale = useLocale() as Locale
     const router = useRouter()
+    const shortcutLabel = useSyncExternalStore(subscribeToNothing, getShortcutLabel, getServerShortcutLabel)
+
     const inputRef = useRef<HTMLInputElement>(null)
     const [query, setQuery] = useState(initialQuery)
     const [isOpen, setIsOpen] = useState(false)
+
     const isEdited = query !== initialQuery
     const debounced = useDebouncedValue(isEdited ? query.trim() : '', 200)
     const { data, isFetching, isError } = useGeocode(debounced, locale)
     const track = useTrackCity()
+
     const results = [...(data?.results ?? [])].sort((a, b) => (b.population ?? 0) - (a.population ?? 0))
     const isQueryReady = query.trim().length >= MIN_QUERY
-    const shortcutLabel = useSyncExternalStore(subscribeToNothing, getShortcutLabel, getServerShortcutLabel)
+
+    const handleSelect = (place: GeocodeResult) => {
+        track.mutate(place.id, {
+            onSuccess: ({ slug }) => {
+                setIsOpen(false)
+                setQuery('')
+                inputRef.current?.blur()
+
+                if (onSelectCity) onSelectCity(slug)
+                else router.push(`/city/${slug}`)
+            },
+            onError: (error) => {
+                console.error(error)
+                toast.error(t('trackFailed', { message: error.message }))
+            },
+        })
+    }
+
+    const handleKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+        if (e.key !== 'Escape') return
+
+        setIsOpen(false)
+        onDismiss?.()
+    }
+
+    const handleValueChange = (value: string) => {
+        setQuery(value)
+        setIsOpen(true)
+    }
+
+    const handleBlur = () =>
+        setTimeout(() => {
+            setIsOpen(false)
+            onDismiss?.()
+        }, 150)
 
     useEffect(() => {
         if (!autoFocus) return
@@ -79,50 +117,20 @@ export function SearchBox({
         return () => window.removeEventListener('keydown', handleKey)
     }, [enableShortcut])
 
-    const handleSelect = (place: GeocodeResult) => {
-        track.mutate(place.id, {
-            onSuccess: ({ slug }) => {
-                setIsOpen(false)
-                setQuery('')
-                inputRef.current?.blur()
-
-                if (onSelectCity) onSelectCity(slug)
-                else router.push(`/city/${slug}`)
-            },
-            onError: (error) => {
-                console.error(error)
-                toast.error(t('trackFailed', { message: error.message }))
-            },
-        })
-    }
-
     return (
         <CommandPrimitive
             shouldFilter={false}
             className={cn('relative w-full max-w-xl', className)}
-            onKeyDown={(e) => {
-                if (e.key !== 'Escape') return
-
-                setIsOpen(false)
-                onDismiss?.()
-            }}
+            onKeyDown={handleKeyDown}
         >
             <div className="flex h-12 items-center gap-2.5 rounded-lg border bg-card px-3.5 shadow-sm transition-shadow focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/25">
                 <Search className="size-4.5 shrink-0 text-muted-foreground" aria-hidden="true" />
                 <CommandPrimitive.Input
                     ref={inputRef}
                     value={query}
-                    onValueChange={(v) => {
-                        setQuery(v)
-                        setIsOpen(true)
-                    }}
+                    onValueChange={handleValueChange}
                     onFocus={() => setIsOpen(true)}
-                    onBlur={() =>
-                        setTimeout(() => {
-                            setIsOpen(false)
-                            onDismiss?.()
-                        }, 150)
-                    }
+                    onBlur={handleBlur}
                     placeholder={t('placeholder')}
                     aria-label={t('label')}
                     className="h-full min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground"

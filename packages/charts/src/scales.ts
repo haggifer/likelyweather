@@ -1,3 +1,4 @@
+import { formatNumber } from '@fa/shared/format'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { range } from 'd3-array'
 import { scaleLinear } from 'd3-scale'
@@ -52,3 +53,6 @@ export const getYTicks = (domain: [number, number], variable: Variable, count: n
 
     return range(Math.ceil(domain[0] / tickStep) * tickStep, domain[1] + tickStep / 2, tickStep)
 }
+
+export const formatYTick = (tick: number, isWhole = false) =>
+    formatNumber(tick, isWhole || Number.isInteger(tick) ? 0 : 1)

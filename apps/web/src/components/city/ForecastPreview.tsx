@@ -1,8 +1,8 @@
 'use client'
 
+import { getEnsembleStats } from '@/components/city/dashboard-stats'
 import { SpaghettiChart } from '@fa/charts/SpaghettiChart'
 import { City, LatestResponse } from '@fa/shared/api'
-import { computeEnsemble } from '@fa/shared/ensemble'
 import { Variable } from '@fa/shared/variables'
 import { useLocale } from 'next-intl'
 import { useMemo, useState } from 'react'
@@ -21,14 +21,8 @@ interface IProps {
 export function ForecastPreview({ city, latest, variable, ariaLabel, now, height = 220, yDomain }: IProps) {
     const locale = useLocale()
     const [hoverIndex, setHoverIndex] = useState<number | null>(null)
-    const stats = useMemo(
-        () =>
-            computeEnsemble(
-                latest.series.map((s) => s.values),
-                latest.steps.length,
-            ),
-        [latest],
-    )
+
+    const stats = useMemo(() => getEnsembleStats(latest), [latest])
 
     return (
         <SpaghettiChart

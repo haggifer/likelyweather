@@ -3,13 +3,13 @@
 import { RefreshButton } from '@/components/city/RefreshButton'
 import { UpdatedChip } from '@/components/city/UpdatedChip'
 import { FlagIcon } from '@/components/shell/FlagIcon'
+import { getCityRegion } from '@/lib/city-region'
+import { isRefreshDue } from '@/lib/refresh-due'
 import { MedianOverview, MedianOverviewSkeleton, MedianSeries } from '@fa/charts/MedianOverview'
 import { City, LatestResponse } from '@fa/shared/api'
-import { REFRESH_AFTER_HOURS } from '@fa/shared/constants'
 import { computeEnsemble, computeMedianDirection } from '@fa/shared/ensemble'
-import { getCityName, getCountryName } from '@fa/shared/format'
+import { getCityName } from '@fa/shared/format'
 import { buildSlots, getSlotStart, toSlotSeries } from '@fa/shared/slots'
-import { getAgeHours } from '@fa/shared/time'
 import { Variable, VARIABLES } from '@fa/shared/variables'
 import { Button } from '@fa/ui/components/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@fa/ui/components/card'
@@ -32,6 +32,27 @@ interface IProps {
 interface SkeletonProps {
     status: string
 }
+
+const getVariableMedians = (hourly: Record<Variable, LatestResponse>, slots: string[]) =>
+    Object.fromEntries(
+        VARIABLES.map(({ id, aggregation }) => {
+            const { steps, series } = hourly[id]
+            const values = computeEnsemble(
+                series.map((s) => toSlotSeries(steps, s.values, slots, aggregation)),
+                slots.length,
+            ).median
+
+            return [id, { steps: slots, values }]
+        }),
+    ) as Record<Variable, MedianSeries>
+
+const getWindDirections = (wind: LatestResponse, slots: string[]) =>
+    wind.directions
+        ? computeMedianDirection(
+              wind.directions.map((d) => toSlotSeries(wind.steps, d.values, slots, 'instant')),
+              slots.length,
+          )
+        : null
 
 // Same header and panel structure as the loaded card, so nothing moves when the data arrives.
 export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
@@ -57,37 +78,15 @@ export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
 export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh }: IProps) {
     const t = useTranslations('overview')
     const locale = useLocale()
+
     const name = getCityName(city, locale)
-    const region = [city.admin1, getCountryName(city.countryCode, city.country, locale)].filter(Boolean).join(', ')
-    const slots = useMemo(() => buildSlots(anchor), [anchor])
-    const medians = useMemo(
-        () =>
-            Object.fromEntries(
-                VARIABLES.map(({ id, aggregation }) => {
-                    const { steps, series } = hourly[id]
-                    const values = computeEnsemble(
-                        series.map((s) => toSlotSeries(steps, s.values, slots, aggregation)),
-                        slots.length,
-                    ).median
-
-                    return [id, { steps: slots, values }]
-                }),
-            ) as Record<Variable, MedianSeries>,
-        [hourly, slots],
-    )
-    const directions = useMemo(() => {
-        const wind = hourly[Variable.Wind]
-
-        return wind.directions
-            ? computeMedianDirection(
-                  wind.directions.map((d) => toSlotSeries(wind.steps, d.values, slots, 'instant')),
-                  slots.length,
-              )
-            : null
-    }, [hourly, slots])
+    const region = getCityRegion(city, locale)
     const currentSlot = now ? getSlotStart(now, city.timezone) : anchor
-    const isOutdated = now ? getAgeHours(hourly[Variable.Temp].fetchedAt, now) >= REFRESH_AFTER_HOURS : false
+    const isOutdated = isRefreshDue(hourly[Variable.Temp].fetchedAt, now)
     const modelCount = hourly[Variable.Temp].series.length
+    const slots = useMemo(() => buildSlots(anchor), [anchor])
+    const medians = useMemo(() => getVariableMedians(hourly, slots), [hourly, slots])
+    const directions = useMemo(() => getWindDirections(hourly[Variable.Wind], slots), [hourly, slots])
 
     return (
         <Card className={cn('gap-0 transition-opacity', isFetching && 'opacity-70')}>

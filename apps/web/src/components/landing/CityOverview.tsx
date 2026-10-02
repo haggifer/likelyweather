@@ -9,6 +9,7 @@ import { getChartStart } from '@fa/shared/slots'
 import { Variable, VARIABLES } from '@fa/shared/variables'
 import { Card, CardContent } from '@fa/ui/components/card'
 import { useNow } from '@fa/ui/hooks/useNow'
+import { UseQueryResult } from '@tanstack/react-query'
 import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 
@@ -16,12 +17,17 @@ interface IProps {
     slug: string
 }
 
+const getHourlyByVariable = (results: UseQueryResult<LatestResponse, Error>[]) =>
+    Object.fromEntries(VARIABLES.map((v, i) => [v.id, results[i].data])) as Record<Variable, LatestResponse>
+
 export function CityOverview({ slug }: IProps) {
     const t = useTranslations('overview')
     const locale = useLocale()
     const now = useNow()
+
     const { data: city, error } = useCity(slug)
     const results = useHourlyAll(slug, Boolean(city))
+
     const failed = results.find((r) => r.isError)
     const isReady = results.every((r) => r.data)
     const isEmpty = results.some((r) => r.data && !r.data.steps.length)
@@ -50,10 +56,7 @@ export function CityOverview({ slug }: IProps) {
         )
     }
 
-    const hourly = Object.fromEntries(VARIABLES.map((v, i) => [v.id, results[i].data])) as Record<
-        Variable,
-        LatestResponse
-    >
+    const hourly = getHourlyByVariable(results)
 
     return (
         <OverviewCard

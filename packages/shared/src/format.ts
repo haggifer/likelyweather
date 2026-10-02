@@ -48,6 +48,10 @@ const DAY_LABEL_OPTIONS: Record<DayLabelStyle, Intl.DateTimeFormatOptions> = {
 export const formatDayLabel = (iso: string, timeZone: string, locale: string, style: DayLabelStyle = 'long') =>
     formatTime(iso, timeZone, locale, DAY_LABEL_OPTIONS[style])
 
+// A local date key ("2026-10-02", already in the city's calendar) as that day: read at noon UTC, so no zone shifts it.
+export const formatDateKey = (day: string, locale: string, options: Intl.DateTimeFormatOptions) =>
+    formatTime(`${day}T12:00:00Z`, 'UTC', locale, options)
+
 export const formatDateTime = (iso: string, timeZone: string, locale: string) =>
     formatTime(iso, timeZone, locale, { day: 'numeric', month: 'short', ...CLOCK })
 

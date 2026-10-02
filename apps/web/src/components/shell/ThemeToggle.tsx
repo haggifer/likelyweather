@@ -9,7 +9,9 @@ import { useSyncExternalStore } from 'react'
 export function ThemeToggle() {
     const t = useTranslations('shell')
     const mode = useSyncExternalStore(subscribeColorMode, getColorMode, () => 'light' as const)
+
     const next = mode === 'dark' ? 'light' : 'dark'
+    const label = t('switchMode', { mode: t(`modes.${next}`) })
 
     return (
         <Button
@@ -17,8 +19,8 @@ export function ThemeToggle() {
             size="icon-sm"
             className="pointer-coarse:size-9"
             onClick={() => setColorMode(next)}
-            aria-label={t('switchMode', { mode: t(`modes.${next}`) })}
-            title={t('switchMode', { mode: t(`modes.${next}`) })}
+            aria-label={label}
+            title={label}
         >
             {mode === 'dark' ? <Sun /> : <Moon />}
         </Button>

@@ -18,6 +18,7 @@ const easeOut = (t: number) => 1 - Math.pow(1 - t, 3)
 export function useAnimatedDomain(target: UseAnimatedDomainResult, resetKey = ''): UseAnimatedDomainResult {
     const [state, setState] = useState<AnimatedDomain>({ key: resetKey, domain: target })
     const latest = useRef(state)
+
     const [lo, hi] = target
 
     useEffect(() => {

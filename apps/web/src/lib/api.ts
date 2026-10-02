@@ -22,11 +22,14 @@ const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
     const res = await fetch(path, init)
 
     if (!res.ok) {
-        const body = (await res.json().catch(() => null)) as ApiError | null
+        const body: ApiError | null = await res.json().catch(() => null)
+
         throw new ApiRequestError(res.status, body?.error.code ?? 'http_error', body?.error.message ?? res.statusText)
     }
 
-    return (await res.json()) as T
+    const body: T = await res.json()
+
+    return body
 }
 
 export const apiGet = <T>(path: string, params?: Params) => request<T>(`/api${path}${toQuery(params)}`)

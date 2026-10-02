@@ -4,7 +4,7 @@ import { FlagIcon } from '@/components/shell/FlagIcon'
 import { StatusChip } from '@/components/shell/StatusChip'
 import { ChipTone } from '@/components/types'
 import { useCities } from '@/hooks/useCities'
-import { CityStatus } from '@fa/shared/api'
+import { City, CityStatus } from '@fa/shared/api'
 import { formatTime, getCityName } from '@fa/shared/format'
 import { Card, CardContent } from '@fa/ui/components/card'
 import { Skeleton } from '@fa/ui/components/skeleton'
@@ -22,11 +22,15 @@ const STATUS_TONES: Record<CityStatus, ChipTone> = {
 const formatCityDate = (iso: string, timeZone: string, locale: string) =>
     formatTime(iso, timeZone, locale, { day: 'numeric', month: 'short', year: 'numeric' })
 
+const formatModelCount = (city: City) => city.availableModels.length || '–'
+
 export function CitiesView() {
     const t = useTranslations('cities')
     const tc = useTranslations('city')
     const locale = useLocale()
+
     const { data } = useCities()
+
     const cities = sortBy(data?.items ?? [], [(c) => -c.viewCount, (c) => c.name])
 
     return (
@@ -70,7 +74,7 @@ export function CitiesView() {
                                             <dt className="text-muted-foreground">{t('runs')}</dt>
                                             <dd>{c.runsCollected}</dd>
                                             <dt className="text-muted-foreground">{t('models')}</dt>
-                                            <dd>{c.availableModels.length || '–'}</dd>
+                                            <dd>{formatModelCount(c)}</dd>
                                         </dl>
                                     </li>
                                 ))}
@@ -116,9 +120,7 @@ export function CitiesView() {
                                                 </TableCell>
                                                 <TableCell className="text-right">{c.viewCount}</TableCell>
                                                 <TableCell className="text-right">{c.runsCollected}</TableCell>
-                                                <TableCell className="text-right">
-                                                    {c.availableModels.length || '–'}
-                                                </TableCell>
+                                                <TableCell className="text-right">{formatModelCount(c)}</TableCell>
                                             </TableRow>
                                         ))}
                                     </TableBody>

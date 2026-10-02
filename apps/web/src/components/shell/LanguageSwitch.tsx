@@ -1,5 +1,6 @@
 'use client'
 
+import { LOCALE_COOKIE } from '@/i18n/locale-cookie'
 import { Locale, LOCALES } from '@fa/shared/api'
 import { Button } from '@fa/ui/components/button'
 import {
@@ -16,7 +17,6 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
 
-const LOCALE_COOKIE = 'NEXT_LOCALE'
 const ONE_YEAR_SECONDS = 31_536_000
 
 // Endonyms: each language is listed in its own name so a reader can always find theirs.

@@ -21,6 +21,22 @@ interface IProps {
     fontSize?: number
 }
 
+interface DayLabel {
+    key: string
+    x: number
+    text: string
+}
+
+type DayLabelInput = Pick<IProps, 'x' | 'start' | 'end' | 'timeZone' | 'locale'> & { fontSize: number }
+
+const getDayLabels = (midnights: Date[], { x, start, end, timeZone, locale, fontSize }: DayLabelInput): DayLabel[] =>
+    [start, ...midnights].flatMap((from, i, all) => {
+        const to = all[i + 1] ?? end
+        const text = getDayLabel(from.toISOString(), x(to) - x(from), timeZone, locale, fontSize)
+
+        return text ? [{ key: from.toISOString(), x: (x(from) + x(to)) / 2, text }] : []
+    })
+
 // Day boundaries are drawn at local midnight of the city in every span (one per panel), with each day's label
 // centered in its span of time at every label row, as long as the space allows ("Sat 26 Sept", "Sat 26", "Sat").
 export function DayGrid({
@@ -36,12 +52,7 @@ export function DayGrid({
     fontSize = 11,
 }: IProps) {
     const midnights = useMemo(() => getLocalMidnights(start, end, timeZone), [start, end, timeZone])
-    const labels = [start, ...midnights].flatMap((from, i, all) => {
-        const to = all[i + 1] ?? end
-        const text = getDayLabel(from.toISOString(), x(to) - x(from), timeZone, locale, fontSize)
-
-        return text ? [{ key: from.toISOString(), x: (x(from) + x(to)) / 2, text }] : []
-    })
+    const labels = getDayLabels(midnights, { x, start, end, timeZone, locale, fontSize })
 
     return (
         <g aria-hidden="true">

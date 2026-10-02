@@ -23,6 +23,7 @@ export function Landing() {
     const t = useTranslations('landing')
     const locale = useLocale()
     const [slug, setSlug] = useQueryState('city', cityParser)
+
     const tiles = [
         { key: 'disagree', icon: Split, href: `/city/${slug}` },
         { key: 'compare', icon: Columns3, href: '/compare' },

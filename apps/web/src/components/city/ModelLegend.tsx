@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from '@/store'
 import { setHighlightedModel, showAllModels, toggleHiddenModel, togglePinnedModel } from '@/store/dashboard-slice'
 import { Series } from '@fa/shared/api'
 import { formatNumber } from '@fa/shared/format'
-import { MODEL_BY_ID } from '@fa/shared/models'
+import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Button } from '@fa/ui/components/button'
 import { cn } from '@fa/ui/lib/cn'
@@ -40,19 +40,23 @@ const LineSwatch = ({ color, dash, width = 18 }: SwatchProps) => (
     </svg>
 )
 
-export function ModelLegend({ series, median, readoutIndex, readoutLabel, variable }: IProps) {
-    const t = useTranslations('legend')
-    const dispatch = useAppDispatch()
-    const hidden = useAppSelector((s) => s.dashboard.hiddenModels)
-    const pinned = useAppSelector((s) => s.dashboard.pinnedModels)
-    const { decimals, unit } = VARIABLE_BY_ID[variable]
-    const rows = series
+const getLegendRows = (series: Series[], readoutIndex: number, hidden: ModelId[]) =>
+    series
         .map((s) => ({
             modelId: s.modelId,
             value: s.values[readoutIndex] ?? null,
             isHidden: hidden.includes(s.modelId),
         }))
         .sort((a, b) => Number(a.isHidden) - Number(b.isHidden) || (b.value ?? -Infinity) - (a.value ?? -Infinity))
+
+export function ModelLegend({ series, median, readoutIndex, readoutLabel, variable }: IProps) {
+    const t = useTranslations('legend')
+    const dispatch = useAppDispatch()
+    const hidden = useAppSelector((s) => s.dashboard.hiddenModels)
+    const pinned = useAppSelector((s) => s.dashboard.pinnedModels)
+
+    const { decimals, unit } = VARIABLE_BY_ID[variable]
+    const rows = getLegendRows(series, readoutIndex, hidden)
 
     return (
         <div className="flex flex-col gap-2">

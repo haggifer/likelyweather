@@ -3,7 +3,7 @@
 import { formatRunTime, formatRunTimeUtc } from '@/components/runs/run-parts'
 import { buildTimelineGrid, toCellKey } from '@/components/runs/timeline-grid'
 import { TimelineResponse } from '@fa/shared/api'
-import { formatTime, getViewerTimeZone } from '@fa/shared/format'
+import { formatDateKey, getViewerTimeZone } from '@fa/shared/format'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@fa/ui/components/tooltip'
 import { cn } from '@fa/ui/lib/cn'
 import { useLocale, useTranslations } from 'next-intl'
@@ -21,6 +21,8 @@ enum SlotState {
     Missing = 'MISSING',
     Future = 'FUTURE',
 }
+
+const DAY_LABEL_FORMAT: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'numeric' }
 
 const SLOT_CLASSES: Record<SlotState, string> = {
     [SlotState.Ok]: 'bg-success',
@@ -50,6 +52,7 @@ const getSlotState = (issueTime: string, timeline: TimelineResponse, now: Date):
 export function RunsTimeline({ timeline, now }: IProps) {
     const t = useTranslations('runs')
     const locale = useLocale()
+
     const { days, rows, cells } = buildTimelineGrid(timeline.from, timeline.to, now, getViewerTimeZone(), locale)
 
     return (
@@ -92,9 +95,7 @@ export function RunsTimeline({ timeline, now }: IProps) {
                     <span />
                     {days.map((day, i) => (
                         <span key={day} className="text-center text-[0.5625rem] text-muted-foreground">
-                            {i % 5 === 0
-                                ? formatTime(`${day}T12:00:00Z`, 'UTC', locale, { day: 'numeric', month: 'numeric' })
-                                : ''}
+                            {i % 5 === 0 ? formatDateKey(day, locale, DAY_LABEL_FORMAT) : ''}
                         </span>
                     ))}
                 </div>

@@ -21,8 +21,9 @@ const toTitle = (slug: string, locale: string) => {
 
 export const generateMetadata = async ({ params }: LayoutProps<'/city/[slug]'>): Promise<Metadata> => {
     const { slug } = await params
+    const locale = await getLocale()
 
-    return { title: toTitle(slug, await getLocale()) }
+    return { title: toTitle(slug, locale) }
 }
 
 export default async function CityLayout({ children, params }: LayoutProps<'/city/[slug]'>) {

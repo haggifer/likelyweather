@@ -8,10 +8,11 @@ import { useCompare } from '@/hooks/useCompare'
 import { useUrlSync } from '@/hooks/useUrlSync'
 import { useAppSelector } from '@/store'
 import { getYDomain } from '@fa/charts/scales'
+import { City, CompareResponse } from '@fa/shared/api'
 import { MAX_COMPARE_CITIES, SEED_CITY_IDS } from '@fa/shared/constants'
 import { getCityLabel, getCityName } from '@fa/shared/format'
 import { buildSlots, DASHBOARD_HOURS, getChartStart, toSlotLatest } from '@fa/shared/slots'
-import { VARIABLE_BY_ID } from '@fa/shared/variables'
+import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Button } from '@fa/ui/components/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@fa/ui/components/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@fa/ui/components/select'
@@ -25,49 +26,50 @@ import { useMemo } from 'react'
 
 const citiesParser = parseAsArrayOf(parseAsString).withDefault([])
 
+type CompareItem = CompareResponse['items'][number]
+
+const toCompareItem = (item: CompareItem, variable: Variable): CompareItem => ({
+    ...item,
+    latest:
+        item.latest &&
+        toSlotLatest(
+            item.latest,
+            buildSlots(getChartStart(item.latest, item.city.timezone), DASHBOARD_HOURS),
+            VARIABLE_BY_ID[variable].aggregation,
+        ),
+})
+
+const getSharedDomain = (items: CompareItem[], variable: Variable) =>
+    items.length
+        ? getYDomain(
+              items.flatMap((i) => i.latest?.series.flatMap((s) => s.values) ?? []),
+              variable,
+          )
+        : undefined
+
+const getSeedSlugs = (cities: City[]) =>
+    SEED_CITY_IDS.slice(0, MAX_COMPARE_CITIES)
+        .map((id) => cities.find((c) => c.id === id)?.slug)
+        .filter((s): s is string => Boolean(s))
+
 export function CompareView() {
     const t = useTranslations('compare')
     const locale = useLocale()
+    const now = useNow()
     const { isHydrated } = useUrlSync()
     const variable = useAppSelector((s) => s.dashboard.variable)
     const [slugs, setSlugs] = useQueryState('cities', citiesParser)
+
     const { data: cities } = useCities()
-    const now = useNow()
     const { data, isFetching } = useCompare(isHydrated ? slugs : [], variable)
+
     const available = (cities?.items ?? []).filter((c) => !slugs.includes(c.slug))
-    const items = useMemo(
-        () =>
-            (data?.items ?? []).map((item) => ({
-                ...item,
-                latest:
-                    item.latest &&
-                    toSlotLatest(
-                        item.latest,
-                        buildSlots(getChartStart(item.latest, item.city.timezone), DASHBOARD_HOURS),
-                        VARIABLE_BY_ID[variable].aggregation,
-                    ),
-            })),
-        [data, variable],
-    )
-    const sharedDomain = useMemo(
-        () =>
-            items.length
-                ? getYDomain(
-                      items.flatMap((i) => i.latest?.series.flatMap((s) => s.values) ?? []),
-                      variable,
-                  )
-                : undefined,
-        [items, variable],
-    )
+    const items = useMemo(() => (data?.items ?? []).map((item) => toCompareItem(item, variable)), [data, variable])
+    const sharedDomain = useMemo(() => getSharedDomain(items, variable), [items, variable])
 
     const handleAdd = (slug: string) => void setSlugs([...slugs, slug].slice(0, MAX_COMPARE_CITIES))
-
-    const handleSeed = () => {
-        const seedSlugs = SEED_CITY_IDS.slice(0, MAX_COMPARE_CITIES)
-            .map((id) => cities?.items.find((c) => c.id === id)?.slug)
-            .filter((s): s is string => Boolean(s))
-        void setSlugs(seedSlugs)
-    }
+    const handleRemove = (slug: string) => void setSlugs(slugs.filter((s) => s !== slug))
+    const handleSeed = () => void setSlugs(getSeedSlugs(cities?.items ?? []))
 
     return (
         <div className="flex flex-col gap-(--card-gap)">
@@ -123,7 +125,7 @@ export function CompareView() {
                                     <Button
                                         variant="ghost"
                                         size="icon-sm"
-                                        onClick={() => void setSlugs(slugs.filter((s) => s !== slug))}
+                                        onClick={() => handleRemove(slug)}
                                         aria-label={t('remove')}
                                     >
                                         <X />

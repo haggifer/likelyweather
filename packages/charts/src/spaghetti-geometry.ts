@@ -2,8 +2,9 @@ import { Series } from '@fa/shared/api'
 import { EnsembleStats } from '@fa/shared/ensemble'
 import { ModelId } from '@fa/shared/models'
 import { bisector } from 'd3-array'
-import { scaleLinear, ScaleLinear, ScaleTime, scaleUtc } from 'd3-scale'
+import { ScaleLinear, ScaleTime } from 'd3-scale'
 import { area, curveMonotoneX, line } from 'd3-shape'
+import { getTimeScale, getValueScale } from './plot-geometry'
 
 export interface Margin {
     top: number
@@ -34,7 +35,28 @@ interface GeometryInput {
 
 type Point = [number, number | null]
 
+type Values = (number | null)[]
+
+type PlotScales = Pick<SpaghettiGeometry, 'x' | 'y' | 'times'>
+
 const isDefined = (p: Point) => p[1] !== null
+
+const toIndexedPoints = (values: Values): Point[] => values.map((v, i) => [i, v])
+
+const getLinePath = ({ x, y, times }: PlotScales, values: Values) =>
+    line<Point>()
+        .defined(isDefined)
+        .x((p) => x(times[p[0]]))
+        .y((p) => y(p[1] as number))
+        .curve(curveMonotoneX)(toIndexedPoints(values)) ?? ''
+
+const getBandPath = ({ x, y, times }: PlotScales, lo: Values, hi: Values) =>
+    area<number>()
+        .defined((i) => lo[i] !== null && hi[i] !== null)
+        .x((i) => x(times[i]))
+        .y0((i) => y(lo[i] as number))
+        .y1((i) => y(hi[i] as number))
+        .curve(curveMonotoneX)(times.map((_, i) => i)) ?? ''
 
 export const buildSpaghettiGeometry = ({
     steps,
@@ -46,34 +68,18 @@ export const buildSpaghettiGeometry = ({
     margin,
 }: GeometryInput): SpaghettiGeometry => {
     const times = steps.map((s) => new Date(s))
-    const x = scaleUtc()
-        .domain([times[0], times[times.length - 1]])
-        .range([margin.left, width - margin.right])
-    const y = scaleLinear()
-        .domain(domain)
-        .range([height - margin.bottom, margin.top])
-    const toLine = line<Point>()
-        .defined(isDefined)
-        .x((p) => x(times[p[0]]))
-        .y((p) => y(p[1] as number))
-        .curve(curveMonotoneX)
-    const toBand = (lo: (number | null)[], hi: (number | null)[]) =>
-        area<number>()
-            .defined((i) => lo[i] !== null && hi[i] !== null)
-            .x((i) => x(times[i]))
-            .y0((i) => y(lo[i] as number))
-            .y1((i) => y(hi[i] as number))
-            .curve(curveMonotoneX)(times.map((_, i) => i)) ?? ''
-    const indexed = (values: (number | null)[]): Point[] => values.map((v, i) => [i, v])
+    const x = getTimeScale(times, [margin.left, width - margin.right])
+    const y = getValueScale(domain, [height - margin.bottom, margin.top])
+    const scales = { x, y, times }
 
     return {
         x,
         y,
         times,
-        lines: series.map((s) => ({ modelId: s.modelId, d: toLine(indexed(s.values)) ?? '' })),
-        median: toLine(indexed(stats.median)) ?? '',
-        outerBand: toBand(stats.min, stats.max),
-        innerBand: toBand(stats.q1, stats.q3),
+        lines: series.map((s) => ({ modelId: s.modelId, d: getLinePath(scales, s.values) })),
+        median: getLinePath(scales, stats.median),
+        outerBand: getBandPath(scales, stats.min, stats.max),
+        innerBand: getBandPath(scales, stats.q1, stats.q3),
     }
 }
 

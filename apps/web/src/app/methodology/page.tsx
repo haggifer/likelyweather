@@ -8,9 +8,11 @@ import { getTranslations } from 'next-intl/server'
 const SECTIONS = ['sources', 'median', 'disagreement', 'limits'] as const
 const METHODOLOGY_VALUES = { rain: RAIN_THRESHOLD_MM }
 
-export const generateMetadata = async (): Promise<Metadata> => ({
-    title: (await getTranslations('nav'))('methodology'),
-})
+export const generateMetadata = async (): Promise<Metadata> => {
+    const tNav = await getTranslations('nav')
+
+    return { title: tNav('methodology') }
+}
 
 export default async function MethodologyPage() {
     const t = await getTranslations('methodology')

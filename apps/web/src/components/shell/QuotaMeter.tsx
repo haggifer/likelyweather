@@ -7,22 +7,20 @@ import { cn } from '@fa/ui/lib/cn'
 import { useLocale, useTranslations } from 'next-intl'
 
 const LOW_SHARE = 0.2
+const RESET_TIME_FORMAT: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
 
 // Requests left today out of the daily quota. The reset time is shown in the viewer's own time zone.
 export function QuotaMeter() {
     const t = useTranslations('shell.quota')
     const locale = useLocale()
+
     const { data } = useQuota()
 
     if (!data) return null
 
     const left = Math.max(0, data.limit - data.used)
     const share = left / data.limit
-    const resetsAt = formatTime(data.resetsAt, getViewerTimeZone(), locale, {
-        hour: '2-digit',
-        minute: '2-digit',
-        hourCycle: 'h23',
-    })
+    const resetsAt = formatTime(data.resetsAt, getViewerTimeZone(), locale, RESET_TIME_FORMAT)
 
     return (
         <Tooltip>

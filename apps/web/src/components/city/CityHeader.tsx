@@ -7,10 +7,10 @@ import { SearchBox } from '@/components/shell/SearchBox'
 import { StatusChip } from '@/components/shell/StatusChip'
 import { ChipTone } from '@/components/types'
 import { useLatest } from '@/hooks/useLatest'
+import { getCityRegion } from '@/lib/city-region'
+import { isRefreshDue } from '@/lib/refresh-due'
 import { CityDetail, CityStatus } from '@fa/shared/api'
-import { REFRESH_AFTER_HOURS } from '@fa/shared/constants'
-import { getCityName, getCountryName } from '@fa/shared/format'
-import { getAgeHours } from '@fa/shared/time'
+import { getCityName } from '@fa/shared/format'
 import { Variable } from '@fa/shared/variables'
 import { Button } from '@fa/ui/components/button'
 import { useNow } from '@fa/ui/hooks/useNow'
@@ -31,14 +31,16 @@ export function CityHeader({ city }: IProps) {
     const locale = useLocale()
     const now = useNow()
     const queryClient = useQueryClient()
+
     const [isEditing, setIsEditing] = useState(false)
+
     // The dashboard anchors its chart to the precipitation query, so that query also dates the run shown here.
     const { data: latest } = useLatest(city.slug, Variable.Precip)
     const isFetching = useIsFetching({ queryKey: ['latest', city.slug] }) > 0
-    const name = getCityName(city, locale)
-    const region = [city.admin1, getCountryName(city.countryCode, city.country, locale)].filter(Boolean).join(', ')
 
-    const isOutdated = latest && now ? getAgeHours(latest.fetchedAt, now) >= REFRESH_AFTER_HOURS : false
+    const name = getCityName(city, locale)
+    const region = getCityRegion(city, locale)
+    const isOutdated = isRefreshDue(latest?.fetchedAt, now)
 
     // Refetching moves the dashboard chart only when a newer run arrives.
     const handleRefresh = () => void queryClient.refetchQueries({ queryKey: ['latest', city.slug], type: 'active' })

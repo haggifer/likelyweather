@@ -1,9 +1,10 @@
 'use client'
 
+import { formatSpread } from '@/components/city/disagreement-format'
 import { StatusChip } from '@/components/shell/StatusChip'
 import { ChipTone } from '@/components/types'
 import { DayDisagreement, DisagreementLabel } from '@fa/shared/ensemble'
-import { formatNumber, formatTime } from '@fa/shared/format'
+import { formatDateKey, formatNumber } from '@fa/shared/format'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@fa/ui/components/card'
 import { useLocale, useTranslations } from 'next-intl'
@@ -47,14 +48,10 @@ export function DisagreementTiles({ days, variable }: IProps) {
                         className="flex flex-col gap-1.5 rounded-md border p-2.5 max-sm:w-28 max-sm:shrink-0 max-sm:snap-start"
                     >
                         <span className="text-xs text-muted-foreground">
-                            {formatTime(`${d.day}T12:00:00Z`, 'UTC', locale, {
-                                weekday: 'short',
-                                day: 'numeric',
-                                month: 'short',
-                            })}
+                            {formatDateKey(d.day, locale, { weekday: 'short', day: 'numeric', month: 'short' })}
                         </span>
                         <span className="text-lg leading-none font-semibold" title={t('spreadTitle')}>
-                            {formatNumber(d.spread, decimals === 0 ? 1 : decimals)}
+                            {formatSpread(d.spread, decimals)}
                             <span className="ml-1 text-xs font-normal text-muted-foreground">{unit}</span>
                         </span>
                         <StatusChip tone={TONES[d.label]} className="self-start">

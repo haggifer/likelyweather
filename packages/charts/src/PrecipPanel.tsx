@@ -19,7 +19,7 @@ import {
 } from 'recharts'
 import { useChartTheme } from './hooks/useChartTheme'
 import { useElementWidth } from './hooks/useElementWidth'
-import { getYDomain, getYTicks } from './scales'
+import { formatYTick, getYDomain, getYTicks } from './scales'
 
 interface IProps {
     steps: string[]
@@ -58,6 +58,25 @@ interface TooltipContentProps {
 
 // Below this width per window the hour and chance labels touch, so every other one is shown.
 const MIN_WIDTH_PER_LABEL = 28
+const HOUR_FORMAT: Intl.DateTimeFormatOptions = { hour: '2-digit', hourCycle: 'h23' }
+
+const toRows = (steps: string[], series: Series[], median: (number | null)[], chance: (number | null)[]): Row[] =>
+    steps.map((step, i) => ({
+        step,
+        median: median[i],
+        chance: chance[i],
+        ...Object.fromEntries(series.map((s) => [s.modelId, s.values[i]])),
+    }))
+
+// A 6-hour total belongs to the day of its last hour; a new day starts where that day changes.
+const getDayStarts = (steps: string[], timeZone: string) => {
+    const dayKeys = steps.map((step) => getLocalDateKey(new Date(new Date(step).getTime() - 1).toISOString(), timeZone))
+
+    return steps.filter((_, i) => i > 0 && dayKeys[i] !== dayKeys[i - 1])
+}
+
+const formatWindowLabel = (step: string, windowHours: number, timeZone: string, locale: string) =>
+    formatPeriodLabel(toIsoMinute(addHours(new Date(step), -windowHours)), step, timeZone, locale)
 
 const ModelTick = ({ cx, cy, color }: ModelTickProps) =>
     cx === undefined || cy === undefined ? null : (
@@ -76,26 +95,19 @@ export function PrecipPanel({
 }: IProps) {
     const t = useTranslations('city')
     const theme = useChartTheme()
-    const { ref, width } = useElementWidth<HTMLDivElement>()
-    const rows: Row[] = steps.map((step, i) => ({
-        step,
-        median: median[i],
-        chance: chance[i],
-        ...Object.fromEntries(series.map((s) => [s.modelId, s.values[i]])),
-    }))
 
+    const { ref, width } = useElementWidth<HTMLDivElement>()
+
+    const rows = toRows(steps, series, median, chance)
     // The axis covers every model's tick, not only the median bars, and uses the shared 0.5 / 1 / 2 / 5 mm steps.
     const yDomain = getYDomain([...median, ...series.flatMap((s) => s.values)], Variable.Precip)
     const yTicks = getYTicks(yDomain, Variable.Precip, 3)
-
-    // A 6-hour total belongs to the day of its last hour; a new day starts where that day changes.
-    const dayKeys = steps.map((step) => getLocalDateKey(new Date(new Date(step).getTime() - 1).toISOString(), timeZone))
-    const dayStarts = steps.filter((_, i) => i > 0 && dayKeys[i] !== dayKeys[i - 1])
+    const dayStarts = getDayStarts(steps, timeZone)
 
     const TimeAndChanceTick = ({ x = 0, y = 0, index = 0 }: TickProps) => (
         <g transform={`translate(${x},${y})`}>
             <text dy={12} textAnchor="middle" fontSize={10} fill={theme.muted}>
-                {formatTime(rows[index]?.step ?? steps[0], timeZone, locale, { hour: '2-digit', hourCycle: 'h23' })}
+                {formatTime(rows[index]?.step ?? steps[0], timeZone, locale, HOUR_FORMAT)}
             </text>
             <text dy={25} textAnchor="middle" fontSize={10} fontWeight={600} fill={theme.foreground}>
                 {formatPercent(rows[index]?.chance)}
@@ -111,12 +123,7 @@ export function PrecipPanel({
         return (
             <div className="rounded-md border bg-popover px-2.5 py-2 text-xs shadow-md">
                 <div className="mb-1 text-muted-foreground">
-                    {formatPeriodLabel(
-                        toIsoMinute(addHours(new Date(row.step), -windowHours)),
-                        row.step,
-                        timeZone,
-                        locale,
-                    )}
+                    {formatWindowLabel(row.step, windowHours, timeZone, locale)}
                 </div>
                 <div className="flex justify-between gap-4 font-semibold">
                     <span>{t('medianTotal')}</span>
@@ -153,7 +160,7 @@ export function PrecipPanel({
                         width={36}
                         domain={yDomain}
                         ticks={yTicks}
-                        tickFormatter={(tick: number) => formatNumber(tick, Number.isInteger(tick) ? 0 : 1)}
+                        tickFormatter={(tick: number) => formatYTick(tick)}
                         tick={{ fontSize: 10, fill: theme.muted }}
                         tickLine={false}
                         axisLine={false}

@@ -6,15 +6,17 @@ import { SLOT_HOURS } from '@fa/shared/slots'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Skeleton } from '@fa/ui/components/skeleton'
 import { useMediaQuery } from '@fa/ui/hooks/useMediaQuery'
-import { scaleLinear, scaleUtc } from 'd3-scale'
+import { ScaleLinear, ScaleTime } from 'd3-scale'
 import { area, curveMonotoneX, line } from 'd3-shape'
 import { useTranslations } from 'next-intl'
 import { CSSProperties, KeyboardEvent, PointerEvent, useId, useState } from 'react'
+import { getArrowStep } from './arrow-keys'
 import { DayGrid } from './DayGrid'
 import { useChartTheme } from './hooks/useChartTheme'
 import { useElementWidth } from './hooks/useElementWidth'
-import { getYDomain, getYTicks } from './scales'
-import { getNearestIndex } from './spaghetti-geometry'
+import { clamp, getBarWidth, getNowX, getPointerTime, getTimeScale, getValueScale } from './plot-geometry'
+import { formatYTick, getYDomain, getYTicks } from './scales'
+import { getNearestIndex, getSumBarCenter } from './spaghetti-geometry'
 import { WindArrows } from './WindArrows'
 
 export interface MedianSeries {
@@ -55,7 +57,7 @@ const AXIS_HEIGHT = 22
 const MARGIN = { left: 36, right: 8 }
 const PANEL_RADIUS = 4
 const HOVER_LABEL_HALF_WIDTH = 34
-const BAR_RATIO = 0.62
+const SLOT_MS = SLOT_HOURS * HOUR_MS
 const SUMMARY_HOURS = 24
 // Phones stack the readouts in a 2 × 2 grid above a full-width chart; from `sm` they form a column beside it, one
 // per panel. The column's gap and padding match ROW_GAP, HOVER_STRIP and AXIS_HEIGHT.
@@ -89,6 +91,40 @@ const getSummaryValues = (s: MedianSeries, from: Date) => {
     })
 }
 
+const formatTotal = (values: number[]) =>
+    formatNumber(
+        values.reduce((sum, v) => sum + v, 0),
+        1,
+    )
+
+const formatRange = (values: number[], decimals: number) => ({
+    min: formatNumber(values.length ? Math.min(...values) : null, decimals),
+    max: formatNumber(values.length ? Math.max(...values) : null, decimals),
+})
+
+const getValueAt = (s: MedianSeries, step: string) => {
+    const index = s.steps.indexOf(step)
+
+    return index >= 0 ? s.values[index] : null
+}
+
+const toPoints = (s: MedianSeries): Point[] => s.steps.map((step, i) => [new Date(step), s.values[i]])
+
+const getAreaPath = (points: Point[], x: ScaleTime<number, number>, y: ScaleLinear<number, number>, bottom: number) =>
+    area<Point>()
+        .defined(isDefined)
+        .x((p) => x(p[0]))
+        .y0(bottom)
+        .y1((p) => y(p[1] as number))
+        .curve(curveMonotoneX)(points) ?? ''
+
+const getLinePath = (points: Point[], x: ScaleTime<number, number>, y: ScaleLinear<number, number>) =>
+    line<Point>()
+        .defined(isDefined)
+        .x((p) => x(p[0]))
+        .y((p) => y(p[1] as number))
+        .curve(curveMonotoneX)(points) ?? ''
+
 // The chart column's blocks are inset by the tick-label margin, so they cover exactly the panel backgrounds; the
 // readout blocks reach across the tick labels to leave a SKELETON_GAP between the two columns.
 export const MedianOverviewSkeleton = () => (
@@ -119,38 +155,36 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
     const tv = useTranslations('variables')
     const tc = useTranslations('chart')
     const theme = useChartTheme()
-    const { ref, width } = useElementWidth<HTMLDivElement>()
-    const [hoverIndex, setHoverIndex] = useState<number | null>(null)
     const isStacked = useMediaQuery(STACKED_QUERY)
     const clipId = useId().replace(/[^\w-]/g, '')
+
+    const { ref, width } = useElementWidth<HTMLDivElement>()
+    const [hoverIndex, setHoverIndex] = useState<number | null>(null)
+
     const axisSteps = series[Variable.Temp].steps
     const times = axisSteps.map((s) => new Date(s))
-    const x = scaleUtc()
-        .domain([times[0], times[times.length - 1]])
-        .range([MARGIN.left, Math.max(MARGIN.left + 1, width - MARGIN.right)])
+    const plotRight = width - MARGIN.right
+    const x = getTimeScale(times, [MARGIN.left, Math.max(MARGIN.left + 1, plotRight)])
     const readoutIndex = hoverIndex ?? (now ? getNearestIndex(times, now) : 0)
     const readoutTime = axisSteps[readoutIndex]
-    const nowX = now ? Math.max(MARGIN.left, Math.min(width - MARGIN.right, x(now))) : null
-    const barWidth = Math.max(2, (x(new Date(times[0].getTime() + SLOT_HOURS * HOUR_MS)) - x(times[0])) * BAR_RATIO)
+    const nowX = getNowX(x, now, MARGIN.left, plotRight)
+    const barWidth = getBarWidth(x, times[0], SLOT_MS)
     const plotWidth = Math.max(0, width - MARGIN.left - MARGIN.right)
     const hoverX =
         hoverIndex === null
             ? null
-            : Math.max(
-                  MARGIN.left + HOVER_LABEL_HALF_WIDTH,
-                  Math.min(width - MARGIN.right - HOVER_LABEL_HALF_WIDTH, x(times[hoverIndex])),
-              )
+            : clamp(x(times[hoverIndex]), MARGIN.left + HOVER_LABEL_HALF_WIDTH, plotRight - HOVER_LABEL_HALF_WIDTH)
 
-    const handlePointerMove = (e: PointerEvent<SVGRectElement>) => {
-        const box = e.currentTarget.getBoundingClientRect()
-        setHoverIndex(getNearestIndex(times, x.invert(e.clientX - box.left + MARGIN.left)))
-    }
+    const handlePointerMove = (e: PointerEvent<SVGRectElement>) =>
+        setHoverIndex(getNearestIndex(times, getPointerTime(e, x, MARGIN.left)))
 
     const handleKeyDown = (e: KeyboardEvent<SVGSVGElement>) => {
-        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+        const step = getArrowStep(e.key)
+
+        if (!step) return
 
         e.preventDefault()
-        setHoverIndex(Math.max(0, Math.min(times.length - 1, readoutIndex + (e.key === 'ArrowRight' ? 1 : -1))))
+        setHoverIndex(clamp(readoutIndex + step, 0, times.length - 1))
     }
 
     return (
@@ -159,23 +193,12 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                 {LAYOUT.map(({ variable, height }) => {
                     const info = VARIABLE_BY_ID[variable]
                     const s = series[variable]
-                    const index = s.steps.indexOf(readoutTime)
-                    const value = index >= 0 ? s.values[index] : null
+                    const value = getValueAt(s, readoutTime)
                     const isSum = variable === Variable.Precip
                     const upcoming = getSummaryValues(s, summaryStart)
                     const summary = isSum
-                        ? t('total', {
-                              value: formatNumber(
-                                  upcoming.reduce((sum, v) => sum + v, 0),
-                                  1,
-                              ),
-                              unit: info.unit,
-                          })
-                        : t('range', {
-                              min: formatNumber(upcoming.length ? Math.min(...upcoming) : null, info.decimals),
-                              max: formatNumber(upcoming.length ? Math.max(...upcoming) : null, info.decimals),
-                              unit: info.unit,
-                          })
+                        ? t('total', { value: formatTotal(upcoming), unit: info.unit })
+                        : t('range', { ...formatRange(upcoming, info.decimals), unit: info.unit })
 
                     return (
                         <div
@@ -246,14 +269,10 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                         ))}
                     {LAYOUT.map(({ variable, top, bottom }) => {
                         const s = series[variable]
-                        const points: Point[] = s.steps.map((step, i) => [new Date(step), s.values[i]])
+                        const points = toPoints(s)
                         const domain = getYDomain(s.values, variable)
-                        const y = scaleLinear()
-                            .domain(domain)
-                            .range([bottom, top + ROW_PAD])
-                        const toX = (p: Point) => x(p[0])
-                        const toY = (p: Point) => y(p[1] as number)
-                        const hoverValue = hoverIndex === null ? null : s.values[s.steps.indexOf(axisSteps[hoverIndex])]
+                        const y = getValueScale(domain, [bottom, top + ROW_PAD])
+                        const hoverValue = hoverIndex === null ? null : getValueAt(s, axisSteps[hoverIndex])
 
                         return (
                             <g key={variable}>
@@ -261,7 +280,7 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                                     <g key={tick}>
                                         <line
                                             x1={MARGIN.left}
-                                            x2={width - MARGIN.right}
+                                            x2={plotRight}
                                             y1={y(tick)}
                                             y2={y(tick)}
                                             stroke={theme.grid}
@@ -274,15 +293,15 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                                             fontSize={10}
                                             fill={theme.muted}
                                         >
-                                            {formatNumber(tick, Number.isInteger(tick) ? 0 : 1)}
+                                            {formatYTick(tick)}
                                         </text>
                                     </g>
                                 ))}
                                 {variable === Variable.Precip ? (
                                     points.map((p) => {
-                                        const center = x(new Date(p[0].getTime() + (SLOT_HOURS / 2) * HOUR_MS))
+                                        const center = x(getSumBarCenter(p[0], SLOT_MS))
 
-                                        if (p[1] === null || center + barWidth / 2 > width - MARGIN.right) return null
+                                        if (p[1] === null || center + barWidth / 2 > plotRight) return null
 
                                         return (
                                             <rect
@@ -300,23 +319,12 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                                 ) : (
                                     <>
                                         <path
-                                            d={
-                                                area<Point>()
-                                                    .defined(isDefined)
-                                                    .x(toX)
-                                                    .y0(bottom)
-                                                    .y1(toY)
-                                                    .curve(curveMonotoneX)(points) ?? ''
-                                            }
+                                            d={getAreaPath(points, x, y, bottom)}
                                             fill={theme.band}
                                             opacity={theme.bandOuterOpacity}
                                         />
                                         <path
-                                            d={
-                                                line<Point>().defined(isDefined).x(toX).y(toY).curve(curveMonotoneX)(
-                                                    points,
-                                                ) ?? ''
-                                            }
+                                            d={getLinePath(points, x, y)}
                                             fill="none"
                                             stroke={theme.median}
                                             strokeWidth={2}
