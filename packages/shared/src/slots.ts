@@ -15,6 +15,10 @@ export const getSlotStart = (date: Date, timeZone: string) => {
     return addHours(hour, -(getLocalHour(hour, timeZone) % SLOT_HOURS))
 }
 
+// Charts start where their data starts: data fetched 19 hours ago gives a chart that starts 19 hours ago.
+export const getChartStart = (latest: Pick<LatestResponse, 'fetchedAt'>, timeZone: string) =>
+    getSlotStart(new Date(latest.fetchedAt), timeZone)
+
 // Evenly spaced from `start`: after a DST change inside the window the later slots sit one hour off the local
 // 00/03/06 marks until the next refresh re-anchors them.
 export const buildSlots = (start: Date, hours = OVERVIEW_HOURS) =>

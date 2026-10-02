@@ -5,7 +5,7 @@ import { useCity } from '@/hooks/useCity'
 import { useHourlyAll } from '@/hooks/useHourlyAll'
 import { LatestResponse } from '@fa/shared/api'
 import { getCityName } from '@fa/shared/format'
-import { getSlotStart } from '@fa/shared/slots'
+import { getChartStart } from '@fa/shared/slots'
 import { Variable, VARIABLES } from '@fa/shared/variables'
 import { Card, CardContent } from '@fa/ui/components/card'
 import { useNow } from '@fa/ui/hooks/useNow'
@@ -25,11 +25,11 @@ export function CityOverview({ slug }: IProps) {
     const failed = results.find((r) => r.isError)
     const isReady = results.every((r) => r.data)
     const isEmpty = results.some((r) => r.data && !r.data.steps.length)
-    const fetchedAt = results[0].data?.fetchedAt
+    const anchorRun = results[0].data
     const timeZone = city?.timezone
     const anchor = useMemo(
-        () => (timeZone && fetchedAt ? getSlotStart(new Date(fetchedAt), timeZone) : null),
-        [fetchedAt, timeZone],
+        () => (timeZone && anchorRun ? getChartStart(anchorRun, timeZone) : null),
+        [anchorRun, timeZone],
     )
 
     const handleRefresh = () => results.forEach((r) => void r.refetch())

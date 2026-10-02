@@ -10,7 +10,7 @@ import { useAppSelector } from '@/store'
 import { getYDomain } from '@fa/charts/scales'
 import { MAX_COMPARE_CITIES, SEED_CITY_IDS } from '@fa/shared/constants'
 import { getCityLabel, getCityName } from '@fa/shared/format'
-import { buildSlots, DASHBOARD_HOURS, getSlotStart, toSlotLatest } from '@fa/shared/slots'
+import { buildSlots, DASHBOARD_HOURS, getChartStart, toSlotLatest } from '@fa/shared/slots'
 import { VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Button } from '@fa/ui/components/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@fa/ui/components/card'
@@ -43,7 +43,7 @@ export function CompareView() {
                     item.latest &&
                     toSlotLatest(
                         item.latest,
-                        buildSlots(getSlotStart(new Date(item.latest.fetchedAt), item.city.timezone), DASHBOARD_HOURS),
+                        buildSlots(getChartStart(item.latest, item.city.timezone), DASHBOARD_HOURS),
                         VARIABLE_BY_ID[variable].aggregation,
                     ),
             })),

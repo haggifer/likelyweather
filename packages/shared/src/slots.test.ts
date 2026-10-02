@@ -1,6 +1,14 @@
-import { buildSlots, getSlotStart, toSlotSeries } from './slots'
+import { buildSlots, getChartStart, getSlotStart, toSlotSeries } from './slots'
 
 const at = (iso: string) => new Date(iso)
+
+describe('getChartStart', () => {
+    it('starts a chart at the local 3-hour slot its run was fetched in', () => {
+        expect(getChartStart({ fetchedAt: '2026-10-02T12:47:00.000Z' }, 'America/New_York').toISOString()).toBe(
+            '2026-10-02T10:00:00.000Z',
+        )
+    })
+})
 
 describe('getSlotStart', () => {
     it('floors to the local 3-hour slot east of Greenwich', () => {

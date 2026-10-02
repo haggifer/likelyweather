@@ -22,7 +22,7 @@ import {
 import { formatNumber, formatPeriodLabel, formatStepLabel, formatTime, getCityName } from '@fa/shared/format'
 import { MODEL_BY_ID, ModelId, MODELS } from '@fa/shared/models'
 import { indexSteps, toStepSeries } from '@fa/shared/resample'
-import { buildSlots, DASHBOARD_HOURS, getSlotStart, SLOT_HOURS, toSlotLatest } from '@fa/shared/slots'
+import { buildSlots, DASHBOARD_HOURS, getChartStart, SLOT_HOURS, toSlotLatest } from '@fa/shared/slots'
 import { addHours, toIsoMinute } from '@fa/shared/time'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Skeleton } from '@fa/ui/components/skeleton'
@@ -135,10 +135,10 @@ export function Dashboard({ slug }: IProps) {
     const info = VARIABLE_BY_ID[variable]
     const timeZone = city?.timezone ?? 'UTC'
     // The precipitation query is shared by every variable, so its run anchors the chart; a newer run re-anchors it.
-    const fetchedAt = (precipQuery.data ?? latestQuery.data)?.fetchedAt
+    const anchorRun = precipQuery.data ?? latestQuery.data
     const anchor = useMemo(
-        () => (city && fetchedAt ? getSlotStart(new Date(fetchedAt), city.timezone) : null),
-        [city, fetchedAt],
+        () => (city && anchorRun ? getChartStart(anchorRun, city.timezone) : null),
+        [city, anchorRun],
     )
     const slots = useMemo(() => (anchor ? buildSlots(anchor, DASHBOARD_HOURS) : null), [anchor])
     const latest = useMemo(
