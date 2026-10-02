@@ -28,6 +28,7 @@
     --color-chart-grid: var(--chart-grid);
     --color-info: var(--info);
     --color-warning: var(--warning);
+    --color-favorite: var(--favorite);
     --color-success: var(--success);
     --color-code-background: var(--code-background);
     --color-ring: var(--ring);
@@ -77,6 +78,8 @@
     --ring: #1e5eff;
     --info: #1e5eff;
     --warning: #b45309;
+    /* A filled star needs 3:1 against the card (WCAG 1.4.11); amber-500 has only 2.1:1 on white. */
+    --favorite: #d97706;
     --success: #15803d;
     --code-background: #eef2f8;
     --chart-1: #1e5eff;
@@ -119,6 +122,7 @@
     --ring: #5b8cff;
     --info: #7aa2ff;
     --warning: #f59e0b;
+    --favorite: #fbbf24;
     --success: #4ade80;
     --code-background: #0a1020;
     --chart-1: #7aa2ff;

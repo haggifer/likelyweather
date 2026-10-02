@@ -38,7 +38,8 @@
         "error": "La búsqueda falló. Inténtalo de nuevo en un momento.",
         "empty": "No se encontraron lugares",
         "results": "Lugares, los más grandes primero",
-        "trackFailed": "No se pudo abrir esta ciudad: {message}"
+        "trackFailed": "No se pudo abrir esta ciudad: {message}",
+        "places": "Tus lugares"
     },
     "chart": {
         "table": "Tabla",
@@ -76,7 +77,10 @@
         "medianTotal": "Total mediano",
         "chanceOfRain": "Probabilidad de lluvia",
         "back": "Volver al resumen",
-        "change": "Cambiar de ciudad"
+        "change": "Cambiar de ciudad",
+        "pin": "Añadir a favoritos",
+        "unpin": "Quitar de favoritos",
+        "pinLimit": "Ya tienes {max} favoritos, que se muestran primero bajo la búsqueda. Quita uno para añadir este lugar."
     },
     "dashboard": {
         "fetching": "Obteniendo diez modelos para {name}…",

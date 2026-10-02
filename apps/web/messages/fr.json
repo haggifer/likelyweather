@@ -38,7 +38,8 @@
         "error": "La recherche a échoué. Réessayez dans un instant.",
         "empty": "Aucun lieu trouvé",
         "results": "Lieux, les plus grands d’abord",
-        "trackFailed": "Impossible d’ouvrir cette ville : {message}"
+        "trackFailed": "Impossible d’ouvrir cette ville : {message}",
+        "places": "Vos lieux"
     },
     "chart": {
         "table": "Tableau",
@@ -76,7 +77,10 @@
         "medianTotal": "Total médian",
         "chanceOfRain": "Probabilité de pluie",
         "back": "Retour à l’aperçu",
-        "change": "Changer de ville"
+        "change": "Changer de ville",
+        "pin": "Ajouter aux favoris",
+        "unpin": "Retirer des favoris",
+        "pinLimit": "Vous avez déjà {max} favoris, affichés en premier sous la recherche. Retirez-en un pour ajouter ce lieu."
     },
     "dashboard": {
         "fetching": "Récupération de dix modèles pour {name}…",

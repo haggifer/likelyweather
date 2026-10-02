@@ -86,3 +86,70 @@ test('the footer links to the privacy policy and the terms', async ({ page }) =>
         expect(serious.map((v) => `${v.id}: ${v.nodes.length} nodes`)).toEqual([])
     }
 })
+
+// The landing chips are the only toggle buttons on the page.
+const chipNames = (page: Page) => page.locator('main button[aria-pressed]').allInnerTexts()
+
+const storedPlace = (id: number, name: string) => ({
+    id,
+    slug: `${name.toLowerCase()}-${id}`,
+    name,
+    country: 'X',
+    countryCode: 'XX',
+})
+
+test('a searched city becomes the first chip and the oldest one drops', async ({ page }) => {
+    await page.goto('/')
+    await expect.poll(() => chipNames(page)).toEqual(['New York', 'London', 'Paris', 'Kyiv'])
+
+    await page.getByRole('combobox', { name: 'Search any city' }).fill('Vinnytsia')
+    await page.getByRole('option', { name: /Vinnytsia/ }).click()
+
+    await expect.poll(() => chipNames(page)).toEqual(['Vinnytsia', 'New York', 'London', 'Paris'])
+})
+
+test('a pinned city moves to the front of the chips and opens the landing page', async ({ page }) => {
+    await page.goto(`/city/${LONDON}`)
+    await page.getByRole('button', { name: 'Add to favorites' }).click()
+
+    await expect(page.getByRole('button', { name: 'Remove from favorites' })).toHaveAttribute('aria-pressed', 'true')
+
+    await page.goto('/')
+
+    await expect.poll(() => chipNames(page)).toEqual(['London', 'New York', 'Paris', 'Kyiv'])
+    await expect(overviewTitle(page)).toContainText('London')
+})
+
+test('the star explains why it is disabled once four places are favorites', async ({ page }) => {
+    const favorites = [
+        storedPlace(1, 'Alpha'),
+        storedPlace(2, 'Beta'),
+        storedPlace(3, 'Gamma'),
+        storedPlace(4, 'Delta'),
+    ]
+    await page.addInitScript(
+        (value) => localStorage.setItem('fa.places', value),
+        JSON.stringify({ favorites, recents: [] }),
+    )
+
+    await page.goto(`/city/${KYIV}`)
+    const star = page.getByRole('button', { name: 'Add to favorites' })
+
+    await expect(star).toBeDisabled()
+
+    await star.locator('..').hover()
+
+    await expect(page.getByRole('tooltip')).toContainText('You already have 4 favorites')
+})
+
+test('the empty search box offers your places', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('combobox', { name: 'Search any city' }).focus()
+
+    await expect(page.getByRole('group', { name: 'Your places' }).getByRole('option')).toHaveText([
+        /New York/,
+        /London/,
+        /Paris/,
+        /Kyiv/,
+    ])
+})

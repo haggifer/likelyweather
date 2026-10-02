@@ -1,5 +1,6 @@
 'use client'
 
+import { FavoriteToggle } from '@/components/city/FavoriteToggle'
 import { RefreshButton } from '@/components/city/RefreshButton'
 import { UpdatedChip } from '@/components/city/UpdatedChip'
 import { FlagIcon } from '@/components/shell/FlagIcon'
@@ -76,6 +77,7 @@ export function CityHeader({ city }: IProps) {
                                 )}
                             </span>
                         </h1>
+                        <FavoriteToggle place={city} />
                         <Button
                             variant="ghost"
                             size="icon-sm"

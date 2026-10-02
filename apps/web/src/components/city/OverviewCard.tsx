@@ -1,5 +1,6 @@
 'use client'
 
+import { FavoriteToggle } from '@/components/city/FavoriteToggle'
 import { RefreshButton } from '@/components/city/RefreshButton'
 import { UpdatedChip } from '@/components/city/UpdatedChip'
 import { FlagIcon } from '@/components/shell/FlagIcon'
@@ -97,6 +98,7 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
                         <span className="font-bold">{name}</span>
                         {region && <span className="font-medium text-muted-foreground">, {region}</span>}
                     </span>
+                    <FavoriteToggle place={city} className="-ml-1" />
                 </CardTitle>
                 <CardAction className="flex items-center gap-2 max-sm:col-span-2 max-sm:col-start-1 max-sm:row-start-2 max-sm:mt-2 max-sm:mb-3 max-sm:w-full max-sm:justify-self-stretch">
                     <UpdatedChip

@@ -3,12 +3,16 @@
 import { FlagIcon } from '@/components/shell/FlagIcon'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { useGeocode } from '@/hooks/useGeocode'
+import { usePlaces } from '@/hooks/usePlaces'
 import { useTrackCity } from '@/hooks/useTrackCity'
+import { addRecent, getPlaceChips, isFavorite, Place, Places, rankByFavorite, toPlace } from '@/lib/places'
+import { updatePlaces } from '@/lib/places-store'
 import { GeocodeResult, Locale } from '@fa/shared/api'
+import { getCityLabel } from '@fa/shared/format'
 import { CommandEmpty, CommandGroup, CommandItem, CommandList } from '@fa/ui/components/command'
 import { cn } from '@fa/ui/lib/cn'
 import { Command as CommandPrimitive } from 'cmdk'
-import { Loader2, Search } from 'lucide-react'
+import { Loader2, Search, Star } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { KeyboardEvent as ReactKeyboardEvent, useEffect, useRef, useState, useSyncExternalStore } from 'react'
@@ -32,8 +36,16 @@ const getShortcutLabel = () =>
 
 const getServerShortcutLabel = () => null
 
-// Selecting a place tracks it and then hands the slug to `onSelectCity`; without a handler the
-// box navigates to the city dashboard. With an `initialQuery` (the current city) the text starts selected, so
+const byPopulation = (a: GeocodeResult, b: GeocodeResult) => (b.population ?? 0) - (a.population ?? 0)
+
+const FavoriteMark = ({ places, id }: { places: Places | null; id: number }) =>
+    places && isFavorite(places, id) ? (
+        <Star className="size-3.5 shrink-0 fill-favorite text-favorite" aria-hidden="true" />
+    ) : null
+
+// Selecting a place tracks it, records it as the newest recent place, and then hands the slug to `onSelectCity`;
+// without a handler the box navigates to the city dashboard. While the text is empty or untouched, the box offers the
+// viewer's places instead. With an `initialQuery` (the current city) the text starts selected, so
 // typing replaces it, and results only appear once it has been edited. `onDismiss` fires on Escape and on blur.
 export function SearchBox({
     enableShortcut = false,
@@ -56,25 +68,43 @@ export function SearchBox({
     const debounced = useDebouncedValue(isEdited ? query.trim() : '', 200)
     const { data, isFetching, isError } = useGeocode(debounced, locale)
     const track = useTrackCity()
+    const places = usePlaces()
 
-    const results = [...(data?.results ?? [])].sort((a, b) => (b.population ?? 0) - (a.population ?? 0))
+    const sorted = [...(data?.results ?? [])].sort(byPopulation)
+    const results = places ? rankByFavorite(sorted, places) : sorted
     const isQueryReady = query.trim().length >= MIN_QUERY
+    const isPlacesView = Boolean(places) && (!isEdited || !query.trim())
+    const isListShown = isOpen && (isPlacesView || (isEdited && query.trim().length > 0))
+
+    const closeList = () => {
+        setIsOpen(false)
+        setQuery('')
+        inputRef.current?.blur()
+    }
+
+    const goToCity = (slug: string) => {
+        if (onSelectCity) onSelectCity(slug)
+        else router.push(`/city/${slug}`)
+    }
 
     const handleSelect = (place: GeocodeResult) => {
         track.mutate(place.id, {
             onSuccess: ({ slug }) => {
-                setIsOpen(false)
-                setQuery('')
-                inputRef.current?.blur()
-
-                if (onSelectCity) onSelectCity(slug)
-                else router.push(`/city/${slug}`)
+                updatePlaces((current) => addRecent(current, toPlace({ ...place, slug })))
+                closeList()
+                goToCity(slug)
             },
             onError: (error) => {
                 console.error(error)
                 toast.error(t('trackFailed', { message: error.message }))
             },
         })
+    }
+
+    // A place in the list is already tracked and keeps its position, like a chip.
+    const handleSelectPlace = (place: Place) => {
+        closeList()
+        goToCity(place.slug)
     }
 
     const handleKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
@@ -146,19 +176,42 @@ export function SearchBox({
             <div
                 className={cn(
                     'absolute top-full right-0 left-0 z-50 mt-1.5 overflow-hidden rounded-lg border bg-popover text-left shadow-lg',
-                    !(isOpen && isEdited && query.trim().length > 0) && 'hidden',
+                    !isListShown && 'hidden',
                 )}
             >
                 <CommandList>
-                    {!isQueryReady && <div className="px-3 py-2 text-xs text-muted-foreground">{t('hint')}</div>}
-                    {isQueryReady && isFetching && !results.length && (
+                    {isPlacesView && places && (
+                        <CommandGroup heading={t('places')}>
+                            {getPlaceChips(places).map((place) => (
+                                <CommandItem
+                                    key={place.id}
+                                    value={`place-${place.id}`}
+                                    onSelect={() => handleSelectPlace(place)}
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    className="flex items-center gap-2"
+                                >
+                                    <FlagIcon countryCode={place.countryCode} />
+                                    <span className="truncate">{getCityLabel(place, locale)}</span>
+                                    <FavoriteMark places={places} id={place.id} />
+                                </CommandItem>
+                            ))}
+                        </CommandGroup>
+                    )}
+                    {!isPlacesView && !isQueryReady && (
+                        <div className="px-3 py-2 text-xs text-muted-foreground">{t('hint')}</div>
+                    )}
+                    {!isPlacesView && isQueryReady && isFetching && !results.length && (
                         <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">
                             <Loader2 className="size-3.5 animate-spin" /> {t('searching')}
                         </div>
                     )}
-                    {isQueryReady && isError && <div className="px-3 py-2 text-xs text-destructive">{t('error')}</div>}
-                    {isQueryReady && !isFetching && !isError && <CommandEmpty>{t('empty')}</CommandEmpty>}
-                    {results.length > 0 && (
+                    {!isPlacesView && isQueryReady && isError && (
+                        <div className="px-3 py-2 text-xs text-destructive">{t('error')}</div>
+                    )}
+                    {!isPlacesView && isQueryReady && !isFetching && !isError && (
+                        <CommandEmpty>{t('empty')}</CommandEmpty>
+                    )}
+                    {!isPlacesView && results.length > 0 && (
                         <CommandGroup heading={t('results')}>
                             {results.map((place) => (
                                 <CommandItem
@@ -173,6 +226,7 @@ export function SearchBox({
                                     <span className="truncate">
                                         {[place.name, place.admin1, place.country].filter(Boolean).join(', ')}
                                     </span>
+                                    <FavoriteMark places={places} id={place.id} />
                                 </CommandItem>
                             ))}
                         </CommandGroup>

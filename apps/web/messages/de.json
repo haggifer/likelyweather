@@ -38,7 +38,8 @@
         "error": "Die Suche ist fehlgeschlagen. Bitte gleich noch einmal versuchen.",
         "empty": "Keine Orte gefunden",
         "results": "Orte, größte zuerst",
-        "trackFailed": "Diese Stadt konnte nicht geöffnet werden: {message}"
+        "trackFailed": "Diese Stadt konnte nicht geöffnet werden: {message}",
+        "places": "Deine Orte"
     },
     "chart": {
         "table": "Tabelle",
@@ -76,7 +77,10 @@
         "medianTotal": "Median-Summe",
         "chanceOfRain": "Regenwahrscheinlichkeit",
         "back": "Zurück zur Übersicht",
-        "change": "Stadt wechseln"
+        "change": "Stadt wechseln",
+        "pin": "Zu Favoriten hinzufügen",
+        "unpin": "Aus Favoriten entfernen",
+        "pinLimit": "Du hast bereits {max} Favoriten, die zuerst unter der Suche stehen. Entferne einen, um diesen Ort hinzuzufügen."
     },
     "dashboard": {
         "fetching": "Zehn Modelle für {name} werden abgerufen…",

@@ -336,3 +336,14 @@ Decided by the author, extending P38 with two rules added to their `js-ts-code-s
 
 - **Bodies read in groups**, one blank line between groups and none inside one. A component or hook orders them: context and framework hooks, state and refs, queries, derived values, handlers, effects, then early returns and the JSX. Effects come last because a dependency array is built during render, so an effect listing a handler declared below it would read it before it is initialised. A value that a hook needs goes directly above that hook.
 - **One line per derived value.** A computation longer than about three lines, including a `useMemo` body, becomes a named pure function at module scope or in a kebab-case module, so the body says what each value is and the function says how. A computation written in more than one place gets one tested home, such as `getChartStart` in `packages/shared/src/slots.ts`, which the overview, the dashboard and Compare share.
+
+## P42. Favorite and recent places (2026-10-02)
+
+Decided by the author: the "Start with" chips become the viewer's own places, and favorites are a pinned part of that one list rather than a second list.
+
+- **One list of four chips.** Favorites come first, in the order they were pinned, and never move once pinned. Recent searches fill the rest, newest first: a place picked in the search box (on the landing page or in the dashboard's city switcher) takes the first recent slot and the oldest recent drops. A favorite picked again stays where it is. Clicking a chip changes nothing, so chips never jump under the pointer. Until there is history, the starter cities (New York, London, Paris, Kyiv) are the recents.
+- **The star** after a city's name on the overview card and in the dashboard header pins or unpins it. A new favorite goes after the last one; an unpinned place becomes the newest recent. Four favorites at most: past that the star is disabled, with a tooltip below it saying why, because a fifth would either hide a favorite or move one.
+- **Search.** The empty or untouched search box lists the same places, favorites first; while typing, favorites that match come first regardless of population.
+- **The landing page opens the first chip** when the URL names no city, so a pinned home city is what a returning viewer sees.
+- **Local storage only** (`fa.places`), read through `useSyncExternalStore` like the theme. The server can't read it, so the chips render as placeholders until hydration, keeping the server HTML equal to the first render (P37). Stored data is repaired on read (`apps/web/src/lib/places.ts`, unit-tested): duplicates and overlaps are dropped and the starter cities refill a short list. Accounts were considered and rejected for this: nothing here needs to leave the browser.
+- **Color.** The filled star uses a new `favorite` token (amber-600 light, amber-400 dark): amber-500 has only 2.1:1 contrast on white, under the 3:1 a meaningful icon needs.
