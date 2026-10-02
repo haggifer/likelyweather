@@ -10,10 +10,9 @@
         },
         "language": "Idioma",
         "quota": {
-            "short": "Solicitudes",
-            "label": "Solicitudes de pronóstico restantes hoy",
-            "value": "Quedan {left} de {limit} solicitudes hoy",
-            "explain": "Se cuenta una solicitud cuando el servidor obtiene datos nuevos de los servicios meteorológicos para ti: una ciudad tras una nueva ejecución de los modelos o una búsqueda nueva. Los pronósticos ya guardados son gratis.",
+            "short": "Búsquedas",
+            "label": "Búsquedas restantes hoy",
+            "value": "Quedan {left} de {limit} búsquedas hoy",
             "resets": "Se reinicia a las {time}."
         }
     },

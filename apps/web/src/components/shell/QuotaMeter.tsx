@@ -50,11 +50,7 @@ export function QuotaMeter() {
                     </span>
                 </div>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="max-w-72">
-                <p className="font-semibold">{t('value', { left, limit: data.limit })}</p>
-                <p>{t('explain')}</p>
-                <p>{t('resets', { time: resetsAt })}</p>
-            </TooltipContent>
+            <TooltipContent side="bottom">{t('resets', { time: resetsAt })}</TooltipContent>
         </Tooltip>
     )
 }

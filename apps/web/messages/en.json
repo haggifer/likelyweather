@@ -10,10 +10,9 @@
         },
         "language": "Language",
         "quota": {
-            "short": "Requests",
-            "label": "Forecast requests left today",
-            "value": "{left} of {limit} requests left today",
-            "explain": "A request is counted when the server fetches new data from the weather services for you: a city after a new model run, or a new search. Forecasts already stored are free.",
+            "short": "Searches",
+            "label": "Searches left today",
+            "value": "{left} of {limit} searches left today",
             "resets": "Resets at {time}."
         }
     },
