@@ -146,6 +146,8 @@ export class ForecastArenaStack extends Stack {
         api.addToRolePolicy(readSecrets)
         api.addToRolePolicy(decryptSecrets)
         rawBucket.grantRead(api)
+        // Preview collects run in the API and archive their raw responses like scheduled runs.
+        rawBucket.grantPut(api)
         const apiUrl = api.addFunctionUrl({ authType: lambda.FunctionUrlAuthType.AWS_IAM })
 
         // ---- collector ----

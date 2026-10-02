@@ -140,6 +140,19 @@ describe('ForecastArenaStack web', () => {
         )
     })
 
+    it('lets the API and the collector write run archives, since the API runs preview collects', () => {
+        const writers = Object.values(template.findResources('AWS::IAM::Policy'))
+            .filter((policy) => JSON.stringify(policy).includes('s3:PutObject'))
+            .flatMap((policy) => policy.Properties.Roles.map((role: { Ref: string }) => role.Ref))
+
+        expect(writers).toEqual(
+            expect.arrayContaining([
+                expect.stringMatching(/^ApiServiceRole/),
+                expect.stringMatching(/^CollectorServiceRole/),
+            ]),
+        )
+    })
+
     it('forwards the viewer address to the API without headers CloudFront reserves for signing', () => {
         template.hasResourceProperties('AWS::CloudFront::OriginRequestPolicy', {
             OriginRequestPolicyConfig: Match.objectLike({
