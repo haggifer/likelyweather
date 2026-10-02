@@ -13,12 +13,12 @@ import { UseQueryResult } from '@tanstack/react-query'
 import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 
+const getHourlyByVariable = (results: UseQueryResult<LatestResponse, Error>[]) =>
+    Object.fromEntries(VARIABLES.map((v, i) => [v.id, results[i].data])) as Record<Variable, LatestResponse>
+
 interface IProps {
     slug: string
 }
-
-const getHourlyByVariable = (results: UseQueryResult<LatestResponse, Error>[]) =>
-    Object.fromEntries(VARIABLES.map((v, i) => [v.id, results[i].data])) as Record<Variable, LatestResponse>
 
 export function CityOverview({ slug }: IProps) {
     const t = useTranslations('overview')

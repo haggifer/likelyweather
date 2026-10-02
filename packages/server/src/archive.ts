@@ -23,18 +23,17 @@ export const writeRunArchive = async (archive: RunArchive) => {
     const body = JSON.stringify(archive)
 
     if (env.RAW_BUCKET) {
+        const key = toKey(archive.run.id)
+
         await getS3().send(
-            new PutObjectCommand({
-                Bucket: env.RAW_BUCKET,
-                Key: toKey(archive.run.id),
-                Body: body,
-                ContentType: 'application/json',
-            }),
+            new PutObjectCommand({ Bucket: env.RAW_BUCKET, Key: key, Body: body, ContentType: 'application/json' }),
         )
-        return toKey(archive.run.id)
+
+        return key
     }
 
     const file = path.join(env.RAW_DIR, `${archive.run.id}.json`)
+
     await fs.mkdir(path.dirname(file), { recursive: true })
     await fs.writeFile(file, body)
 
@@ -45,7 +44,9 @@ export const writeRunArchive = async (archive: RunArchive) => {
 export const getRunArchive = async (runId: string): Promise<{ url: string } | { body: string } | null> => {
     if (env.RAW_BUCKET) {
         const command = new GetObjectCommand({ Bucket: env.RAW_BUCKET, Key: toKey(runId) })
-        return { url: await getSignedUrl(getS3(), command, { expiresIn: PRESIGN_SECONDS }) }
+        const url = await getSignedUrl(getS3(), command, { expiresIn: PRESIGN_SECONDS })
+
+        return { url }
     }
 
     const body = await fs.readFile(path.join(env.RAW_DIR, `${runId}.json`), 'utf8').catch(() => null)

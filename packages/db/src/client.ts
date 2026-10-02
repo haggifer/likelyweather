@@ -8,29 +8,36 @@ export * from './generated/prisma/client'
 
 const globalPrisma = globalThis as unknown as { __faPrisma?: PrismaClient }
 
-// One client per process. The pg driver adapter works locally and against Neon's pooled endpoint, so the same code
-// runs in Docker, CI and Lambda.
-// Local processes read the repository-root .env; deployed functions get real environment variables. Values
-// already set win (process.loadEnvFile would overwrite them), so a test or CI can point a variable elsewhere.
-export const loadLocalEnv = () => {
-    let text: string
-
+const readLocalEnvFile = () => {
     try {
-        text = readFileSync(path.join(import.meta.dirname, '../../../.env'), 'utf8')
+        return readFileSync(path.join(import.meta.dirname, '../../../.env'), 'utf8')
     } catch {
-        return
+        return null
     }
-
-    for (const [key, value] of Object.entries(parseEnv(text))) process.env[key] ??= value
 }
 
-export const getPrisma = () => {
-    loadLocalEnv()
-
-    return (globalPrisma.__faPrisma ??= new PrismaClient({
+const createPrisma = () =>
+    new PrismaClient({
         adapter: new PrismaPg({
             connectionString: process.env.DATABASE_URL,
             max: Number(process.env.PG_POOL_MAX ?? 5),
         }),
-    }))
+    })
+
+// Local processes read the repository-root .env; deployed functions get real environment variables. Values
+// already set win (process.loadEnvFile would overwrite them), so a test or CI can point a variable elsewhere.
+export const loadLocalEnv = () => {
+    const text = readLocalEnvFile()
+
+    if (text === null) return
+
+    for (const [key, value] of Object.entries(parseEnv(text))) process.env[key] ??= value
+}
+
+// One client per process. The pg driver adapter works locally and against Neon's pooled endpoint, so the same code
+// runs in Docker, CI and Lambda.
+export const getPrisma = () => {
+    loadLocalEnv()
+
+    return (globalPrisma.__faPrisma ??= createPrisma())
 }

@@ -1,4 +1,22 @@
 import { HOUR_MS, STEP_HOURS } from './constants'
+import { getOrCreate } from './memo'
+
+const DATE_KEY_FORMATTERS = new Map<string, Intl.DateTimeFormat>()
+const HOUR_FORMATTERS = new Map<string, Intl.DateTimeFormat>()
+
+const getDateKeyFormatter = (timeZone: string) =>
+    getOrCreate(
+        DATE_KEY_FORMATTERS,
+        timeZone,
+        () => new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }),
+    )
+
+const getHourFormatter = (timeZone: string) =>
+    getOrCreate(
+        HOUR_FORMATTERS,
+        timeZone,
+        () => new Intl.DateTimeFormat('en-GB', { timeZone, hour: '2-digit', hourCycle: 'h23' }),
+    )
 
 export const toIsoMinute = (date: Date) => `${date.toISOString().slice(0, 16)}Z`
 
@@ -28,28 +46,6 @@ export const buildSteps = (start: Date, end: Date, stepHours = STEP_HOURS) => {
 
 export const compactIso = (iso: string) => iso.replace(/[-:]/g, '')
 
-const DATE_KEY_FORMATTERS = new Map<string, Intl.DateTimeFormat>()
+export const getLocalDateKey = (iso: string, timeZone: string) => getDateKeyFormatter(timeZone).format(new Date(iso))
 
-export const getLocalDateKey = (iso: string, timeZone: string) => {
-    let formatter = DATE_KEY_FORMATTERS.get(timeZone)
-
-    if (!formatter) {
-        formatter = new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' })
-        DATE_KEY_FORMATTERS.set(timeZone, formatter)
-    }
-
-    return formatter.format(new Date(iso))
-}
-
-const HOUR_FORMATTERS = new Map<string, Intl.DateTimeFormat>()
-
-export const getLocalHour = (date: Date, timeZone: string) => {
-    let formatter = HOUR_FORMATTERS.get(timeZone)
-
-    if (!formatter) {
-        formatter = new Intl.DateTimeFormat('en-GB', { timeZone, hour: '2-digit', hourCycle: 'h23' })
-        HOUR_FORMATTERS.set(timeZone, formatter)
-    }
-
-    return Number(formatter.format(date))
-}
+export const getLocalHour = (date: Date, timeZone: string) => Number(getHourFormatter(timeZone).format(date))

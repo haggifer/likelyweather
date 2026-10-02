@@ -38,6 +38,14 @@ const LOG_RETENTION = logs.RetentionDays.TWO_WEEKS
 const WEB_ADAPTER_LAYER_VERSION = 30
 const REPO_ROOT = path.resolve(import.meta.dirname, '../..')
 
+// Read by the Lambda Web Adapter. The server listens on PORT; without it the API falls back to the local API_PORT
+// default and the adapter never sees it become ready.
+const ADAPTER_ENVIRONMENT = {
+    AWS_LAMBDA_EXEC_WRAPPER: '/opt/bootstrap',
+    AWS_LWA_PORT: '8080',
+    PORT: '8080',
+}
+
 // Lambda code comes from what `pnpm build` writes (a directory, or the API's prepared zip); synth fails early if it is
 // missing.
 const bundle = (relative: string) => {
@@ -48,41 +56,199 @@ const bundle = (relative: string) => {
     return lambda.Code.fromAsset(asset)
 }
 
+const createLogGroup = (scope: Construct, id: string) =>
+    new logs.LogGroup(scope, id, { retention: LOG_RETENTION, removalPolicy: RemovalPolicy.DESTROY })
+
+const createReadSecretsStatement = (stack: Stack) =>
+    new iam.PolicyStatement({
+        actions: ['ssm:GetParametersByPath', 'ssm:GetParameter', 'ssm:GetParameters'],
+        resources: [
+            `arn:aws:ssm:${stack.region}:${stack.account}:parameter${SSM_PREFIX}/*`,
+            `arn:aws:ssm:${stack.region}:${stack.account}:parameter${SSM_PREFIX}`,
+        ],
+    })
+
+// SecureStrings use the AWS managed key aws/ssm; decryption is allowed only through SSM.
+const createDecryptSecretsStatement = (stack: Stack) =>
+    new iam.PolicyStatement({
+        actions: ['kms:Decrypt'],
+        resources: ['*'],
+        conditions: { StringEquals: { 'kms:ViaService': `ssm.${stack.region}.amazonaws.com` } },
+    })
+
+const createRawBucket = (scope: Construct) =>
+    new s3.Bucket(scope, 'RawBucket', {
+        blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+        encryption: s3.BucketEncryption.S3_MANAGED,
+        enforceSSL: true,
+        removalPolicy: RemovalPolicy.RETAIN,
+        lifecycleRules: [
+            {
+                transitions: [{ storageClass: s3.StorageClass.INFREQUENT_ACCESS, transitionAfter: Duration.days(90) }],
+                expiration: Duration.days(400),
+            },
+        ],
+    })
+
+// The web app and the API are HTTP servers that the Lambda Web Adapter starts through run.sh.
+const createAdapterFunction = (
+    scope: Construct,
+    id: string,
+    code: lambda.Code,
+    adapter: lambda.ILayerVersion,
+    environment: Record<string, string>,
+) =>
+    new lambda.Function(scope, id, {
+        runtime: lambda.Runtime.NODEJS_22_X,
+        architecture: lambda.Architecture.ARM_64,
+        code,
+        handler: 'run.sh',
+        memorySize: 1024,
+        timeout: Duration.seconds(30),
+        layers: [adapter],
+        environment,
+        logGroup: createLogGroup(scope, `${id}Logs`),
+    })
+
+const scheduleCollector = (scope: Construct, collector: lambda.Function) => {
+    const deadLetters = new sqs.Queue(scope, 'CollectorDeadLetters', { retentionPeriod: Duration.days(14) })
+    const schedulerRole = new iam.Role(scope, 'SchedulerRole', {
+        assumedBy: new iam.ServicePrincipal('scheduler.amazonaws.com'),
+    })
+
+    collector.grantInvoke(schedulerRole)
+    deadLetters.grantSendMessages(schedulerRole)
+    new scheduler.CfnSchedule(scope, 'CollectorSchedule', {
+        scheduleExpression: 'cron(0 0/6 * * ? *)',
+        scheduleExpressionTimezone: 'UTC',
+        flexibleTimeWindow: { mode: 'OFF' },
+        target: {
+            arn: collector.functionArn,
+            roleArn: schedulerRole.roleArn,
+            retryPolicy: { maximumRetryAttempts: 2, maximumEventAgeInSeconds: 3600 },
+            deadLetterConfig: { arn: deadLetters.queueArn },
+        },
+    })
+
+    return deadLetters
+}
+
+const addAlarm = (scope: Construct, alerts: sns.ITopic, id: string, metric: cloudwatch.IMetric, description: string) =>
+    new cloudwatch.Alarm(scope, id, {
+        metric,
+        threshold: 1,
+        evaluationPeriods: 1,
+        comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+        treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+        alarmDescription: description,
+    }).addAlarmAction(new cloudwatchActions.SnsAction(alerts))
+
+// Pages come from the web function and /api/* from the API function.
+const createDistribution = (scope: Construct, webUrl: lambda.IFunctionUrl, apiUrl: lambda.IFunctionUrl) => {
+    // Honors the API's Cache-Control (public reads 5 minutes, everything else no-store).
+    const apiCache = new cloudfront.CachePolicy(scope, 'ApiCache', {
+        defaultTtl: Duration.seconds(0),
+        minTtl: Duration.seconds(0),
+        maxTtl: Duration.minutes(5),
+        queryStringBehavior: cloudfront.CacheQueryStringBehavior.all(),
+        enableAcceptEncodingGzip: true,
+        enableAcceptEncodingBrotli: true,
+    })
+    // The viewer's address keys rate limits and the quota. The client's x-amz-content-sha256, which OAC needs to
+    // sign POSTs, must not be listed: CloudFront rejects it in a policy and uses it for signing on its own.
+    const apiRequest = new cloudfront.OriginRequestPolicy(scope, 'ApiRequest', {
+        queryStringBehavior: cloudfront.OriginRequestQueryStringBehavior.all(),
+        headerBehavior: cloudfront.OriginRequestHeaderBehavior.allowList('CloudFront-Viewer-Address', 'Content-Type'),
+    })
+    const webOrigin = origins.FunctionUrlOrigin.withOriginAccessControl(webUrl)
+
+    return new cloudfront.Distribution(scope, 'Site', {
+        priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
+        // Pages depend on the language cookie and the current time, so they are rendered per request.
+        defaultBehavior: {
+            origin: webOrigin,
+            viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+            cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+            originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
+        },
+        additionalBehaviors: {
+            // Content-hashed build assets: cached at the edge for as long as the origin allows.
+            '/_next/static/*': {
+                origin: webOrigin,
+                viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+                cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+            },
+            '/api/*': {
+                origin: origins.FunctionUrlOrigin.withOriginAccessControl(apiUrl),
+                viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+                allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+                cachePolicy: apiCache,
+                originRequestPolicy: apiRequest,
+            },
+        },
+    })
+}
+
+// GitHub Actions deploys through OIDC, so no keys are stored.
+const createDeployRole = (stack: Stack, { githubRepo, githubBranch }: ForecastArenaStackProps) => {
+    const github = new iam.OpenIdConnectProvider(stack, 'GitHubOidc', {
+        url: 'https://token.actions.githubusercontent.com',
+        clientIds: ['sts.amazonaws.com'],
+    })
+    const deployRole = new iam.Role(stack, 'DeployRole', {
+        description: 'Assumed by GitHub Actions to run cdk deploy for this stack',
+        maxSessionDuration: Duration.hours(1),
+        assumedBy: new iam.WebIdentityPrincipal(github.openIdConnectProviderArn, {
+            StringEquals: {
+                'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
+                'token.actions.githubusercontent.com:sub': `repo:${githubRepo}:ref:refs/heads/${githubBranch}`,
+            },
+        }),
+    })
+
+    // CDK deploys through the roles `cdk bootstrap` created; this role may only assume those.
+    deployRole.addToPolicy(
+        new iam.PolicyStatement({
+            actions: ['sts:AssumeRole'],
+            resources: [`arn:aws:iam::${stack.account}:role/cdk-*`],
+        }),
+    )
+
+    return deployRole
+}
+
+const createMonthlyBudget = (scope: Construct, { monthlyBudgetUsd, alertEmail }: ForecastArenaStackProps) =>
+    new budgets.CfnBudget(scope, 'MonthlyBudget', {
+        budget: {
+            budgetType: 'COST',
+            timeUnit: 'MONTHLY',
+            budgetLimit: { amount: monthlyBudgetUsd, unit: 'USD' },
+        },
+        notificationsWithSubscribers: [
+            { threshold: 80, notificationType: 'ACTUAL' },
+            { threshold: 100, notificationType: 'FORECASTED' },
+        ].map(({ threshold, notificationType }) => ({
+            notification: {
+                comparisonOperator: 'GREATER_THAN',
+                threshold,
+                thresholdType: 'PERCENTAGE',
+                notificationType,
+            },
+            subscribers: [{ subscriptionType: 'EMAIL', address: alertEmail }],
+        })),
+    })
+
 export class ForecastArenaStack extends Stack {
     constructor(scope: Construct, id: string, props: ForecastArenaStackProps) {
         super(scope, id, props)
 
-        const ssmParameters = `arn:aws:ssm:${this.region}:${this.account}:parameter${SSM_PREFIX}/*`
-        const readSecrets = new iam.PolicyStatement({
-            actions: ['ssm:GetParametersByPath', 'ssm:GetParameter', 'ssm:GetParameters'],
-            resources: [ssmParameters, `arn:aws:ssm:${this.region}:${this.account}:parameter${SSM_PREFIX}`],
-        })
-        // SecureStrings use the AWS managed key aws/ssm; decryption is allowed only through SSM.
-        const decryptSecrets = new iam.PolicyStatement({
-            actions: ['kms:Decrypt'],
-            resources: ['*'],
-            conditions: { StringEquals: { 'kms:ViaService': `ssm.${this.region}.amazonaws.com` } },
-        })
+        const readSecrets = createReadSecretsStatement(this)
+        const decryptSecrets = createDecryptSecretsStatement(this)
 
         const alerts = new sns.Topic(this, 'Alerts')
         alerts.addSubscription(new subscriptions.EmailSubscription(props.alertEmail))
 
-        // ---- raw archive ----
-        const rawBucket = new s3.Bucket(this, 'RawBucket', {
-            blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-            encryption: s3.BucketEncryption.S3_MANAGED,
-            enforceSSL: true,
-            removalPolicy: RemovalPolicy.RETAIN,
-            lifecycleRules: [
-                {
-                    transitions: [
-                        { storageClass: s3.StorageClass.INFREQUENT_ACCESS, transitionAfter: Duration.days(90) },
-                    ],
-                    expiration: Duration.days(400),
-                },
-            ],
-        })
-
+        const rawBucket = createRawBucket(this)
         const environment = {
             SSM_PREFIX,
             RAW_BUCKET: rawBucket.bucketName,
@@ -90,58 +256,24 @@ export class ForecastArenaStack extends Stack {
             // One small pool per instance; Neon's pooler multiplexes the instances.
             PG_POOL_MAX: '2',
         }
-
         const webAdapter = lambda.LayerVersion.fromLayerVersionArn(
             this,
             'WebAdapter',
             `arn:aws:lambda:${this.region}:753240598075:layer:LambdaAdapterLayerArm64:${WEB_ADAPTER_LAYER_VERSION}`,
         )
 
-        // ---- web: the standalone Next.js server behind the Lambda Web Adapter (DECISIONS P35) ----
-        const web = new lambda.Function(this, 'Web', {
-            runtime: lambda.Runtime.NODEJS_22_X,
-            architecture: lambda.Architecture.ARM_64,
-            code: bundle('apps/web/.next/lambda.zip'),
-            handler: 'run.sh',
-            memorySize: 1024,
-            timeout: Duration.seconds(30),
-            layers: [webAdapter],
-            environment: {
-                AWS_LAMBDA_EXEC_WRAPPER: '/opt/bootstrap',
-                AWS_LWA_PORT: '8080',
-                PORT: '8080',
-                HOSTNAME: '127.0.0.1',
-                NODE_OPTIONS: '--enable-source-maps',
-            },
-            logGroup: new logs.LogGroup(this, 'WebLogs', {
-                retention: LOG_RETENTION,
-                removalPolicy: RemovalPolicy.DESTROY,
-            }),
+        // The standalone Next.js server (DECISIONS P35).
+        const web = createAdapterFunction(this, 'Web', bundle('apps/web/.next/lambda.zip'), webAdapter, {
+            ...ADAPTER_ENVIRONMENT,
+            HOSTNAME: '127.0.0.1',
+            NODE_OPTIONS: '--enable-source-maps',
         })
         const webUrl = web.addFunctionUrl({ authType: lambda.FunctionUrlAuthType.AWS_IAM })
 
-        // ---- API: Express behind the Lambda Web Adapter ----
-        const api = new lambda.Function(this, 'Api', {
-            runtime: lambda.Runtime.NODEJS_22_X,
-            architecture: lambda.Architecture.ARM_64,
-            code: bundle('apps/api/dist/lambda.zip'),
-            handler: 'run.sh',
-            memorySize: 1024,
-            timeout: Duration.seconds(30),
-            layers: [webAdapter],
-            environment: {
-                ...environment,
-                AWS_LAMBDA_EXEC_WRAPPER: '/opt/bootstrap',
-                AWS_LWA_PORT: '8080',
-                // The server listens on PORT; without it it falls back to the local API_PORT default and the adapter
-                // never sees it become ready.
-                PORT: '8080',
-                AWS_LWA_READINESS_CHECK_PATH: '/api/models',
-            },
-            logGroup: new logs.LogGroup(this, 'ApiLogs', {
-                retention: LOG_RETENTION,
-                removalPolicy: RemovalPolicy.DESTROY,
-            }),
+        const api = createAdapterFunction(this, 'Api', bundle('apps/api/dist/lambda.zip'), webAdapter, {
+            ...environment,
+            ...ADAPTER_ENVIRONMENT,
+            AWS_LWA_READINESS_CHECK_PATH: '/api/models',
         })
         api.addToRolePolicy(readSecrets)
         api.addToRolePolicy(decryptSecrets)
@@ -150,7 +282,6 @@ export class ForecastArenaStack extends Stack {
         rawBucket.grantPut(api)
         const apiUrl = api.addFunctionUrl({ authType: lambda.FunctionUrlAuthType.AWS_IAM })
 
-        // ---- collector ----
         const collector = new lambda.Function(this, 'Collector', {
             runtime: lambda.Runtime.NODEJS_22_X,
             architecture: lambda.Architecture.ARM_64,
@@ -160,101 +291,32 @@ export class ForecastArenaStack extends Stack {
             timeout: Duration.minutes(10),
             reservedConcurrentExecutions: props.collectorReservedConcurrency || undefined,
             environment,
-            logGroup: new logs.LogGroup(this, 'CollectorLogs', {
-                retention: LOG_RETENTION,
-                removalPolicy: RemovalPolicy.DESTROY,
-            }),
+            logGroup: createLogGroup(this, 'CollectorLogs'),
         })
         collector.addToRolePolicy(readSecrets)
         collector.addToRolePolicy(decryptSecrets)
         rawBucket.grantPut(collector)
 
-        // ---- schedule: every 6 hours, 2 retries, then the dead-letter queue ----
-        const deadLetters = new sqs.Queue(this, 'CollectorDeadLetters', { retentionPeriod: Duration.days(14) })
-        const schedulerRole = new iam.Role(this, 'SchedulerRole', {
-            assumedBy: new iam.ServicePrincipal('scheduler.amazonaws.com'),
-        })
-        collector.grantInvoke(schedulerRole)
-        deadLetters.grantSendMessages(schedulerRole)
-        new scheduler.CfnSchedule(this, 'CollectorSchedule', {
-            scheduleExpression: 'cron(0 0/6 * * ? *)',
-            scheduleExpressionTimezone: 'UTC',
-            flexibleTimeWindow: { mode: 'OFF' },
-            target: {
-                arn: collector.functionArn,
-                roleArn: schedulerRole.roleArn,
-                retryPolicy: { maximumRetryAttempts: 2, maximumEventAgeInSeconds: 3600 },
-                deadLetterConfig: { arn: deadLetters.queueArn },
-            },
-        })
+        const deadLetters = scheduleCollector(this, collector)
 
-        const alarm = (id: string, metric: cloudwatch.IMetric, description: string) =>
-            new cloudwatch.Alarm(this, id, {
-                metric,
-                threshold: 1,
-                evaluationPeriods: 1,
-                comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
-                treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
-                alarmDescription: description,
-            }).addAlarmAction(new cloudwatchActions.SnsAction(alerts))
-        alarm(
+        addAlarm(
+            this,
+            alerts,
             'CollectorErrors',
             collector.metricErrors({ period: Duration.hours(6) }),
             'A collector run failed (after retries, it also lands in the dead-letter queue).',
         )
-        alarm(
+        addAlarm(
+            this,
+            alerts,
             'DeadLetters',
             deadLetters.metricApproximateNumberOfMessagesVisible({ period: Duration.minutes(15) }),
             'A scheduled collector invocation gave up after its retries.',
         )
 
-        // ---- CloudFront: pages from the web function, /api/* from the API function ----
-        // Honors the API's Cache-Control (public reads 5 minutes, everything else no-store).
-        const apiCache = new cloudfront.CachePolicy(this, 'ApiCache', {
-            defaultTtl: Duration.seconds(0),
-            minTtl: Duration.seconds(0),
-            maxTtl: Duration.minutes(5),
-            queryStringBehavior: cloudfront.CacheQueryStringBehavior.all(),
-            enableAcceptEncodingGzip: true,
-            enableAcceptEncodingBrotli: true,
-        })
-        // The viewer's address keys rate limits and the quota. The client's x-amz-content-sha256, which OAC needs to
-        // sign POSTs, must not be listed: CloudFront rejects it in a policy and uses it for signing on its own.
-        const apiRequest = new cloudfront.OriginRequestPolicy(this, 'ApiRequest', {
-            queryStringBehavior: cloudfront.OriginRequestQueryStringBehavior.all(),
-            headerBehavior: cloudfront.OriginRequestHeaderBehavior.allowList(
-                'CloudFront-Viewer-Address',
-                'Content-Type',
-            ),
-        })
-        const webOrigin = origins.FunctionUrlOrigin.withOriginAccessControl(webUrl)
-        const distribution = new cloudfront.Distribution(this, 'Site', {
-            priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
-            // Pages depend on the language cookie and the current time, so they are rendered per request.
-            defaultBehavior: {
-                origin: webOrigin,
-                viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-                cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
-                originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
-            },
-            additionalBehaviors: {
-                // Content-hashed build assets: cached at the edge for as long as the origin allows.
-                '/_next/static/*': {
-                    origin: webOrigin,
-                    viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-                    cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
-                },
-                '/api/*': {
-                    origin: origins.FunctionUrlOrigin.withOriginAccessControl(apiUrl),
-                    viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-                    allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-                    cachePolicy: apiCache,
-                    originRequestPolicy: apiRequest,
-                },
-            },
-        })
+        const distribution = createDistribution(this, webUrl, apiUrl)
 
-        // Function URLs created since October 2025 also need lambda:InvokeFunction; the OAC origin above only grants
+        // Function URLs created since October 2025 also need lambda:InvokeFunction; the OAC origin only grants
         // lambda:InvokeFunctionUrl, so without this CloudFront gets 403 from both functions.
         for (const fn of [web, api]) {
             fn.addPermission('InvokeViaCloudFront', {
@@ -265,49 +327,9 @@ export class ForecastArenaStack extends Stack {
             })
         }
 
-        // ---- deploys from GitHub Actions through OIDC: no stored keys ----
-        const github = new iam.OpenIdConnectProvider(this, 'GitHubOidc', {
-            url: 'https://token.actions.githubusercontent.com',
-            clientIds: ['sts.amazonaws.com'],
-        })
-        const deployRole = new iam.Role(this, 'DeployRole', {
-            description: 'Assumed by GitHub Actions to run cdk deploy for this stack',
-            maxSessionDuration: Duration.hours(1),
-            assumedBy: new iam.WebIdentityPrincipal(github.openIdConnectProviderArn, {
-                StringEquals: {
-                    'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
-                    'token.actions.githubusercontent.com:sub': `repo:${props.githubRepo}:ref:refs/heads/${props.githubBranch}`,
-                },
-            }),
-        })
-        // CDK deploys through the roles `cdk bootstrap` created; this role may only assume those.
-        deployRole.addToPolicy(
-            new iam.PolicyStatement({
-                actions: ['sts:AssumeRole'],
-                resources: [`arn:aws:iam::${this.account}:role/cdk-*`],
-            }),
-        )
+        const deployRole = createDeployRole(this, props)
 
-        // ---- budget ----
-        new budgets.CfnBudget(this, 'MonthlyBudget', {
-            budget: {
-                budgetType: 'COST',
-                timeUnit: 'MONTHLY',
-                budgetLimit: { amount: props.monthlyBudgetUsd, unit: 'USD' },
-            },
-            notificationsWithSubscribers: [
-                { threshold: 80, notificationType: 'ACTUAL' },
-                { threshold: 100, notificationType: 'FORECASTED' },
-            ].map(({ threshold, notificationType }) => ({
-                notification: {
-                    comparisonOperator: 'GREATER_THAN',
-                    threshold,
-                    thresholdType: 'PERCENTAGE',
-                    notificationType,
-                },
-                subscribers: [{ subscriptionType: 'EMAIL', address: props.alertEmail }],
-            })),
-        })
+        createMonthlyBudget(this, props)
 
         new CfnOutput(this, 'SiteUrl', { value: `https://${distribution.distributionDomainName}` })
         new CfnOutput(this, 'ApiFunctionUrl', { value: apiUrl.url })

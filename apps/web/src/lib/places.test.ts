@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
     addRecent,
-    canPin,
     DEFAULT_PLACES,
     getPlaceChips,
+    isPinnable,
     parsePlaces,
     pinPlace,
     Place,
@@ -74,8 +74,8 @@ describe('places', () => {
     it('allows four favorites at most', () => {
         const full = [NEW_YORK, LONDON, PARIS, KYIV].reduce(pinPlace, START)
 
-        expect(canPin(full, BERLIN.id)).toBe(false)
-        expect(canPin(full, PARIS.id)).toBe(true)
+        expect(isPinnable(full, BERLIN.id)).toBe(false)
+        expect(isPinnable(full, PARIS.id)).toBe(true)
         expect(pinPlace(full, BERLIN)).toBe(full)
         expect(names(addRecent(full, SYDNEY))).toEqual(['New York', 'London', 'Paris', 'Kyiv'])
     })

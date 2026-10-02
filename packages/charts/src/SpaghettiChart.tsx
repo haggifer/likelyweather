@@ -27,25 +27,6 @@ import {
 } from './spaghetti-geometry'
 import { WindArrows } from './WindArrows'
 
-interface IProps {
-    steps: string[]
-    series: Series[]
-    stats: EnsembleStats
-    variable: Variable
-    timeZone: string
-    locale: string
-    ariaLabel: string
-    hoverIndex: number | null
-    onHoverIndex?: (index: number | null) => void
-    emphasized?: ModelId[]
-    directions?: (number | null)[] | null
-    height?: number
-    compact?: boolean
-    showTooltip?: boolean
-    yDomain?: [number, number]
-    now?: Date | null
-}
-
 interface DrawnBar {
     i: number
     center: number
@@ -100,6 +81,25 @@ const getTooltipRows = (series: Series[], index: number) =>
         .map((s) => ({ modelId: s.modelId, value: s.values[index] }))
         .filter((r): r is TooltipRow => r.value !== null)
         .sort((a, b) => b.value - a.value)
+
+interface IProps {
+    steps: string[]
+    series: Series[]
+    stats: EnsembleStats
+    variable: Variable
+    timeZone: string
+    locale: string
+    ariaLabel: string
+    hoverIndex: number | null
+    onHoverIndex?: (index: number | null) => void
+    emphasized?: ModelId[]
+    directions?: (number | null)[] | null
+    height?: number
+    compact?: boolean
+    showTooltip?: boolean
+    yDomain?: [number, number]
+    now?: Date | null
+}
 
 export function SpaghettiChart({
     steps,

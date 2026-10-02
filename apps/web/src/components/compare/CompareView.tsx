@@ -24,9 +24,9 @@ import Link from 'next/link'
 import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs'
 import { useMemo } from 'react'
 
-const citiesParser = parseAsArrayOf(parseAsString).withDefault([])
-
 type CompareItem = CompareResponse['items'][number]
+
+const citiesParser = parseAsArrayOf(parseAsString).withDefault([])
 
 const toCompareItem = (item: CompareItem, variable: Variable): CompareItem => ({
     ...item,

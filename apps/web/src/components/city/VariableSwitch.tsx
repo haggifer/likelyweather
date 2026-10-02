@@ -8,15 +8,15 @@ import { cn } from '@fa/ui/lib/cn'
 import { CloudRain, Gauge, LucideIcon, Thermometer, Wind } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
-interface IProps {
-    className?: string
-}
-
 const ICONS: Record<Variable, LucideIcon> = {
     [Variable.Temp]: Thermometer,
     [Variable.Wind]: Wind,
     [Variable.Pressure]: Gauge,
     [Variable.Precip]: CloudRain,
+}
+
+interface IProps {
+    className?: string
 }
 
 export function VariableSwitch({ className }: IProps) {

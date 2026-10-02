@@ -9,7 +9,7 @@ export const SEED_MODELS = MODELS.map((m) => ({
     source: m.source,
     name: m.name,
     color: m.color,
-    regional: m.regional,
+    regional: m.isRegional,
 }))
 
 export const SEED_CITIES = SEEDS.map((seed) => ({

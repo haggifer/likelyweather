@@ -13,7 +13,7 @@ const HOUR_MS = 3_600_000
 const DAY_MS = 24 * HOUR_MS
 
 // One untracked place, so the search-and-track flow creates a new city.
-export const PLACE = {
+const PLACE = {
     id: 689558,
     name: 'Vinnytsia',
     latitude: 49.23278,
@@ -28,20 +28,22 @@ export const PLACE = {
 
 const toOpenMeteoTime = (ms) => new Date(ms).toISOString().slice(0, 16)
 
+const shiftMetnoTime = (time, ms) => new Date(new Date(time).getTime() + ms).toISOString().replace('.000Z', 'Z')
+
 // The recording starts at midnight one day before its run, like a live `past_days=1` request.
-const openMeteoFor = (lat, lon) => {
+const getOpenMeteoForecast = (lat, lon) => {
     const start = Math.floor(Date.now() / DAY_MS) * DAY_MS - DAY_MS
     const time = OPEN_METEO.hourly.time.map((_, i) => toOpenMeteoTime(start + i * HOUR_MS))
 
     return { ...OPEN_METEO, latitude: lat, longitude: lon, hourly: { ...OPEN_METEO.hourly, time } }
 }
 
-const metnoNow = () => {
+const getMetnoForecast = () => {
     const first = new Date(METNO.properties.timeseries[0].time).getTime()
     const shift = Math.floor(Date.now() / HOUR_MS) * HOUR_MS - first
     const timeseries = METNO.properties.timeseries.map((entry) => ({
         ...entry,
-        time: new Date(new Date(entry.time).getTime() + shift).toISOString().replace('.000Z', 'Z'),
+        time: shiftMetnoTime(entry.time, shift),
     }))
 
     return { ...METNO, properties: { ...METNO.properties, timeseries } }
@@ -54,17 +56,14 @@ const send = (res, status, body, headers = {}) => {
 
 createServer((req, res) => {
     const url = new URL(req.url, `http://localhost:${PORT}`)
-    const numbers = (name) => (url.searchParams.get(name) ?? '').split(',').filter(Boolean).map(Number)
+    const getNumbers = (name) => (url.searchParams.get(name) ?? '').split(',').filter(Boolean).map(Number)
 
     if (url.pathname === '/v1/forecast') {
-        const lats = numbers('latitude')
-        const lons = numbers('longitude')
+        const lats = getNumbers('latitude')
+        const lons = getNumbers('longitude')
+        const forecasts = lats.map((lat, i) => getOpenMeteoForecast(lat, lons[i]))
 
-        return send(
-            res,
-            200,
-            lats.map((lat, i) => openMeteoFor(lat, lons[i])),
-        )
+        return send(res, 200, forecasts)
     }
 
     if (url.pathname === '/v1/search') {
@@ -76,7 +75,7 @@ createServer((req, res) => {
     if (url.pathname === '/v1/get') return send(res, 200, PLACE)
 
     if (url.pathname.startsWith('/weatherapi/locationforecast')) {
-        return send(res, 200, metnoNow(), { 'Last-Modified': new Date().toUTCString() })
+        return send(res, 200, getMetnoForecast(), { 'Last-Modified': new Date().toUTCString() })
     }
 
     send(res, 404, { error: `fake upstream has no ${url.pathname}` })

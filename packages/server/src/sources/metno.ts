@@ -30,19 +30,6 @@ export interface MetnoResult {
     lastModified: string | null
 }
 
-export const fetchMetno = async (lat: number, lon: number, ifModifiedSince?: string): Promise<MetnoResult> => {
-    const params = new URLSearchParams({ lat: lat.toFixed(4), lon: lon.toFixed(4) })
-    const headers: Record<string, string> = { 'User-Agent': env.METNO_USER_AGENT }
-
-    if (ifModifiedSince) headers['If-Modified-Since'] = ifModifiedSince
-
-    const res = await fetchWithRetry(`${env.METNO_BASE}/weatherapi/locationforecast/2.0/compact?${params}`, { headers })
-
-    if (res.status === 304) return { status: 304, body: null, lastModified: ifModifiedSince ?? null }
-
-    return { status: 200, body: (await res.json()) as MetnoBody, lastModified: res.headers.get('last-modified') }
-}
-
 const round = (value: number) => Math.round(value * 100) / 100
 
 // met.no mixes hourly and 6-hourly entries; only the hourly ones (about the first 60 hours) fill the hourly grid.
@@ -55,14 +42,29 @@ const getPrecipEndingAt = (byTime: Map<string, MetnoEntry>, step: string) => {
     return amount === undefined ? null : round(amount)
 }
 
+export const fetchMetno = async (lat: number, lon: number, ifModifiedSince?: string): Promise<MetnoResult> => {
+    const params = new URLSearchParams({ lat: lat.toFixed(4), lon: lon.toFixed(4) })
+    const headers: Record<string, string> = { 'User-Agent': env.METNO_USER_AGENT }
+
+    if (ifModifiedSince) headers['If-Modified-Since'] = ifModifiedSince
+
+    const res = await fetchWithRetry(`${env.METNO_BASE}/weatherapi/locationforecast/2.0/compact?${params}`, { headers })
+
+    if (res.status === 304) return { status: 304, body: null, lastModified: ifModifiedSince ?? null }
+
+    const body: MetnoBody = await res.json()
+
+    return { status: 200, body, lastModified: res.headers.get('last-modified') }
+}
+
 export const parseMetno = (body: MetnoBody, steps: string[]): ModelSeries | null => {
     const byTime = new Map(body.properties.timeseries.map((e) => [toIsoMinute(new Date(e.time)), e]))
-    const instant = (step: string, key: keyof MetnoDetails) => byTime.get(step)?.data.instant.details[key] ?? null
+    const getInstant = (step: string, key: keyof MetnoDetails) => byTime.get(step)?.data.instant.details[key] ?? null
     const series: ModelSeries = {
-        temp: steps.map((s) => instant(s, 'air_temperature')),
-        wind: steps.map((s) => instant(s, 'wind_speed')),
-        windDir: steps.map((s) => instant(s, 'wind_from_direction')),
-        pressure: steps.map((s) => instant(s, 'air_pressure_at_sea_level')),
+        temp: steps.map((s) => getInstant(s, 'air_temperature')),
+        wind: steps.map((s) => getInstant(s, 'wind_speed')),
+        windDir: steps.map((s) => getInstant(s, 'wind_from_direction')),
+        pressure: steps.map((s) => getInstant(s, 'air_pressure_at_sea_level')),
         pressureSfc: steps.map(() => null),
         precip: steps.map((s) => getPrecipEndingAt(byTime, s)),
         rain: steps.map(() => null),

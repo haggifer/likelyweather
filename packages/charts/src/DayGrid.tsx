@@ -8,19 +8,6 @@ interface Span {
     bottom: number
 }
 
-interface IProps {
-    x: ScaleTime<number, number>
-    start: Date
-    end: Date
-    timeZone: string
-    locale: string
-    spans: Span[]
-    labelYs: number[]
-    lineColor: string
-    labelColor: string
-    fontSize?: number
-}
-
 interface DayLabel {
     key: string
     x: number
@@ -36,6 +23,19 @@ const getDayLabels = (midnights: Date[], { x, start, end, timeZone, locale, font
 
         return text ? [{ key: from.toISOString(), x: (x(from) + x(to)) / 2, text }] : []
     })
+
+interface IProps {
+    x: ScaleTime<number, number>
+    start: Date
+    end: Date
+    timeZone: string
+    locale: string
+    spans: Span[]
+    labelYs: number[]
+    lineColor: string
+    labelColor: string
+    fontSize?: number
+}
 
 // Day boundaries are drawn at local midnight of the city in every span (one per panel), with each day's label
 // centered in its span of time at every label row, as long as the space allows ("Sat 26 Sept", "Sat 26", "Sat").

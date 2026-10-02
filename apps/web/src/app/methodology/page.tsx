@@ -44,7 +44,7 @@ export default async function MethodologyPage() {
                                             <span className="font-medium">{m.name}</span>{' '}
                                             <span className="text-muted-foreground">
                                                 {m.provider}
-                                                {m.regional ? ` · ${t('europeOnly')}` : ''}
+                                                {m.isRegional ? ` · ${t('europeOnly')}` : ''}
                                             </span>
                                         </span>
                                     </li>

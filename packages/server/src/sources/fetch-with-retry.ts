@@ -1,12 +1,12 @@
-const RETRYABLE = new Set([429, 500, 502, 503, 504])
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+import { delay } from 'es-toolkit'
 
 interface RetryOptions {
     attempts?: number
     timeoutMs?: number
     backoffMs?: number
 }
+
+const RETRYABLE = new Set([429, 500, 502, 503, 504])
 
 class UpstreamError extends Error {
     constructor(
@@ -33,6 +33,7 @@ export const fetchWithRetry = async (
 
             const body = await res.text()
             const reason = body.slice(0, 200)
+
             lastError = new UpstreamError(url, res.status, `${res.status} from ${new URL(url).host}: ${reason}`)
 
             if (!RETRYABLE.has(res.status)) break
@@ -40,7 +41,7 @@ export const fetchWithRetry = async (
             lastError = error
         }
 
-        if (attempt < attempts) await sleep(backoffMs * 2 ** (attempt - 1))
+        if (attempt < attempts) await delay(backoffMs * 2 ** (attempt - 1))
     }
 
     throw lastError instanceof Error ? lastError : new Error(String(lastError))
@@ -48,5 +49,7 @@ export const fetchWithRetry = async (
 
 export const fetchJson = async <T>(url: string, init?: RequestInit, options?: RetryOptions) => {
     const res = await fetchWithRetry(url, init, options)
-    return (await res.json()) as T
+    const body: T = await res.json()
+
+    return body
 }

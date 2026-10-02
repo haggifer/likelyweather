@@ -11,8 +11,9 @@ loadLocalEnv()
 const CSV_DIR = path.resolve(import.meta.dirname, '../../fixtures/csv')
 const CURRENT = 'forecast_20260910T060626Z.csv'
 const LEGACY = 'forecast_20260909T130553Z.csv'
-const readCsv = (name: string) => readFileSync(path.join(CSV_DIR, name), 'utf8')
-const cities: City[] = SEED_CITIES.map((c) => ({
+const KHARKIV = 706483
+const KYIV = 703448
+const CITIES: City[] = SEED_CITIES.map((c) => ({
     ...c,
     status: CityStatus.Active,
     availableModels: [],
@@ -21,12 +22,12 @@ const cities: City[] = SEED_CITIES.map((c) => ({
     viewCount: 0,
     runsCollected: 0,
 }))
-const KHARKIV = 706483
-const KYIV = 703448
+
+const readCsv = (name: string) => readFileSync(path.join(CSV_DIR, name), 'utf8')
 
 describe('parseForecastCsv', () => {
     it('reads the current header, matches cities by coordinates and skips unknown models and places', () => {
-        const parsed = parseForecastCsv(readCsv(CURRENT), CURRENT, cities)
+        const parsed = parseForecastCsv(readCsv(CURRENT), CURRENT, CITIES)
         const kharkiv = parsed.snapshots.find((s) => s.cityId === KHARKIV)!
 
         expect(parsed.issueTime).toBe('2026-09-10T06:00Z')
@@ -39,7 +40,7 @@ describe('parseForecastCsv', () => {
     })
 
     it('reads the first header version, taking the issue time from the file name', () => {
-        const parsed = parseForecastCsv(readCsv(LEGACY), LEGACY, cities)
+        const parsed = parseForecastCsv(readCsv(LEGACY), LEGACY, CITIES)
 
         expect(parsed.issueTime).toBe('2026-09-09T12:00Z')
         expect(parsed.snapshots[0].models[ModelId.EcmwfIfs]?.wind).toEqual([1.75, 1.1])
@@ -55,7 +56,9 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('importForecastCsv (database)'
     )
 
     it('stores the expected rows per city and model as an IMPORT run', async () => {
-        const run = await importForecastCsv(parseForecastCsv(readCsv(CURRENT), CURRENT, cities), CURRENT)
+        const parsed = parseForecastCsv(readCsv(CURRENT), CURRENT, CITIES)
+
+        const run = await importForecastCsv(parsed, CURRENT)
         const counts = await prisma.forecast.groupBy({
             by: ['cityId', 'modelId'],
             where: { issueTime: new Date('2026-09-10T06:00Z') },

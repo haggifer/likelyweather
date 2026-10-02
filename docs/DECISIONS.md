@@ -336,6 +336,7 @@ Decided by the author, extending P38 with two rules added to their `js-ts-code-s
 
 - **Bodies read in groups**, one blank line between groups and none inside one. A component or hook orders them: context and framework hooks, state and refs, queries, derived values, handlers, effects, then early returns and the JSX. Effects come last because a dependency array is built during render, so an effect listing a handler declared below it would read it before it is initialised. A value that a hook needs goes directly above that hook.
 - **One line per derived value.** A computation longer than about three lines, including a `useMemo` body, becomes a named pure function at module scope or in a kebab-case module, so the body says what each value is and the function says how. A computation written in more than one place gets one tested home, such as `getChartStart` in `packages/shared/src/slots.ts`, which the overview, the dashboard and Compare share.
+- **Module layout** (added 2026-10-02 with the skills' second revision): imports, types and interfaces, constants, helpers, exports, with a component's `IProps` directly above the component. Dependency order wins here too: the zod contract keeps each inferred type under its schema, and a constant built by calling a helper sits below it. The same revision named functions that return a boolean `is*`/`has*` (`canPin` became `isPinnable`) and removed inline `await`s from the server, the API and the tests as well.
 
 ## P42. Favorite and recent places (2026-10-02)
 

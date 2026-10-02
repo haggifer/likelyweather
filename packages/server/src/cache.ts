@@ -4,6 +4,7 @@
 // an outage or a refused request costs latency, not availability.
 import { Redis } from 'ioredis'
 import { env } from './env'
+import { getErrorMessage } from './errors'
 
 interface KeyValue {
     get(key: string): Promise<string | null>
@@ -18,6 +19,11 @@ interface KeyValue {
     close(): Promise<void>
 }
 
+interface Entry {
+    value: string
+    expiresAt: number
+}
+
 const INCREMENT_WITHIN_LIMITS = `
 for i, key in ipairs(KEYS) do
     if tonumber(redis.call('GET', key) or '0') >= tonumber(ARGV[i]) then return 0 end
@@ -27,6 +33,15 @@ for _, key in ipairs(KEYS) do
     redis.call('EXPIREAT', key, ARGV[#ARGV])
 end
 return 1`
+
+let hasWarned = false
+
+const warnOnce = (error: unknown) => {
+    if (hasWarned) return
+
+    hasWarned = true
+    console.warn(`Redis unavailable, continuing without it: ${getErrorMessage(error)}`)
+}
 
 class RedisKeyValue implements KeyValue {
     private client: Redis
@@ -46,9 +61,8 @@ class RedisKeyValue implements KeyValue {
     }
 
     async incrementWindow(key: string, windowSeconds: number) {
-        const [[, count]] = (await this.client.multi().incr(key).expire(key, windowSeconds).exec()) as [
-            [Error | null, number],
-        ]
+        const replies = await this.client.multi().incr(key).expire(key, windowSeconds).exec()
+        const [[, count]] = replies as [[Error | null, number]]
 
         return count
     }
@@ -60,7 +74,9 @@ class RedisKeyValue implements KeyValue {
     }
 
     async setIfAbsent(key: string, value: string, ttlSeconds: number) {
-        return (await this.client.set(key, value, 'EX', ttlSeconds, 'NX')) === 'OK'
+        const reply = await this.client.set(key, value, 'EX', ttlSeconds, 'NX')
+
+        return reply === 'OK'
     }
 
     async del(key: string) {
@@ -72,11 +88,6 @@ class RedisKeyValue implements KeyValue {
     }
 }
 
-interface Entry {
-    value: string
-    expiresAt: number
-}
-
 class MemoryKeyValue implements KeyValue {
     private entries = new Map<string, Entry>()
 
@@ -86,6 +97,10 @@ class MemoryKeyValue implements KeyValue {
         if (entry && entry.expiresAt < Date.now()) this.entries.delete(key)
 
         return this.entries.get(key)?.value ?? null
+    }
+
+    private readCount(key: string) {
+        return Number(this.read(key) ?? 0)
     }
 
     private write(key: string, value: string, expiresAt: number) {
@@ -101,17 +116,18 @@ class MemoryKeyValue implements KeyValue {
     }
 
     async incrementWindow(key: string, windowSeconds: number) {
-        const count = Number(this.read(key) ?? 0) + 1
+        const count = this.readCount(key) + 1
         const expiresAt = this.entries.get(key)?.expiresAt ?? Date.now() + windowSeconds * 1000
+
         this.write(key, String(count), expiresAt)
 
         return count
     }
 
     async incrementWithinLimits(keys: string[], limits: number[], expiresAt: number) {
-        if (keys.some((key, i) => Number(this.read(key) ?? 0) >= limits[i])) return false
+        if (keys.some((key, i) => this.readCount(key) >= limits[i])) return false
 
-        keys.forEach((key) => this.write(key, String(Number(this.read(key) ?? 0) + 1), expiresAt * 1000))
+        keys.forEach((key) => this.write(key, String(this.readCount(key) + 1), expiresAt * 1000))
 
         return true
     }
@@ -133,40 +149,32 @@ class MemoryKeyValue implements KeyValue {
     }
 }
 
-let warned = false
-
-const warnOnce = (error: unknown) => {
-    if (warned) return
-
-    warned = true
-    console.warn(`Redis unavailable, continuing without it: ${error instanceof Error ? error.message : error}`)
-}
-
 // Runs a Redis call, or returns `fallback` when Redis fails.
 const safely = async <T>(run: () => Promise<T>, fallback: T): Promise<T> => {
     try {
         return await run()
     } catch (error) {
         warnOnce(error)
+
         return fallback
     }
 }
 
 const globalCache = globalThis as unknown as { __faKeyValue?: KeyValue; __faInflight?: Map<string, Promise<unknown>> }
 
-const store = (): KeyValue =>
+const getStore = (): KeyValue =>
     (globalCache.__faKeyValue ??= env.REDIS_URL ? new RedisKeyValue(env.REDIS_URL) : new MemoryKeyValue())
 
 const inflight = (globalCache.__faInflight ??= new Map())
 
 const cacheGet = async <T>(key: string): Promise<T | undefined> => {
-    const text = await safely(() => store().get(key), null)
+    const text = await safely(() => getStore().get(key), null)
 
     return text === null ? undefined : (JSON.parse(text) as T)
 }
 
 const cacheSet = (key: string, value: unknown, ttlSeconds: number) =>
-    safely(() => store().set(key, JSON.stringify(value), ttlSeconds), undefined)
+    safely(() => getStore().set(key, JSON.stringify(value), ttlSeconds), undefined)
 
 // Concurrent calls in one process share a single pending promise.
 export const dedupe = <T>(key: string, run: () => Promise<T>): Promise<T> => {
@@ -175,6 +183,7 @@ export const dedupe = <T>(key: string, run: () => Promise<T>): Promise<T> => {
     if (pending) return pending as Promise<T>
 
     const promise = run().finally(() => inflight.delete(key))
+
     inflight.set(key, promise)
 
     return promise
@@ -187,7 +196,9 @@ export const cached = async <T>(key: string, ttlSeconds: number, load: () => Pro
 
     return dedupe(key, async () => {
         const value = await load()
+
         await cacheSet(key, value, ttlSeconds)
+
         return value
     })
 }
@@ -196,25 +207,31 @@ export const cached = async <T>(key: string, ttlSeconds: number, load: () => Pro
 export const incrementWindow = (key: string, windowSeconds: number) => {
     const bucket = Math.floor(Date.now() / (windowSeconds * 1000))
 
-    return safely(() => store().incrementWindow(`${key}:${bucket}`, windowSeconds), 0)
+    return safely(() => getStore().incrementWindow(`${key}:${bucket}`, windowSeconds), 0)
 }
 
-export const readCounter = async (key: string) => Number((await safely(() => store().get(key), null)) ?? 0)
+export const getCounter = async (key: string) => {
+    const text = await safely(() => getStore().get(key), null)
+
+    return Number(text ?? 0)
+}
 
 export const incrementWithinLimits = (keys: string[], limits: number[], expiresAt: Date) =>
-    safely(() => store().incrementWithinLimits(keys, limits, Math.floor(expiresAt.getTime() / 1000)), true)
+    safely(() => getStore().incrementWithinLimits(keys, limits, Math.floor(expiresAt.getTime() / 1000)), true)
 
 // A lock with a TTL, the equivalent of `SET lock:<name> NX EX <ttl>`. Returns a release function, or null when
 // another holder has it. Without Redis the lock is granted: the collector's Lambda has a concurrency of one anyway.
 export const acquireLock = async (name: string, ttlSeconds: number) => {
     const key = `lock:${name}`
     const token = `${process.pid}-${Date.now()}`
-    const held = await safely(() => store().setIfAbsent(key, token, ttlSeconds), true)
+    const isHeld = await safely(() => getStore().setIfAbsent(key, token, ttlSeconds), true)
 
-    if (!held) return null
+    if (!isHeld) return null
 
     return async () => {
-        if ((await safely(() => store().get(key), null)) === token) await safely(() => store().del(key), undefined)
+        const holder = await safely(() => getStore().get(key), null)
+
+        if (holder === token) await safely(() => getStore().del(key), undefined)
     }
 }
 

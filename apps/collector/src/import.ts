@@ -8,6 +8,13 @@ import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { gunzipSync } from 'node:zlib'
 
+// Paths are relative to where `pnpm` was started, not to this package.
+const readCsvText = async (file: string) => {
+    const raw = await readFile(path.resolve(process.env.INIT_CWD ?? process.cwd(), file))
+
+    return file.endsWith('.gz') ? gunzipSync(raw).toString('utf8') : raw.toString('utf8')
+}
+
 const main = async () => {
     const files = process.argv.slice(2).filter((arg) => arg !== '--')
 
@@ -16,11 +23,12 @@ const main = async () => {
     const cities = await getCities()
 
     for (const file of files) {
-        // Paths are relative to where `pnpm` was started, not to this package.
-        const raw = await readFile(path.resolve(process.env.INIT_CWD ?? process.cwd(), file))
-        const text = file.endsWith('.gz') ? gunzipSync(raw).toString('utf8') : raw.toString('utf8')
+        const text = await readCsvText(file)
         const name = path.basename(file)
-        const run = await importForecastCsv(parseForecastCsv(text, name, cities), name)
+        const parsed = parseForecastCsv(text, name, cities)
+
+        const run = await importForecastCsv(parsed, name)
+
         console.log(`${name}: ${run.id}, ${run.rows} rows, ${run.citiesCount} cities`)
         run.warnings.forEach((w) => console.warn(`WARN ${w}`))
     }

@@ -1,6 +1,6 @@
 import { QuotaResponse } from '@fa/shared/api'
-import { HOUR_MS } from '@fa/shared/constants'
-import { incrementWithinLimits, readCounter } from './cache'
+import { DAY_MS } from '@fa/shared/constants'
+import { getCounter, incrementWithinLimits } from './cache'
 import { HttpError } from './errors'
 
 // Daily budget of upstream requests (Open-Meteo, met.no) made on a client's behalf: a city refresh when a newer run
@@ -9,18 +9,23 @@ import { HttpError } from './errors'
 export const DAILY_QUOTA = 60
 export const DAILY_GLOBAL_QUOTA = 600
 
-const DAY_MS = 24 * HOUR_MS
 const GLOBAL_CLIENT = 'all'
 
 const getDayStart = (now: Date) => Math.floor(now.getTime() / DAY_MS) * DAY_MS
 
+const getNextDayStart = (now: Date) => new Date(getDayStart(now) + DAY_MS)
+
 const getKey = (client: string, now: Date) => `quota:${client}:${getDayStart(now)}`
 
-export const getQuota = async (client: string, now = new Date()): Promise<QuotaResponse> => ({
-    limit: DAILY_QUOTA,
-    used: Math.min(DAILY_QUOTA, await readCounter(getKey(client, now))),
-    resetsAt: new Date(getDayStart(now) + DAY_MS).toISOString(),
-})
+export const getQuota = async (client: string, now = new Date()): Promise<QuotaResponse> => {
+    const used = await getCounter(getKey(client, now))
+
+    return {
+        limit: DAILY_QUOTA,
+        used: Math.min(DAILY_QUOTA, used),
+        resetsAt: getNextDayStart(now).toISOString(),
+    }
+}
 
 // Counts one upstream request, or returns false without counting when the client or the app has none left. The
 // check and both increments are one atomic step in Redis.
@@ -28,7 +33,7 @@ export const trySpendQuota = (client: string, now = new Date()) =>
     incrementWithinLimits(
         [getKey(client, now), getKey(GLOBAL_CLIENT, now)],
         [DAILY_QUOTA, DAILY_GLOBAL_QUOTA],
-        new Date(getDayStart(now) + DAY_MS),
+        getNextDayStart(now),
     )
 
 export const quotaExceeded = () =>

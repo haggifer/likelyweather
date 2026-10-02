@@ -8,6 +8,8 @@ import { getAgeHours } from '@fa/shared/time'
 import { cn } from '@fa/ui/lib/cn'
 import { useLocale, useTranslations } from 'next-intl'
 
+const CLOCK: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
+
 interface IProps {
     issueTime: string
     fetchedAt: string
@@ -15,8 +17,6 @@ interface IProps {
     now: Date | null
     className?: string
 }
-
-const CLOCK: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
 
 // How long ago the data on screen was fetched, the moment the chart starts at, shown once it is REFRESH_AFTER_HOURS
 // old (when Refresh turns on). An age reads the same in every time zone, unlike a clock time that is the city's; the

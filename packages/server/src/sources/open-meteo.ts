@@ -21,6 +21,8 @@ interface OpenMeteoError {
     reason: string
 }
 
+type TimeIndex = ReturnType<typeof indexHourlyTimes>
+
 export const OPEN_METEO_BATCH_SIZE = 50
 
 const HOURLY_KEYS = SERIES_FIELDS.map((f) => f.openMeteoKey).join(',')
@@ -40,6 +42,30 @@ const buildForecastUrl = (locations: LatLon[], models: ModelId[] = OPEN_METEO_MO
     return `${env.OPEN_METEO_FORECAST_BASE}/v1/forecast?${params}`
 }
 
+// With a single model Open-Meteo drops the model suffix from the hourly keys.
+const getHourlyValues = (hourly: OpenMeteoLocation['hourly'], key: string, model: ModelId, isSingleModel: boolean) =>
+    hourly[`${key}_${model}`] ?? (isSingleModel ? hourly[key] : undefined)
+
+const toModelSeries = (
+    location: OpenMeteoLocation,
+    timeIndex: TimeIndex,
+    steps: string[],
+    model: ModelId,
+    isSingleModel: boolean,
+) =>
+    Object.fromEntries(
+        SERIES_FIELDS.map(({ field, openMeteoKey, aggregation }) => [
+            field,
+            toStepSeries(
+                timeIndex,
+                getHourlyValues(location.hourly, openMeteoKey, model, isSingleModel),
+                steps,
+                aggregation,
+                1,
+            ),
+        ]),
+    ) as unknown as ModelSeries
+
 export const fetchOpenMeteoForecast = async (locations: LatLon[], models: ModelId[] = OPEN_METEO_MODELS) => {
     const body = await fetchJson<OpenMeteoLocation | OpenMeteoLocation[] | OpenMeteoError>(
         buildForecastUrl(locations, models),
@@ -56,31 +82,17 @@ export const fetchOpenMeteoForecast = async (locations: LatLon[], models: ModelI
     return results
 }
 
-const getHourlyValues = (hourly: OpenMeteoLocation['hourly'], key: string, model: ModelId, single: boolean) =>
-    hourly[`${key}_${model}`] ?? (single ? hourly[key] : undefined)
-
 export const parseOpenMeteoModels = (
     location: OpenMeteoLocation,
     steps: string[],
     models: ModelId[] = OPEN_METEO_MODELS,
 ): Partial<Record<ModelId, ModelSeries>> => {
     const timeIndex = indexHourlyTimes(location.hourly.time)
-    const single = models.length === 1
+    const isSingleModel = models.length === 1
     const parsed: Partial<Record<ModelId, ModelSeries>> = {}
 
     for (const model of models) {
-        const series = Object.fromEntries(
-            SERIES_FIELDS.map(({ field, openMeteoKey, aggregation }) => [
-                field,
-                toStepSeries(
-                    timeIndex,
-                    getHourlyValues(location.hourly, openMeteoKey, model, single),
-                    steps,
-                    aggregation,
-                    1,
-                ),
-            ]),
-        ) as unknown as ModelSeries
+        const series = toModelSeries(location, timeIndex, steps, model, isSingleModel)
 
         if (series.temp.some((v) => v !== null)) parsed[model] = series
     }

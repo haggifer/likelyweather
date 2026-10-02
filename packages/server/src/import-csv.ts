@@ -5,8 +5,18 @@ import { City, Run } from '@fa/shared/api'
 import { ModelId, MODELS } from '@fa/shared/models'
 import { floorToStep, toIsoMinute } from '@fa/shared/time'
 import { ModelSeries, SeriesField } from '@fa/shared/variables'
-import { getRunId } from './collector'
+import { countRows, getRunId } from './collector'
 import { Snapshot, upsertRun, writeSnapshot } from './store'
+
+export interface ParsedCsv {
+    issueTime: string
+    snapshots: Omit<Snapshot, 'runId' | 'origin' | 'fetchedAt'>[]
+    skipped: string[]
+}
+
+type FieldColumns = Record<SeriesField, number | undefined>
+type RowsByStep = Map<string, string[]>
+type RowsByModel = Map<ModelId, RowsByStep>
 
 const COLUMNS: Record<SeriesField, string[]> = {
     temp: ['temp_c'],
@@ -23,12 +33,6 @@ const MODEL_IDS = new Set<string>(MODELS.map((m) => m.id))
 // Requested coordinates are rounded to 2–4 decimals; tracked cities are matched within this distance in degrees.
 const MATCH_DEGREES = 0.05
 
-export interface ParsedCsv {
-    issueTime: string
-    snapshots: Omit<Snapshot, 'runId' | 'origin' | 'fetchedAt'>[]
-    skipped: string[]
-}
-
 const toNumber = (text: string | undefined) => (text === undefined || text === '' ? null : Number(text))
 
 // "forecast_20260909T130553Z.csv" → the fetch time, used when the file's issue_time column is empty.
@@ -38,28 +42,53 @@ const getFileTime = (fileName: string) => {
     if (!match) return null
 
     const [, stamp] = match
+
     return new Date(
         `${stamp.slice(0, 4)}-${stamp.slice(4, 6)}-${stamp.slice(6, 8)}T${stamp.slice(9, 11)}:${stamp.slice(11, 13)}:${stamp.slice(13, 15)}Z`,
     )
 }
 
+const addRow = (byCity: Map<number, RowsByModel>, cityId: number, model: ModelId, step: string, cells: string[]) => {
+    const models = byCity.get(cityId) ?? new Map()
+    const steps = models.get(model) ?? new Map()
+
+    steps.set(step, cells)
+    models.set(model, steps)
+    byCity.set(cityId, models)
+}
+
+const toSeries = (rows: RowsByStep, steps: string[], fieldColumns: FieldColumns) =>
+    Object.fromEntries(
+        FIELDS.map((f) => {
+            const i = fieldColumns[f]
+
+            return [f, steps.map((step) => (i === undefined ? null : toNumber(rows.get(step)?.[i])))]
+        }),
+    ) as unknown as ModelSeries
+
+const toSnapshot = (cityId: number, models: RowsByModel, issueTime: string, fieldColumns: FieldColumns) => {
+    const steps = [...new Set([...models.values()].flatMap((s) => [...s.keys()]))].sort()
+    const series = Object.fromEntries(
+        [...models].map(([modelId, rows]) => [modelId, toSeries(rows, steps, fieldColumns)]),
+    )
+
+    return { cityId, issueTime, steps, models: series }
+}
+
 export const parseForecastCsv = (text: string, fileName: string, cities: City[]): ParsedCsv => {
     const [headerLine, ...lines] = text.trim().split(/\r?\n/)
     const header = headerLine.split(',')
-    const column = (names: string[]) => names.map((n) => header.indexOf(n)).find((i) => i >= 0)
+    const getColumn = (names: string[]) => names.map((n) => header.indexOf(n)).find((i) => i >= 0)
     const at = {
-        model: column(['model'])!,
-        lat: column(['req_lat'])!,
-        lon: column(['req_lon'])!,
-        issue: column(['issue_time'])!,
-        valid: column(['valid_time'])!,
+        model: getColumn(['model'])!,
+        lat: getColumn(['req_lat'])!,
+        lon: getColumn(['req_lon'])!,
+        issue: getColumn(['issue_time'])!,
+        valid: getColumn(['valid_time'])!,
     }
-    const fieldColumns = Object.fromEntries(FIELDS.map((f) => [f, column(COLUMNS[f])])) as Record<
-        SeriesField,
-        number | undefined
-    >
+    const fieldColumns = Object.fromEntries(FIELDS.map((f) => [f, getColumn(COLUMNS[f])])) as FieldColumns
     const skipped = new Set<string>()
-    const byCity = new Map<number, Map<ModelId, Map<string, string[]>>>()
+    const byCity = new Map<number, RowsByModel>()
     let fetchedAt = getFileTime(fileName)
 
     for (const line of lines) {
@@ -81,32 +110,13 @@ export const parseForecastCsv = (text: string, fileName: string, cities: City[])
             continue
         }
 
-        const models = byCity.get(city.id) ?? new Map()
-        const steps = models.get(model as ModelId) ?? new Map()
-        steps.set(toIsoMinute(new Date(cells[at.valid])), cells)
-        models.set(model as ModelId, steps)
-        byCity.set(city.id, models)
+        addRow(byCity, city.id, model as ModelId, toIsoMinute(new Date(cells[at.valid])), cells)
     }
 
     if (!fetchedAt) throw new Error(`${fileName}: no issue_time column value and no timestamp in the file name`)
 
     const issueTime = toIsoMinute(floorToStep(fetchedAt))
-    const snapshots = [...byCity].map(([cityId, models]) => {
-        const steps = [...new Set([...models.values()].flatMap((s) => [...s.keys()]))].sort()
-        const series = Object.fromEntries(
-            [...models].map(([modelId, rows]) => [
-                modelId,
-                Object.fromEntries(
-                    FIELDS.map((f) => {
-                        const i = fieldColumns[f]
-                        return [f, steps.map((step) => (i === undefined ? null : toNumber(rows.get(step)?.[i])))]
-                    }),
-                ) as unknown as ModelSeries,
-            ]),
-        )
-
-        return { cityId, issueTime, steps, models: series }
-    })
+    const snapshots = [...byCity].map(([cityId, models]) => toSnapshot(cityId, models, issueTime, fieldColumns))
 
     return { issueTime, snapshots, skipped: [...skipped] }
 }
@@ -127,10 +137,7 @@ export const importForecastCsv = async (parsed: ParsedCsv, fileName: string) => 
         warnings: parsed.skipped.map((s) => `${fileName}: ${s}`),
         archivePath: null,
     }
-    const rows = parsed.snapshots.reduce(
-        (sum, s) => sum + Object.values(s.models).reduce((n, m) => n + m.temp.filter((v) => v !== null).length, 0),
-        0,
-    )
+    const rows = countRows(parsed.snapshots)
 
     await upsertRun({ ...run, rows })
 

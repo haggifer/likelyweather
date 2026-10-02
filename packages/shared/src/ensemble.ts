@@ -19,6 +19,50 @@ export interface DayDisagreement {
     label: DisagreementLabel
 }
 
+const getStepValues = (series: (number | null)[][], index: number) =>
+    series.map((values) => values[index]).filter((v): v is number => v !== null && v !== undefined)
+
+// Precipitation steps are 6-hour sums ending at the step, so each is attributed to the day of its last hour.
+const getStepDay = (step: string, variable: Variable, timeZone: string) =>
+    variable === Variable.Precip
+        ? getLocalDateKey(new Date(new Date(step).getTime() - 1).toISOString(), timeZone)
+        : getLocalDateKey(step, timeZone)
+
+const groupFutureStepsByDay = (steps: string[], variable: Variable, timeZone: string, now: Date) => {
+    const byDay = new Map<string, number[]>()
+
+    steps.forEach((step, i) => {
+        if (hoursBetween(now, step) <= 0) return
+
+        const day = getStepDay(step, variable, timeZone)
+
+        byDay.set(day, [...(byDay.get(day) ?? []), i])
+    })
+
+    return byDay
+}
+
+const getDayTotalsRange = (series: (number | null)[][], indices: number[]) => {
+    const totals = series
+        .map((values) => indices.map((i) => values[i]).filter((v): v is number => v !== null))
+        .filter((values) => values.length)
+        .map((values) => values.reduce((sum, v) => sum + v, 0))
+
+    return totals.length ? Math.max(...totals) - Math.min(...totals) : 0
+}
+
+const getMeanStepRange = (series: (number | null)[][], indices: number[]) => {
+    const ranges = indices
+        .map((i) => getStepValues(series, i))
+        .filter((values) => values.length > 1)
+        .map((values) => Math.max(...values) - Math.min(...values))
+
+    return ranges.length ? ranges.reduce((sum, r) => sum + r, 0) / ranges.length : 0
+}
+
+const getDaySpread = (series: (number | null)[][], indices: number[], variable: Variable) =>
+    variable === Variable.Precip ? getDayTotalsRange(series, indices) : getMeanStepRange(series, indices)
+
 export const quantileSorted = (sorted: number[], p: number) => {
     if (!sorted.length) return null
 
@@ -43,14 +87,12 @@ export const getStandardDeviation = (values: number[]) => {
     return Math.sqrt(values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / values.length)
 }
 
-const getStepValues = (series: (number | null)[][], index: number) =>
-    series.map((values) => values[index]).filter((v): v is number => v !== null && v !== undefined)
-
 export const computeEnsemble = (series: (number | null)[][], stepCount: number): EnsembleStats => {
     const stats: EnsembleStats = { median: [], min: [], max: [], q1: [], q3: [], count: [] }
 
     for (let i = 0; i < stepCount; i++) {
         const sorted = getStepValues(series, i).sort((a, b) => a - b)
+
         stats.count.push(sorted.length)
         stats.median.push(quantileSorted(sorted, 0.5))
         stats.q1.push(quantileSorted(sorted, 0.25))
@@ -104,12 +146,6 @@ export const computeChanceOfRain = (series: (number | null)[][], stepCount: numb
         return values.length ? values.filter((v) => v > RAIN_THRESHOLD_MM).length / values.length : null
     })
 
-// Precipitation steps are 6-hour sums ending at the step, so each is attributed to the day of its last hour.
-const getStepDay = (step: string, variable: Variable, timeZone: string) =>
-    variable === Variable.Precip
-        ? getLocalDateKey(new Date(new Date(step).getTime() - 1).toISOString(), timeZone)
-        : getLocalDateKey(step, timeZone)
-
 export const computeDisagreement = (
     steps: string[],
     series: (number | null)[][],
@@ -118,31 +154,10 @@ export const computeDisagreement = (
     now: Date,
 ): DayDisagreement[] => {
     const thresholds = VARIABLE_BY_ID[variable].disagreement
-    const byDay = new Map<string, number[]>()
-
-    steps.forEach((step, i) => {
-        if (hoursBetween(now, step) <= 0) return
-
-        const day = getStepDay(step, variable, timeZone)
-        byDay.set(day, [...(byDay.get(day) ?? []), i])
-    })
+    const byDay = groupFutureStepsByDay(steps, variable, timeZone, now)
 
     return [...byDay.entries()].map(([day, indices]) => {
-        let spread: number
-
-        if (variable === Variable.Precip) {
-            const totals = series
-                .map((values) => indices.map((i) => values[i]).filter((v): v is number => v !== null))
-                .filter((values) => values.length)
-                .map((values) => values.reduce((sum, v) => sum + v, 0))
-            spread = totals.length ? Math.max(...totals) - Math.min(...totals) : 0
-        } else {
-            const ranges = indices
-                .map((i) => getStepValues(series, i))
-                .filter((values) => values.length > 1)
-                .map((values) => Math.max(...values) - Math.min(...values))
-            spread = ranges.length ? ranges.reduce((sum, r) => sum + r, 0) / ranges.length : 0
-        }
+        const spread = getDaySpread(series, indices, variable)
 
         return { day, spread, label: getDisagreementLabel(spread, thresholds) }
     })

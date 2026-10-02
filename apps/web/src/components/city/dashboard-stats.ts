@@ -13,8 +13,6 @@ import { DASHBOARD_HOURS, SLOT_HOURS } from '@fa/shared/slots'
 import { addHours, toIsoMinute } from '@fa/shared/time'
 import { Variable } from '@fa/shared/variables'
 
-export const PRECIP_WINDOW_HOURS = 6
-
 interface DashboardStats {
     stats: EnsembleStats
     disagreement: DayDisagreement[]
@@ -32,6 +30,8 @@ interface ValueRange {
     min: number | null
     max: number | null
 }
+
+export const PRECIP_WINDOW_HOURS = 6
 
 export const getSlotEnd = (step: string) => toIsoMinute(addHours(new Date(step), SLOT_HOURS))
 

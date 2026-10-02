@@ -11,6 +11,7 @@ export enum CityStatus {
 
 export type RunStatus = 'OK' | 'PARTIAL' | 'FAILED'
 export type RunOrigin = 'SCHEDULED' | 'PREVIEW' | 'IMPORT'
+
 export enum Locale {
     Uk = 'uk',
     En = 'en',

@@ -1,4 +1,4 @@
-import { HOUR_MS } from '@fa/shared/constants'
+import { DAY_MS, HOUR_MS } from '@fa/shared/constants'
 import { formatTime } from '@fa/shared/format'
 import { getLocalDateKey, toIsoMinute } from '@fa/shared/time'
 
@@ -13,7 +13,6 @@ export interface TimelineGrid {
     cells: Map<string, string>
 }
 
-const DAY_MS = 86_400_000
 const CYCLE_HOURS = [0, 6, 12, 18]
 const CLOCK: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
 

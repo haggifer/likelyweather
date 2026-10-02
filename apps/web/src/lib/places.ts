@@ -35,39 +35,6 @@ const withoutPlace = (list: Place[], id: number) => list.filter((p) => p.id !== 
 
 const withoutDuplicates = (list: Place[]) => list.filter((p, i) => list.findIndex((q) => q.id === p.id) === i)
 
-export const getPlaceChips = ({ favorites, recents }: Places): Place[] =>
-    [...favorites, ...recents].slice(0, MAX_PLACES)
-
-export const isFavorite = (places: Places, id: number) => hasPlace(places.favorites, id)
-
-export const canPin = (places: Places, id: number) => isFavorite(places, id) || places.favorites.length < MAX_PLACES
-
-// A favorite keeps its position, so only the chips after the favorites change.
-export const addRecent = (places: Places, place: Place): Places =>
-    isFavorite(places, place.id)
-        ? places
-        : { ...places, recents: [toPlace(place), ...withoutPlace(places.recents, place.id)].slice(0, MAX_PLACES) }
-
-// A new favorite goes after the last one, so favorites never move once pinned.
-export const pinPlace = (places: Places, place: Place): Places =>
-    isFavorite(places, place.id) || !canPin(places, place.id)
-        ? places
-        : { favorites: [...places.favorites, toPlace(place)], recents: withoutPlace(places.recents, place.id) }
-
-// The viewer has just touched an unpinned place, so it becomes the newest recent.
-export const unpinPlace = (places: Places, place: Place): Places =>
-    isFavorite(places, place.id)
-        ? {
-              favorites: withoutPlace(places.favorites, place.id),
-              recents: [toPlace(place), ...withoutPlace(places.recents, place.id)].slice(0, MAX_PLACES),
-          }
-        : places
-
-export const rankByFavorite = <T extends { id: number }>(results: T[], places: Places): T[] => [
-    ...results.filter((r) => isFavorite(places, r.id)),
-    ...results.filter((r) => !isFavorite(places, r.id)),
-]
-
 const isPlace = (value: unknown): value is Place => {
     const place = value as Place
 
@@ -93,6 +60,39 @@ const repairPlaces = (favorites: Place[], recents: Place[]): Places => {
 
     return { favorites: pinned, recents: [...unpinned, ...fill].slice(0, MAX_PLACES) }
 }
+
+export const getPlaceChips = ({ favorites, recents }: Places): Place[] =>
+    [...favorites, ...recents].slice(0, MAX_PLACES)
+
+export const isFavorite = (places: Places, id: number) => hasPlace(places.favorites, id)
+
+export const isPinnable = (places: Places, id: number) => isFavorite(places, id) || places.favorites.length < MAX_PLACES
+
+// A favorite keeps its position, so only the chips after the favorites change.
+export const addRecent = (places: Places, place: Place): Places =>
+    isFavorite(places, place.id)
+        ? places
+        : { ...places, recents: [toPlace(place), ...withoutPlace(places.recents, place.id)].slice(0, MAX_PLACES) }
+
+// A new favorite goes after the last one, so favorites never move once pinned.
+export const pinPlace = (places: Places, place: Place): Places =>
+    isFavorite(places, place.id) || !isPinnable(places, place.id)
+        ? places
+        : { favorites: [...places.favorites, toPlace(place)], recents: withoutPlace(places.recents, place.id) }
+
+// The viewer has just touched an unpinned place, so it becomes the newest recent.
+export const unpinPlace = (places: Places, place: Place): Places =>
+    isFavorite(places, place.id)
+        ? {
+              favorites: withoutPlace(places.favorites, place.id),
+              recents: [toPlace(place), ...withoutPlace(places.recents, place.id)].slice(0, MAX_PLACES),
+          }
+        : places
+
+export const rankByFavorite = <T extends { id: number }>(results: T[], places: Places): T[] => [
+    ...results.filter((r) => isFavorite(places, r.id)),
+    ...results.filter((r) => !isFavorite(places, r.id)),
+]
 
 export const parsePlaces = (raw: string | null): Places => {
     try {

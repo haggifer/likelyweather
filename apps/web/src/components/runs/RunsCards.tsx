@@ -14,13 +14,13 @@ import { Button } from '@fa/ui/components/button'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
 
+// Up to 500 runs arrive at once; a phone renders them in pages instead of one long list.
+const PAGE_SIZE = 30
+
 interface IProps {
     runs: Run[]
     cityNames: Map<number, string>
 }
-
-// Up to 500 runs arrive at once; a phone renders them in pages instead of one long list.
-const PAGE_SIZE = 30
 
 export function RunsCards({ runs, cityNames }: IProps) {
     const t = useTranslations('runs')

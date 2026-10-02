@@ -20,9 +20,6 @@ const APP_DIR = path.join(STANDALONE, 'apps/web')
 const MTIME = new Date('2026-01-01T00:00:00Z')
 const RUN_SH = '#!/bin/bash\nexec node apps/web/server.js\n'
 
-cpSync('.next/static', path.join(APP_DIR, '.next/static'), { recursive: true })
-cpSync('public', path.join(APP_DIR, 'public'), { recursive: true })
-
 const zip = new yazl.ZipFile()
 let files = 0
 let links = 0
@@ -53,6 +50,7 @@ const addDir = (dir, prefix, seen) => {
 
         if (tracedEntry) {
             const target = path.posix.relative(path.posix.dirname(entry), tracedEntry)
+
             zip.addBuffer(Buffer.from(target), entry, { mode: 0o120777, mtime: MTIME })
             links++
         } else if (statSync(file).isDirectory()) {
@@ -64,11 +62,14 @@ const addDir = (dir, prefix, seen) => {
     }
 }
 
+cpSync('.next/static', path.join(APP_DIR, '.next/static'), { recursive: true })
+cpSync('public', path.join(APP_DIR, 'public'), { recursive: true })
+
 addDir(STANDALONE, '', new Set())
 zip.addBuffer(Buffer.from(RUN_SH), 'run.sh', { mode: 0o100755, mtime: MTIME })
 zip.outputStream.pipe(createWriteStream('.next/lambda.zip')).on('close', () => {
-    console.log(
-        `.next/lambda.zip: ${files} files, ${links} links, ${(statSync('.next/lambda.zip').size / 1e6).toFixed(1)} MB`,
-    )
+    const megabytes = (statSync('.next/lambda.zip').size / 1e6).toFixed(1)
+
+    console.log(`.next/lambda.zip: ${files} files, ${links} links, ${megabytes} MB`)
 })
 zip.end()

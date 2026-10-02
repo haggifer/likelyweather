@@ -21,15 +21,6 @@ import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useMemo } from 'react'
 
-interface IProps {
-    city: City
-    hourly: Record<Variable, LatestResponse>
-    anchor: Date
-    now: Date | null
-    isFetching?: boolean
-    onRefresh?: () => void
-}
-
 interface SkeletonProps {
     status: string
 }
@@ -74,6 +65,15 @@ export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
         </CardContent>
     </Card>
 )
+
+interface IProps {
+    city: City
+    hourly: Record<Variable, LatestResponse>
+    anchor: Date
+    now: Date | null
+    isFetching?: boolean
+    onRefresh?: () => void
+}
 
 // `anchor` is the local 3-hour slot the run was fetched in, where the chart starts.
 export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh }: IProps) {

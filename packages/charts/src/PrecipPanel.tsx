@@ -21,17 +21,6 @@ import { useChartTheme } from './hooks/useChartTheme'
 import { useElementWidth } from './hooks/useElementWidth'
 import { formatYTick, getYDomain, getYTicks } from './scales'
 
-interface IProps {
-    steps: string[]
-    series: Series[]
-    median: (number | null)[]
-    chance: (number | null)[]
-    timeZone: string
-    locale: string
-    windowHours?: number
-    height?: number
-}
-
 interface Row {
     step: string
     median: number | null
@@ -82,6 +71,17 @@ const ModelTick = ({ cx, cy, color }: ModelTickProps) =>
     cx === undefined || cy === undefined ? null : (
         <line x1={cx - 7} x2={cx + 7} y1={cy} y2={cy} stroke={color} strokeWidth={2} strokeLinecap="round" />
     )
+
+interface IProps {
+    steps: string[]
+    series: Series[]
+    median: (number | null)[]
+    chance: (number | null)[]
+    timeZone: string
+    locale: string
+    windowHours?: number
+    height?: number
+}
 
 export function PrecipPanel({
     steps,

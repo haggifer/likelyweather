@@ -1,4 +1,8 @@
 import { City, Locale } from './api'
+import { DAY_MS } from './constants'
+import { getOrCreate } from './memo'
+
+export type DayLabelStyle = 'long' | 'short' | 'narrow'
 
 const INTL_LOCALES: Record<Locale, string> = {
     [Locale.Uk]: 'uk-UA',
@@ -8,42 +12,48 @@ const INTL_LOCALES: Record<Locale, string> = {
     [Locale.Fr]: 'fr-FR',
 }
 
-const FORMATTERS = new Map<string, Intl.DateTimeFormat>()
-const REGION_NAMES = new Map<string, Intl.DisplayNames>()
-
-const getIntlLocale = (locale: string) => INTL_LOCALES[locale as Locale] ?? INTL_LOCALES[Locale.En]
-
-const getFormatter = (locale: string, timeZone: string, options: Intl.DateTimeFormatOptions) => {
-    const key = `${locale}|${timeZone}|${JSON.stringify(options)}`
-    let formatter = FORMATTERS.get(key)
-
-    if (!formatter) {
-        formatter = new Intl.DateTimeFormat(getIntlLocale(locale), { timeZone, ...options })
-        FORMATTERS.set(key, formatter)
-    }
-
-    return formatter
-}
-
-export const formatTime = (iso: string | Date, timeZone: string, locale: string, options: Intl.DateTimeFormatOptions) =>
-    getFormatter(locale, timeZone, options).format(new Date(iso))
-
-export const formatStepLabel = (iso: string, timeZone: string, locale: string) =>
-    formatTime(iso, timeZone, locale, { weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
-
 const CLOCK: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
-
-// A total over a span, e.g. "Sat 03:00–06:00": the day is the start's, so a span ending at midnight reads "Sat 21:00–00:00".
-export const formatPeriodLabel = (start: string, end: string, timeZone: string, locale: string) =>
-    `${formatStepLabel(start, timeZone, locale)}–${formatTime(end, timeZone, locale, CLOCK)}`
-
-export type DayLabelStyle = 'long' | 'short' | 'narrow'
 
 const DAY_LABEL_OPTIONS: Record<DayLabelStyle, Intl.DateTimeFormatOptions> = {
     long: { weekday: 'short', day: 'numeric', month: 'short' },
     short: { weekday: 'short', day: 'numeric' },
     narrow: { weekday: 'short' },
 }
+
+const ZONED_PARTS: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+}
+
+const MINUTE_MS = 60_000
+const FORMATTERS = new Map<string, Intl.DateTimeFormat>()
+const REGION_NAMES = new Map<string, Intl.DisplayNames>()
+
+const getIntlLocale = (locale: string) => INTL_LOCALES[locale as Locale] ?? INTL_LOCALES[Locale.En]
+
+const getFormatter = (locale: string, timeZone: string, options: Intl.DateTimeFormatOptions) =>
+    getOrCreate(
+        FORMATTERS,
+        `${locale}|${timeZone}|${JSON.stringify(options)}`,
+        () => new Intl.DateTimeFormat(getIntlLocale(locale), { timeZone, ...options }),
+    )
+
+const getRegionNames = (locale: string) =>
+    getOrCreate(REGION_NAMES, locale, () => new Intl.DisplayNames([getIntlLocale(locale)], { type: 'region' }))
+
+export const formatTime = (iso: string | Date, timeZone: string, locale: string, options: Intl.DateTimeFormatOptions) =>
+    getFormatter(locale, timeZone, options).format(new Date(iso))
+
+export const formatStepLabel = (iso: string, timeZone: string, locale: string) =>
+    formatTime(iso, timeZone, locale, { weekday: 'short', ...CLOCK })
+
+// A total over a span, e.g. "Sat 03:00–06:00": the day is the start's, so a span ending at midnight reads "Sat 21:00–00:00".
+export const formatPeriodLabel = (start: string, end: string, timeZone: string, locale: string) =>
+    `${formatStepLabel(start, timeZone, locale)}–${formatTime(end, timeZone, locale, CLOCK)}`
 
 export const formatDayLabel = (iso: string, timeZone: string, locale: string, style: DayLabelStyle = 'long') =>
     formatTime(iso, timeZone, locale, DAY_LABEL_OPTIONS[style])
@@ -69,12 +79,7 @@ export const getCityName = (city: Pick<City, 'name' | 'nameLocal'>, locale: stri
     city.nameLocal?.[locale as Locale] ?? city.name
 
 export const getCountryName = (countryCode: string, fallback: string, locale: string) => {
-    let names = REGION_NAMES.get(locale)
-
-    if (!names) {
-        names = new Intl.DisplayNames([getIntlLocale(locale)], { type: 'region' })
-        REGION_NAMES.set(locale, names)
-    }
+    const names = getRegionNames(locale)
 
     try {
         return names.of(countryCode.toUpperCase()) ?? fallback
@@ -93,35 +98,29 @@ export const getCityLabel = (
 
 // Offset of a time zone from UTC at a given instant, in minutes (positive east of Greenwich).
 export const getTimeZoneOffsetMinutes = (date: Date, timeZone: string) => {
-    const parts = getFormatter(Locale.En, timeZone, {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        hourCycle: 'h23',
-    }).formatToParts(date)
+    const parts = getFormatter(Locale.En, timeZone, ZONED_PARTS).formatToParts(date)
     const get = (type: string) => Number(parts.find((p) => p.type === type)?.value)
     const asUtc = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'))
 
-    return Math.round((asUtc - Math.floor(date.getTime() / 60_000) * 60_000) / 60_000)
+    return Math.round((asUtc - Math.floor(date.getTime() / MINUTE_MS) * MINUTE_MS) / MINUTE_MS)
 }
 
 export const getLocalMidnights = (start: Date, end: Date, timeZone: string) => {
     const midnights: Date[] = []
+
     const offset = getTimeZoneOffsetMinutes(start, timeZone)
-    const local = new Date(start.getTime() + offset * 60_000)
+    const local = new Date(start.getTime() + offset * MINUTE_MS)
     let day = Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate())
 
     for (let i = 0; i < 20; i++) {
         const guess = new Date(day)
-        const utc = new Date(day - getTimeZoneOffsetMinutes(guess, timeZone) * 60_000)
+        const utc = new Date(day - getTimeZoneOffsetMinutes(guess, timeZone) * MINUTE_MS)
 
         if (utc > end) break
 
         if (utc >= start) midnights.push(utc)
 
-        day += 86_400_000
+        day += DAY_MS
     }
 
     return midnights

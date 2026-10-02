@@ -9,12 +9,12 @@ import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@fa/ui/components/card'
 import { useLocale, useTranslations } from 'next-intl'
 
+const TONES: Record<DisagreementLabel, ChipTone> = { agree: ChipTone.Ok, mixed: ChipTone.Warn, split: ChipTone.Fail }
+
 interface IProps {
     days: DayDisagreement[]
     variable: Variable
 }
-
-const TONES: Record<DisagreementLabel, ChipTone> = { agree: ChipTone.Ok, mixed: ChipTone.Warn, split: ChipTone.Fail }
 
 export function DisagreementTiles({ days, variable }: IProps) {
     const t = useTranslations('disagreement')

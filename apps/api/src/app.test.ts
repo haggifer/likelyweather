@@ -4,7 +4,7 @@ import { createApp } from './app'
 
 loadLocalEnv()
 
-const app = createApp({ logRequests: false })
+const app = createApp({ isLoggingRequests: false })
 
 describe('API without the database', () => {
     it('serves the model palette with a public cache header', async () => {

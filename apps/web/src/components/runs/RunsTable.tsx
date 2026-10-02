@@ -16,11 +16,6 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { useLocale, useTranslations } from 'next-intl'
 import { useMemo, useRef } from 'react'
 
-interface IProps {
-    runs: Run[]
-    cityNames: Map<number, string>
-}
-
 const ROW_HEIGHT = 38
 const VIEWPORT_HEIGHT = 480
 
@@ -75,6 +70,11 @@ const getRunColumns = (
         cell: ({ row }) => <RunArchiveLink run={row.original} />,
     },
 ]
+
+interface IProps {
+    runs: Run[]
+    cityNames: Map<number, string>
+}
 
 export function RunsTable({ runs, cityNames }: IProps) {
     const t = useTranslations('runs')

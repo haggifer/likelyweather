@@ -2,8 +2,6 @@ import { loadLocalEnv } from '@fa/db/client'
 import path from 'node:path'
 import { z } from 'zod'
 
-loadLocalEnv()
-
 const REPO_ROOT = path.resolve(import.meta.dirname, '../../..')
 
 const EnvSchema = z.object({
@@ -21,6 +19,8 @@ const EnvSchema = z.object({
     DORMANT_AFTER_DAYS: z.coerce.number().int().positive().default(30),
     RETENTION_DAYS: z.coerce.number().int().positive().default(14),
 })
+
+loadLocalEnv()
 
 const parsed = EnvSchema.parse(process.env)
 

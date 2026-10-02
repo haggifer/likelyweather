@@ -26,6 +26,7 @@ const main = async () => {
 
     while (values.loop) {
         const delay = getNextRunDelay()
+
         console.log(`Next run in ${Math.round(delay / 60_000)} min`)
         await new Promise((resolve) => setTimeout(resolve, delay))
         await runOnce()

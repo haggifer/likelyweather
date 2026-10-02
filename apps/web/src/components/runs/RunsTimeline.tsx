@@ -8,11 +8,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@fa/ui/components/toolt
 import { cn } from '@fa/ui/lib/cn'
 import { useLocale, useTranslations } from 'next-intl'
 
-interface IProps {
-    timeline: TimelineResponse
-    now: Date
-}
-
 enum SlotState {
     Ok = 'OK',
     Partial = 'PARTIAL',
@@ -47,6 +42,11 @@ const getSlotState = (issueTime: string, timeline: TimelineResponse, now: Date):
     if (scheduled) return scheduled.status as SlotState
 
     return runs.length ? SlotState.Preview : SlotState.Missing
+}
+
+interface IProps {
+    timeline: TimelineResponse
+    now: Date
 }
 
 export function RunsTimeline({ timeline, now }: IProps) {

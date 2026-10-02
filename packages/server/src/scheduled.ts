@@ -1,19 +1,27 @@
 import { getPrisma } from '@fa/db/client'
 import { dropExpiredForecastPartitions } from '@fa/db/partitions'
-import { CityStatus } from '@fa/shared/api'
+import { City, CityStatus } from '@fa/shared/api'
+import { DAY_MS } from '@fa/shared/constants'
 import { acquireLock } from './cache'
 import { applyDormancy } from './cities'
 import { collect, CollectResult } from './collector'
 import { env } from './env'
 import { deleteSnapshotsBefore, getCities } from './store'
 
-const LOCK_TTL_SECONDS = 600
-const DAY_MS = 86_400_000
-
 export interface ScheduledRunOptions {
     slugs?: string[]
     now?: Date
     log?: (message: string) => void
+}
+
+const LOCK_TTL_SECONDS = 600
+const selectCities = (cities: City[], slugs?: string[]) =>
+    slugs ? cities.filter((c) => slugs.includes(c.slug)) : cities.filter((c) => c.status === CityStatus.Active)
+
+const getUnknownSlugs = (slugs: string[], cities: City[]) => {
+    const known = new Set(cities.map((c) => c.slug))
+
+    return slugs.filter((s) => !known.has(s))
 }
 
 // The scheduled run shared by the Lambda handler and the CLI: one holder of the collector lock at a time, dormancy
@@ -32,14 +40,12 @@ export const runScheduled = async ({
 
     try {
         await applyDormancy(now)
+
         const all = await getCities()
-        const cities = slugs
-            ? all.filter((c) => slugs.includes(c.slug))
-            : all.filter((c) => c.status === CityStatus.Active)
+        const cities = selectCities(all, slugs)
 
         if (slugs && cities.length !== slugs.length) {
-            const known = new Set(cities.map((c) => c.slug))
-            log(`Unknown slugs skipped: ${slugs.filter((s) => !known.has(s)).join(', ')}`)
+            log(`Unknown slugs skipped: ${getUnknownSlugs(slugs, cities).join(', ')}`)
         }
 
         if (!cities.length) {

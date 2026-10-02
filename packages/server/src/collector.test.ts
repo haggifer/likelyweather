@@ -1,9 +1,10 @@
 import { getPrisma, loadLocalEnv } from '@fa/db/client'
 import { City, CityStatus } from '@fa/shared/api'
 import { ModelId } from '@fa/shared/models'
+import { ModelSeries } from '@fa/shared/variables'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
-import { collect } from './collector'
+import { collect, countRows } from './collector'
 import { getLatestSnapshot } from './store'
 
 loadLocalEnv()
@@ -37,6 +38,19 @@ const respond = (metnoStatus: number) =>
             ? new Response(metnoStatus === 200 ? METNO : 'unavailable', { status: metnoStatus })
             : new Response(OPEN_METEO, { status: 200 }),
     )
+
+describe('countRows', () => {
+    it('counts the steps with a temperature across every model and snapshot', () => {
+        const series = (temp: (number | null)[]) => ({ temp }) as unknown as ModelSeries
+
+        const rows = countRows([
+            { models: { [ModelId.Gfs]: series([1, null, 3]), [ModelId.Metno]: series([null, null]) } },
+            { models: { [ModelId.Gfs]: series([4]) } },
+        ])
+
+        expect(rows).toBe(3)
+    })
+})
 
 describe.runIf(Boolean(process.env.DATABASE_URL))('collect (database, recorded upstream)', () => {
     const prisma = getPrisma()

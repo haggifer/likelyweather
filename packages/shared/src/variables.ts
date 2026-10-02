@@ -35,7 +35,7 @@ export interface VariableInfo {
     disagreement: DisagreementThresholds
     tickStep?: number
     tickSteps?: number[]
-    nonNegative?: boolean
+    isNonNegative?: boolean
 }
 
 export const VARIABLES: VariableInfo[] = [
@@ -58,7 +58,7 @@ export const VARIABLES: VariableInfo[] = [
         aggregation: 'instant',
         disagreement: { agree: 1.5, split: 4 },
         tickStep: 2,
-        nonNegative: true,
+        isNonNegative: true,
     },
     {
         id: Variable.Pressure,
@@ -79,7 +79,7 @@ export const VARIABLES: VariableInfo[] = [
         disagreement: { agree: 2, split: 8 },
         // Both sources report 0.1 mm amounts, so the finest readable step is 0.5 mm.
         tickSteps: [0.5, 1, 2, 5, 10, 20, 25, 50],
-        nonNegative: true,
+        isNonNegative: true,
     },
 ]
 

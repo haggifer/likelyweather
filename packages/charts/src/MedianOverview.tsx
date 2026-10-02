@@ -24,16 +24,6 @@ export interface MedianSeries {
     values: (number | null)[]
 }
 
-interface IProps {
-    series: Record<Variable, MedianSeries>
-    directions: (number | null)[] | null
-    timeZone: string
-    locale: string
-    now: Date | null
-    summaryStart: Date
-    ariaLabel: string
-}
-
 interface RowLayout {
     variable: Variable
     top: number
@@ -145,6 +135,16 @@ export const MedianOverviewSkeleton = () => (
         </div>
     </div>
 )
+
+interface IProps {
+    series: Record<Variable, MedianSeries>
+    directions: (number | null)[] | null
+    timeZone: string
+    locale: string
+    now: Date | null
+    summaryStart: Date
+    ariaLabel: string
+}
 
 // Median of all models for every tracked variable on one time axis of 3-hour slots; a precipitation bar is the
 // amount of the 3 hours after its slot. Readouts on the left follow the crosshair, or the slot nearest to `now`;

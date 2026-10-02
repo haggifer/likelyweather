@@ -11,14 +11,6 @@ import { cn } from '@fa/ui/lib/cn'
 import { Eye, EyeOff, Pin } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
-interface IProps {
-    series: Series[]
-    median: number | null
-    readoutIndex: number
-    readoutLabel: string
-    variable: Variable
-}
-
 interface SwatchProps {
     color: string
     dash?: string
@@ -48,6 +40,14 @@ const getLegendRows = (series: Series[], readoutIndex: number, hidden: ModelId[]
             isHidden: hidden.includes(s.modelId),
         }))
         .sort((a, b) => Number(a.isHidden) - Number(b.isHidden) || (b.value ?? -Infinity) - (a.value ?? -Infinity))
+
+interface IProps {
+    series: Series[]
+    median: number | null
+    readoutIndex: number
+    readoutLabel: string
+    variable: Variable
+}
 
 export function ModelLegend({ series, median, readoutIndex, readoutLabel, variable }: IProps) {
     const t = useTranslations('legend')

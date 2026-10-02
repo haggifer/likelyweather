@@ -36,10 +36,6 @@ import { useLocale, useTranslations } from 'next-intl'
 import dynamic from 'next/dynamic'
 import { useEffect, useMemo } from 'react'
 
-interface IProps {
-    slug: string
-}
-
 interface SeriesTableProps {
     steps: string[]
     series: Series[]
@@ -137,6 +133,10 @@ const SeriesTable = ({
         </TableBody>
     </Table>
 )
+
+interface IProps {
+    slug: string
+}
 
 export function Dashboard({ slug }: IProps) {
     const t = useTranslations('dashboard')

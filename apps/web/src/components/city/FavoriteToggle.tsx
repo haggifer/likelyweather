@@ -1,7 +1,7 @@
 'use client'
 
 import { usePlaces } from '@/hooks/usePlaces'
-import { canPin, isFavorite, MAX_PLACES, pinPlace, Place, Places, unpinPlace } from '@/lib/places'
+import { isFavorite, isPinnable, MAX_PLACES, pinPlace, Place, Places, unpinPlace } from '@/lib/places'
 import { updatePlaces } from '@/lib/places-store'
 import { Button } from '@fa/ui/components/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@fa/ui/components/tooltip'
@@ -9,13 +9,13 @@ import { cn } from '@fa/ui/lib/cn'
 import { Star } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
+const togglePin = (places: Places, place: Place) =>
+    isFavorite(places, place.id) ? unpinPlace(places, place) : pinPlace(places, place)
+
 interface IProps {
     place: Place
     className?: string
 }
-
-const togglePin = (places: Places, place: Place) =>
-    isFavorite(places, place.id) ? unpinPlace(places, place) : pinPlace(places, place)
 
 // Pins a place to the front of the viewer's chips. It stays invisible until the stored places are read, so the
 // server HTML and the first render agree and the header doesn't shift.
@@ -24,7 +24,7 @@ export function FavoriteToggle({ place, className }: IProps) {
     const places = usePlaces()
 
     const isPinned = places ? isFavorite(places, place.id) : false
-    const isAvailable = places ? canPin(places, place.id) : true
+    const isAvailable = places ? isPinnable(places, place.id) : true
     const label = t(isPinned ? 'unpin' : 'pin')
 
     const handleToggle = () => updatePlaces((current) => togglePin(current, place))

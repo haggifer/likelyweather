@@ -1,4 +1,5 @@
-import { City, CityDetail, CityStatus, Locale, LOCALES } from '@fa/shared/api'
+import { City, CityDetail, CityStatus, GeocodeResult, Locale, LOCALES } from '@fa/shared/api'
+import { DAY_MS } from '@fa/shared/constants'
 import { slugify } from '@fa/shared/seeds'
 import { floorToStep, toIsoMinute } from '@fa/shared/time'
 import { dedupe } from './cache'
@@ -9,12 +10,66 @@ import { quotaExceeded, trySpendQuota } from './quota'
 import { getPlace } from './sources/geocoding'
 import { getCities, getCityBySlug, getLatestSnapshotMeta, SnapshotMeta, updateCities } from './store'
 
-const DAY_MS = 86_400_000
-
 const countActive = (cities: City[]) => cities.filter((c) => c.status === CityStatus.Active).length
 
-const getReactivatedStatus = (cities: City[]) =>
+const checkReactivatedStatus = (cities: City[]) =>
     countActive(cities) < env.ACTIVE_CITY_CAP ? CityStatus.Active : CityStatus.Queued
+
+const findCity = async (id: number) => {
+    const cities = await getCities()
+
+    return cities.find((c) => c.id === id)
+}
+
+const getLocalNames = (places: (GeocodeResult | null)[]) =>
+    Object.fromEntries(
+        LOCALES.map((locale, i) => [locale, places[i]?.name]).filter(([locale, name]) => locale !== Locale.En && name),
+    ) as Partial<Record<Locale, string>>
+
+const toTrackedCity = (
+    place: GeocodeResult,
+    nameLocal: Partial<Record<Locale, string>>,
+    status: CityStatus,
+    now: string,
+): City => ({
+    id: place.id,
+    slug: slugify(place.name, place.countryCode, place.id),
+    name: place.name,
+    nameLocal,
+    admin1: place.admin1,
+    country: place.country,
+    countryCode: place.countryCode,
+    lat: place.lat,
+    lon: place.lon,
+    elevationM: place.elevationM,
+    timezone: place.timezone,
+    population: place.population,
+    status,
+    availableModels: [],
+    firstTrackedAt: now,
+    lastViewedAt: now,
+    viewCount: 0,
+    runsCollected: 0,
+})
+
+const markDormant = (cities: City[], dormantBefore: number) =>
+    cities.map((city) =>
+        city.status === CityStatus.Active && new Date(city.lastViewedAt).getTime() < dormantBefore
+            ? { ...city, status: CityStatus.Dormant }
+            : city,
+    )
+
+const promoteQueued = (cities: City[]) => {
+    let free = env.ACTIVE_CITY_CAP - countActive(cities)
+
+    return cities.map((city) => {
+        if (city.status !== CityStatus.Queued || free <= 0) return city
+
+        free--
+
+        return { ...city, status: CityStatus.Active }
+    })
+}
 
 export const requireCity = async (slug: string) => {
     const city = await getCityBySlug(slug)
@@ -25,7 +80,7 @@ export const requireCity = async (slug: string) => {
 }
 
 export const trackCity = async (geocodeId: number) => {
-    const existing = (await getCities()).find((c) => c.id === geocodeId)
+    const existing = await findCity(geocodeId)
 
     if (existing) return existing
 
@@ -34,39 +89,23 @@ export const trackCity = async (geocodeId: number) => {
 
     if (!place) throw new HttpError(404, 'place_not_found', `Geocoding id ${geocodeId} not found`)
 
-    const nameLocal = Object.fromEntries(
-        LOCALES.map((locale, i) => [locale, places[i]?.name]).filter(([locale, name]) => locale !== Locale.En && name),
-    ) as Partial<Record<Locale, string>>
+    const nameLocal = getLocalNames(places)
     const now = new Date().toISOString()
     let created: City | undefined
 
     await updateCities((cities) => {
         if (cities.some((c) => c.id === geocodeId)) return cities
 
-        created = {
-            id: place.id,
-            slug: slugify(place.name, place.countryCode, place.id),
-            name: place.name,
-            nameLocal,
-            admin1: place.admin1,
-            country: place.country,
-            countryCode: place.countryCode,
-            lat: place.lat,
-            lon: place.lon,
-            elevationM: place.elevationM,
-            timezone: place.timezone,
-            population: place.population,
-            status: getReactivatedStatus(cities),
-            availableModels: [],
-            firstTrackedAt: now,
-            lastViewedAt: now,
-            viewCount: 0,
-            runsCollected: 0,
-        }
+        created = toTrackedCity(place, nameLocal, checkReactivatedStatus(cities), now)
+
         return [...cities, created]
     })
 
-    return created ?? (await getCities()).find((c) => c.id === geocodeId)!
+    if (created) return created
+
+    const tracked = await findCity(geocodeId)
+
+    return tracked!
 }
 
 export const recordView = async (slug: string) => {
@@ -80,8 +119,9 @@ export const recordView = async (slug: string) => {
                 ...city,
                 viewCount: city.viewCount + 1,
                 lastViewedAt: new Date().toISOString(),
-                status: city.status === CityStatus.Dormant ? getReactivatedStatus(cities) : city.status,
+                status: city.status === CityStatus.Dormant ? checkReactivatedStatus(cities) : city.status,
             }
+
             return viewed
         }),
     )
@@ -92,24 +132,14 @@ export const recordView = async (slug: string) => {
 export const applyDormancy = (now = new Date()) =>
     updateCities((cities) => {
         const dormantBefore = now.getTime() - env.DORMANT_AFTER_DAYS * DAY_MS
-        const next = cities.map((city) =>
-            city.status === CityStatus.Active && new Date(city.lastViewedAt).getTime() < dormantBefore
-                ? { ...city, status: CityStatus.Dormant }
-                : city,
-        )
-        let free = env.ACTIVE_CITY_CAP - countActive(next)
 
-        return next.map((city) => {
-            if (city.status !== CityStatus.Queued || free <= 0) return city
-
-            free--
-            return { ...city, status: CityStatus.Active }
-        })
+        return promoteQueued(markDormant(cities, dormantBefore))
     })
 
-// A city whose newest snapshot predates the current 6-hour run is refreshed through the collector's preview path. This stands in for the scheduler locally:
-// views never wait more than one upstream round trip. A refresh on behalf of a `client` spends its daily quota; with
-// none left the stored snapshot is served as it is. Concurrent views share one refresh, paid by the first.
+// A city whose newest snapshot predates the current 6-hour run is refreshed through the collector's preview path.
+// This stands in for the scheduler locally: views never wait more than one upstream round trip. A refresh on behalf
+// of a `client` spends its daily quota; with none left the stored snapshot is served as it is. Concurrent views share
+// one refresh, paid by the first.
 export const ensureFreshSnapshot = (city: City, client?: string): Promise<SnapshotMeta> =>
     dedupe(`refresh:${city.id}`, async () => {
         const snapshot = await getLatestSnapshotMeta(city.id)
@@ -117,14 +147,17 @@ export const ensureFreshSnapshot = (city: City, client?: string): Promise<Snapsh
 
         if (snapshot && snapshot.issueTime >= currentIssue) return snapshot
 
-        if (client && !(await trySpendQuota(client))) {
-            if (snapshot) return snapshot
+        if (client) {
+            const hasQuota = await trySpendQuota(client)
 
-            throw quotaExceeded()
+            if (!hasQuota && snapshot) return snapshot
+
+            if (!hasQuota) throw quotaExceeded()
         }
 
         try {
             const { snapshots } = await collect({ origin: 'PREVIEW', cities: [city] })
+
             return snapshots[0] ?? snapshot
         } catch (error) {
             if (snapshot) return snapshot

@@ -93,8 +93,8 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('store (database)', () => {
         expect(snapshot?.models[ModelId.Gfs]).toEqual(series)
         expect(snapshot?.metnoLastModified).toBe('Tue, 04 Mar 2030 06:30:00 GMT')
 
-        const meta = (await getLatestSnapshotMeta(CITY_ID))!
-        const temps = await getSnapshotGrid(meta, ['temp'], [ModelId.Metno])
+        const meta = await getLatestSnapshotMeta(CITY_ID)
+        const temps = await getSnapshotGrid(meta!, ['temp'], [ModelId.Metno])
 
         expect(Object.keys(temps.models)).toEqual([ModelId.Metno])
         expect(temps.models[ModelId.Metno]).toEqual({ temp: values(20) })
@@ -105,7 +105,9 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('store (database)', () => {
             cities.map((c) => (c.id === CITY_ID ? { ...c, viewCount: c.viewCount + 1 } : c)),
         )
 
+        const stored = await prisma.city.findUnique({ where: { id: CITY_ID } })
+
         expect(after.find((c) => c.id === CITY_ID)?.viewCount).toBe(1)
-        expect((await prisma.city.findUnique({ where: { id: CITY_ID } }))?.viewCount).toBe(1)
+        expect(stored?.viewCount).toBe(1)
     })
 })

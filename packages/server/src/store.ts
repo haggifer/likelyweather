@@ -41,6 +41,9 @@ const COLUMNS: Record<SeriesField, keyof Prisma.ForecastCreateManyInput> = {
     snow: 'snowCm',
 }
 const FIELDS = Object.keys(COLUMNS) as SeriesField[]
+const CITY_ORDER: Prisma.CityOrderByWithRelationInput[] = [{ firstTrackedAt: 'asc' }, { id: 'asc' }]
+
+const ensuredWeeks = new Map<number, Promise<void>>()
 
 const toIso = (date: Date) => date.toISOString()
 
@@ -109,54 +112,11 @@ const toMeta = (row: SnapshotRow): SnapshotMeta => ({
     metnoLastModified: row.metnoLastModified ?? undefined,
 })
 
-export const getCities = async () =>
-    (await getPrisma().city.findMany({ orderBy: [{ firstTrackedAt: 'asc' }, { id: 'asc' }] })).map(toCity)
+const findCities = async (db: Prisma.TransactionClient) => {
+    const rows = await db.city.findMany({ orderBy: CITY_ORDER })
 
-export const getCityBySlug = async (slug: string) => {
-    const row = await getPrisma().city.findUnique({ where: { slug } })
-
-    return row ? toCity(row) : undefined
+    return rows.map(toCity)
 }
-
-// Read-modify-write over the whole city list, serialized by a transaction-scoped advisory lock so the collector and
-// API instances never interleave (the list is capped at a few hundred rows). Only changed rows are written.
-export const updateCities = (mutate: (cities: City[]) => City[]) =>
-    getPrisma().$transaction(async (tx) => {
-        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext('cities'))`
-        const before = (await tx.city.findMany({ orderBy: [{ firstTrackedAt: 'asc' }, { id: 'asc' }] })).map(toCity)
-        const byId = new Map(before.map((c) => [c.id, c]))
-        const after = mutate(before)
-
-        for (const city of after) {
-            if (isEqual(byId.get(city.id), city)) continue
-
-            const data = fromCity(city)
-            await tx.city.upsert({ where: { id: city.id }, create: data, update: data })
-        }
-
-        return after
-    })
-
-export const getRuns = async () =>
-    (await getPrisma().collectionRun.findMany({ orderBy: { startedAt: 'desc' } })).map(toRun)
-
-export const getRun = async (id: string) => {
-    const row = await getPrisma().collectionRun.findUnique({ where: { id } })
-
-    return row ? toRun(row) : undefined
-}
-
-export const upsertRun = async (run: Run) => {
-    const data = {
-        ...run,
-        issueTime: new Date(run.issueTime),
-        startedAt: new Date(run.startedAt),
-        finishedAt: run.finishedAt ? new Date(run.finishedAt) : null,
-    }
-    await getPrisma().collectionRun.upsert({ where: { id: run.id }, create: data, update: data })
-}
-
-const ensuredWeeks = new Map<number, Promise<void>>()
 
 // Partition DDL runs once per week and process; parallel writes of one run share the pending call.
 const ensurePartitionsOnce = (issueTime: Date) => {
@@ -169,11 +129,8 @@ const ensurePartitionsOnce = (issueTime: Date) => {
     return pending
 }
 
-// Replaces the city's rows for that issue time: a scheduled run overwrites an earlier preview of the same issue.
-export const writeSnapshot = async (snapshot: Snapshot) => {
-    const prisma = getPrisma()
-    const issueTime = new Date(snapshot.issueTime)
-    const rows: Prisma.ForecastCreateManyInput[] = Object.entries(snapshot.models).flatMap(([modelId, series]) =>
+const toForecastRows = (snapshot: Snapshot, issueTime: Date): Prisma.ForecastCreateManyInput[] =>
+    Object.entries(snapshot.models).flatMap(([modelId, series]) =>
         snapshot.steps.map((step, i) => {
             const validTime = new Date(step)
             const row: Prisma.ForecastCreateManyInput = {
@@ -189,6 +146,95 @@ export const writeSnapshot = async (snapshot: Snapshot) => {
             return row
         }),
     )
+
+const findGridRows = (cityId: number, issueTime: Date, fields: SeriesField[], modelIds?: ModelId[]) => {
+    const select = Object.fromEntries(fields.map((f) => [COLUMNS[f], true]))
+
+    return getPrisma().forecast.findMany({
+        where: { cityId, issueTime, ...(modelIds && { modelId: { in: modelIds } }) },
+        select: { modelId: true, validTime: true, ...select },
+    })
+}
+
+type GridRow = Awaited<ReturnType<typeof findGridRows>>[number]
+
+const toGridModels = (rows: GridRow[], fields: SeriesField[], steps: string[]) => {
+    const index = new Map(steps.map((s, i) => [new Date(s).getTime(), i]))
+    const models: SeriesGrid['models'] = {}
+
+    for (const row of rows) {
+        const i = index.get(row.validTime.getTime())
+
+        if (i === undefined) continue
+
+        const series = (models[row.modelId as ModelId] ??= Object.fromEntries(
+            fields.map((f) => [f, steps.map(() => null)]),
+        ) as unknown as ModelSeries)
+
+        for (const field of fields) series[field][i] = (row as unknown as Record<string, number | null>)[COLUMNS[field]]
+    }
+
+    return models
+}
+
+export const getCities = async () => findCities(getPrisma())
+
+export const getCityBySlug = async (slug: string) => {
+    const row = await getPrisma().city.findUnique({ where: { slug } })
+
+    return row ? toCity(row) : undefined
+}
+
+// Read-modify-write over the whole city list, serialized by a transaction-scoped advisory lock so the collector and
+// API instances never interleave (the list is capped at a few hundred rows). Only changed rows are written.
+export const updateCities = (mutate: (cities: City[]) => City[]) =>
+    getPrisma().$transaction(async (tx) => {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext('cities'))`
+
+        const before = await findCities(tx)
+        const byId = new Map(before.map((c) => [c.id, c]))
+        const after = mutate(before)
+
+        for (const city of after) {
+            if (isEqual(byId.get(city.id), city)) continue
+
+            const data = fromCity(city)
+
+            await tx.city.upsert({ where: { id: city.id }, create: data, update: data })
+        }
+
+        return after
+    })
+
+export const getRuns = async () => {
+    const rows = await getPrisma().collectionRun.findMany({ orderBy: { startedAt: 'desc' } })
+
+    return rows.map(toRun)
+}
+
+export const getRun = async (id: string) => {
+    const row = await getPrisma().collectionRun.findUnique({ where: { id } })
+
+    return row ? toRun(row) : undefined
+}
+
+export const upsertRun = async (run: Run) => {
+    const data = {
+        ...run,
+        issueTime: new Date(run.issueTime),
+        startedAt: new Date(run.startedAt),
+        finishedAt: run.finishedAt ? new Date(run.finishedAt) : null,
+    }
+
+    await getPrisma().collectionRun.upsert({ where: { id: run.id }, create: data, update: data })
+}
+
+// Replaces the city's rows for that issue time: a scheduled run overwrites an earlier preview of the same issue.
+export const writeSnapshot = async (snapshot: Snapshot) => {
+    const prisma = getPrisma()
+    const issueTime = new Date(snapshot.issueTime)
+
+    const rows = toForecastRows(snapshot, issueTime)
     const meta = {
         runId: snapshot.runId,
         origin: snapshot.origin,
@@ -222,33 +268,21 @@ export const getSnapshotGrid = async (
 ): Promise<SeriesGrid> => {
     const issueTime = new Date(meta.issueTime)
     const steps = getWindowSteps(issueTime)
-    const index = new Map(steps.map((s, i) => [new Date(s).getTime(), i]))
-    const select = Object.fromEntries(fields.map((f) => [COLUMNS[f], true]))
-    const rows = await getPrisma().forecast.findMany({
-        where: { cityId: meta.cityId, issueTime, ...(modelIds && { modelId: { in: modelIds } }) },
-        select: { modelId: true, validTime: true, ...select },
-    })
-    const models: SeriesGrid['models'] = {}
 
-    for (const row of rows) {
-        const i = index.get(row.validTime.getTime())
-
-        if (i === undefined) continue
-
-        const series = (models[row.modelId as ModelId] ??= Object.fromEntries(
-            fields.map((f) => [f, steps.map(() => null)]),
-        ) as unknown as ModelSeries)
-
-        for (const field of fields) series[field][i] = (row as unknown as Record<string, number | null>)[COLUMNS[field]]
-    }
+    const rows = await findGridRows(meta.cityId, issueTime, fields, modelIds)
+    const models = toGridModels(rows, fields, steps)
 
     return { steps, models }
 }
 
-export const getLatestSnapshot = async (cityId: number): Promise<Snapshot | null> => {
+export const getLatestSnapshot = async (cityId: number, modelIds?: ModelId[]): Promise<Snapshot | null> => {
     const meta = await getLatestSnapshotMeta(cityId)
 
-    return meta ? { ...meta, ...(await getSnapshotGrid(meta)) } : null
+    if (!meta) return null
+
+    const grid = await getSnapshotGrid(meta, undefined, modelIds)
+
+    return { ...meta, ...grid }
 }
 
 export const deleteSnapshotsBefore = (cutoff: Date) =>

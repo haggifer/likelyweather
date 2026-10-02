@@ -10,7 +10,10 @@ export const handler = async () => {
     if (!runScheduled) {
         // Secrets first: the collector's modules read process.env when they load.
         await loadSecrets()
-        ;({ runScheduled } = await import('@fa/server/scheduled'))
+
+        const scheduled = await import('@fa/server/scheduled')
+
+        runScheduled = scheduled.runScheduled
     }
 
     const result = await runScheduled({ log: (m) => console.log(m) })

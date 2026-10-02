@@ -1,5 +1,10 @@
 import { ScaleTime } from 'd3-scale'
 
+const ARROW = 'M0,-7 L4,3 L0,1 L-4,3 Z'
+
+const getCompassLabel = (degrees: number, labels: string[]) =>
+    labels[Math.round((((degrees % 360) + 360) % 360) / (360 / labels.length)) % labels.length]
+
 interface IProps {
     x: ScaleTime<number, number>
     times: Date[]
@@ -9,11 +14,6 @@ interface IProps {
     mutedColor: string
     compassLabels: string[]
 }
-
-const ARROW = 'M0,-7 L4,3 L0,1 L-4,3 Z'
-
-const getCompassLabel = (degrees: number, labels: string[]) =>
-    labels[Math.round((((degrees % 360) + 360) % 360) / (360 / labels.length)) % labels.length]
 
 // Meteorological direction is where the wind comes FROM; the arrow points where it blows to (+180°).
 export function WindArrows({ x, times, directions, y, color, mutedColor, compassLabels }: IProps) {

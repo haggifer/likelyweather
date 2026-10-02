@@ -14,7 +14,7 @@ const pickTickStep = (steps: number[], max: number) =>
 // smallest step from `tickSteps` that covers the maximum in at most three segments (precipitation), or padded
 // and niced.
 export const getYDomain = (values: (number | null | undefined)[], variable: Variable): [number, number] => {
-    const { tickStep, tickSteps, nonNegative } = VARIABLE_BY_ID[variable]
+    const { tickStep, tickSteps, isNonNegative } = VARIABLE_BY_ID[variable]
     const defined = values.filter((v): v is number => v !== null && v !== undefined)
     const zeroBased = variable === Variable.Precip
 
@@ -33,7 +33,7 @@ export const getYDomain = (values: (number | null | undefined)[], variable: Vari
     if (tickStep) {
         const lo = Math.floor(min / tickStep) * tickStep
         const hi = Math.ceil(max / tickStep) * tickStep
-        return [nonNegative ? Math.max(0, lo) : lo, hi > lo ? hi : lo + tickStep]
+        return [isNonNegative ? Math.max(0, lo) : lo, hi > lo ? hi : lo + tickStep]
     }
 
     const pad = (max - min || 1) * PAD_RATIO
@@ -42,7 +42,7 @@ export const getYDomain = (values: (number | null | undefined)[], variable: Vari
 
     const [niceLo, niceHi] = scaleLinear().domain([lo, hi]).nice(6).domain()
 
-    return [nonNegative ? Math.max(0, niceLo) : niceLo, niceHi]
+    return [isNonNegative ? Math.max(0, niceLo) : niceLo, niceHi]
 }
 
 export const getYTicks = (domain: [number, number], variable: Variable, count: number) => {

@@ -7,3 +7,5 @@ export class HttpError extends Error {
         super(message)
     }
 }
+
+export const getErrorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error))

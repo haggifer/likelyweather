@@ -18,15 +18,6 @@ import { useRouter } from 'next/navigation'
 import { KeyboardEvent as ReactKeyboardEvent, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { toast } from 'sonner'
 
-interface IProps {
-    enableShortcut?: boolean
-    initialQuery?: string
-    autoFocus?: boolean
-    onSelectCity?: (slug: string) => void
-    onDismiss?: () => void
-    className?: string
-}
-
 const MIN_QUERY = 3
 
 const subscribeToNothing = () => () => {}
@@ -42,6 +33,15 @@ const FavoriteMark = ({ places, id }: { places: Places | null; id: number }) =>
     places && isFavorite(places, id) ? (
         <Star className="size-3.5 shrink-0 fill-favorite text-favorite" aria-hidden="true" />
     ) : null
+
+interface IProps {
+    enableShortcut?: boolean
+    initialQuery?: string
+    autoFocus?: boolean
+    onSelectCity?: (slug: string) => void
+    onDismiss?: () => void
+    className?: string
+}
 
 // Selecting a place tracks it, records it as the newest recent place, and then hands the slug to `onSelectCity`;
 // without a handler the box navigates to the city dashboard. While the text is empty or untouched, the box offers the
@@ -59,6 +59,7 @@ export function SearchBox({
     const locale = useLocale() as Locale
     const router = useRouter()
     const shortcutLabel = useSyncExternalStore(subscribeToNothing, getShortcutLabel, getServerShortcutLabel)
+    const places = usePlaces()
 
     const inputRef = useRef<HTMLInputElement>(null)
     const [query, setQuery] = useState(initialQuery)
@@ -68,7 +69,6 @@ export function SearchBox({
     const debounced = useDebouncedValue(isEdited ? query.trim() : '', 200)
     const { data, isFetching, isError } = useGeocode(debounced, locale)
     const track = useTrackCity()
-    const places = usePlaces()
 
     const sorted = [...(data?.results ?? [])].sort(byPopulation)
     const results = places ? rankByFavorite(sorted, places) : sorted

@@ -5,7 +5,26 @@ const KYIV = 'kyiv-ua-703448'
 const LONDON = 'london-gb-2643743'
 
 // The overview card is the first card on the landing page; its title names the city.
-const overviewTitle = (page: Page) => page.locator('[data-slot=card] [data-slot=card-title]').first()
+const getOverviewTitle = (page: Page) => page.locator('[data-slot=card] [data-slot=card-title]').first()
+
+// The landing chips are the only toggle buttons on the page.
+const getChipNames = (page: Page) => page.locator('main button[aria-pressed]').allInnerTexts()
+
+const toStoredPlace = (id: number, name: string) => ({
+    id,
+    slug: `${name.toLowerCase()}-${id}`,
+    name,
+    country: 'X',
+    countryCode: 'XX',
+})
+
+const getSeriousViolations = async (page: Page) => {
+    const { violations } = await new AxeBuilder({ page }).analyze()
+
+    return violations
+        .filter((v) => v.impact === 'serious' || v.impact === 'critical')
+        .map((v) => `${v.id}: ${v.nodes.length} nodes`)
+}
 
 test.beforeEach(async ({ context }) => {
     // Every test starts in English, whatever an earlier test chose.
@@ -18,7 +37,7 @@ test('search tracks a new city, shows its overview, then its dashboard', async (
     await page.getByRole('option', { name: /Vinnytsia/ }).click()
 
     await expect(page).toHaveURL(/city=vinnytsia-ua-689558/)
-    await expect(overviewTitle(page)).toContainText('Vinnytsia')
+    await expect(getOverviewTitle(page)).toContainText('Vinnytsia')
     await expect(page.locator('[data-slot=card] svg[role=img]').first()).toBeVisible()
 
     await page.getByRole('link', { name: 'Open details' }).click()
@@ -33,7 +52,7 @@ test('a "Start with" chip switches the overview in place', async ({ page }) => {
     await page.getByRole('button', { name: 'London' }).click()
 
     await expect(page).toHaveURL(new RegExp(`city=${LONDON}`))
-    await expect(overviewTitle(page)).toContainText('London')
+    await expect(getOverviewTitle(page)).toContainText('London')
 })
 
 test('the dashboard switches variables and draws precipitation as bars', async ({ page }) => {
@@ -64,10 +83,9 @@ for (const path of ['/', `/city/${KYIV}`]) {
         await page.goto(path)
         await expect(page.locator('svg[role=img]').first()).toBeVisible()
 
-        const { violations } = await new AxeBuilder({ page }).analyze()
-        const serious = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
+        const serious = await getSeriousViolations(page)
 
-        expect(serious.map((v) => `${v.id}: ${v.nodes.length} nodes`)).toEqual([])
+        expect(serious).toEqual([])
     })
 }
 
@@ -80,32 +98,20 @@ test('the footer links to the privacy policy and the terms', async ({ page }) =>
         await page.getByRole('contentinfo').getByRole('link', { name: link }).click()
         await expect(page.getByRole('heading', { level: 1 })).toHaveText(heading)
 
-        const { violations } = await new AxeBuilder({ page }).analyze()
-        const serious = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
+        const serious = await getSeriousViolations(page)
 
-        expect(serious.map((v) => `${v.id}: ${v.nodes.length} nodes`)).toEqual([])
+        expect(serious).toEqual([])
     }
-})
-
-// The landing chips are the only toggle buttons on the page.
-const chipNames = (page: Page) => page.locator('main button[aria-pressed]').allInnerTexts()
-
-const storedPlace = (id: number, name: string) => ({
-    id,
-    slug: `${name.toLowerCase()}-${id}`,
-    name,
-    country: 'X',
-    countryCode: 'XX',
 })
 
 test('a searched city becomes the first chip and the oldest one drops', async ({ page }) => {
     await page.goto('/')
-    await expect.poll(() => chipNames(page)).toEqual(['New York', 'London', 'Paris', 'Kyiv'])
+    await expect.poll(() => getChipNames(page)).toEqual(['New York', 'London', 'Paris', 'Kyiv'])
 
     await page.getByRole('combobox', { name: 'Search any city' }).fill('Vinnytsia')
     await page.getByRole('option', { name: /Vinnytsia/ }).click()
 
-    await expect.poll(() => chipNames(page)).toEqual(['Vinnytsia', 'New York', 'London', 'Paris'])
+    await expect.poll(() => getChipNames(page)).toEqual(['Vinnytsia', 'New York', 'London', 'Paris'])
 })
 
 test('a pinned city moves to the front of the chips and opens the landing page', async ({ page }) => {
@@ -116,23 +122,25 @@ test('a pinned city moves to the front of the chips and opens the landing page',
 
     await page.goto('/')
 
-    await expect.poll(() => chipNames(page)).toEqual(['London', 'New York', 'Paris', 'Kyiv'])
-    await expect(overviewTitle(page)).toContainText('London')
+    await expect.poll(() => getChipNames(page)).toEqual(['London', 'New York', 'Paris', 'Kyiv'])
+    await expect(getOverviewTitle(page)).toContainText('London')
 })
 
 test('the star explains why it is disabled once four places are favorites', async ({ page }) => {
     const favorites = [
-        storedPlace(1, 'Alpha'),
-        storedPlace(2, 'Beta'),
-        storedPlace(3, 'Gamma'),
-        storedPlace(4, 'Delta'),
+        toStoredPlace(1, 'Alpha'),
+        toStoredPlace(2, 'Beta'),
+        toStoredPlace(3, 'Gamma'),
+        toStoredPlace(4, 'Delta'),
     ]
+
     await page.addInitScript(
         (value) => localStorage.setItem('fa.places', value),
         JSON.stringify({ favorites, recents: [] }),
     )
 
     await page.goto(`/city/${KYIV}`)
+
     const star = page.getByRole('button', { name: 'Add to favorites' })
 
     await expect(star).toBeDisabled()

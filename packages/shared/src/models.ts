@@ -19,7 +19,7 @@ export interface ModelInfo {
     provider: string
     source: ModelSource
     color: string
-    regional: boolean
+    isRegional: boolean
     hotkey: string
     dash?: string
 }
@@ -33,7 +33,7 @@ export const MODELS: ModelInfo[] = [
         provider: 'ECMWF',
         source: 'open-meteo',
         color: '#1D4ED8',
-        regional: false,
+        isRegional: false,
         hotkey: '1',
     },
     {
@@ -42,7 +42,7 @@ export const MODELS: ModelInfo[] = [
         provider: 'ECMWF',
         source: 'open-meteo',
         color: '#7C3AED',
-        regional: false,
+        isRegional: false,
         hotkey: '2',
         dash: '6 3',
     },
@@ -52,7 +52,7 @@ export const MODELS: ModelInfo[] = [
         provider: 'NOAA',
         source: 'open-meteo',
         color: '#DC2626',
-        regional: false,
+        isRegional: false,
         hotkey: '3',
     },
     {
@@ -61,7 +61,7 @@ export const MODELS: ModelInfo[] = [
         provider: 'DWD',
         source: 'open-meteo',
         color: '#059669',
-        regional: true,
+        isRegional: true,
         hotkey: '4',
     },
     {
@@ -70,7 +70,7 @@ export const MODELS: ModelInfo[] = [
         provider: 'ECCC',
         source: 'open-meteo',
         color: '#D97706',
-        regional: false,
+        isRegional: false,
         hotkey: '5',
     },
     {
@@ -79,7 +79,7 @@ export const MODELS: ModelInfo[] = [
         provider: 'Met Office',
         source: 'open-meteo',
         color: '#0891B2',
-        regional: false,
+        isRegional: false,
         hotkey: '6',
     },
     {
@@ -88,7 +88,7 @@ export const MODELS: ModelInfo[] = [
         provider: 'Météo-France',
         source: 'open-meteo',
         color: '#DB2777',
-        regional: true,
+        isRegional: true,
         hotkey: '7',
     },
     {
@@ -97,7 +97,7 @@ export const MODELS: ModelInfo[] = [
         provider: 'JMA',
         source: 'open-meteo',
         color: '#65A30D',
-        regional: false,
+        isRegional: false,
         hotkey: '8',
     },
     {
@@ -106,7 +106,7 @@ export const MODELS: ModelInfo[] = [
         provider: 'CMA',
         source: 'open-meteo',
         color: '#92400E',
-        regional: false,
+        isRegional: false,
         hotkey: '9',
     },
     {
@@ -115,7 +115,7 @@ export const MODELS: ModelInfo[] = [
         provider: 'MET Norway',
         source: 'met.no',
         color: '#475569',
-        regional: false,
+        isRegional: false,
         hotkey: '0',
         dash: '2 3',
     },

@@ -38,8 +38,9 @@ const toResult = (raw: RawGeocode): GeocodeResult | null => {
 // `onUpstream` runs only when the cache cannot answer, right before the request goes out.
 export const searchPlaces = (q: string, locale: Locale, onUpstream: () => Promise<void> = async () => {}) =>
     cached(`geocode:${locale}:${q.toLowerCase()}`, GEOCODE_TTL_SECONDS, async () => {
-        await onUpstream()
         const params = new URLSearchParams({ name: q, count: '10', language: locale, format: 'json' })
+
+        await onUpstream()
         const body = await fetchJson<{ results?: RawGeocode[] }>(`${env.OPEN_METEO_GEOCODING_BASE}/v1/search?${params}`)
 
         return (body.results ?? []).map(toResult).filter((r): r is GeocodeResult => r !== null)

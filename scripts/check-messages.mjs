@@ -23,43 +23,45 @@ const walk = (dir) =>
         return /\.(ts|tsx)$/.test(name) && !/\.test\.tsx?$/.test(name) ? [file] : []
     })
 
-const problems = []
-const catalogs = Object.fromEntries(
-    LOCALES.map((locale) => [
-        locale,
-        new Set(flatten(JSON.parse(readFileSync(path.join(CATALOG_DIR, `${locale}.json`), 'utf8')))),
-    ]),
-)
+const readCatalog = (locale) =>
+    new Set(flatten(JSON.parse(readFileSync(path.join(CATALOG_DIR, `${locale}.json`), 'utf8'))))
 
-for (const locale of LOCALES.slice(1)) {
-    for (const key of catalogs.en) if (!catalogs[locale].has(key)) problems.push(`${locale}.json is missing ${key}`)
-    for (const key of catalogs[locale])
-        if (!catalogs.en.has(key)) problems.push(`${locale}.json has ${key}, which en.json lacks`)
-}
+const findParityProblems = (catalogs) =>
+    LOCALES.slice(1).flatMap((locale) => [
+        ...[...catalogs.en]
+            .filter((key) => !catalogs[locale].has(key))
+            .map((key) => `${locale}.json is missing ${key}`),
+        ...[...catalogs[locale]]
+            .filter((key) => !catalogs.en.has(key))
+            .map((key) => `${locale}.json has ${key}, which en.json lacks`),
+    ])
 
-let checked = 0
-
-for (const file of SOURCE_DIRS.flatMap(walk)) {
+// Every literal key passed to a translator bound in `file`, prefixed with the translator's namespace.
+const findLiteralKeys = (file) => {
     const text = readFileSync(file, 'utf8')
 
-    for (const [, name, namespace] of text.matchAll(BINDING)) {
+    return [...text.matchAll(BINDING)].flatMap(([, name, namespace]) => {
         const call = new RegExp(`\\b${name}(?:\\.(?:rich|markup|raw|has))?\\(\\s*'([\\w.]+)'`, 'g')
 
-        for (const [, key] of text.matchAll(call)) {
-            const full = namespace ? `${namespace}.${key}` : key
-            checked++
-
-            // A key may name a subtree used with `t.raw`, so a prefix of existing keys also counts.
-            if (!catalogs.en.has(full) && ![...catalogs.en].some((k) => k.startsWith(`${full}.`))) {
-                problems.push(`${path.relative(ROOT, file)} uses ${full}, which en.json lacks`)
-            }
-        }
-    }
+        return [...text.matchAll(call)].map(([, key]) => (namespace ? `${namespace}.${key}` : key))
+    })
 }
+
+// A key may name a subtree used with `t.raw`, so a prefix of existing keys also counts.
+const isKnownKey = (catalog, key) => catalog.has(key) || [...catalog].some((k) => k.startsWith(`${key}.`))
+
+const catalogs = Object.fromEntries(LOCALES.map((locale) => [locale, readCatalog(locale)]))
+const uses = SOURCE_DIRS.flatMap(walk).flatMap((file) => findLiteralKeys(file).map((key) => ({ file, key })))
+const problems = [
+    ...findParityProblems(catalogs),
+    ...uses
+        .filter(({ key }) => !isKnownKey(catalogs.en, key))
+        .map(({ file, key }) => `${path.relative(ROOT, file)} uses ${key}, which en.json lacks`),
+]
 
 if (problems.length) {
     console.error(problems.join('\n'))
     process.exit(1)
 }
 
-console.log(`Messages OK: ${catalogs.en.size} keys in ${LOCALES.length} catalogs, ${checked} literal uses checked`)
+console.log(`Messages OK: ${catalogs.en.size} keys in ${LOCALES.length} catalogs, ${uses.length} literal uses checked`)
