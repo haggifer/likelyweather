@@ -324,7 +324,7 @@ Decided by the author: every time the UI shows is local first, and UTC appears o
 
 ## P40. Privacy policy and terms of use (2026-10-02)
 
-Decided by the author: the two legal pages are adapted from the author's AdLens pages (Termly-generated, then edited), so both projects share one structure and the same operator, contact and governing law.
+Decided by the author: the two legal pages are adapted from the author's AdLens pages (Termly-generated, then edited), so both projects share one structure, contact e-mail and governing law. Neither page names a person or gives a postal address: the operator is "the operator of Forecast Arena", reachable by e-mail.
 
 - **The facts are Forecast Arena's own.** No accounts, forms, uploads, analytics or AI. The only personal data is the IP address in the request counters (`ratelimit:*`, kept 1 minute or 1 hour, and `quota:*`, kept until 00:00 UTC), stored unhashed in Redis and never logged. City searches reach Open-Meteo from the server, not the browser. The browser keeps the `NEXT_LOCALE` cookie and the `fa.mode` theme in local storage. The service providers are AWS, Upstash and Neon, all in Frankfurt. AdLens's sections on accounts, social logins, uploads, AI and its Termly request form were dropped. The terms add that forecasts are model output, not for safety decisions, and that the weather data stays under its providers' CC BY 4.0 license.
 - **English only.** The texts are MDX (`apps/web/src/content/legal`, through `@next/mdx`), styled by `src/mdx-components.tsx` with token classes because the app has no typography plugin. The page around them follows the chosen language and says the document is in English.
