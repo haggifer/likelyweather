@@ -51,8 +51,8 @@ export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
     </Card>
 )
 
-// The chart starts at `anchor`, the local 3-hour slot the data arrived in; once `now` has moved into a later slot
-// the chart is stale, which shows the "now" line and enables the refresh.
+// The chart starts at `anchor`, the local 3-hour slot the run was fetched in, and the "now" line shows how far into it
+// the present is. Once `now` has moved into a later slot a newer run may exist, so the refresh is enabled.
 export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh }: IProps) {
     const t = useTranslations('overview')
     const locale = useLocale()

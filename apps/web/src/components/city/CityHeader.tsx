@@ -36,8 +36,8 @@ export function CityHeader({ city }: IProps) {
     const name = getCityName(city, locale)
     const region = [city.admin1, getCountryName(city.countryCode, city.country, locale)].filter(Boolean).join(', ')
 
-    // Refetching re-anchors the dashboard chart at the current slot. The server only calls the upstream sources when
-    // a newer run exists, so unlike the landing card the button is not gated on the chart being stale.
+    // Refetching moves the dashboard chart only when a newer run arrives. The server only calls the upstream sources
+    // when a newer run exists, so unlike the landing card the button is not gated on the chart being stale.
     const handleRefresh = () => void queryClient.refetchQueries({ queryKey: ['latest', city.slug], type: 'active' })
 
     return (

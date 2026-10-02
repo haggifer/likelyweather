@@ -32,7 +32,7 @@ pnpm cdk:synth               # also cdk:diff, cdk:deploy, cdk:bootstrap; needs p
 - **Upstream calls.** The browser never calls Open-Meteo or met.no. The API proxies geocoding and performs preview fetches, and only calls upstream when a newer 6-hour run exists. Every upstream request made for a client spends its daily quota first (`packages/server/src/quota.ts`, DECISIONS P27).
 - **Time.** Timestamps are UTC in storage and the API. The UI shows local time first: the city's zone for anything about a city, the viewer's zone for what belongs to no city (runs, the quota reset), and UTC only as hover text (DECISIONS P39).
 - **Precipitation** is always present in the schema and the UI.
-- **State.** Redux holds UI state only; TanStack Query holds server state. The landing overview's queries never refetch in the background, because a refetch re-anchors the chart; only Refresh does.
+- **State.** Redux holds UI state only; TanStack Query holds server state. The landing overview's queries never refetch in the background, because a refetch would swap a newer run in under the reader; only Refresh does.
 - **Catalogs.** `apps/web/messages/{uk,en,es,de,fr}.json` keep identical keys.
 - **Shared server code.** Anything the API and the collector both need lives in `packages/server`; the apps stay thin entry points. Database access goes through `packages/server/src/store.ts`, shared expiring state through `packages/server/src/cache.ts`.
 - **Redis is optional at runtime.** Every Redis call must degrade (no cache, no limit, lock granted) rather than fail a request (DECISIONS P31). Never add ElastiCache.

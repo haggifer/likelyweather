@@ -25,11 +25,11 @@ export function CityOverview({ slug }: IProps) {
     const failed = results.find((r) => r.isError)
     const isReady = results.every((r) => r.data)
     const isEmpty = results.some((r) => r.data && !r.data.steps.length)
-    const receivedAt = Math.max(...results.map((r) => r.dataUpdatedAt))
+    const fetchedAt = results[0].data?.fetchedAt
     const timeZone = city?.timezone
     const anchor = useMemo(
-        () => (timeZone && receivedAt ? getSlotStart(new Date(receivedAt), timeZone) : null),
-        [receivedAt, timeZone],
+        () => (timeZone && fetchedAt ? getSlotStart(new Date(fetchedAt), timeZone) : null),
+        [fetchedAt, timeZone],
     )
 
     const handleRefresh = () => results.forEach((r) => void r.refetch())

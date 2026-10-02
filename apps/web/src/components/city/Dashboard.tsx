@@ -134,12 +134,12 @@ export function Dashboard({ slug }: IProps) {
     const precipQuery = useLatest(slug, Variable.Precip, isHydrated)
     const info = VARIABLE_BY_ID[variable]
     const timeZone = city?.timezone ?? 'UTC'
-    // Like the landing overview, the chart starts at the local 3-hour slot the data arrived in. The precipitation
-    // query is shared by every variable, so its arrival time anchors the chart and each refetch re-anchors it.
-    const receivedAt = precipQuery.dataUpdatedAt || latestQuery.dataUpdatedAt
+    // Like the landing overview, the chart starts at the local 3-hour slot the shown run was fetched in. The
+    // precipitation query is shared by every variable, so its run anchors the chart; a newer run re-anchors it.
+    const fetchedAt = (precipQuery.data ?? latestQuery.data)?.fetchedAt
     const anchor = useMemo(
-        () => (city && receivedAt ? getSlotStart(new Date(receivedAt), city.timezone) : null),
-        [city, receivedAt],
+        () => (city && fetchedAt ? getSlotStart(new Date(fetchedAt), city.timezone) : null),
+        [city, fetchedAt],
     )
     const slots = useMemo(() => (anchor ? buildSlots(anchor, DASHBOARD_HOURS) : null), [anchor])
     const latest = useMemo(
