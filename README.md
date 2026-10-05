@@ -19,13 +19,12 @@ pnpm dev                  # web on http://localhost:3000, API on http://localhos
 
 Open any city and its forecast is fetched within a few seconds; search for any other city to start tracking it. The web app forwards `/api/*` to the API, so the browser sees one origin.
 
-Optional: fill the database for every active city now, keep a local 6-hourly schedule running, or load CSVs written by the Python collector this project grew out of (examples in `packages/fixtures/csv`).
+Optional: fill the database for every active city now, keep a local 6-hourly schedule running.
 
 ```bash
 pnpm collect                                  # one scheduled run, all active cities
 pnpm collect -- --cities kharkiv-ua-706483    # just some cities
 pnpm collect -- --loop                        # run now, then every 6 hours
-pnpm import:csv -- ./packages/fixtures/csv/*.csv
 ```
 
 ## What works
@@ -48,20 +47,19 @@ Ukrainian, English, Spanish, German and French (language menu in the top bar; th
 
 ## Scripts
 
-| Command                                                        | What it does                                                                              |
-| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `pnpm dev`                                                     | Starts the Docker services, then the API (`tsx watch`) and the web app (Turbopack)        |
-| `pnpm db:up` / `db:deploy` / `db:migrate` / `db:seed`          | Docker services; apply migrations; create a new migration; seed models and cities         |
-| `pnpm build`                                                   | Next.js build, API and collector Lambda bundles (esbuild), Prisma client                  |
-| `pnpm test`                                                    | Vitest in every package; database tests run when `DATABASE_URL` is reachable              |
-| `pnpm lint` / `typecheck` / `format` / `format:check`          | ESLint, TypeScript, Prettier with organize-imports                                        |
-| `pnpm check:messages`                                          | Key parity across the five catalogs and literal key usage in code                         |
-| `pnpm knip`                                                    | Unused files, exports and dependencies across the workspace (`knip.jsonc`)                |
-| `pnpm e2e`                                                     | Playwright flows on desktop and phone against a fake upstream (run `pnpm build` first)    |
-| `pnpm collect`                                                 | Scheduled collector run (see above); holds a Redis lock so two runs never overlap         |
-| `pnpm import:csv -- <files>`                                   | Import CSVs in the earlier Python collector's format (`.csv` or `.csv.gz`) as IMPORT runs |
-| `pnpm cdk:synth` / `cdk:diff` / `cdk:deploy` / `cdk:bootstrap` | The AWS CDK stack in `infra/` (run `pnpm build` first; see [Deploy](#deploy))             |
-| `pnpm --filter @fa/web flags`                                  | Re-copy the SVG country flags into `apps/web/public/flags`                                |
+| Command                                                        | What it does                                                                           |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `pnpm dev`                                                     | Starts the Docker services, then the API (`tsx watch`) and the web app (Turbopack)     |
+| `pnpm db:up` / `db:deploy` / `db:migrate` / `db:seed`          | Docker services; apply migrations; create a new migration; seed models and cities      |
+| `pnpm build`                                                   | Next.js build, API and collector Lambda bundles (esbuild), Prisma client               |
+| `pnpm test`                                                    | Vitest in every package; database tests run when `DATABASE_URL` is reachable           |
+| `pnpm lint` / `typecheck` / `format` / `format:check`          | ESLint, TypeScript, Prettier with organize-imports                                     |
+| `pnpm check:messages`                                          | Key parity across the five catalogs and literal key usage in code                      |
+| `pnpm knip`                                                    | Unused files, exports and dependencies across the workspace (`knip.jsonc`)             |
+| `pnpm e2e`                                                     | Playwright flows on desktop and phone against a fake upstream (run `pnpm build` first) |
+| `pnpm collect`                                                 | Scheduled collector run (see above); holds a Redis lock so two runs never overlap      |
+| `pnpm cdk:synth` / `cdk:diff` / `cdk:deploy` / `cdk:bootstrap` | The AWS CDK stack in `infra/` (run `pnpm build` first; see [Deploy](#deploy))          |
+| `pnpm --filter @fa/web flags`                                  | Re-copy the SVG country flags into `apps/web/public/flags`                             |
 
 ## Architecture
 
@@ -81,7 +79,7 @@ collector (CLI or scheduled Lambda) ─▶ Redis lock ─▶ batched Open-Meteo,
 apps/
   web/            Next.js pages, components, TanStack Query hooks, Redux slices, next-intl catalogs
   api/            Express app: routes, rate limits, error shape; bundled for Lambda
-  collector/      collector CLI, Lambda handler, CSV import
+  collector/      collector CLI, Lambda handler
   e2e/            Playwright flows and the fake upstream they run against
 packages/
   shared/         zod API contract, model palette, variables, ensemble maths, resampling, 3-hour slots, formatting

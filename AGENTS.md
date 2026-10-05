@@ -19,7 +19,6 @@ pnpm build && pnpm e2e       # Playwright against a fake upstream and its own da
 pnpm format
 pnpm build                   # Next.js, the API and collector Lambda bundles, the Prisma client
 pnpm collect [-- --cities a,b] [-- --loop]
-pnpm import:csv -- <files>
 pnpm db:migrate              # create a migration after editing packages/db/prisma/schema.prisma
 pnpm cdk:synth               # also cdk:diff, cdk:deploy, cdk:bootstrap; needs pnpm build first
 ```

@@ -247,7 +247,7 @@ Decided by the author after comparing it with a Postgres-only design: Redis stay
 - The city page's title reads the city list, not `/cities/:slug`, which records a view.
 - The API is bundled with esbuild into one ESM file; the same bundle runs under Node locally (`pnpm --filter @fa/api start`) and behind the Lambda Web Adapter.
 
-## P33. Collector app and CSV import (2026-09-26)
+## P33. Collector app and CSV import (2026-09-26; CSV import removed, see P43)
 
 - `runScheduled` (lock, dormancy and queue promotion, collection, retention) is shared by the CLI (`pnpm collect`) and the Lambda handler. A FAILED run throws so EventBridge Scheduler retries it and the dead-letter queue raises the alarm; PARTIAL runs succeed.
 - A run is stored before its snapshots, which reference it; if the process dies mid-write it stays FAILED.
@@ -348,3 +348,7 @@ Decided by the author: the "Start with" chips become the viewer's own places, an
 - **The landing page opens the first chip** when the URL names no city, so a pinned home city is what a returning viewer sees.
 - **Local storage only** (`fa.places`), read through `useSyncExternalStore` like the theme. The server can't read it, so the chips render as placeholders until hydration, keeping the server HTML equal to the first render (P37). Stored data is repaired on read (`apps/web/src/lib/places.ts`, unit-tested): duplicates and overlaps are dropped and the starter cities refill a short list. Accounts were considered and rejected for this: nothing here needs to leave the browser.
 - **Color.** The filled star uses a `favorite` token. It started as amber-600 in the light theme, because amber-500 has only 2.1:1 contrast on white, under the 3:1 a meaningful icon needs. Later the same day the author chose a lighter `#dddd77` (about 1.4:1 on white), accepting that trade-off; pinned and unpinned stars still differ in shape (filled against outlined). The dark theme keeps amber-400.
+
+## P43. The CSV import is removed (2026-10-05)
+
+`pnpm import:csv` loaded the CSVs of the Python collector this project grew out of as IMPORT runs. The UI shows only each city's latest run, so imported history was visible nowhere but the runs table, and the author asked for it to go. The importer, its test and the CSV fixtures are deleted; the `IMPORT` value stays in the database's `RunOrigin` enum for rows already stored.

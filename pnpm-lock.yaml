@@ -96,9 +96,6 @@ importers:
 
   apps/collector:
     dependencies:
-      '@fa/db':
-        specifier: workspace:*
-        version: link:../../packages/db
       '@fa/server':
         specifier: workspace:*
         version: link:../../packages/server

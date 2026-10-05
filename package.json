@@ -15,7 +15,6 @@
         "db:deploy": "pnpm --filter @fa/db run migrate:deploy",
         "db:seed": "pnpm --filter @fa/db run seed",
         "collect": "pnpm --filter @fa/collector run collect",
-        "import:csv": "pnpm --filter @fa/collector run import:csv",
         "check:messages": "node scripts/check-messages.mjs",
         "e2e": "pnpm --filter @fa/e2e run e2e",
         "cdk:synth": "pnpm --filter @fa/infra run synth",

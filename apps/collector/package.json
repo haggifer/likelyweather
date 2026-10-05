@@ -7,11 +7,9 @@
         "build": "node build.mjs",
         "lint": "eslint .",
         "typecheck": "tsc --noEmit",
-        "test": "vitest run --passWithNoTests",
-        "import:csv": "tsx src/import.ts"
+        "test": "vitest run --passWithNoTests"
     },
     "dependencies": {
-        "@fa/db": "workspace:*",
         "@fa/server": "workspace:*"
     },
     "devDependencies": {
