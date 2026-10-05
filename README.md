@@ -2,7 +2,7 @@
 
 Ten weather models for any city and how much they disagree. Public, no login. Measuring which model has been right is a separate feature planned after the MVP.
 
-A pnpm and Turborepo monorepo: a Next.js web app and an Express REST API on Postgres (Prisma) and Redis, with an AWS CDK stack for Lambda and CloudFront. Live data comes from Open-Meteo and MET Norway. Every design decision, and every place the build departs from the [target architecture](#target-architecture), is in [docs/DECISIONS.md](docs/DECISIONS.md).
+A pnpm and Turborepo monorepo: a Next.js web app and an Express REST API on Postgres (Prisma) and Redis, with an AWS CDK stack for Lambda and CloudFront. Live data comes from Open-Meteo and MET Norway. The [design decisions](#design-decisions) a newcomer is most likely to undo are at the end.
 
 ## Run it
 
@@ -17,7 +17,7 @@ pnpm db:seed              # models and the eleven seed cities
 pnpm dev                  # web on http://localhost:3000, API on http://localhost:4000
 ```
 
-Open any city and its forecast is fetched within a few seconds; search for any other city to open it the same way. Nothing is collected on a schedule: a city's forecast is fetched when someone opens it and a newer 6-hour run exists (DECISIONS P46). The web app forwards `/api/*` to the API, so the browser sees one origin.
+Open any city and its forecast is fetched within a few seconds; search for any other city to open it the same way. Nothing is collected on a schedule: a city's forecast is fetched when someone opens it and a newer 6-hour run exists. The web app forwards `/api/*` to the API, so the browser sees one origin.
 
 ## What works
 
@@ -29,9 +29,9 @@ Open any city and its forecast is fetched within a few seconds; search for any o
 | Methodology    | `/methodology`        | Sources, grids, median and spread, disagreement, limits, attribution                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Privacy, Terms | `/privacy`, `/terms`  | Privacy policy and terms of use, in English, from MDX in `apps/web/src/content/legal`; linked from the footer                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
-A daily quota per user (60 new forecast requests, see DECISIONS P27) is shown as a meter in the top bar.
+A daily quota per user (60 upstream fetches a day per client, 600 for the whole app) is shown as a meter in the top bar.
 
-Phones (below 640 px) get their own layouts where the desktop ones don't fit (DECISIONS P37): the dashboard pins the variable switch under the top bar and puts the model list under the chart, and day labels shorten to fit.
+Phones (below 640 px) get their own layouts where the desktop ones don't fit: the dashboard pins the variable switch under the top bar and puts the model list under the chart, and day labels shorten to fit.
 
 Ukrainian, English, Spanish, German and French (language menu in the top bar; the non-English catalogs are machine-drafted and need a native review), light and dark mode.
 
@@ -75,21 +75,20 @@ packages/
   ui/             shadcn components, color mode, generic hooks
   charts/         D3 hero charts, Recharts wrappers, chart colors read from the CSS tokens
   fixtures/       real upstream responses and a collector snapshot for tests
-docs/             DECISIONS.md (design decisions), METHODOLOGY.md (grids, slots, ensemble maths)
 ```
 
 ## Target architecture
 
-What is built and what is still planned; the choices behind each piece are in DECISIONS P29 onwards.
+What is built and what is still planned.
 
 - **Web:** Next.js App Router, Tailwind v4 and shadcn/ui with a token system, Redux Toolkit for UI state, TanStack Query for server state, Recharts, D3 for the hero charts, next-intl (uk, en, es, de, fr). On Lambda behind CloudFront (the target named Amplify Hosting, which does not support Next.js 16).
 - **API:** Express 5 REST on AWS Lambda (Web Adapter) behind CloudFront, with the same zod contract.
 - **Data:** Prisma on Postgres (Neon) with forecasts partitioned by issue time; Redis (Upstash) for the geocode and payload caches, rate limits, the quota and the daily retention claim.
-- **Collection:** on demand only, in the API, when a city is opened and a newer run exists (the target had a scheduled Lambda every 6 hours; removed in DECISIONS P46).
+- **Collection:** on demand only, in the API, when a city is opened and a newer run exists; nothing runs on a schedule.
 - **Infrastructure and tooling:** one AWS CDK stack; a pnpm and Turborepo monorepo (`apps/web`, `apps/api`, `packages/shared`, `packages/charts`, `packages/ui`, `packages/db`, `packages/fixtures`, `infra`); CI runs lint, knip, typecheck, tests, the catalog check, end-to-end tests, the build and `cdk synth`.
 - **Optional:** a daily Gemini Flash brief with a claim checker.
 
-The web app runs on Lambda instead of Amplify (DECISIONS P35, P36). Truth, skill scores, the scoreboard and the evolution view are out of the MVP (DECISIONS P17, P20).
+The web app runs on Lambda instead of Amplify. Truth, skill scores, the scoreboard and the evolution view are out of the MVP.
 
 ## Deploy
 
@@ -104,16 +103,18 @@ After that, pushes to `main` deploy through GitHub OIDC (`.github/workflows/depl
 
 ## Design decisions
 
-The full log, with the rejected alternatives, is [docs/DECISIONS.md](docs/DECISIONS.md). The ones a newcomer is most likely to undo by accident:
+The ones a newcomer is most likely to undo by accident:
 
-- **Models are compared with each other, not with observations** (P17). Accuracy needs truth data and its own UI; it is a post-MVP feature.
-- **The server returns raw series; the client derives everything** (P8). Medians, quartiles, slots, disagreement and labels are pure functions in `packages/shared`, unit-tested.
-- **Charts start where the data starts** (P39). They start at the local 3-hour slot the run was fetched in, with a now line at the current time; a background refetch could swap in a newer run under the reader, so the landing chart only moves on Refresh.
-- **Precipitation is a total over a span** (P18, P21, P23): bars, not lines, and hovered as the period each bar covers.
-- **The design is frozen in `globals.css`** (P25). The Theme Lab that chose it was removed; it is in the history if a redesign needs it.
-- **Redis is never on the critical path** (P31). Upstash's free plan only; any Redis error means no cache, no limit and a granted claim for that call, never an outage or a bill.
-- **One hourly grid per run, weekly partitions** (P26, P30). Forecast rows are partitioned by issue week and dropped after 14 days by the first fetch of each day.
-- **The model palette is fixed** (P9), with dash patterns where two colors are too close for color-vision deficiencies.
+- **Models are compared with each other, not with observations.** Accuracy needs truth data and its own UI; it is a post-MVP feature.
+- **The server returns raw series; the client derives everything.** Medians, quartiles, slots, disagreement and labels are pure functions in `packages/shared`, unit-tested.
+- **Charts start where the data starts.** They start at the local 3-hour slot the run was fetched in, with a now line at the current time; a background refetch could swap in a newer run under the reader, so the landing chart only moves on Refresh.
+- **Precipitation is a total over a span:** bars, not lines, and hovered as the period each bar covers.
+- **The design is frozen in `globals.css`.** The Theme Lab that chose it was removed; it is in the history if a redesign needs it.
+- **Redis is never on the critical path.** Upstash's free plan only; any Redis error means no cache, no limit and a granted claim for that call, never an outage or a bill.
+- **One hourly grid per run, weekly partitions.** Forecast rows are partitioned by issue week and dropped after 14 days by the first fetch of each day.
+- **The model palette is fixed,** with dash patterns where two colors are too close for color-vision deficiencies.
+- **Forecasts are fetched on demand, never on a schedule.** Opening a city fetches it when its stored run predates the current 6-hour issue; everyone else then reads the stored run. A scheduled collector refreshed cities nobody opened and was removed; don't add one back for a feature without weighing that cost.
+- **Limits and the quota count per client: an IPv4 address or an IPv6 /64.** An IPv4-mapped address counts as IPv4, and a global daily cap protects the free upstream tiers. Keying IPv6 by the full address would let one /64 rotate through endless fresh quotas.
 
 ## Data and attribution
 

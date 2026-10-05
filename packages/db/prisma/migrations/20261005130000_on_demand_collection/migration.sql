@@ -1,4 +1,4 @@
--- Collection is on demand only (DECISIONS P46): cities have no status, view counters or scheduled-run count.
+-- Collection is on demand only: cities have no status, view counters or scheduled-run count.
 DROP INDEX "City_status_lastViewedAt_idx";
 
 ALTER TABLE "City"

@@ -1,2 +1,2 @@
--- Run archives are no longer written (DECISIONS P44).
+-- Run archives are no longer written.
 ALTER TABLE "CollectionRun" DROP COLUMN "archivePath";

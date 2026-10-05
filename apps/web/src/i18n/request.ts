@@ -3,7 +3,8 @@ import { DEFAULT_LOCALE, Locale, LOCALES } from '@fa/shared/api'
 import { getRequestConfig } from 'next-intl/server'
 import { cookies } from 'next/headers'
 
-// Locale lives in a cookie rather than the URL in the prototype (see docs/DECISIONS.md).
+// The locale lives in a cookie rather than the URL: next-intl runs without i18n routing, so the language switch sets
+// NEXT_LOCALE and refreshes.
 export default getRequestConfig(async () => {
     const store = await cookies()
     const requested = store.get(LOCALE_COOKIE)?.value as Locale | undefined

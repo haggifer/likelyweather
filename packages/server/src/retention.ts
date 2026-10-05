@@ -9,7 +9,7 @@ const CLAIM_SECONDS = DAY_MS / 1000
 
 let prunedDay: string | undefined
 
-// Forecasts are kept for RETENTION_DAYS (DECISIONS P46). There is no scheduled job, so the first fetch of each UTC
+// Forecasts are kept for RETENTION_DAYS. There is no scheduled job, so the first fetch of each UTC
 // day prunes them: once per process, and once across processes through the shared claim. Pruning is idempotent, so
 // a claim granted twice (Redis down) only repeats the work.
 export const pruneExpiredForecasts = async (now = new Date()) => {

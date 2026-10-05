@@ -195,7 +195,7 @@ export class ForecastArenaStack extends Stack {
             `arn:aws:lambda:${this.region}:753240598075:layer:LambdaAdapterLayerArm64:${WEB_ADAPTER_LAYER_VERSION}`,
         )
 
-        // The standalone Next.js server (DECISIONS P35).
+        // The standalone Next.js server; Amplify Hosting does not support Next.js 16.
         const web = createAdapterFunction(this, 'Web', bundle('apps/web/.next/lambda.zip'), webAdapter, {
             ...ADAPTER_ENVIRONMENT,
             HOSTNAME: '127.0.0.1',

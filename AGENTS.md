@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Guidance for coding agents working in this repository. Read [README.md](README.md) first: it covers what the app does, how to run it, the architecture and the repository layout. [docs/DECISIONS.md](docs/DECISIONS.md) records every design decision and where the build departs from the target; [docs/METHODOLOGY.md](docs/METHODOLOGY.md) defines the grids, slots and ensemble maths.
+Guidance for coding agents working in this repository. Read [README.md](README.md) first: it covers what the app does, how to run it, the architecture, the repository layout and the design decisions behind them. The grids, slots and ensemble maths are defined in `packages/shared` (`slots.ts`, `resample.ts`, `ensemble.ts`) and their tests.
 
 ## Commands
 
@@ -27,31 +27,31 @@ pnpm cdk:synth               # also cdk:diff, cdk:deploy, cdk:bootstrap; needs p
 - **UI kit.** Tailwind v4 and shadcn/ui only; no other component library. Colors, fonts and radii come from token-backed utilities (`apps/web/src/app/globals.css`), never literals in components. Dark mode is the `.dark` class on `<html>` (`packages/ui/src/lib/color-mode.ts`); charts re-read their colors when it changes.
 - **Model palette.** `packages/shared/src/models.ts` fixes one color per model; never reassign it. ECMWF AIFS and met.no keep their dash patterns as a second encoding.
 - **API contract.** The zod schemas in `packages/shared/src/api.ts` are the contract; change them first. The server returns stored data; the client derives medians, slots, labels and formatting with `packages/shared`.
-- **Upstream calls.** The browser never calls Open-Meteo or met.no. The API proxies geocoding and fetches a city's forecast when it is opened, and only calls upstream when a newer 6-hour run exists; nothing is collected on a schedule (DECISIONS P46). Every upstream request made for a client spends its daily quota first (`packages/server/src/quota.ts`, DECISIONS P27).
-- **Time.** Timestamps are UTC in storage and the API. The UI shows local time first: the city's zone for anything about a city, the viewer's zone for what belongs to no city (the quota reset), and UTC only as hover text (DECISIONS P39).
+- **Upstream calls.** The browser never calls Open-Meteo or met.no. The API proxies geocoding and fetches a city's forecast when it is opened, and only calls upstream when a newer 6-hour run exists; nothing is collected on a schedule. Every upstream request made for a client spends its daily quota first (`packages/server/src/quota.ts`); a client is an IPv4 address or an IPv6 /64 (`apps/api/src/client-key.ts`).
+- **Time.** Timestamps are UTC in storage and the API. The UI shows local time first: the city's zone for anything about a city, the viewer's zone for what belongs to no city (the quota reset), and UTC only as hover text.
 - **Precipitation** is always present in the schema and the UI.
 - **State.** Redux holds UI state only; TanStack Query holds server state. The landing overview's queries never refetch in the background, because a refetch would swap a newer run in under the reader; only Refresh does.
 - **Catalogs.** `apps/web/messages/{uk,en,es,de,fr}.json` keep identical keys.
 - **Server code.** The API's domain code lives in `packages/server`; `apps/api` stays a thin entry point. Database access goes through `packages/server/src/store.ts`, shared expiring state through `packages/server/src/cache.ts`.
-- **Redis is optional at runtime.** Every Redis call must degrade (no cache, no limit, claim granted) rather than fail a request (DECISIONS P31). Never add ElastiCache.
+- **Redis is optional at runtime.** Every Redis call must degrade (no cache, no limit, claim granted) rather than fail a request. Never add ElastiCache.
 - **Schema changes** go through Prisma migrations in `packages/db`. `Forecast` is partitioned by week: keep `issueTime` in its primary key and never write to it without `ensureForecastPartitions` (the store does this).
-- **Legal pages.** `apps/web/src/content/legal/{privacy,terms}.mdx` describe what the app stores, logs and shares, its cookies and its providers. A change to any of these updates them and their "last updated" date in the same commit (DECISIONS P40).
-- **Scope.** The MVP compares models with each other, not with observations. Truth, skill scores and the scoreboard are post-MVP (DECISIONS P17, P20).
+- **Legal pages.** `apps/web/src/content/legal/{privacy,terms}.mdx` describe what the app stores, logs and shares, its cookies and its providers. A change to any of these updates them and their "last updated" date in the same commit.
+- **Scope.** The MVP compares models with each other, not with observations. Truth, skill scores and the scoreboard are post-MVP.
 
 ## Conventions
 
-- Packages ship TypeScript source through explicit `exports`; a new file in `packages/ui` or `packages/charts` needs an entry. Inside a package, import relatively; the `@/` alias exists only in `apps/web` (DECISIONS P29).
-- Named exports only (`export function Name({ … }: IProps)` for components and hooks, arrow functions for everything else); `export default` only where a framework requires it (Next.js `page`, `layout`, `not-found`, config files, next-intl's `i18n/request.ts`). String unions for two or three options, enums for more (DECISIONS P38).
+- Packages ship TypeScript source through explicit `exports`; a new file in `packages/ui` or `packages/charts` needs an entry. Inside a package, import relatively; the `@/` alias exists only in `apps/web`.
+- Named exports only (`export function Name({ … }: IProps)` for components and hooks, arrow functions for everything else); `export default` only where a framework requires it (Next.js `page`, `layout`, `not-found`, config files, next-intl's `i18n/request.ts`). String unions for two or three options, enums for more.
 - One hook per file in a `hooks/` folder, with an explicit return type (an exported `UseXResult` interface when it returns an object). Code that reads no props, state or hook result lives at module scope; types used by more than one file live in the nearest `types.ts`.
 - A module reads top to bottom: imports, types, constants, helpers, exports; a component's `IProps` sits directly above it, and a value built from a helper sits below that helper.
-- Bodies read in groups, one blank line between groups: in a component or hook, context hooks, then state and refs, queries, derived values, handlers, effects, early returns and the JSX. A value takes one line; a computation longer than about three lines becomes a named function at module scope or in a kebab-case module (DECISIONS P41).
+- Bodies read in groups, one blank line between groups: in a component or hook, context hooks, then state and refs, queries, derived values, handlers, effects, early returns and the JSX. A value takes one line; a computation longer than about three lines becomes a named function at module scope or in a kebab-case module.
 - File names: components PascalCase, hooks camelCase, every other module kebab-case and named by what it holds (no `utils.ts`). Sizes are written in `rem` (design tokens in `globals.css` and arbitrary Tailwind values alike) so they follow the browser's font-size setting; hairlines, shadows and chart geometry stay in px.
 - Formatting is Prettier (`.prettierrc`: 4 spaces, single quotes, no semicolons, width 120); linting is ESLint. Format only the files you touch.
-- Phone layouts (below `sm`, 640 px) switch with `max-sm:` / `sm:` utilities, so the server HTML matches the first client render; a JS media query (`useMediaQuery`, written in `rem` like Tailwind's breakpoints) only where CSS can't do the job, such as the landing overview's chart, whose drawing changes on phones (DECISIONS P37).
+- Phone layouts (below `sm`, 640 px) switch with `max-sm:` / `sm:` utilities, so the server HTML matches the first client render; a JS media query (`useMediaQuery`, written in `rem` like Tailwind's breakpoints) only where CSS can't do the job, such as the landing overview's chart, whose drawing changes on phones.
 - Comments explain why, not what.
 - Tests land with the code (`*.test.ts` next to the module).
 - Commits follow Conventional Commits (`feat(scope): …`, `fix: …`, `docs: …`), one commit per distinct change.
-- When a change affects a command, env variable, rule above or design decision, update README.md, docs/DECISIONS.md or this file in the same commit.
+- When a change affects a command, env variable, rule above or design decision, update README.md or this file in the same commit.
 
 ## Gotchas
 

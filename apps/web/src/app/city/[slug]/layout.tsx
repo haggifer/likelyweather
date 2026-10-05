@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import { getLocale } from 'next-intl/server'
 
 // "new-york-us-5128581" → "New York, United States". The slug carries the name and the country code, so the page
-// title needs no request to the API (the web server may not be able to reach it, see DECISIONS P35).
+// title needs no request to the API: on Lambda the web function cannot call the IAM-protected API URL.
 const toTitle = (slug: string, locale: string) => {
     const match = /^(.+)-([a-z]{2})-\d+$/.exec(slug)
 
