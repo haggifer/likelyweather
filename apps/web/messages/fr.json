@@ -13,7 +13,7 @@
             "short": "Recherches",
             "label": "Recherches restantes aujourd’hui",
             "value": "Encore {left} recherches sur {limit} aujourd’hui",
-            "resets": "Remise à zéro à {time}."
+            "resets": "Remise à zéro à {time}"
         }
     },
     "nav": {

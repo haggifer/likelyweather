@@ -13,7 +13,7 @@
             "short": "Suchen",
             "label": "Verbleibende Suchen heute",
             "value": "Heute noch {left} von {limit} Suchen",
-            "resets": "Wird um {time} zurückgesetzt."
+            "resets": "Wird um {time} zurückgesetzt"
         }
     },
     "nav": {

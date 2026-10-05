@@ -13,7 +13,7 @@
             "short": "Búsquedas",
             "label": "Búsquedas restantes hoy",
             "value": "Quedan {left} de {limit} búsquedas hoy",
-            "resets": "Se reinicia a las {time}."
+            "resets": "Se reinicia a las {time}"
         }
     },
     "nav": {

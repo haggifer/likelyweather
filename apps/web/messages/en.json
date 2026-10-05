@@ -13,7 +13,7 @@
             "short": "Searches",
             "label": "Searches left today",
             "value": "{left} of {limit} searches left today",
-            "resets": "Resets at {time}."
+            "resets": "Resets at {time}"
         }
     },
     "nav": {
