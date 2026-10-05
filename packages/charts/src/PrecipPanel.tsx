@@ -38,6 +38,7 @@ interface ModelTickProps {
     cx?: number
     cy?: number
     color: string
+    dash?: string
 }
 
 interface TooltipContentProps {
@@ -67,9 +68,19 @@ const getDayStarts = (steps: string[], timeZone: string) => {
 const formatWindowLabel = (step: string, windowHours: number, timeZone: string, locale: string) =>
     formatPeriodLabel(toIsoMinute(addHours(new Date(step), -windowHours)), step, timeZone, locale)
 
-const ModelTick = ({ cx, cy, color }: ModelTickProps) =>
+// Dashed models keep their pattern here too (the palette's second encoding); round caps would close the gaps.
+const ModelTick = ({ cx, cy, color, dash }: ModelTickProps) =>
     cx === undefined || cy === undefined ? null : (
-        <line x1={cx - 7} x2={cx + 7} y1={cy} y2={cy} stroke={color} strokeWidth={2} strokeLinecap="round" />
+        <line
+            x1={cx - 7}
+            x2={cx + 7}
+            y1={cy}
+            y2={cy}
+            stroke={color}
+            strokeWidth={2}
+            strokeDasharray={dash}
+            strokeLinecap={dash ? 'butt' : 'round'}
+        />
     )
 
 interface IProps {
@@ -190,7 +201,12 @@ export function PrecipPanel({
                             dataKey={s.modelId as ModelId}
                             isAnimationActive={false}
                             shape={(props: { cx?: number; cy?: number }) => (
-                                <ModelTick cx={props.cx} cy={props.cy} color={MODEL_BY_ID[s.modelId].color} />
+                                <ModelTick
+                                    cx={props.cx}
+                                    cy={props.cy}
+                                    color={MODEL_BY_ID[s.modelId].color}
+                                    dash={MODEL_BY_ID[s.modelId].dash}
+                                />
                             )}
                         />
                     ))}

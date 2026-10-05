@@ -9,7 +9,7 @@ import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { useNow } from '@fa/ui/hooks/useNow'
 import { ScaleTime } from 'd3-scale'
 import { useTranslations } from 'next-intl'
-import { KeyboardEvent, PointerEvent, useMemo } from 'react'
+import { KeyboardEvent, PointerEvent, useId, useMemo } from 'react'
 import { getArrowStep } from './arrow-keys'
 import { DayGrid } from './DayGrid'
 import { useAnimatedDomain } from './hooks/useAnimatedDomain'
@@ -122,6 +122,7 @@ export function SpaghettiChart({
     const t = useTranslations('chart')
     const theme = useChartTheme()
     const liveNow = useNow()
+    const clipId = useId().replace(/[^\w-]/g, '')
 
     const { ref, width } = useElementWidth<HTMLDivElement>()
 
@@ -238,73 +239,94 @@ export function SpaghettiChart({
                         {info.unit}
                     </text>
                 )}
-                {!isBars && <path d={geometry.outerBand} fill={theme.band} opacity={theme.bandOuterOpacity} />}
-                {!isBars && <path d={geometry.innerBand} fill={theme.band} opacity={theme.bandInnerOpacity} />}
-                {hoverSpan && (
-                    <rect
-                        x={spanLeft}
-                        y={margin.top}
-                        width={Math.max(0, spanRight - spanLeft)}
-                        height={plotBottom - margin.top}
-                        fill={theme.grid}
-                        opacity={0.8}
-                        pointerEvents="none"
-                    />
-                )}
-                {bars.map(({ i, center }) => {
-                    const median = stats.median[i]
-
-                    return (
-                        <g key={times[i].toISOString()}>
-                            {median !== null && (
-                                <rect
-                                    x={center - barWidth / 2}
-                                    y={y(median)}
-                                    width={barWidth}
-                                    height={Math.max(0, plotBottom - y(median))}
-                                    rx={2}
-                                    fill={theme.band}
-                                    opacity={hover === i ? 0.95 : 0.6}
-                                />
-                            )}
-                            {series.map((s) => {
-                                const v = s.values[i]
-
-                                if (v === null) return null
-
-                                return (
-                                    <line
-                                        key={s.modelId}
-                                        x1={center - tickWidth / 2}
-                                        x2={center + tickWidth / 2}
-                                        y1={y(v)}
-                                        y2={y(v)}
-                                        stroke={MODEL_BY_ID[s.modelId].color}
-                                        strokeWidth={emphasized.includes(s.modelId) ? 3 : 2}
-                                        strokeLinecap="round"
-                                        opacity={isDimmed(s.modelId) ? 0.15 : 0.9}
-                                    />
-                                )
-                            })}
-                        </g>
-                    )
-                })}
-                {!isBars &&
-                    geometry.lines.map(({ modelId, d }) => (
-                        <path
-                            key={modelId}
-                            d={d}
-                            fill="none"
-                            stroke={MODEL_BY_ID[modelId].color}
-                            strokeWidth={emphasized.includes(modelId) ? 2.5 : 1.5}
-                            strokeDasharray={MODEL_BY_ID[modelId].dash}
-                            strokeLinecap="round"
-                            opacity={isDimmed(modelId) ? 0.15 : 0.9}
+                <defs>
+                    <clipPath id={clipId}>
+                        <rect
+                            x={margin.left}
+                            y={margin.top}
+                            width={Math.max(0, plotRight - margin.left)}
+                            height={Math.max(0, plotBottom - margin.top)}
                         />
-                    ))}
-                {!isBars && (
-                    <path d={geometry.median} fill="none" stroke={theme.median} strokeWidth={3} strokeLinecap="round" />
-                )}
+                    </clipPath>
+                </defs>
+                {/* The bands and median span every model while the y-domain fits the visible ones, so a hidden
+                    outlier's band is cut at the plot edge instead of covering the card header. */}
+                <g clipPath={`url(#${clipId})`}>
+                    {!isBars && <path d={geometry.outerBand} fill={theme.band} opacity={theme.bandOuterOpacity} />}
+                    {!isBars && <path d={geometry.innerBand} fill={theme.band} opacity={theme.bandInnerOpacity} />}
+                    {hoverSpan && (
+                        <rect
+                            x={spanLeft}
+                            y={margin.top}
+                            width={Math.max(0, spanRight - spanLeft)}
+                            height={plotBottom - margin.top}
+                            fill={theme.grid}
+                            opacity={0.8}
+                            pointerEvents="none"
+                        />
+                    )}
+                    {bars.map(({ i, center }) => {
+                        const median = stats.median[i]
+
+                        return (
+                            <g key={times[i].toISOString()}>
+                                {median !== null && (
+                                    <rect
+                                        x={center - barWidth / 2}
+                                        y={y(median)}
+                                        width={barWidth}
+                                        height={Math.max(0, plotBottom - y(median))}
+                                        rx={2}
+                                        fill={theme.band}
+                                        opacity={hover === i ? 0.95 : 0.6}
+                                    />
+                                )}
+                                {series.map((s) => {
+                                    const v = s.values[i]
+
+                                    if (v === null) return null
+
+                                    return (
+                                        <line
+                                            key={s.modelId}
+                                            x1={center - tickWidth / 2}
+                                            x2={center + tickWidth / 2}
+                                            y1={y(v)}
+                                            y2={y(v)}
+                                            stroke={MODEL_BY_ID[s.modelId].color}
+                                            strokeWidth={emphasized.includes(s.modelId) ? 3 : 2}
+                                            strokeDasharray={MODEL_BY_ID[s.modelId].dash}
+                                            strokeLinecap={MODEL_BY_ID[s.modelId].dash ? 'butt' : 'round'}
+                                            opacity={isDimmed(s.modelId) ? 0.15 : 0.9}
+                                        />
+                                    )
+                                })}
+                            </g>
+                        )
+                    })}
+                    {!isBars &&
+                        geometry.lines.map(({ modelId, d }) => (
+                            <path
+                                key={modelId}
+                                d={d}
+                                fill="none"
+                                stroke={MODEL_BY_ID[modelId].color}
+                                strokeWidth={emphasized.includes(modelId) ? 2.5 : 1.5}
+                                strokeDasharray={MODEL_BY_ID[modelId].dash}
+                                strokeLinecap="round"
+                                opacity={isDimmed(modelId) ? 0.15 : 0.9}
+                            />
+                        ))}
+                    {!isBars && (
+                        <path
+                            d={geometry.median}
+                            fill="none"
+                            stroke={theme.median}
+                            strokeWidth={3}
+                            strokeLinecap="round"
+                        />
+                    )}
+                </g>
                 {nowX !== null && (
                     <g>
                         <line
