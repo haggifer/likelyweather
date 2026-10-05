@@ -2,15 +2,7 @@ import { expect, Page, test } from '@playwright/test'
 
 const KYIV = 'kyiv-ua-703448'
 const LONDON = 'london-gb-2643743'
-const PAGES = [
-    '/',
-    `/city/${KYIV}`,
-    `/compare?cities=${KYIV},${LONDON}`,
-    '/cities',
-    '/methodology',
-    '/privacy',
-    '/terms',
-]
+const PAGES = ['/', `/city/${KYIV}`, `/compare?cities=${KYIV},${LONDON}`, '/methodology', '/privacy', '/terms']
 const WEEKDAY = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)/
 const PHONE_LEGEND_WIDTHS = [360, 412]
 
@@ -86,14 +78,4 @@ test('model names in the phone legend wrap instead of clipping', async ({ page, 
 
         expect(clippedNames, `clipped at ${width}px`).toEqual([])
     }
-})
-
-test('cities are cards on phones and a table elsewhere', async ({ page, isMobile }) => {
-    await page.goto('/cities')
-
-    const citiesList = page.getByRole('list', { name: 'Tracked cities' })
-    const citiesTable = page.locator('main table')
-
-    await expect(isMobile ? citiesList : citiesTable).toBeVisible()
-    await expect(isMobile ? citiesTable : citiesList).toBeVisible({ visible: false })
 })

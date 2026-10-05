@@ -295,7 +295,7 @@ Below 640 px (Tailwind `sm`) phones get their own layouts where the desktop ones
 - **CSS switching.** Phone and desktop variants are chosen with `max-sm:` / `sm:` utilities (tables and their card lists are both rendered, one hidden), so server HTML matches the first client render. Touch copy uses `pointer-coarse:`. The runs table was the one exception until the runs page was removed (P44): it was mounted only at 640 px and wider (`useMediaQuery`), because a virtualized table that is mounted while hidden has no size to measure.
 - **Dashboard.** A compact header, the variable switch pinned under the top bar, the model list inside the chart card in two columns, a swipeable row of disagreement tiles (a named, focusable `role="region"` so keyboards can scroll it), a sticky time column in the table view. The chart is 280 px high below 480 px of width.
 - **Day labels** pick the longest form that fits ("Sat 26 Sept", "Sat 26", "Sat") instead of disappearing below a fixed width.
-- **Runs and cities** are card lists on phones; run history shows 30 runs at a time. The runs page is gone (P44).
+- **Runs and cities** are card lists on phones; run history shows 30 runs at a time. Both pages are gone (P44, P45).
 - **Not done on purpose:** a bottom tab bar (it would promote secondary pages to the level of the forecast) and swiping between variables (it would fight touch scrubbing, P28).
 - **Landscape phones** are usually wider than 640 px and get the tablet layout; a height-based phone layer was left out.
 
@@ -314,7 +314,7 @@ Decided by the author, applying their code-style rules to the whole repository i
 
 Decided by the author: every time the UI shows is local first, and UTC appears only as hover text.
 
-- **City times stay in the city's zone**, as the charts already were (P18, P21). The forecast chip on the dashboard and the landing overview no longer leads with UTC ("Updated 12:00 UTC · 08:00 local") or says "Stale" without saying what is old; see the age chip below. Dates on the cities page are in each city's zone too.
+- **City times stay in the city's zone**, as the charts already were (P18, P21). The forecast chip on the dashboard and the landing overview no longer leads with UTC ("Updated 12:00 UTC · 08:00 local") or says "Stale" without saying what is old; see the age chip below. Dates on the cities page were in each city's zone too, until it was removed (P45).
 - **Times that belong to no city use the viewer's zone**: the runs page and the quota reset. The runs timeline puts the 00, 06, 12 and 18 UTC runs on the viewer's calendar (`apps/web/src/components/runs/timeline-grid.ts`): a column per local day, a row per run in local clock order, so a run that starts after local midnight sits in the next day's column. Row labels use today's offset; after a daylight-saving change, older squares sit an hour off their label, and their tooltips stay exact. The viewer's zone is read only after mount (the server renders in UTC), so these views render from client-side data. The runs page and its timeline were removed (P44).
 - **Model runs are still named by UTC in the methodology copy** ("collected at 00, 06, 12 and 18 UTC"), because that is how the forecast centres publish them.
 - **The forecast chip shows the run's age** ("19 hours old"), amber past 9 hours, with the run's city and UTC times in its tooltip. A clock time on the chip read as the viewer's own time (a New York run "from Thu 14:00" looked 7 hours off to a viewer in Kyiv); an age reads the same everywhere.
@@ -360,3 +360,7 @@ Decided by the author. With collection on demand only (P46), the runs page liste
 - **Removed:** the `/runs` page and its links, `/api/runs`, `/api/runs/timeline` and `/api/runs/:id/archive`, the run schemas in the API contract (`Run` is now the store's own type), the raw archive (`archive.ts`, `RAW_DIR`, `RAW_BUCKET`), the S3 bucket and its grants in the stack, and TanStack Table and Virtual, which only the runs table used.
 - **Kept:** `CollectionRun` rows, because every snapshot references its run; they record status, row counts and warnings. The migration `drop_run_archive` drops `archivePath`.
 - **The bucket is retained by AWS** (`RemovalPolicy.RETAIN`): leaving the stack orphans it with its archives, to be deleted by hand.
+
+## P45. No cities page (2026-10-05)
+
+Decided by the author. The `/cities` page listed every city anyone had opened, with its status, views and scheduled runs; without a schedule (P46) its columns mean nothing, and a visitor's own places are already the chips and the search box's list (P42). The page, its menu entry and its catalog keys are removed. `GET /api/cities` stays: the Compare page offers those cities to add, which the privacy policy and terms now say instead of pointing at the cities page.

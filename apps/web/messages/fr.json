@@ -18,7 +18,6 @@
     },
     "nav": {
         "more": "Autres pages",
-        "cities": "Villes",
         "compare": "Comparer",
         "methodology": "Méthodologie"
     },
@@ -121,18 +120,6 @@
         "empty": "Ajoutez des villes pour comparer leurs prévisions.",
         "remove": "Retirer la ville",
         "sharedAxis": "Tous les panneaux partagent un même axe vertical pour comparer les valeurs directement."
-    },
-    "cities": {
-        "title": "Villes suivies",
-        "description": "Chaque ville que quelqu’un a ouverte. Les villes actives sont collectées toutes les 6 heures ; après 30 jours sans visite elles passent en veille et gardent leur historique.",
-        "city": "Ville",
-        "status": "Statut",
-        "firstTracked": "Suivie depuis",
-        "lastViewed": "Dernière visite",
-        "views": "Visites",
-        "runs": "Exécutions programmées",
-        "models": "Modèles",
-        "note": "Rien ne peut être supprimé ici. Les villes en attente attendent une place libre sous le plafond de villes actives."
     },
     "landing": {
         "hero": "Comparez les prévisions météo de votre ville",

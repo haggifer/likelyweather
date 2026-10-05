@@ -18,7 +18,6 @@
     },
     "nav": {
         "more": "Weitere Seiten",
-        "cities": "Städte",
         "compare": "Vergleich",
         "methodology": "Methodik"
     },
@@ -121,18 +120,6 @@
         "empty": "Füge Städte hinzu, um ihre Vorhersagen zu vergleichen.",
         "remove": "Stadt entfernen",
         "sharedAxis": "Alle Felder teilen eine senkrechte Achse, damit sich Werte direkt vergleichen lassen."
-    },
-    "cities": {
-        "title": "Verfolgte Städte",
-        "description": "Jede Stadt, die jemand geöffnet hat. Aktive Städte werden alle 6 Stunden gesammelt; nach 30 Tagen ohne Aufruf ruhen sie und behalten ihren Verlauf.",
-        "city": "Stadt",
-        "status": "Status",
-        "firstTracked": "Verfolgt seit",
-        "lastViewed": "Zuletzt angesehen",
-        "views": "Aufrufe",
-        "runs": "Geplante Läufe",
-        "models": "Modelle",
-        "note": "Hier lässt sich nichts löschen. Wartende Städte warten auf einen freien Platz unter der Obergrenze aktiver Städte."
     },
     "landing": {
         "hero": "Vergleiche Wettervorhersagen für deine Stadt",

@@ -18,7 +18,6 @@
     },
     "nav": {
         "more": "Más páginas",
-        "cities": "Ciudades",
         "compare": "Comparar",
         "methodology": "Metodología"
     },
@@ -121,18 +120,6 @@
         "empty": "Añade ciudades para comparar sus pronósticos.",
         "remove": "Quitar ciudad",
         "sharedAxis": "Todos los paneles comparten un eje vertical para comparar valores directamente."
-    },
-    "cities": {
-        "title": "Ciudades seguidas",
-        "description": "Cada ciudad que alguien ha abierto. Las activas se recogen cada 6 horas; tras 30 días sin visitas pasan a inactivas y conservan su historial.",
-        "city": "Ciudad",
-        "status": "Estado",
-        "firstTracked": "Seguida desde",
-        "lastViewed": "Última visita",
-        "views": "Visitas",
-        "runs": "Ejecuciones programadas",
-        "models": "Modelos",
-        "note": "Aquí no se puede borrar nada. Las ciudades en cola esperan un hueco libre dentro del límite de ciudades activas."
     },
     "landing": {
         "hero": "Compara los pronósticos del tiempo para tu ciudad",

@@ -18,7 +18,6 @@
     },
     "nav": {
         "more": "More pages",
-        "cities": "Cities",
         "compare": "Compare",
         "methodology": "Methodology"
     },
@@ -121,18 +120,6 @@
         "empty": "Add cities to compare their forecasts.",
         "remove": "Remove city",
         "sharedAxis": "All panels share one vertical axis so values compare directly."
-    },
-    "cities": {
-        "title": "Tracked cities",
-        "description": "Every city anyone has opened. Active cities are collected every 6 hours; after 30 days without a view they turn dormant and keep their history.",
-        "city": "City",
-        "status": "Status",
-        "firstTracked": "First tracked",
-        "lastViewed": "Last viewed",
-        "views": "Views",
-        "runs": "Scheduled runs",
-        "models": "Models",
-        "note": "Nothing here can be deleted. Queued cities wait for a free slot under the active-city cap."
     },
     "landing": {
         "hero": "Compare weather forecasts for your city",
