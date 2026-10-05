@@ -67,13 +67,12 @@ describe('API without the database', () => {
 })
 
 describe.runIf(Boolean(process.env.DATABASE_URL))('API with the database', () => {
-    it('lists the seed cities and reports health', async () => {
-        const cities = await request(app).get('/api/cities')
+    it('reports health with the seed cities stored', async () => {
         const health = await request(app).get('/api/health')
 
-        expect(cities.status).toBe(200)
-        expect(cities.body.items.length).toBeGreaterThanOrEqual(11)
-        expect(health.body).toMatchObject({ ok: true })
+        expect(health.status).toBe(200)
+        expect(health.body.ok).toBe(true)
+        expect(health.body.cities).toBeGreaterThanOrEqual(11)
     })
 
     it('answers an unknown city with 404', async () => {

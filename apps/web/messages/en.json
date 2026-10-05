@@ -103,12 +103,12 @@
     "compare": {
         "title": "Compare cities",
         "description": "Up to four cities side by side on a shared axis.",
-        "add": "Add a tracked city",
         "seed": "Try the four Ukrainian cities",
         "count": "{count} of {max} cities",
         "empty": "Add cities to compare their forecasts.",
         "remove": "Remove city",
-        "sharedAxis": "All panels share one vertical axis so values compare directly."
+        "sharedAxis": "All panels share one vertical axis so values compare directly.",
+        "noForecast": "No forecast is available for this city right now."
     },
     "landing": {
         "hero": "Compare weather forecasts for your city",

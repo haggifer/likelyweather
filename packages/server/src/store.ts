@@ -56,7 +56,6 @@ const COLUMNS: Record<SeriesField, keyof Prisma.ForecastCreateManyInput> = {
     snow: 'snowCm',
 }
 const FIELDS = Object.keys(COLUMNS) as SeriesField[]
-const CITY_ORDER: Prisma.CityOrderByWithRelationInput[] = [{ firstTrackedAt: 'asc' }, { id: 'asc' }]
 // Every run is fetched on demand now; the column still holds the origin of older scheduled and imported runs.
 const ORIGIN = 'PREVIEW' as const
 
@@ -160,12 +159,6 @@ const toGridModels = (rows: GridRow[], fields: SeriesField[], steps: string[]) =
     }
 
     return models
-}
-
-export const getCities = async () => {
-    const rows = await getPrisma().city.findMany({ orderBy: CITY_ORDER })
-
-    return rows.map(toCity)
 }
 
 export const countCities = () => getPrisma().city.count()

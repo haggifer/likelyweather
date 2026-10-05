@@ -7,7 +7,6 @@
         "./components/card": "./src/components/card.tsx",
         "./components/command": "./src/components/command.tsx",
         "./components/dropdown-menu": "./src/components/dropdown-menu.tsx",
-        "./components/select": "./src/components/select.tsx",
         "./components/skeleton": "./src/components/skeleton.tsx",
         "./components/sonner": "./src/components/sonner.tsx",
         "./components/table": "./src/components/table.tsx",

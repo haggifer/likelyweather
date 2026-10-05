@@ -103,12 +103,12 @@
     "compare": {
         "title": "Städte vergleichen",
         "description": "Bis zu vier Städte nebeneinander auf einer gemeinsamen Achse.",
-        "add": "Verfolgte Stadt hinzufügen",
         "seed": "Die vier ukrainischen Städte ausprobieren",
         "count": "{count} von {max} Städten",
         "empty": "Füge Städte hinzu, um ihre Vorhersagen zu vergleichen.",
         "remove": "Stadt entfernen",
-        "sharedAxis": "Alle Felder teilen eine senkrechte Achse, damit sich Werte direkt vergleichen lassen."
+        "sharedAxis": "Alle Felder teilen eine senkrechte Achse, damit sich Werte direkt vergleichen lassen.",
+        "noForecast": "Für diese Stadt ist gerade keine Vorhersage verfügbar."
     },
     "landing": {
         "hero": "Vergleiche Wettervorhersagen für deine Stadt",

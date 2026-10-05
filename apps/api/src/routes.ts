@@ -3,7 +3,7 @@ import { getErrorMessage, HttpError } from '@fa/server/errors'
 import { getLatestPayload } from '@fa/server/latest'
 import { getQuota, quotaExceeded, trySpendQuota } from '@fa/server/quota'
 import { searchPlaces } from '@fa/server/sources/geocoding'
-import { countCities, getCities, SnapshotMeta } from '@fa/server/store'
+import { countCities, SnapshotMeta } from '@fa/server/store'
 import {
     CompareQuerySchema,
     CompareResponse,
@@ -109,12 +109,6 @@ apiRouter.post('/cities/track', rateLimit('read'), async (req, res) => {
     }).catch(toUpstreamError('The place could not be looked up'))
 
     sendJson(res, { slug: city.slug } satisfies TrackResponse, { isCacheable: false })
-})
-
-apiRouter.get('/cities', rateLimit('read'), async (_req, res) => {
-    const items = await getCities()
-
-    sendJson(res, { items }, { isCacheable: false })
 })
 
 apiRouter.get('/cities/:slug', rateLimit('read'), async (req, res) => {

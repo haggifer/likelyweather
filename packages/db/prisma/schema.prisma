@@ -35,7 +35,7 @@ model City {
   elevationM     Float?
   timezone       String
   population     Int?
-  firstTrackedAt DateTime   @default(now()) // when someone first opened it; orders the city list
+  firstTrackedAt DateTime   @default(now()) // when someone first opened it
   forecasts      Forecast[]
   snapshots      Snapshot[]
 }

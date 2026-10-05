@@ -103,12 +103,12 @@
     "compare": {
         "title": "Comparar ciudades",
         "description": "Hasta cuatro ciudades lado a lado en un eje común.",
-        "add": "Añadir una ciudad seguida",
         "seed": "Probar las cuatro ciudades ucranianas",
         "count": "{count} de {max} ciudades",
         "empty": "Añade ciudades para comparar sus pronósticos.",
         "remove": "Quitar ciudad",
-        "sharedAxis": "Todos los paneles comparten un eje vertical para comparar valores directamente."
+        "sharedAxis": "Todos los paneles comparten un eje vertical para comparar valores directamente.",
+        "noForecast": "No hay pronóstico disponible para esta ciudad ahora mismo."
     },
     "landing": {
         "hero": "Compara los pronósticos del tiempo para tu ciudad",

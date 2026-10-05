@@ -2,23 +2,24 @@
 
 import { ForecastPreview } from '@/components/city/ForecastPreview'
 import { VariableSwitch } from '@/components/city/VariableSwitch'
+import { ErrorNotice } from '@/components/shell/ErrorNotice'
 import { FlagIcon } from '@/components/shell/FlagIcon'
-import { useCities } from '@/hooks/useCities'
+import { SearchBox } from '@/components/shell/SearchBox'
 import { useCompare } from '@/hooks/useCompare'
 import { useUrlSync } from '@/hooks/useUrlSync'
 import { useAppSelector } from '@/store'
 import { getYDomain } from '@fa/charts/scales'
-import { City, CompareResponse } from '@fa/shared/api'
+import { CompareResponse } from '@fa/shared/api'
 import { MAX_COMPARE_CITIES, SEED_CITY_IDS } from '@fa/shared/constants'
-import { getCityLabel, getCityName } from '@fa/shared/format'
+import { getCityName } from '@fa/shared/format'
+import { SEEDS, slugify } from '@fa/shared/seeds'
 import { buildSlots, DASHBOARD_HOURS, getChartStart, toSlotLatest } from '@fa/shared/slots'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Button } from '@fa/ui/components/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@fa/ui/components/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@fa/ui/components/select'
 import { Skeleton } from '@fa/ui/components/skeleton'
 import { useNow } from '@fa/ui/hooks/useNow'
-import { Plus, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs'
@@ -47,29 +48,56 @@ const getSharedDomain = (items: CompareItem[], variable: Variable) =>
           )
         : undefined
 
-const getSeedSlugs = (cities: City[]) =>
-    SEED_CITY_IDS.slice(0, MAX_COMPARE_CITIES)
-        .map((id) => cities.find((c) => c.id === id)?.slug)
-        .filter((s): s is string => Boolean(s))
+const SEED_SLUGS = SEED_CITY_IDS.slice(0, MAX_COMPARE_CITIES)
+    .map((id) => SEEDS.find((seed) => seed.id === id))
+    .filter((seed) => seed !== undefined)
+    .map((seed) => slugify(seed.name, seed.countryCode, seed.id))
 
 export function CompareView() {
     const t = useTranslations('compare')
+    const te = useTranslations('errors')
     const locale = useLocale()
     const now = useNow()
     const { isHydrated } = useUrlSync()
     const variable = useAppSelector((s) => s.dashboard.variable)
     const [slugs, setSlugs] = useQueryState('cities', citiesParser)
 
-    const { data: cities } = useCities()
-    const { data, isFetching } = useCompare(isHydrated ? slugs : [], variable)
+    const shown = slugs.slice(0, MAX_COMPARE_CITIES)
+    const { data, error, isFetching, refetch } = useCompare(isHydrated ? shown : [], variable)
 
-    const available = (cities?.items ?? []).filter((c) => !slugs.includes(c.slug))
     const items = useMemo(() => (data?.items ?? []).map((item) => toCompareItem(item, variable)), [data, variable])
     const sharedDomain = useMemo(() => getSharedDomain(items, variable), [items, variable])
+    const isSettled = !isFetching && (Boolean(data) || Boolean(error))
 
-    const handleAdd = (slug: string) => void setSlugs([...slugs, slug].slice(0, MAX_COMPARE_CITIES))
-    const handleRemove = (slug: string) => void setSlugs(slugs.filter((s) => s !== slug))
-    const handleSeed = () => void setSlugs(getSeedSlugs(cities?.items ?? []))
+    const handleAdd = (slug: string) => void setSlugs([...shown.filter((s) => s !== slug), slug])
+    const handleRemove = (slug: string) => void setSlugs(shown.filter((s) => s !== slug))
+    const handleSeed = () => void setSlugs(SEED_SLUGS)
+
+    // The API leaves out slugs it does not know, and gives `latest: null` when a city could not be refreshed.
+    const renderCardBody = (slug: string) => {
+        const item = items.find((i) => i.city.slug === slug)
+
+        if (item?.latest) {
+            return (
+                <ForecastPreview
+                    city={item.city}
+                    latest={item.latest}
+                    variable={variable}
+                    ariaLabel={getCityName(item.city, locale)}
+                    now={now}
+                    yDomain={sharedDomain}
+                />
+            )
+        }
+
+        if (!item && !isSettled) return <Skeleton className="h-[13.75rem]" />
+
+        return (
+            <p className="flex h-[13.75rem] items-center justify-center text-center text-sm text-muted-foreground">
+                {item || error ? t('noForecast') : te('notFound')}
+            </p>
+        )
+    }
 
     return (
         <div className="flex flex-col gap-(--card-gap)">
@@ -79,33 +107,20 @@ export function CompareView() {
             </div>
             <div className="flex flex-wrap items-center gap-3">
                 <VariableSwitch />
-                {slugs.length < MAX_COMPARE_CITIES && (
-                    <Select value="" onValueChange={handleAdd}>
-                        <SelectTrigger size="sm" className="w-full sm:w-56">
-                            <Plus className="size-3.5" />
-                            <SelectValue placeholder={t('add')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {available.map((c) => (
-                                <SelectItem key={c.slug} value={c.slug}>
-                                    {getCityLabel(c, locale)}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                )}
-                {!slugs.length && (
+                {shown.length < MAX_COMPARE_CITIES && <SearchBox onSelectCity={handleAdd} className="sm:max-w-xs" />}
+                {!shown.length && (
                     <Button variant="outline" size="sm" onClick={handleSeed}>
                         {t('seed')}
                     </Button>
                 )}
                 <span className="text-xs text-muted-foreground">
-                    {t('count', { count: slugs.length, max: MAX_COMPARE_CITIES })}
+                    {t('count', { count: shown.length, max: MAX_COMPARE_CITIES })}
                 </span>
             </div>
-            {!slugs.length && <p className="py-10 text-center text-sm text-muted-foreground">{t('empty')}</p>}
+            {!shown.length && <p className="py-10 text-center text-sm text-muted-foreground">{t('empty')}</p>}
+            {error && <ErrorNotice error={error} onRetry={() => void refetch()} />}
             <div className="grid gap-(--card-gap) md:grid-cols-2">
-                {slugs.map((slug) => {
+                {shown.map((slug) => {
                     const item = items.find((i) => i.city.slug === slug)
 
                     return (
@@ -132,25 +147,12 @@ export function CompareView() {
                                     </Button>
                                 </CardAction>
                             </CardHeader>
-                            <CardContent>
-                                {item?.latest ? (
-                                    <ForecastPreview
-                                        city={item.city}
-                                        latest={item.latest}
-                                        variable={variable}
-                                        ariaLabel={getCityName(item.city, locale)}
-                                        now={now}
-                                        yDomain={sharedDomain}
-                                    />
-                                ) : (
-                                    <Skeleton className="h-[13.75rem]" />
-                                )}
-                            </CardContent>
+                            <CardContent>{renderCardBody(slug)}</CardContent>
                         </Card>
                     )
                 })}
             </div>
-            {slugs.length > 1 && <p className="text-xs text-muted-foreground">{t('sharedAxis')}</p>}
+            {shown.length > 1 && <p className="text-xs text-muted-foreground">{t('sharedAxis')}</p>}
         </div>
     )
 }
