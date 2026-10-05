@@ -31,7 +31,7 @@ pnpm cdk:synth               # also cdk:diff, cdk:deploy, cdk:bootstrap; needs p
 - **Time.** Timestamps are UTC in storage and the API. The UI shows local time first: the city's zone for anything about a city, the viewer's zone for what belongs to no city (the quota reset), and UTC only as hover text.
 - **Precipitation** is always present in the schema and the UI.
 - **State.** Redux holds UI state only; TanStack Query holds server state. The landing overview's queries never refetch in the background, because a refetch would swap a newer run in under the reader; only Refresh does.
-- **Catalogs.** `apps/web/messages/{uk,en,es,de,fr}.json` keep identical keys.
+- **Catalogs.** `packages/messages/catalogs/{uk,en,es,de,fr}.json` keep identical keys; the web app and the mobile app read them.
 - **Server code.** The API's domain code lives in `packages/server`; `apps/api` stays a thin entry point. Database access goes through `packages/server/src/store.ts`, shared expiring state through `packages/server/src/cache.ts`.
 - **Redis is optional at runtime.** Every Redis call must degrade (no cache, no limit, claim granted) rather than fail a request. Never add ElastiCache.
 - **Schema changes** go through Prisma migrations in `packages/db`. `Forecast` is partitioned by week: keep `issueTime` in its primary key and never write to it without `ensureForecastPartitions` (the store does this).

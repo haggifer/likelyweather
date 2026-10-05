@@ -1,4 +1,5 @@
 import { LOCALE_COOKIE } from '@/i18n/locale-cookie'
+import { loadMessages } from '@fa/messages/load'
 import { DEFAULT_LOCALE, Locale, LOCALES } from '@fa/shared/api'
 import { getRequestConfig } from 'next-intl/server'
 import { cookies } from 'next/headers'
@@ -9,7 +10,7 @@ export default getRequestConfig(async () => {
     const store = await cookies()
     const requested = store.get(LOCALE_COOKIE)?.value as Locale | undefined
     const locale = requested && LOCALES.includes(requested) ? requested : DEFAULT_LOCALE
-    const { default: messages } = await import(`../../messages/${locale}.json`)
+    const messages = await loadMessages(locale)
 
     return { locale, timeZone: 'UTC', messages }
 })
