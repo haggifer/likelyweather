@@ -25,6 +25,11 @@ export interface Snapshot extends SnapshotMeta, SeriesGrid {}
 
 export type RunStatus = 'OK' | 'PARTIAL' | 'FAILED'
 
+// A stored snapshot with the status of the run that wrote it.
+export interface StoredSnapshotMeta extends SnapshotMeta {
+    runStatus: RunStatus
+}
+
 export interface Run {
     id: string
     issueTime: string
@@ -38,7 +43,7 @@ export interface Run {
 }
 
 type CityRow = Prisma.CityGetPayload<object>
-type SnapshotRow = Prisma.SnapshotGetPayload<object>
+type SnapshotRow = Prisma.SnapshotGetPayload<{ include: { run: { select: { status: true } } } }>
 
 const COLUMNS: Record<SeriesField, keyof Prisma.ForecastCreateManyInput> = {
     temp: 'tempC',
@@ -89,12 +94,13 @@ const fromCity = (city: City) => ({
     population: city.population ?? null,
 })
 
-const toMeta = (row: SnapshotRow): SnapshotMeta => ({
+const toMeta = (row: SnapshotRow): StoredSnapshotMeta => ({
     cityId: row.cityId,
     issueTime: toIso(row.issueTime),
     runId: row.runId,
     fetchedAt: toIso(row.fetchedAt),
     metnoLastModified: row.metnoLastModified ?? undefined,
+    runStatus: row.run.status,
 })
 
 // Partition DDL runs once per week and process; parallel writes of one run share the pending call.
@@ -211,7 +217,8 @@ export const writeSnapshot = async (snapshot: Snapshot) => {
     await ensurePartitionsOnce(issueTime)
     await prisma.$transaction([
         prisma.forecast.deleteMany({ where: { cityId: snapshot.cityId, issueTime } }),
-        prisma.forecast.createMany({ data: rows }),
+        // Another instance can write the same run between the delete and the insert; its rows are identical.
+        prisma.forecast.createMany({ data: rows, skipDuplicates: true }),
         prisma.snapshot.upsert({
             where: { cityId_issueTime: { cityId: snapshot.cityId, issueTime } },
             create: { cityId: snapshot.cityId, issueTime, ...meta },
@@ -221,7 +228,11 @@ export const writeSnapshot = async (snapshot: Snapshot) => {
 }
 
 export const getLatestSnapshotMeta = async (cityId: number) => {
-    const row = await getPrisma().snapshot.findFirst({ where: { cityId }, orderBy: { issueTime: 'desc' } })
+    const row = await getPrisma().snapshot.findFirst({
+        where: { cityId },
+        orderBy: { issueTime: 'desc' },
+        include: { run: { select: { status: true } } },
+    })
 
     return row ? toMeta(row) : null
 }
@@ -253,3 +264,7 @@ export const getLatestSnapshot = async (cityId: number, modelIds?: ModelId[]): P
 
 export const deleteSnapshotsBefore = (cutoff: Date) =>
     getPrisma().snapshot.deleteMany({ where: { issueTime: { lt: cutoff } } })
+
+// Runs older than the forecasts they produced; deleting a run also deletes its snapshots.
+export const deleteRunsBefore = (cutoff: Date) =>
+    getPrisma().collectionRun.deleteMany({ where: { issueTime: { lt: cutoff } } })
