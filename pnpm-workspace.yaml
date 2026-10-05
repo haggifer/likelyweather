@@ -2,6 +2,10 @@ packages:
   - apps/*
   - packages/*
   - infra
+# A flat node_modules: React Native's native Android build runs CMake, ninja and clang on paths inside its
+# dependencies, and pnpm's isolated .pnpm/<name>@<version>_<hash> folders push those paths past the 260 characters
+# the NDK tools can handle on Windows.
+nodeLinker: hoisted
 allowBuilds:
   '@parcel/watcher': false
   '@prisma/engines': true

@@ -131,7 +131,7 @@ The ones a newcomer is most likely to undo by accident:
 - **The model palette is fixed,** with dash patterns where two colors are too close for color-vision deficiencies.
 - **Forecasts are fetched on demand, never on a schedule.** Opening a city fetches it when its stored run predates the current 6-hour issue; everyone else then reads the stored run. A scheduled collector refreshed cities nobody opened and was removed; don't add one back for a feature without weighing that cost.
 - **Limits and the quota count per client: an IPv4 address or an IPv6 /64.** An IPv4-mapped address counts as IPv4, and a global daily cap protects the free upstream tiers. Keying IPv6 by the full address would let one /64 rotate through endless fresh quotas.
-- **The mobile app shares code, not UI.** It consumes `@fa/shared`, `@fa/api-client`, `@fa/chart-core` and `@fa/messages`; its components are React Native, and its colours come from tokens generated from `globals.css`. React may differ between the apps (Expo pins its own); shared packages declare `react` only as a peer.
+- **The mobile app shares code, not UI.** It consumes `@fa/shared`, `@fa/api-client`, `@fa/chart-core` and `@fa/messages`; its components are React Native, and its colours come from tokens generated from `globals.css`. Both apps run the React version the Expo SDK pins (19.2.3), because the flat `node_modules` that Android builds on Windows need allows only one; upgrade React with the Expo SDK. Shared packages declare `react` only as a peer.
 
 ## Data and attribution
 
