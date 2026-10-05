@@ -141,5 +141,8 @@ export const collect = async ({ city, now = new Date() }: CollectOptions): Promi
     })
     await upsertRun(run)
 
+    // The run rows are not shown anywhere, so the logs are where a failing source shows up.
+    if (warnings.length) console.warn(`Run ${runId} ${run.status}: ${warnings.join('; ')}`)
+
     return { run, snapshot }
 }

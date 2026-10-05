@@ -3,7 +3,10 @@ import { pruneExpiredForecasts } from './retention'
 import { deleteSnapshotsBefore } from './store'
 
 vi.mock('@fa/db/partitions', () => ({ dropExpiredForecastPartitions: vi.fn(async () => []) }))
-vi.mock('./store', () => ({ deleteSnapshotsBefore: vi.fn(async () => ({ count: 0 })) }))
+vi.mock('./store', () => ({
+    deleteSnapshotsBefore: vi.fn(async () => ({ count: 0 })),
+    deleteRunsBefore: vi.fn(async () => ({ count: 0 })),
+}))
 
 const DAY_ONE = new Date('2030-01-01T09:00:00Z')
 
