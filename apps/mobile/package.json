@@ -8,7 +8,8 @@
         "ios": "expo run:ios",
         "lint": "eslint .",
         "typecheck": "tsc --noEmit",
-        "test": "jest"
+        "test": "jest",
+        "tokens": "tsx scripts/generate-tokens.ts && prettier --write src/theme/tokens.ts"
     },
     "jest": {
         "preset": "jest-expo",
@@ -38,11 +39,13 @@
     "devDependencies": {
         "@testing-library/react-native": "^14.0.1",
         "@types/jest": "29.5.14",
+        "@types/node": "^22",
         "@types/react": "~19.2.2",
         "@types/react-dom": "~19.2.2",
         "eslint": "^9",
         "jest": "~29.7.0",
         "jest-expo": "~57.0.5",
+        "tsx": "^4.23.15",
         "typescript": "~6.0.3"
     }
 }
