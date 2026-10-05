@@ -1,6 +1,7 @@
 {
     "name": "forecast-arena",
     "private": true,
+    "license": "MIT",
     "scripts": {
         "dev": "docker compose up -d --wait && turbo run dev --filter=@fa/api --filter=@fa/web",
         "build": "turbo run build",

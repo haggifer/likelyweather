@@ -118,4 +118,8 @@ The ones a newcomer is most likely to undo by accident:
 
 ## Data and attribution
 
-Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0) and [MET Norway](https://api.met.no/) (CC BY 4.0). Geocoding by Open-Meteo (GeoNames). Non-commercial use. Flags from `country-flag-icons` (MIT).
+Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0) and [MET Norway](https://api.met.no/) (CC BY 4.0). Geocoding by Open-Meteo (GeoNames). Open-Meteo's free API is for non-commercial use; running this code commercially needs its paid plan. Flags from `country-flag-icons` (MIT).
+
+## License
+
+The code is under the [MIT License](LICENSE). The weather data stays under its providers' CC BY 4.0 terms.
