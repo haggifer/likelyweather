@@ -98,15 +98,15 @@ apiRouter.get('/geocode', rateLimit('geocode'), async (req, res) => {
 
 // The forecast is fetched by the first /latest request that follows (the page asks for it right away), not in the
 // background: a Lambda function is frozen as soon as its response is sent.
-// Picking a stored city is free; only adding a new one asks the geocoder, so only that is limited and spends quota.
+// Picking a stored city is free; only adding a new one asks the geocoder, so only that counts against the hourly
+// limit. It spends no quota: the forecast fetch that follows does, so a pick costs the viewer one request at most.
 apiRouter.post('/cities/track', rateLimit('read'), async (req, res) => {
     const { geocodeId } = parseBody(req, TrackBodySchema)
     const client = getClientKey(req)
 
-    const city = await trackCity(geocodeId, async () => {
-        await enforceRateLimit('track', client)
-        await requireQuota(client)
-    }).catch(toUpstreamError('The place could not be looked up'))
+    const city = await trackCity(geocodeId, () => enforceRateLimit('track', client)).catch(
+        toUpstreamError('The place could not be looked up'),
+    )
 
     sendJson(res, { slug: city.slug } satisfies TrackResponse, { isCacheable: false })
 })

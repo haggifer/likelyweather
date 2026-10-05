@@ -96,7 +96,7 @@ export const requireCity = async (slug: string) => {
 }
 
 // Adds a geocoded place to the stored cities, named in every locale, so its slug can be opened. `onCreate` runs
-// before the geocoder is asked for a city not stored yet (rate limit and quota).
+// before the geocoder is asked for a city not stored yet (the hourly limit).
 export const trackCity = async (geocodeId: number, onCreate: () => Promise<void> = async () => {}) => {
     const existing = await getCityById(geocodeId)
 
