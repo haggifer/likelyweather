@@ -27,8 +27,8 @@
         "repo": "Quellcode"
     },
     "search": {
-        "label": "Beliebige Stadt suchen",
-        "placeholder": "Beliebige Stadt suchen…",
+        "label": "Beliebigen Ort suchen",
+        "placeholder": "Beliebigen Ort suchen…",
         "hint": "Mindestens 3 Buchstaben eingeben",
         "searching": "Suche…",
         "empty": "Keine Orte gefunden",

@@ -34,7 +34,7 @@ test.beforeEach(async ({ context }) => {
 
 test('search tracks a new city, shows its overview, then its dashboard', async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('combobox', { name: 'Search any city' }).fill('Vinnytsia')
+    await page.getByRole('combobox', { name: 'Search any place' }).fill('Vinnytsia')
     await page.getByRole('option', { name: /Vinnytsia/ }).click()
 
     await expect(page).toHaveURL(/city=vinnytsia-ua-689558/)
@@ -77,7 +77,7 @@ test('compare adds a searched city and names an unknown one instead of loading f
     await expect(page.locator('main svg[role=img]')).toHaveCount(1)
     await expect(page.getByText('This city is not in Forecast Arena.')).toBeVisible()
 
-    await page.getByRole('combobox', { name: 'Search any city' }).fill('Vinnytsia')
+    await page.getByRole('combobox', { name: 'Search any place' }).fill('Vinnytsia')
     await page.getByRole('option', { name: /Vinnytsia/ }).click()
 
     await expect(page).toHaveURL(/vinnytsia-ua-689558/)
@@ -88,7 +88,7 @@ test('an unknown city page says so and offers the search', async ({ page }) => {
     await page.goto('/city/nowhere-xx-1')
 
     await expect(page.getByRole('heading', { name: 'This city is not in Forecast Arena' })).toBeVisible()
-    await expect(page.getByRole('combobox', { name: 'Search any city' })).toBeVisible()
+    await expect(page.getByRole('combobox', { name: 'Search any place' })).toBeVisible()
 })
 
 test('the language menu switches the interface to Ukrainian', async ({ page }) => {
@@ -129,7 +129,7 @@ test('a searched city becomes the first chip and the oldest one drops', async ({
     await page.goto('/')
     await expect.poll(() => getChipNames(page)).toEqual(['New York', 'London', 'Paris', 'Kyiv'])
 
-    await page.getByRole('combobox', { name: 'Search any city' }).fill('Vinnytsia')
+    await page.getByRole('combobox', { name: 'Search any place' }).fill('Vinnytsia')
     await page.getByRole('option', { name: /Vinnytsia/ }).click()
 
     await expect.poll(() => getChipNames(page)).toEqual(['Vinnytsia', 'New York', 'London', 'Paris'])
@@ -173,7 +173,7 @@ test('the star explains why it is disabled once four places are favorites', asyn
 
 test('the empty search box offers your places', async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('combobox', { name: 'Search any city' }).focus()
+    await page.getByRole('combobox', { name: 'Search any place' }).focus()
 
     await expect(page.getByRole('group', { name: 'Your places' }).getByRole('option')).toHaveText([
         /New York/,
@@ -209,7 +209,7 @@ test('the empty search box lists more searched places than the chips show', asyn
     )
 
     await page.goto('/')
-    await page.getByRole('combobox', { name: 'Search any city' }).focus()
+    await page.getByRole('combobox', { name: 'Search any place' }).focus()
 
     await expect(page.getByRole('group', { name: 'Your places' }).getByRole('option')).toHaveCount(6)
     await expect.poll(() => getChipNames(page)).toEqual(['Alpha', 'Beta', 'Gamma', 'Delta'])

@@ -27,8 +27,8 @@
         "repo": "Código fuente"
     },
     "search": {
-        "label": "Buscar cualquier ciudad",
-        "placeholder": "Busca cualquier ciudad…",
+        "label": "Buscar cualquier lugar",
+        "placeholder": "Busca cualquier lugar…",
         "hint": "Escribe al menos 3 letras",
         "searching": "Buscando…",
         "empty": "No se encontraron lugares",

@@ -27,8 +27,8 @@
         "repo": "Code source"
     },
     "search": {
-        "label": "Rechercher une ville",
-        "placeholder": "Rechercher une ville…",
+        "label": "Rechercher un lieu",
+        "placeholder": "Rechercher un lieu…",
         "hint": "Saisissez au moins 3 lettres",
         "searching": "Recherche…",
         "empty": "Aucun lieu trouvé",

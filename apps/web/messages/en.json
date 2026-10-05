@@ -27,8 +27,8 @@
         "repo": "Source code"
     },
     "search": {
-        "label": "Search any city",
-        "placeholder": "Search any city…",
+        "label": "Search any place",
+        "placeholder": "Search any place…",
         "hint": "Type at least 3 letters",
         "searching": "Searching…",
         "empty": "No places found",
