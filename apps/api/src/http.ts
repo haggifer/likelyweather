@@ -3,6 +3,7 @@ import { getErrorMessage, HttpError } from '@fa/server/errors'
 import { ApiError } from '@fa/shared/api'
 import type { ErrorRequestHandler, Request, RequestHandler, Response } from 'express'
 import { z, ZodError } from 'zod'
+import { toClientKey } from './client-key'
 
 export type RateBucket = 'read' | 'geocode' | 'track'
 
@@ -25,9 +26,10 @@ const sendError = (res: Response, status: number, code: string, message: string)
 
 const getZodMessage = (error: ZodError) => error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')
 
-// Behind CloudFront the viewer's address arrives in CloudFront-Viewer-Address ("ip:port"); X-Forwarded-For can be
-// set by the client, so it is only trusted when that header is absent (local development).
-export const getClientIp = (req: Request) => {
+// Behind CloudFront the viewer's address arrives in CloudFront-Viewer-Address ("ip:port", an IPv6 address without
+// brackets); X-Forwarded-For can be set by the client, so it is only trusted when that header is absent (local
+// development).
+const getClientIp = (req: Request) => {
     const viewer = req.get('cloudfront-viewer-address')
 
     if (viewer) return viewer.slice(0, viewer.lastIndexOf(':'))
@@ -35,13 +37,15 @@ export const getClientIp = (req: Request) => {
     return req.get('x-forwarded-for')?.split(',')[0]?.trim() || req.socket.remoteAddress || 'local'
 }
 
+export const getClientKey = (req: Request) => toClientKey(getClientIp(req))
+
 export const rateLimit =
     (bucket: RateBucket): RequestHandler =>
     async (req, _res, next) => {
         if (ARE_LIMITS_DISABLED) return next()
 
         const { limit, windowSeconds } = RATE_LIMITS[bucket]
-        const count = await incrementWindow(`ratelimit:${bucket}:${getClientIp(req)}`, windowSeconds)
+        const count = await incrementWindow(`ratelimit:${bucket}:${getClientKey(req)}`, windowSeconds)
 
         if (count > limit) throw new HttpError(429, 'rate_limited', `Too many ${bucket} requests, slow down`)
 

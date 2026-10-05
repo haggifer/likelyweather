@@ -376,3 +376,12 @@ Decided by the author. The collector fetched every active city every 6 hours, so
 - **Kept:** run ids and the stored origin stay `preview-…` and `PREVIEW` for continuity with earlier rows; `City.firstTrackedAt` orders the city list.
 - **Deploy order.** Deploy the code first, then apply the migration: the old code reads the dropped columns, while the new code never writes them and their defaults cover inserts until the migration runs.
 - **Consequence for post-MVP accuracy** (P17): short lead buckets (6 to 36 hours) assumed the app's own stored runs on a fixed schedule. On-demand runs are irregular, so such scoring would need its own collection.
+
+## P47. IPv6 clients are counted by their /64 (2026-10-05)
+
+Rate limits and the daily quota (P27) count requests per client, and the client was the full viewer address from `CloudFront-Viewer-Address`. CloudFront serves IPv6 by default, so an IPv6 client was one /128: a phone rotating its temporary addresses counted as several clients, and anyone with a /64 could rotate through 2^64 addresses for a fresh quota each time.
+
+- **Now** (`apps/api/src/client-key.ts`): an IPv4 address is the key as it is; an IPv6 address is keyed by its /64, which mobile networks assign per phone (RFC 6459) and devices rotate inside. Cloudflare's rate limiting counted IPv6 per /64 too. /56 (a household's usual allocation, RIPE-690) was rejected because it would merge neighbours on networks that hand out smaller prefixes.
+- **IPv4-mapped addresses** (`::ffff:a.b.c.d`) count as their IPv4 address: masking them as IPv6 puts every IPv4 client into one bucket (the express-rate-limit bug CVE-2026-30827).
+- **Not solved here:** many phones share one IPv4 address behind carrier-grade NAT (over 90 % of mobile networks; Ukraine is about 14 % IPv6-capable), so they share one key. The mobile app brief plans a signed anonymous install token as the primary key with the address as a ceiling, decided before the app ships.
+- The privacy policy says that only the first half of an IPv6 address is stored.

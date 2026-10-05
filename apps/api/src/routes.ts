@@ -17,7 +17,7 @@ import {
 import { MODELS } from '@fa/shared/models'
 import { Variable } from '@fa/shared/variables'
 import { Router } from 'express'
-import { getClientIp, getParam, parseBody, parseQuery, rateLimit, sendJson } from './http'
+import { getClientKey, getParam, parseBody, parseQuery, rateLimit, sendJson } from './http'
 
 const requireQuota = async (client: string) => {
     const hasQuota = await trySpendQuota(client)
@@ -46,7 +46,7 @@ apiRouter.get('/health', rateLimit('read'), async (_req, res) => {
 
 apiRouter.get('/geocode', rateLimit('geocode'), async (req, res) => {
     const { q, locale } = parseQuery(req, GeocodeQuerySchema)
-    const client = getClientIp(req)
+    const client = getClientKey(req)
 
     const results = await searchPlaces(q, locale ?? DEFAULT_LOCALE, () => requireQuota(client))
 
@@ -79,14 +79,14 @@ apiRouter.get('/cities/:slug/latest', rateLimit('read'), async (req, res) => {
     const { variable } = parseQuery(req, LatestQuerySchema)
 
     const city = await requireCity(getParam(req, 'slug'))
-    const meta = await ensureFreshSnapshot(city, getClientIp(req))
+    const meta = await ensureFreshSnapshot(city, getClientKey(req))
     const payload = await getLatestPayload(meta, variable)
 
     sendJson(res, payload)
 })
 
 apiRouter.get('/quota', rateLimit('read'), async (req, res) => {
-    const quota = await getQuota(getClientIp(req))
+    const quota = await getQuota(getClientKey(req))
 
     sendJson(res, quota, { isCacheable: false })
 })
@@ -97,7 +97,7 @@ apiRouter.get('/models', rateLimit('read'), (_req, res) => {
 
 apiRouter.get('/compare', rateLimit('read'), async (req, res) => {
     const { cities, variable } = parseQuery(req, CompareQuerySchema)
-    const client = getClientIp(req)
+    const client = getClientKey(req)
 
     const items = await Promise.all(cities.map((slug) => getCompareItem(slug, variable, client)))
 
