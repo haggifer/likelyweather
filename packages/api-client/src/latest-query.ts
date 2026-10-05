@@ -1,6 +1,6 @@
-import { apiGet } from '@/lib/api'
 import { LatestResponse } from '@fa/shared/api'
 import { Variable } from '@fa/shared/variables'
+import { apiGet } from './api'
 
 export const MINUTE = 60_000
 export const LATEST_REFETCH_MS = 15 * MINUTE

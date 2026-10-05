@@ -2,11 +2,11 @@
 
 import { FlagIcon } from '@/components/shell/FlagIcon'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
-import { useGeocode } from '@/hooks/useGeocode'
 import { usePlaces } from '@/hooks/usePlaces'
-import { useTrackCity } from '@/hooks/useTrackCity'
 import { addRecent, getPlaceList, isFavorite, Place, Places, rankByFavorite, toPlace } from '@/lib/places'
 import { updatePlaces } from '@/lib/places-store'
+import { useGeocode } from '@fa/api-client/hooks/useGeocode'
+import { useTrackCity } from '@fa/api-client/hooks/useTrackCity'
 import { GeocodeResult, Locale } from '@fa/shared/api'
 import { getCityLabel } from '@fa/shared/format'
 import { CommandEmpty, CommandGroup, CommandItem, CommandList } from '@fa/ui/components/command'

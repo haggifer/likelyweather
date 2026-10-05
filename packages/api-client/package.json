@@ -1,0 +1,33 @@
+{
+    "name": "@fa/api-client",
+    "private": true,
+    "type": "module",
+    "exports": {
+        "./api": "./src/api.ts",
+        "./query-client": "./src/query-client.ts",
+        "./latest-query": "./src/latest-query.ts",
+        "./refresh-due": "./src/refresh-due.ts",
+        "./hooks/*": "./src/hooks/*.ts"
+    },
+    "scripts": {
+        "lint": "eslint .",
+        "typecheck": "tsc --noEmit",
+        "test": "vitest run"
+    },
+    "dependencies": {
+        "@fa/shared": "workspace:*"
+    },
+    "peerDependencies": {
+        "@tanstack/react-query": "^5",
+        "react": "^19"
+    },
+    "devDependencies": {
+        "@tanstack/react-query": "^5.103.2",
+        "@types/node": "^22",
+        "@types/react": "^19",
+        "eslint": "^9",
+        "react": "19.2.8",
+        "typescript": "^5",
+        "vitest": "^5.0.1"
+    }
+}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useQuota } from '@/hooks/useQuota'
+import { useQuota } from '@fa/api-client/hooks/useQuota'
 import { formatTime, getViewerTimeZone } from '@fa/shared/format'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@fa/ui/components/tooltip'
 import { cn } from '@fa/ui/lib/cn'

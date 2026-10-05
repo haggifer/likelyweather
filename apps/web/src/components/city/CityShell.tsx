@@ -2,7 +2,7 @@
 
 import { CityHeader } from '@/components/city/CityHeader'
 import { SearchBox } from '@/components/shell/SearchBox'
-import { useCity } from '@/hooks/useCity'
+import { useCity } from '@fa/api-client/hooks/useCity'
 import { Skeleton } from '@fa/ui/components/skeleton'
 import { useTranslations } from 'next-intl'
 import { ReactNode } from 'react'

@@ -12,6 +12,7 @@
         "flags": "node scripts/copy-flags.mjs"
     },
     "dependencies": {
+        "@fa/api-client": "workspace:*",
         "@fa/charts": "workspace:*",
         "@fa/messages": "workspace:*",
         "@fa/shared": "workspace:*",
