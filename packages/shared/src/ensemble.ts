@@ -42,13 +42,18 @@ const groupFutureStepsByDay = (steps: string[], variable: Variable, timeZone: st
     return byDay
 }
 
+const isComplete = (values: (number | null | undefined)[]): values is number[] =>
+    values.every((v) => v !== null && v !== undefined)
+
+// A model's day total counts only when it covers every step of the day: met.no's hourly data ends about 60 hours
+// out, and a partial total would read as disagreement. Fewer than two totals have no spread.
 const getDayTotalsRange = (series: (number | null)[][], indices: number[]) => {
     const totals = series
-        .map((values) => indices.map((i) => values[i]).filter((v): v is number => v !== null))
-        .filter((values) => values.length)
+        .map((values) => indices.map((i) => values[i]))
+        .filter(isComplete)
         .map((values) => values.reduce((sum, v) => sum + v, 0))
 
-    return totals.length ? Math.max(...totals) - Math.min(...totals) : 0
+    return totals.length > 1 ? Math.max(...totals) - Math.min(...totals) : null
 }
 
 const getMeanStepRange = (series: (number | null)[][], indices: number[]) => {
@@ -57,7 +62,7 @@ const getMeanStepRange = (series: (number | null)[][], indices: number[]) => {
         .filter((values) => values.length > 1)
         .map((values) => Math.max(...values) - Math.min(...values))
 
-    return ranges.length ? ranges.reduce((sum, r) => sum + r, 0) / ranges.length : 0
+    return ranges.length ? ranges.reduce((sum, r) => sum + r, 0) / ranges.length : null
 }
 
 const getDaySpread = (series: (number | null)[][], indices: number[], variable: Variable) =>
@@ -156,9 +161,10 @@ export const computeDisagreement = (
     const thresholds = VARIABLE_BY_ID[variable].disagreement
     const byDay = groupFutureStepsByDay(steps, variable, timeZone, now)
 
-    return [...byDay.entries()].map(([day, indices]) => {
+    // A day where fewer than two models have data is left out: one model always "agrees" with itself.
+    return [...byDay.entries()].flatMap(([day, indices]) => {
         const spread = getDaySpread(series, indices, variable)
 
-        return { day, spread, label: getDisagreementLabel(spread, thresholds) }
+        return spread === null ? [] : [{ day, spread, label: getDisagreementLabel(spread, thresholds) }]
     })
 }

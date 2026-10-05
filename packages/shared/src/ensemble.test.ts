@@ -90,6 +90,25 @@ describe('disagreement', () => {
 
         expect(days[0]).toEqual({ day: '2026-09-23', spread: 7, label: 'mixed' })
     })
+
+    it('leaves out a model whose precipitation day is incomplete instead of undercounting it', () => {
+        const steps = ['2026-09-23T06:00Z', '2026-09-23T12:00Z', '2026-09-23T18:00Z', '2026-09-24T00:00Z']
+        const series = [
+            [1, 1, 1, 1],
+            [1, 1, 1, 1],
+            [1, null, null, 1],
+        ]
+        const days = computeDisagreement(steps, series, Variable.Precip, 'UTC', new Date('2026-09-23T00:00Z'))
+
+        expect(days).toEqual([{ day: '2026-09-23', spread: 0, label: 'agree' }])
+    })
+
+    it('leaves out a day that fewer than two models cover', () => {
+        const steps = ['2026-09-23T06:00Z', '2026-09-23T12:00Z']
+        const days = computeDisagreement(steps, [[10, 12]], Variable.Temp, 'UTC', new Date('2026-09-23T00:00Z'))
+
+        expect(days).toEqual([])
+    })
 })
 
 describe('chance of rain', () => {
