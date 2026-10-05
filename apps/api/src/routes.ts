@@ -1,4 +1,4 @@
-import { ensureFreshSnapshot, requireCity, trackCity } from '@fa/server/cities'
+import { ensureFreshSnapshot, getStarterCities, requireCity, trackCity } from '@fa/server/cities'
 import { getErrorMessage, HttpError } from '@fa/server/errors'
 import { getLatestPayload } from '@fa/server/latest'
 import { getQuota, quotaExceeded, trySpendQuota } from '@fa/server/quota'
@@ -12,6 +12,7 @@ import {
     GeocodeResponse,
     HealthResponse,
     LatestQuerySchema,
+    StartersResponse,
     TrackBodySchema,
     TrackResponse,
 } from '@fa/shared/api'
@@ -19,7 +20,16 @@ import { MODELS } from '@fa/shared/models'
 import { isRefreshDue } from '@fa/shared/time'
 import { Variable } from '@fa/shared/variables'
 import { Router } from 'express'
-import { enforceRateLimit, getClientKey, getParam, parseBody, parseQuery, rateLimit, sendJson } from './http'
+import {
+    enforceRateLimit,
+    getClientKey,
+    getParam,
+    getViewerCountry,
+    parseBody,
+    parseQuery,
+    rateLimit,
+    sendJson,
+} from './http'
 
 type CompareItem = CompareResponse['items'][number]
 
@@ -109,6 +119,13 @@ apiRouter.post('/cities/track', rateLimit('read'), async (req, res) => {
     )
 
     sendJson(res, { slug: city.slug } satisfies TrackResponse, { isCacheable: false })
+})
+
+// The viewer's country picks the first visit's chips; the answer depends on the caller, so CloudFront must not share it.
+apiRouter.get('/starters', rateLimit('read'), async (req, res) => {
+    const items = await getStarterCities(getViewerCountry(req))
+
+    sendJson(res, { items } satisfies StartersResponse, { isCacheable: false })
 })
 
 apiRouter.get('/cities/:slug', rateLimit('read'), async (req, res) => {

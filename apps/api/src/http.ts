@@ -39,6 +39,13 @@ const getClientIp = (req: Request) => {
 
 export const getClientKey = (req: Request) => toClientKey(getClientIp(req))
 
+// CloudFront derives the viewer's country from the address and sets this header itself; locally it is absent.
+export const getViewerCountry = (req: Request) => {
+    const country = req.get('cloudfront-viewer-country')?.toUpperCase()
+
+    return country && /^[A-Z]{2}$/.test(country) ? country : null
+}
+
 export const enforceRateLimit = async (bucket: RateBucket, client: string) => {
     if (ARE_LIMITS_DISABLED) return
 

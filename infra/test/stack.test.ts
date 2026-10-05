@@ -133,7 +133,7 @@ describe('ForecastArenaStack web', () => {
             OriginRequestPolicyConfig: Match.objectLike({
                 HeadersConfig: {
                     HeaderBehavior: 'whitelist',
-                    Headers: ['CloudFront-Viewer-Address', 'Content-Type'],
+                    Headers: ['CloudFront-Viewer-Address', 'CloudFront-Viewer-Country', 'Content-Type'],
                 },
             }),
         })

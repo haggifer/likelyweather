@@ -4,6 +4,7 @@ import {
     DEFAULT_PLACES,
     getPlaceChips,
     getPlaceList,
+    getStarterPlaces,
     isPinnable,
     parsePlaces,
     pinPlace,
@@ -130,5 +131,18 @@ describe('places', () => {
 
         expect(pinned.favorites).toEqual([LONDON])
         expect(togglePlace(pinned, LONDON).favorites).toEqual([])
+    })
+})
+
+describe('getStarterPlaces', () => {
+    it('starts with the country places and tops them up with the defaults to four chips', () => {
+        const chips = getPlaceChips(getStarterPlaces([BERLIN, TOKYO]))
+
+        expect(chips.map((p) => p.id)).toEqual([
+            BERLIN.id,
+            TOKYO.id,
+            DEFAULT_PLACES.recents[0].id,
+            DEFAULT_PLACES.recents[1].id,
+        ])
     })
 })

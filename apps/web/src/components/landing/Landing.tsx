@@ -5,13 +5,16 @@ import { CityOverview } from '@/components/landing/CityOverview'
 import { PlaceChip } from '@/components/landing/PlaceChip'
 import { SearchBox } from '@/components/shell/SearchBox'
 import { usePlaces } from '@/hooks/usePlaces'
-import { DEFAULT_PLACES, getPlaceChips, isFavorite, MAX_PLACES } from '@/lib/places'
+import { useStarters } from '@/hooks/useStarters'
+import { DEFAULT_PLACES, getPlaceChips, getStarterPlaces, isFavorite, MAX_PLACES } from '@/lib/places'
+import { updatePlaces } from '@/lib/places-store'
 import { Card, CardContent, CardHeader, CardTitle } from '@fa/ui/components/card'
 import { Skeleton } from '@fa/ui/components/skeleton'
 import { BookOpen, Columns3, Split } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { parseAsString, useQueryState } from 'nuqs'
+import { useEffect } from 'react'
 
 const CHIP_PLACEHOLDERS = Array.from({ length: MAX_PLACES }, (_, i) => i)
 
@@ -28,10 +31,20 @@ export function Landing() {
     const places = usePlaces()
     const [urlSlug, setSlug] = useQueryState('city', parseAsString)
 
-    const chips = places ? getPlaceChips(places) : null
+    // Nothing stored yet reads back as the shared defaults object itself, which marks a first visit.
+    const isFirstVisit = places === DEFAULT_PLACES
+    const starters = useStarters(isFirstVisit)
+
+    // While the country's chips are on their way, the chips and the overview wait rather than open a default city.
+    const isChoosingStarters = isFirstVisit && starters.isLoading
+    const chips = places && !isChoosingStarters ? getPlaceChips(places) : null
     // Without a city in the URL the overview opens the viewer's first chip, which is a pinned home city for most.
     const slug = urlSlug ?? chips?.[0].slug ?? null
     const tiles = getTiles(slug ?? DEFAULT_PLACES.recents[0].slug)
+
+    useEffect(() => {
+        if (isFirstVisit && starters.data?.items.length) updatePlaces(() => getStarterPlaces(starters.data.items))
+    }, [isFirstVisit, starters.data])
 
     return (
         <div className="flex flex-col gap-6 py-6">

@@ -68,6 +68,9 @@ const repairPlaces = (favorites: Place[], recents: Place[]): Places => {
     return { favorites: pinned, recents: [...unpinned, ...fill].slice(0, MAX_RECENTS) }
 }
 
+// A first visit starts from the largest places of the viewer's country, topped up with the defaults.
+export const getStarterPlaces = (cities: Place[]): Places => repairPlaces([], cities.map(toPlace))
+
 export const getPlaceChips = ({ favorites, recents }: Places): Place[] =>
     [...favorites, ...recents].slice(0, MAX_PLACES)
 

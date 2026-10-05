@@ -114,11 +114,16 @@ const createDistribution = (scope: Construct, webUrl: lambda.IFunctionUrl, apiUr
         enableAcceptEncodingGzip: true,
         enableAcceptEncodingBrotli: true,
     })
-    // The viewer's address keys rate limits and the quota. The client's x-amz-content-sha256, which OAC needs to
-    // sign POSTs, must not be listed: CloudFront rejects it in a policy and uses it for signing on its own.
+    // The viewer's address keys rate limits and the quota, and its country picks the first visit's chips. The client's
+    // x-amz-content-sha256, which OAC needs to sign POSTs, must not be listed: CloudFront rejects it in a policy and
+    // uses it for signing on its own.
     const apiRequest = new cloudfront.OriginRequestPolicy(scope, 'ApiRequest', {
         queryStringBehavior: cloudfront.OriginRequestQueryStringBehavior.all(),
-        headerBehavior: cloudfront.OriginRequestHeaderBehavior.allowList('CloudFront-Viewer-Address', 'Content-Type'),
+        headerBehavior: cloudfront.OriginRequestHeaderBehavior.allowList(
+            'CloudFront-Viewer-Address',
+            'CloudFront-Viewer-Country',
+            'Content-Type',
+        ),
     })
     const webOrigin = origins.FunctionUrlOrigin.withOriginAccessControl(webUrl)
 

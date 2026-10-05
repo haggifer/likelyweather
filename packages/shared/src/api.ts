@@ -67,6 +67,9 @@ export const CitySchema = z.object({
 })
 export type City = z.infer<typeof CitySchema>
 
+export const StartersResponseSchema = z.object({ items: z.array(CitySchema) })
+export type StartersResponse = z.infer<typeof StartersResponseSchema>
+
 export const LatestQuerySchema = z.strictObject({
     variable: VariableSchema.default(Variable.Temp),
 })

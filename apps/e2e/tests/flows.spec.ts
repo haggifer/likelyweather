@@ -48,6 +48,19 @@ test('search tracks a new city, shows its overview, then its dashboard', async (
     await expect(page.locator('main svg[role=img]').first()).toBeVisible()
 })
 
+test('a first visit starts with the largest places of the viewer country', async ({ browser }) => {
+    // CloudFront sets this header in production; here the test sends it the way CloudFront would.
+    const context = await browser.newContext({ extraHTTPHeaders: { 'CloudFront-Viewer-Country': 'UA' } })
+    const page = await context.newPage()
+
+    await page.goto('/')
+
+    await expect.poll(() => getChipNames(page)).toEqual(expect.arrayContaining(['Kyiv', 'Kharkiv']))
+    await expect(getOverviewTitle(page)).toContainText('Kyiv')
+
+    await context.close()
+})
+
 test('a "Start with" chip switches the overview in place', async ({ page }) => {
     await page.goto('/')
     await page.getByRole('button', { name: 'London', exact: true }).click()

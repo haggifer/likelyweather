@@ -4,6 +4,7 @@ import { floorToStep, isRefreshDue } from '@fa/shared/time'
 import { delay } from 'es-toolkit'
 import { claim, dedupe } from './cache'
 import { collect } from './collector'
+import { COUNTRY_STARTERS } from './country-starters'
 import { getErrorMessage, HttpError } from './errors'
 import { quotaExceeded, trySpendQuota } from './quota'
 import { pruneExpiredForecasts } from './retention'
@@ -136,3 +137,12 @@ export const ensureFreshSnapshot = (city: City, client?: string): Promise<Snapsh
 
         return fetchSnapshot(city, stored)
     })
+
+// The "Start with" chips of a first visit: the largest places of the viewer's country, stored on first use like a
+// search pick. A place the geocoder no longer knows is left out; the client fills the rest with its defaults.
+export const getStarterCities = async (country: string | null) => {
+    const ids = country ? (COUNTRY_STARTERS[country] ?? []) : []
+    const results = await Promise.allSettled(ids.map((id) => trackCity(id)))
+
+    return results.filter((r) => r.status === 'fulfilled').map((r) => r.value)
+}
