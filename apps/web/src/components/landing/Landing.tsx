@@ -62,7 +62,7 @@ export function Landing() {
                 </div>
             </section>
             <div className="mx-auto grid w-full max-w-5xl gap-6 3xl:max-w-none 3xl:grid-cols-[minmax(0,64rem)_minmax(0,1fr)]">
-                <section className="min-w-0" aria-live="polite">
+                <section className="min-w-0">
                     {slug ? <CityOverview key={slug} slug={slug} /> : <OverviewCardSkeleton status={to('loading')} />}
                 </section>
                 <section className="grid gap-(--card-gap) sm:grid-cols-3 3xl:auto-rows-fr 3xl:grid-cols-1">
