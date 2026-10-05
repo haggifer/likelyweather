@@ -31,7 +31,15 @@
                     "imageWidth": 76
                 }
             ],
-            "expo-localization"
+            "expo-localization",
+            [
+                "expo-build-properties",
+                {
+                    "android": {
+                        "cmakeVersion": "3.31.6"
+                    }
+                }
+            ]
         ],
         "experiments": {
             "typedRoutes": true,
