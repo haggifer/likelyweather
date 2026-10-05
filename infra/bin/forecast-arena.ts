@@ -4,9 +4,10 @@ import { ForecastArenaStack } from '../lib/forecast-arena-stack'
 const app = new App()
 
 // Deploy-time settings come from context (-c key=value) or environment variables; placeholders keep `cdk synth`
-// working in CI and locally. None of them is a secret.
+// working in CI and locally. None of them is a secret. An unset GitHub secret arrives as an empty string, so empty
+// values fall through as well.
 const setting = (key: string, envName: string, fallback: string) =>
-    (app.node.tryGetContext(key) as string | undefined) ?? process.env[envName] ?? fallback
+    (app.node.tryGetContext(key) as string | undefined) || process.env[envName] || fallback
 
 new ForecastArenaStack(app, 'ForecastArenaStack', {
     env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION ?? 'eu-central-1' },

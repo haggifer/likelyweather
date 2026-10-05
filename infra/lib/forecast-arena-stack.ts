@@ -2,21 +2,25 @@ import {
     aws_budgets as budgets,
     CfnOutput,
     aws_cloudfront as cloudfront,
+    aws_cloudwatch as cloudwatch,
+    aws_cloudwatch_actions as cloudwatchActions,
     Duration,
     aws_iam as iam,
     aws_lambda as lambda,
     aws_logs as logs,
     aws_cloudfront_origins as origins,
     RemovalPolicy,
+    aws_sns as sns,
     Stack,
     StackProps,
+    aws_sns_subscriptions as subscriptions,
 } from 'aws-cdk-lib'
 import { Construct } from 'constructs'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 
 export interface ForecastArenaStackProps extends StackProps {
-    // Receives the budget e-mails.
+    // Receives the budget and alarm e-mails.
     alertEmail: string
     // "owner/name"; deploys from GitHub Actions may assume the deploy role only from this repository's branch.
     githubRepo: string
@@ -87,6 +91,18 @@ const createAdapterFunction = (
         logGroup: createLogGroup(scope, `${id}Logs`),
     })
 
+// Lambda errors are crashes and timeouts (a request still running at 30 s); errors the API handles are 5xx
+// responses, not function errors. A few in a quarter of an hour is worth an e-mail.
+const addErrorAlarm = (scope: Construct, id: string, fn: lambda.Function, alerts: sns.ITopic) =>
+    new cloudwatch.Alarm(scope, id, {
+        metric: fn.metricErrors({ period: Duration.minutes(15) }),
+        threshold: 3,
+        evaluationPeriods: 1,
+        comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+        treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+        alarmDescription: `The ${id.replace('Errors', '').toLowerCase()} function crashed or timed out repeatedly.`,
+    }).addAlarmAction(new cloudwatchActions.SnsAction(alerts))
+
 // Pages come from the web function and /api/* from the API function.
 const createDistribution = (scope: Construct, webUrl: lambda.IFunctionUrl, apiUrl: lambda.IFunctionUrl) => {
     // Honors the API's Cache-Control (public reads 5 minutes, everything else no-store).
@@ -114,6 +130,8 @@ const createDistribution = (scope: Construct, webUrl: lambda.IFunctionUrl, apiUr
             viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
             cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
             originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
+            // HSTS, nosniff, same-origin framing and a referrer policy; the API sets its own through helmet.
+            responseHeadersPolicy: cloudfront.ResponseHeadersPolicy.SECURITY_HEADERS,
         },
         additionalBehaviors: {
             // Content-hashed build assets: cached at the edge for as long as the origin allows.
@@ -121,6 +139,7 @@ const createDistribution = (scope: Construct, webUrl: lambda.IFunctionUrl, apiUr
                 origin: webOrigin,
                 viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
                 cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+                responseHeadersPolicy: cloudfront.ResponseHeadersPolicy.SECURITY_HEADERS,
             },
             '/api/*': {
                 origin: origins.FunctionUrlOrigin.withOriginAccessControl(apiUrl),
@@ -214,6 +233,11 @@ export class ForecastArenaStack extends Stack {
         api.addToRolePolicy(readSecrets)
         api.addToRolePolicy(decryptSecrets)
         const apiUrl = api.addFunctionUrl({ authType: lambda.FunctionUrlAuthType.AWS_IAM })
+
+        const alerts = new sns.Topic(this, 'Alerts')
+        alerts.addSubscription(new subscriptions.EmailSubscription(props.alertEmail))
+        addErrorAlarm(this, 'ApiErrors', api, alerts)
+        addErrorAlarm(this, 'WebErrors', web, alerts)
 
         const distribution = createDistribution(this, webUrl, apiUrl)
 

@@ -40,7 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# local data store (stands in for Postgres / S3 in the prototype)
+# leftovers of the prototype's local JSON store and run archives
 data/
 !.env.example
 

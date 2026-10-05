@@ -34,11 +34,14 @@ describe('ForecastArenaStack', () => {
         })
     })
 
-    it('has no collector function, schedule, queue or alarm: forecasts are fetched on demand', () => {
+    it('has no collector function, schedule or queue: forecasts are fetched on demand', () => {
         template.resourcePropertiesCountIs('AWS::Lambda::Function', { Handler: 'handler.handler' }, 0)
-        for (const type of ['AWS::Scheduler::Schedule', 'AWS::SQS::Queue', 'AWS::CloudWatch::Alarm']) {
-            template.resourceCountIs(type, 0)
-        }
+        for (const type of ['AWS::Scheduler::Schedule', 'AWS::SQS::Queue']) template.resourceCountIs(type, 0)
+    })
+
+    it('e-mails an alarm when the web or API function keeps crashing or timing out', () => {
+        template.resourcePropertiesCountIs('AWS::CloudWatch::Alarm', { MetricName: 'Errors', Threshold: 3 }, 2)
+        template.hasResourceProperties('AWS::SNS::Subscription', { Protocol: 'email', Endpoint: 'alerts@example.com' })
     })
 
     it('runs the API behind the Lambda Web Adapter with an IAM-protected function URL', () => {
@@ -115,6 +118,14 @@ describe('ForecastArenaStack web', () => {
             },
             2,
         )
+    })
+
+    it('adds the managed security headers to pages and static assets', () => {
+        template.hasResourceProperties('AWS::CloudFront::Distribution', {
+            DistributionConfig: Match.objectLike({
+                DefaultCacheBehavior: Match.objectLike({ ResponseHeadersPolicyId: Match.anyValue() }),
+            }),
+        })
     })
 
     it('forwards the viewer address to the API without headers CloudFront reserves for signing', () => {

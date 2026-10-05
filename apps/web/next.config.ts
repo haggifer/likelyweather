@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
     outputFileTracingRoot: path.resolve(import.meta.dirname, '../..'),
     // Workspace packages ship TypeScript source.
     transpilePackages: ['@fa/shared', '@fa/ui', '@fa/charts'],
+    poweredByHeader: false,
 }
 
 export default withNextIntl(withMDX(nextConfig))

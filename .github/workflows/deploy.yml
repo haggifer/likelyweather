@@ -1,9 +1,12 @@
 name: Deploy
 
-# Deploys the CDK stack from the default branch through GitHub OIDC (no stored AWS keys). Inactive until the
-# repository variable AWS_DEPLOY_ROLE_ARN exists, which the first, manual `pnpm cdk:deploy` makes possible.
+# Deploys the CDK stack from the default branch through GitHub OIDC (no stored AWS keys), only after CI passed on
+# that commit. Inactive until the repository variable AWS_DEPLOY_ROLE_ARN exists, which the first, manual
+# `pnpm cdk:deploy` makes possible.
 on:
-    push:
+    workflow_run:
+        workflows: [CI]
+        types: [completed]
         branches: [main]
     workflow_dispatch:
 
@@ -17,11 +20,16 @@ concurrency:
 
 jobs:
     deploy:
-        if: vars.AWS_DEPLOY_ROLE_ARN != ''
+        if: >-
+            vars.AWS_DEPLOY_ROLE_ARN != '' &&
+            (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success')
         runs-on: ubuntu-latest
         timeout-minutes: 30
         steps:
             - uses: actions/checkout@v4
+              with:
+                  # The commit CI passed on, not whatever main points at by now.
+                  ref: ${{ github.event.workflow_run.head_sha || github.sha }}
             - uses: pnpm/action-setup@v4
             - uses: actions/setup-node@v4
               with:
