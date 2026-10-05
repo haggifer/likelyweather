@@ -60,16 +60,8 @@
         "refresh": "Aktualisieren",
         "refreshTitle": "Nach einem neueren Lauf suchen und das Diagramm ab jetzt beginnen",
         "upToDate": "Aktuell: vor weniger als {hours} Stunden abgerufen.",
-        "preview": "Vorschau",
-        "previewTitle": "Bisher nur Läufe auf Abruf; die geplanten Läufe alle 6 Stunden beginnen mit der nächsten Sammlung.",
-        "status": {
-            "ACTIVE": "Aktiv",
-            "DORMANT": "Ruhend",
-            "QUEUED": "Wartend"
-        },
         "notTracked": "Diese Stadt wird noch nicht verfolgt",
         "notTrackedBody": "Suche sie, um die Verfolgung zu starten: Die Vorhersage erscheint in wenigen Sekunden.",
-        "trackingBanner": "Die Verfolgung von {name} begann am {date}. Die Stadt ist jetzt Teil der Sammlung alle 6 Stunden.",
         "medianTotal": "Median-Summe",
         "chanceOfRain": "Regenwahrscheinlichkeit",
         "back": "Zurück zur Übersicht",
@@ -146,7 +138,7 @@
         "europeOnly": "nur Europa",
         "sources": {
             "title": "Quellen",
-            "body": "Neun numerische Modelle stammen aus der Vorhersage-API von Open-Meteo, eines aus Locationforecast von MET Norway. Jeder Lauf wird um 00, 06, 12 und 18 UTC abgerufen (oder bei Bedarf, sobald ein neuerer vorliegt) und stündlich gespeichert, von 3 Stunden vor dem Lauf bis 108 Stunden danach.\nDie Diagramme nutzen 3-Stunden-Abschnitte in der Ortszeit der Stadt (00, 03, 06…), beginnend mit dem Abschnitt, in dem die Vorhersage abgerufen wurde, mit einer Linie bei der aktuellen Zeit: 72 Stunden in der Übersicht auf der Startseite, 96 Stunden im Stadt-Dashboard und im Vergleich. Temperatur, Wind und Luftdruck sind die Werte zum Abschnitt; Niederschlag ist die Menge der 3 Stunden danach, und das Überfahren eines Balkens markiert diese 3 Stunden. Das Niederschlagsfeld im Dashboard ergänzt 6-Stunden-Summen.\nRegionalmodelle liefern nur innerhalb ihres Gebiets Daten, daher zeigt eine Stadt außerhalb Europas bis zu acht Modelle. MET Norway veröffentlicht Stundenwerte nur für etwa die ersten 60 Stunden; spätere Abschnitte nutzen die übrigen Modelle."
+            "body": "Neun numerische Modelle stammen aus der Vorhersage-API von Open-Meteo, eines aus Locationforecast von MET Norway. Die Modelle starten um 00, 06, 12 und 18 UTC einen neuen Lauf. Die Vorhersage einer Stadt wird abgerufen, wenn jemand sie öffnet und ein neuerer Lauf vorliegt, und stündlich gespeichert, von 3 Stunden vor dem Lauf bis 108 Stunden danach.\nDie Diagramme nutzen 3-Stunden-Abschnitte in der Ortszeit der Stadt (00, 03, 06…), beginnend mit dem Abschnitt, in dem die Vorhersage abgerufen wurde, mit einer Linie bei der aktuellen Zeit: 72 Stunden in der Übersicht auf der Startseite, 96 Stunden im Stadt-Dashboard und im Vergleich. Temperatur, Wind und Luftdruck sind die Werte zum Abschnitt; Niederschlag ist die Menge der 3 Stunden danach, und das Überfahren eines Balkens markiert diese 3 Stunden. Das Niederschlagsfeld im Dashboard ergänzt 6-Stunden-Summen.\nRegionalmodelle liefern nur innerhalb ihres Gebiets Daten, daher zeigt eine Stadt außerhalb Europas bis zu acht Modelle. MET Norway veröffentlicht Stundenwerte nur für etwa die ersten 60 Stunden; spätere Abschnitte nutzen die übrigen Modelle."
         },
         "median": {
             "title": "Median und Streuung",

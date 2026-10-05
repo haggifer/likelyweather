@@ -5,12 +5,10 @@ import { RefreshButton } from '@/components/city/RefreshButton'
 import { UpdatedChip } from '@/components/city/UpdatedChip'
 import { FlagIcon } from '@/components/shell/FlagIcon'
 import { SearchBox } from '@/components/shell/SearchBox'
-import { StatusChip } from '@/components/shell/StatusChip'
-import { ChipTone } from '@/components/types'
 import { useLatest } from '@/hooks/useLatest'
 import { getCityRegion } from '@/lib/city-region'
 import { isRefreshDue } from '@/lib/refresh-due'
-import { CityDetail, CityStatus } from '@fa/shared/api'
+import { City } from '@fa/shared/api'
 import { getCityName } from '@fa/shared/format'
 import { Variable } from '@fa/shared/variables'
 import { Button } from '@fa/ui/components/button'
@@ -22,7 +20,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 
 interface IProps {
-    city: CityDetail
+    city: City
 }
 
 // The city name doubles as a switcher: the pencil swaps it for a search box holding the current name, selected so
@@ -90,16 +88,6 @@ export function CityHeader({ city }: IProps) {
                         </Button>
                     </div>
                     <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
-                        {city.isPreviewOnly && (
-                            <StatusChip tone={ChipTone.Info} title={t('previewTitle')} className="h-7">
-                                {t('preview')}
-                            </StatusChip>
-                        )}
-                        {city.status !== CityStatus.Active && (
-                            <StatusChip tone={ChipTone.Warn} className="h-7">
-                                {t(`status.${city.status}`)}
-                            </StatusChip>
-                        )}
                         {latest && (
                             <UpdatedChip
                                 issueTime={latest.issueTime}

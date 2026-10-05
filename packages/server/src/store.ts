@@ -1,12 +1,10 @@
-// Postgres through Prisma. Keeps the prototype's function names so the collector, the city service and the API
-// routes did not change when the JSON-file store was replaced.
+// Postgres through Prisma.
 import { getPrisma, Prisma } from '@fa/db/client'
 import { ensureForecastPartitions, getWeekStart } from '@fa/db/partitions'
-import { City, CityStatus, RunOrigin } from '@fa/shared/api'
+import { City } from '@fa/shared/api'
 import { HOUR_MS } from '@fa/shared/constants'
 import { ModelId } from '@fa/shared/models'
 import { ModelSeries, SeriesField } from '@fa/shared/variables'
-import { isEqual } from 'es-toolkit'
 import { getWindowSteps } from './window'
 
 export interface SeriesGrid {
@@ -18,7 +16,6 @@ export interface SnapshotMeta {
     cityId: number
     issueTime: string
     runId: string
-    origin: RunOrigin
     fetchedAt: string
     metnoLastModified?: string
 }
@@ -31,7 +28,6 @@ export type RunStatus = 'OK' | 'PARTIAL' | 'FAILED'
 export interface Run {
     id: string
     issueTime: string
-    origin: RunOrigin
     cityId: number | null
     startedAt: string
     finishedAt: string | null
@@ -42,7 +38,6 @@ export interface Run {
 }
 
 type CityRow = Prisma.CityGetPayload<object>
-type RunRow = Prisma.CollectionRunGetPayload<object>
 type SnapshotRow = Prisma.SnapshotGetPayload<object>
 
 const COLUMNS: Record<SeriesField, keyof Prisma.ForecastCreateManyInput> = {
@@ -57,6 +52,8 @@ const COLUMNS: Record<SeriesField, keyof Prisma.ForecastCreateManyInput> = {
 }
 const FIELDS = Object.keys(COLUMNS) as SeriesField[]
 const CITY_ORDER: Prisma.CityOrderByWithRelationInput[] = [{ firstTrackedAt: 'asc' }, { id: 'asc' }]
+// Every run is fetched on demand now; the column still holds the origin of older scheduled and imported runs.
+const ORIGIN = 'PREVIEW' as const
 
 const ensuredWeeks = new Map<number, Promise<void>>()
 
@@ -75,12 +72,6 @@ const toCity = (row: CityRow): City => ({
     elevationM: row.elevationM ?? undefined,
     timezone: row.timezone,
     population: row.population ?? undefined,
-    status: row.status as CityStatus,
-    availableModels: row.availableModels as ModelId[],
-    firstTrackedAt: toIso(row.firstTrackedAt),
-    lastViewedAt: toIso(row.lastViewedAt),
-    viewCount: row.viewCount,
-    runsCollected: row.runsCollected,
 })
 
 const fromCity = (city: City) => ({
@@ -96,41 +87,15 @@ const fromCity = (city: City) => ({
     elevationM: city.elevationM ?? null,
     timezone: city.timezone,
     population: city.population ?? null,
-    status: city.status,
-    availableModels: city.availableModels,
-    firstTrackedAt: new Date(city.firstTrackedAt),
-    lastViewedAt: new Date(city.lastViewedAt),
-    viewCount: city.viewCount,
-    runsCollected: city.runsCollected,
-})
-
-const toRun = (row: RunRow): Run => ({
-    id: row.id,
-    issueTime: toIso(row.issueTime),
-    origin: row.origin,
-    cityId: row.cityId,
-    startedAt: toIso(row.startedAt),
-    finishedAt: row.finishedAt ? toIso(row.finishedAt) : null,
-    status: row.status,
-    rows: row.rows,
-    citiesCount: row.citiesCount,
-    warnings: (row.warnings ?? []) as string[],
 })
 
 const toMeta = (row: SnapshotRow): SnapshotMeta => ({
     cityId: row.cityId,
     issueTime: toIso(row.issueTime),
     runId: row.runId,
-    origin: row.origin,
     fetchedAt: toIso(row.fetchedAt),
     metnoLastModified: row.metnoLastModified ?? undefined,
 })
-
-const findCities = async (db: Prisma.TransactionClient) => {
-    const rows = await db.city.findMany({ orderBy: CITY_ORDER })
-
-    return rows.map(toCity)
-}
 
 // Partition DDL runs once per week and process; parallel writes of one run share the pending call.
 const ensurePartitionsOnce = (issueTime: Date) => {
@@ -191,7 +156,19 @@ const toGridModels = (rows: GridRow[], fields: SeriesField[], steps: string[]) =
     return models
 }
 
-export const getCities = async () => findCities(getPrisma())
+export const getCities = async () => {
+    const rows = await getPrisma().city.findMany({ orderBy: CITY_ORDER })
+
+    return rows.map(toCity)
+}
+
+export const countCities = () => getPrisma().city.count()
+
+export const getCityById = async (id: number) => {
+    const row = await getPrisma().city.findUnique({ where: { id } })
+
+    return row ? toCity(row) : undefined
+}
 
 export const getCityBySlug = async (slug: string) => {
     const row = await getPrisma().city.findUnique({ where: { slug } })
@@ -199,36 +176,17 @@ export const getCityBySlug = async (slug: string) => {
     return row ? toCity(row) : undefined
 }
 
-// Read-modify-write over the whole city list, serialized by a transaction-scoped advisory lock so the collector and
-// API instances never interleave (the list is capped at a few hundred rows). Only changed rows are written.
-export const updateCities = (mutate: (cities: City[]) => City[]) =>
-    getPrisma().$transaction(async (tx) => {
-        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext('cities'))`
+// Keeps the stored city when two requests add the same one.
+export const addCity = async (city: City) => {
+    const row = await getPrisma().city.upsert({ where: { id: city.id }, create: fromCity(city), update: {} })
 
-        const before = await findCities(tx)
-        const byId = new Map(before.map((c) => [c.id, c]))
-        const after = mutate(before)
-
-        for (const city of after) {
-            if (isEqual(byId.get(city.id), city)) continue
-
-            const data = fromCity(city)
-
-            await tx.city.upsert({ where: { id: city.id }, create: data, update: data })
-        }
-
-        return after
-    })
-
-export const getRuns = async () => {
-    const rows = await getPrisma().collectionRun.findMany({ orderBy: { startedAt: 'desc' } })
-
-    return rows.map(toRun)
+    return toCity(row)
 }
 
 export const upsertRun = async (run: Run) => {
     const data = {
         ...run,
+        origin: ORIGIN,
         issueTime: new Date(run.issueTime),
         startedAt: new Date(run.startedAt),
         finishedAt: run.finishedAt ? new Date(run.finishedAt) : null,
@@ -237,7 +195,7 @@ export const upsertRun = async (run: Run) => {
     await getPrisma().collectionRun.upsert({ where: { id: run.id }, create: data, update: data })
 }
 
-// Replaces the city's rows for that issue time: a scheduled run overwrites an earlier preview of the same issue.
+// Replaces the city's rows for that issue time, so fetching one issue twice never duplicates them.
 export const writeSnapshot = async (snapshot: Snapshot) => {
     const prisma = getPrisma()
     const issueTime = new Date(snapshot.issueTime)
@@ -245,7 +203,7 @@ export const writeSnapshot = async (snapshot: Snapshot) => {
     const rows = toForecastRows(snapshot, issueTime)
     const meta = {
         runId: snapshot.runId,
-        origin: snapshot.origin,
+        origin: ORIGIN,
         fetchedAt: new Date(snapshot.fetchedAt),
         metnoLastModified: snapshot.metnoLastModified ?? null,
     }

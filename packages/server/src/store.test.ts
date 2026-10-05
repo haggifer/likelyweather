@@ -1,20 +1,23 @@
 import { getPrisma, loadLocalEnv } from '@fa/db/client'
-import { CityStatus } from '@fa/shared/api'
+import { City } from '@fa/shared/api'
 import { ModelId } from '@fa/shared/models'
-import {
-    getLatestSnapshot,
-    getLatestSnapshotMeta,
-    getSnapshotGrid,
-    updateCities,
-    upsertRun,
-    writeSnapshot,
-} from './store'
+import { addCity, getLatestSnapshot, getLatestSnapshotMeta, getSnapshotGrid, upsertRun, writeSnapshot } from './store'
 import { getWindowSteps } from './window'
 
 loadLocalEnv()
 
 const CITY_ID = 999_000_001
 const ISSUE = '2030-03-04T06:00Z'
+const CITY: City = {
+    id: CITY_ID,
+    slug: 'testville-xx-999000001',
+    name: 'Testville',
+    country: 'Testland',
+    countryCode: 'XX',
+    lat: 1,
+    lon: 2,
+    timezone: 'UTC',
+}
 
 describe.runIf(Boolean(process.env.DATABASE_URL))('store (database)', () => {
     const prisma = getPrisma()
@@ -23,29 +26,10 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('store (database)', () => {
 
     beforeAll(async () => {
         await prisma.city.deleteMany({ where: { id: CITY_ID } })
-        await updateCities((cities) => [
-            ...cities,
-            {
-                id: CITY_ID,
-                slug: 'testville-xx-999000001',
-                name: 'Testville',
-                country: 'Testland',
-                countryCode: 'XX',
-                lat: 1,
-                lon: 2,
-                timezone: 'UTC',
-                status: CityStatus.Active,
-                availableModels: [],
-                firstTrackedAt: '2030-03-01T00:00:00.000Z',
-                lastViewedAt: '2030-03-01T00:00:00.000Z',
-                viewCount: 0,
-                runsCollected: 0,
-            },
-        ])
+        await addCity(CITY)
         await upsertRun({
             id: 'test-run',
             issueTime: ISSUE,
-            origin: 'PREVIEW',
             cityId: CITY_ID,
             startedAt: '2030-03-04T07:00:00.000Z',
             finishedAt: null,
@@ -78,7 +62,6 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('store (database)', () => {
             cityId: CITY_ID,
             issueTime: ISSUE,
             runId: 'test-run',
-            origin: 'PREVIEW',
             fetchedAt: '2030-03-04T07:01:00.000Z',
             metnoLastModified: 'Tue, 04 Mar 2030 06:30:00 GMT',
             steps,
@@ -99,14 +82,9 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('store (database)', () => {
         expect(temps.models[ModelId.Metno]).toEqual({ temp: values(20) })
     })
 
-    it('updates only the cities a mutation changes', async () => {
-        const after = await updateCities((cities) =>
-            cities.map((c) => (c.id === CITY_ID ? { ...c, viewCount: c.viewCount + 1 } : c)),
-        )
+    it('keeps the stored city when the same city is added again', async () => {
+        const added = await addCity({ ...CITY, name: 'Renamed' })
 
-        const stored = await prisma.city.findUnique({ where: { id: CITY_ID } })
-
-        expect(after.find((c) => c.id === CITY_ID)?.viewCount).toBe(1)
-        expect(stored?.viewCount).toBe(1)
+        expect(added).toEqual(CITY)
     })
 })

@@ -1,11 +1,11 @@
 import { getPrisma, loadLocalEnv } from '@fa/db/client'
-import { City, CityStatus } from '@fa/shared/api'
+import { City } from '@fa/shared/api'
 import { ModelId } from '@fa/shared/models'
 import { ModelSeries } from '@fa/shared/variables'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { collect, countRows } from './collector'
-import { getLatestSnapshot } from './store'
+import { addCity, getLatestSnapshot } from './store'
 
 loadLocalEnv()
 
@@ -24,29 +24,22 @@ const CITY: City = {
     lat: 40.71427,
     lon: -74.00597,
     timezone: 'America/New_York',
-    status: CityStatus.Active,
-    availableModels: [],
-    firstTrackedAt: '2026-09-24T00:00:00.000Z',
-    lastViewedAt: '2026-09-24T00:00:00.000Z',
-    viewCount: 0,
-    runsCollected: 0,
 }
 
-const respond = (metnoStatus: number) =>
+const respond = (metnoStatus: number, openMeteoStatus = 200) =>
     vi.fn(async (url: string | URL) =>
         String(url).includes('api.met.no')
             ? new Response(metnoStatus === 200 ? METNO : 'unavailable', { status: metnoStatus })
-            : new Response(OPEN_METEO, { status: 200 }),
+            : new Response(openMeteoStatus === 200 ? OPEN_METEO : 'bad request', { status: openMeteoStatus }),
     )
 
 describe('countRows', () => {
-    it('counts the steps with a temperature across every model and snapshot', () => {
+    it('counts the steps with a temperature across every model', () => {
         const series = (temp: (number | null)[]) => ({ temp }) as unknown as ModelSeries
 
-        const rows = countRows([
-            { models: { [ModelId.Gfs]: series([1, null, 3]), [ModelId.Metno]: series([null, null]) } },
-            { models: { [ModelId.Gfs]: series([4]) } },
-        ])
+        const rows = countRows({
+            models: { [ModelId.Gfs]: series([1, null, 3]), [ModelId.Metno]: series([null, null, 4]) },
+        })
 
         expect(rows).toBe(3)
     })
@@ -56,15 +49,7 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('collect (database, recorded u
     const prisma = getPrisma()
 
     beforeAll(async () => {
-        await prisma.city.upsert({
-            where: { id: CITY.id },
-            create: {
-                ...CITY,
-                firstTrackedAt: new Date(CITY.firstTrackedAt),
-                lastViewedAt: new Date(CITY.lastViewedAt),
-            },
-            update: {},
-        })
+        await addCity(CITY)
     })
 
     afterEach(() => vi.unstubAllGlobals())
@@ -77,7 +62,7 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('collect (database, recorded u
     it('stores every model on the hourly grid when all sources answer', async () => {
         vi.stubGlobal('fetch', respond(200))
 
-        const { run } = await collect({ origin: 'PREVIEW', cities: [CITY], now: NOW })
+        const { run } = await collect({ city: CITY, now: NOW })
         const snapshot = await getLatestSnapshot(CITY.id)
 
         expect(run).toMatchObject({ id: `preview-${CITY.id}-20260924T1200Z`, status: 'OK', citiesCount: 1 })
@@ -89,10 +74,20 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('collect (database, recorded u
     it('marks the run PARTIAL, not FAILED, when met.no is down', async () => {
         vi.stubGlobal('fetch', respond(503))
 
-        const { run } = await collect({ origin: 'PREVIEW', cities: [CITY], now: NOW })
+        const { run } = await collect({ city: CITY, now: NOW })
 
         expect(run.status).toBe('PARTIAL')
         expect(run.rows).toBeGreaterThan(500)
         expect(run.warnings.join(' ')).toMatch(/met\.no failed/)
     }, 30_000)
+
+    it('keeps the met.no forecast and warns when Open-Meteo fails', async () => {
+        vi.stubGlobal('fetch', respond(200, 400))
+
+        const { run, snapshot } = await collect({ city: CITY, now: NOW })
+
+        expect(run.status).toBe('PARTIAL')
+        expect(Object.keys(snapshot!.models)).toEqual([ModelId.Metno])
+        expect(run.warnings.join(' ')).toMatch(/Open-Meteo failed/)
+    })
 })

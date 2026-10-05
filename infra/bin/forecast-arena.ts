@@ -14,7 +14,4 @@ new ForecastArenaStack(app, 'ForecastArenaStack', {
     githubRepo: setting('githubRepo', 'GITHUB_REPO', 'owner/forecast-arena'),
     githubBranch: setting('githubBranch', 'GITHUB_BRANCH', 'main'),
     monthlyBudgetUsd: Number(setting('monthlyBudgetUsd', 'MONTHLY_BUDGET_USD', '5')),
-    collectorReservedConcurrency: Number(
-        setting('collectorReservedConcurrency', 'COLLECTOR_RESERVED_CONCURRENCY', '1'),
-    ),
 })

@@ -1,4 +1,3 @@
-import { CityStatus } from '@fa/shared/api'
 import { MODELS } from '@fa/shared/models'
 import { SEEDS, slugify } from '@fa/shared/seeds'
 
@@ -15,8 +14,5 @@ export const SEED_MODELS = MODELS.map((m) => ({
 export const SEED_CITIES = SEEDS.map((seed) => ({
     ...seed,
     slug: slugify(seed.name, seed.countryCode, seed.id),
-    status: CityStatus.Active,
-    availableModels: [] as string[],
     firstTrackedAt: SEED_EPOCH,
-    lastViewedAt: SEED_EPOCH,
 }))

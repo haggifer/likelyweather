@@ -1,16 +1,16 @@
 # Methodology
 
-How Forecast Arena collects forecasts and combines them. The in-app `/methodology` page is a short version of this file. The MVP compares the models with each other, not with what actually happened; measuring which model has been right is a separate, post-MVP feature (DECISIONS P17).
+How Forecast Arena fetches forecasts and combines them. A city's forecast is fetched when someone opens it and a newer 6-hour run exists; nothing is collected on a schedule. The in-app `/methodology` page is a short version of this file. The MVP compares the models with each other, not with what actually happened; measuring which model has been right is a separate, post-MVP feature (DECISIONS P17).
 
 ## Sources
 
-| Source                                    | Models                                                                                                                                                               | Notes                                                                                          |
-| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Open-Meteo forecast API                   | `ecmwf_ifs025`, `ecmwf_aifs025_single`, `gfs_seamless`, `gem_global`, `ukmo_seamless`, `jma_seamless`, `cma_grapes_global`; `icon_eu`, `arpege_europe` (Europe only) | Hourly, `past_days=1`, `forecast_days=6`, `wind_speed_unit=ms`, up to 50 locations per request |
-| MET Norway Locationforecast 2.0 (compact) | `metno`                                                                                                                                                              | One request per city, paced 5 per second, `If-Modified-Since`, descriptive `User-Agent`        |
-| Open-Meteo Geocoding API                  | –                                                                                                                                                                    | City search, proxied and cached 24 h                                                           |
+| Source                                    | Models                                                                                                                                                               | Notes                                                                                |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Open-Meteo forecast API                   | `ecmwf_ifs025`, `ecmwf_aifs025_single`, `gfs_seamless`, `gem_global`, `ukmo_seamless`, `jma_seamless`, `cma_grapes_global`; `icon_eu`, `arpege_europe` (Europe only) | Hourly, `past_days=1`, `forecast_days=6`, `wind_speed_unit=ms`, one city per request |
+| MET Norway Locationforecast 2.0 (compact) | `metno`                                                                                                                                                              | One request per city, `If-Modified-Since`, descriptive `User-Agent`                  |
+| Open-Meteo Geocoding API                  | –                                                                                                                                                                    | City search, proxied and cached 24 h                                                 |
 
-A model is shown for a city only if it returned data there (`City.availableModels`). Regional models outside their domain are not warnings.
+A model is shown for a city only if it returned data there in the stored run. Regional models outside their domain are not warnings.
 
 ## One hourly grid per run
 

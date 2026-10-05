@@ -2,34 +2,26 @@ import {
     aws_budgets as budgets,
     CfnOutput,
     aws_cloudfront as cloudfront,
-    aws_cloudwatch as cloudwatch,
-    aws_cloudwatch_actions as cloudwatchActions,
     Duration,
     aws_iam as iam,
     aws_lambda as lambda,
     aws_logs as logs,
     aws_cloudfront_origins as origins,
     RemovalPolicy,
-    aws_scheduler as scheduler,
-    aws_sns as sns,
-    aws_sqs as sqs,
     Stack,
     StackProps,
-    aws_sns_subscriptions as subscriptions,
 } from 'aws-cdk-lib'
 import { Construct } from 'constructs'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 
 export interface ForecastArenaStackProps extends StackProps {
-    // Receives the budget and alarm e-mails.
+    // Receives the budget e-mails.
     alertEmail: string
     // "owner/name"; deploys from GitHub Actions may assume the deploy role only from this repository's branch.
     githubRepo: string
     githubBranch: string
     monthlyBudgetUsd: number
-    // 1 keeps the collector single-flight; 0 skips the reservation on accounts whose concurrency limit is still 10.
-    collectorReservedConcurrency: number
 }
 
 const SSM_PREFIX = '/forecast-arena'
@@ -94,39 +86,6 @@ const createAdapterFunction = (
         environment,
         logGroup: createLogGroup(scope, `${id}Logs`),
     })
-
-const scheduleCollector = (scope: Construct, collector: lambda.Function) => {
-    const deadLetters = new sqs.Queue(scope, 'CollectorDeadLetters', { retentionPeriod: Duration.days(14) })
-    const schedulerRole = new iam.Role(scope, 'SchedulerRole', {
-        assumedBy: new iam.ServicePrincipal('scheduler.amazonaws.com'),
-    })
-
-    collector.grantInvoke(schedulerRole)
-    deadLetters.grantSendMessages(schedulerRole)
-    new scheduler.CfnSchedule(scope, 'CollectorSchedule', {
-        scheduleExpression: 'cron(0 0/6 * * ? *)',
-        scheduleExpressionTimezone: 'UTC',
-        flexibleTimeWindow: { mode: 'OFF' },
-        target: {
-            arn: collector.functionArn,
-            roleArn: schedulerRole.roleArn,
-            retryPolicy: { maximumRetryAttempts: 2, maximumEventAgeInSeconds: 3600 },
-            deadLetterConfig: { arn: deadLetters.queueArn },
-        },
-    })
-
-    return deadLetters
-}
-
-const addAlarm = (scope: Construct, alerts: sns.ITopic, id: string, metric: cloudwatch.IMetric, description: string) =>
-    new cloudwatch.Alarm(scope, id, {
-        metric,
-        threshold: 1,
-        evaluationPeriods: 1,
-        comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
-        treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
-        alarmDescription: description,
-    }).addAlarmAction(new cloudwatchActions.SnsAction(alerts))
 
 // Pages come from the web function and /api/* from the API function.
 const createDistribution = (scope: Construct, webUrl: lambda.IFunctionUrl, apiUrl: lambda.IFunctionUrl) => {
@@ -230,15 +189,6 @@ export class ForecastArenaStack extends Stack {
         const readSecrets = createReadSecretsStatement(this)
         const decryptSecrets = createDecryptSecretsStatement(this)
 
-        const alerts = new sns.Topic(this, 'Alerts')
-        alerts.addSubscription(new subscriptions.EmailSubscription(props.alertEmail))
-
-        const environment = {
-            SSM_PREFIX,
-            NODE_OPTIONS: '--enable-source-maps',
-            // One small pool per instance; Neon's pooler multiplexes the instances.
-            PG_POOL_MAX: '2',
-        }
         const webAdapter = lambda.LayerVersion.fromLayerVersionArn(
             this,
             'WebAdapter',
@@ -254,44 +204,16 @@ export class ForecastArenaStack extends Stack {
         const webUrl = web.addFunctionUrl({ authType: lambda.FunctionUrlAuthType.AWS_IAM })
 
         const api = createAdapterFunction(this, 'Api', bundle('apps/api/dist/lambda.zip'), webAdapter, {
-            ...environment,
+            SSM_PREFIX,
+            NODE_OPTIONS: '--enable-source-maps',
+            // One small pool per instance; Neon's pooler multiplexes the instances.
+            PG_POOL_MAX: '2',
             ...ADAPTER_ENVIRONMENT,
             AWS_LWA_READINESS_CHECK_PATH: '/api/models',
         })
         api.addToRolePolicy(readSecrets)
         api.addToRolePolicy(decryptSecrets)
         const apiUrl = api.addFunctionUrl({ authType: lambda.FunctionUrlAuthType.AWS_IAM })
-
-        const collector = new lambda.Function(this, 'Collector', {
-            runtime: lambda.Runtime.NODEJS_22_X,
-            architecture: lambda.Architecture.ARM_64,
-            code: bundle('apps/collector/dist'),
-            handler: 'handler.handler',
-            memorySize: 1024,
-            timeout: Duration.minutes(10),
-            reservedConcurrentExecutions: props.collectorReservedConcurrency || undefined,
-            environment,
-            logGroup: createLogGroup(this, 'CollectorLogs'),
-        })
-        collector.addToRolePolicy(readSecrets)
-        collector.addToRolePolicy(decryptSecrets)
-
-        const deadLetters = scheduleCollector(this, collector)
-
-        addAlarm(
-            this,
-            alerts,
-            'CollectorErrors',
-            collector.metricErrors({ period: Duration.hours(6) }),
-            'A collector run failed (after retries, it also lands in the dead-letter queue).',
-        )
-        addAlarm(
-            this,
-            alerts,
-            'DeadLetters',
-            deadLetters.metricApproximateNumberOfMessagesVisible({ period: Duration.minutes(15) }),
-            'A scheduled collector invocation gave up after its retries.',
-        )
 
         const distribution = createDistribution(this, webUrl, apiUrl)
 

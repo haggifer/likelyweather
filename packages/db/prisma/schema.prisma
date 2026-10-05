@@ -22,35 +22,22 @@ enum RunOrigin {
   IMPORT
 }
 
-enum CityStatus {
-  ACTIVE
-  DORMANT
-  QUEUED
-}
-
 model City {
-  id              Int        @id // Open-Meteo geocoding id
-  slug            String     @unique // "kharkiv-ua-706483"
-  name            String // English name from the geocoder
-  nameLocal       Json? // {uk: "Харків", es: "Járkov", ...}
-  admin1          String?
-  country         String
-  countryCode     String // ISO 3166-1 alpha-2
-  lat             Float
-  lon             Float
-  elevationM      Float?
-  timezone        String
-  population      Int?
-  status          CityStatus @default(ACTIVE)
-  availableModels String[] // model ids that returned data on the latest fetch
-  firstTrackedAt  DateTime   @default(now())
-  lastViewedAt    DateTime   @default(now())
-  viewCount       Int        @default(0)
-  runsCollected   Int        @default(0) // scheduled runs; 0 means "preview only"
-  forecasts       Forecast[]
-  snapshots       Snapshot[]
-
-  @@index([status, lastViewedAt])
+  id             Int        @id // Open-Meteo geocoding id
+  slug           String     @unique // "kharkiv-ua-706483"
+  name           String // English name from the geocoder
+  nameLocal      Json? // {uk: "Харків", es: "Járkov", ...}
+  admin1         String?
+  country        String
+  countryCode    String // ISO 3166-1 alpha-2
+  lat            Float
+  lon            Float
+  elevationM     Float?
+  timezone       String
+  population     Int?
+  firstTrackedAt DateTime   @default(now()) // when someone first opened it; orders the city list
+  forecasts      Forecast[]
+  snapshots      Snapshot[]
 }
 
 model Model {
@@ -64,9 +51,9 @@ model Model {
 }
 
 model CollectionRun {
-  id          String     @id // "scheduled-20260924T0600Z", "preview-<cityId>-<issue>"
+  id          String     @id // "preview-<cityId>-<issue>"; older rows also "scheduled-<issue>"
   issueTime   DateTime
-  origin      RunOrigin
+  origin      RunOrigin // PREVIEW since collection is on demand only
   cityId      Int? // set for PREVIEW runs
   startedAt   DateTime
   finishedAt  DateTime?

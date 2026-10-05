@@ -60,16 +60,8 @@
         "refresh": "Actualizar",
         "refreshTitle": "Buscar una emisión más reciente y empezar el gráfico en la hora actual",
         "upToDate": "Al día: obtenido hace menos de {hours} horas.",
-        "preview": "Vista previa",
-        "previewTitle": "Por ahora solo hay ejecuciones bajo demanda; las ejecuciones programadas cada 6 horas empiezan con la próxima recogida.",
-        "status": {
-            "ACTIVE": "Activa",
-            "DORMANT": "Inactiva",
-            "QUEUED": "En cola"
-        },
         "notTracked": "Esta ciudad aún no se sigue",
         "notTrackedBody": "Búscala para empezar a seguirla: el pronóstico aparece en segundos.",
-        "trackingBanner": "El seguimiento de {name} empezó el {date}. Ahora se incluye en la recogida cada 6 horas.",
         "medianTotal": "Total mediano",
         "chanceOfRain": "Probabilidad de lluvia",
         "back": "Volver al resumen",
@@ -146,7 +138,7 @@
         "europeOnly": "solo Europa",
         "sources": {
             "title": "Fuentes",
-            "body": "Nueve modelos numéricos proceden de la API de pronósticos de Open-Meteo y uno de Locationforecast de MET Norway. Cada ejecución se recoge a las 00, 06, 12 y 18 UTC (o bajo demanda en cuanto hay una más reciente) y se guarda hora a hora, desde 3 horas antes de la ejecución hasta 108 horas después.\nLos gráficos usan franjas de 3 horas en la hora local de la ciudad (00, 03, 06…), empezando por la franja en la que se obtuvo el pronóstico, con una línea en la hora actual: 72 horas en el resumen de la portada, 96 horas en el panel de la ciudad y en Comparar. La temperatura, el viento y la presión son los valores en la franja; la precipitación es la cantidad de las 3 horas siguientes, y al pasar el cursor por una barra se seleccionan esas 3 horas. El panel de precipitación de la ciudad añade totales de 6 horas.\nLos modelos regionales solo devuelven datos dentro de su dominio, así que una ciudad fuera de Europa muestra hasta ocho modelos. MET Norway publica valores horarios solo para unas 60 primeras horas; las franjas posteriores usan los demás modelos."
+            "body": "Nueve modelos numéricos proceden de la API de pronósticos de Open-Meteo y uno de Locationforecast de MET Norway. Los modelos inician una nueva ejecución a las 00, 06, 12 y 18 UTC. El pronóstico de una ciudad se obtiene cuando alguien la abre y hay una ejecución más reciente, y se guarda hora a hora, desde 3 horas antes de la ejecución hasta 108 horas después.\nLos gráficos usan franjas de 3 horas en la hora local de la ciudad (00, 03, 06…), empezando por la franja en la que se obtuvo el pronóstico, con una línea en la hora actual: 72 horas en el resumen de la portada, 96 horas en el panel de la ciudad y en Comparar. La temperatura, el viento y la presión son los valores en la franja; la precipitación es la cantidad de las 3 horas siguientes, y al pasar el cursor por una barra se seleccionan esas 3 horas. El panel de precipitación de la ciudad añade totales de 6 horas.\nLos modelos regionales solo devuelven datos dentro de su dominio, así que una ciudad fuera de Europa muestra hasta ocho modelos. MET Norway publica valores horarios solo para unas 60 primeras horas; las franjas posteriores usan los demás modelos."
         },
         "median": {
             "title": "Mediana y dispersión",

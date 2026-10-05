@@ -23,8 +23,6 @@ interface OpenMeteoError {
 
 type TimeIndex = ReturnType<typeof indexHourlyTimes>
 
-export const OPEN_METEO_BATCH_SIZE = 50
-
 const HOURLY_KEYS = SERIES_FIELDS.map((f) => f.openMeteoKey).join(',')
 
 const buildForecastUrl = (locations: LatLon[], models: ModelId[] = OPEN_METEO_MODELS) => {

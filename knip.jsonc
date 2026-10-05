@@ -8,10 +8,6 @@
         ".": {
             "entry": ["scripts/*.mjs"],
         },
-        "apps/collector": {
-            // Bundled for Lambda by build.mjs (esbuild entryPoints).
-            "entry": ["src/handler.ts"],
-        },
         "apps/e2e": {
             // Started by playwright.config.ts as a webServer command.
             "entry": ["fake-upstream.mjs"],
@@ -20,9 +16,8 @@
         "infra": {
             // cdk.json runs the app as `npx tsx bin/forecast-arena.ts`.
             "entry": ["bin/forecast-arena.ts"],
-            // tsx runs the CDK app; the workspace links make Turbo build the API and collector bundles before the
-            // stack tests read them.
-            "ignoreDependencies": ["tsx", "@fa/api", "@fa/collector"],
+            // tsx runs the CDK app; the workspace link makes Turbo build the API bundle before the stack tests read it.
+            "ignoreDependencies": ["tsx", "@fa/api"],
         },
         // Internal packages: a package export that no workspace imports is dead code, not public API.
         "packages/charts": {

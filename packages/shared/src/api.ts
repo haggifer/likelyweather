@@ -3,14 +3,6 @@ import { MAX_COMPARE_CITIES } from './constants'
 import { ModelId } from './models'
 import { Variable } from './variables'
 
-export enum CityStatus {
-    Active = 'ACTIVE',
-    Dormant = 'DORMANT',
-    Queued = 'QUEUED',
-}
-
-export type RunOrigin = 'SCHEDULED' | 'PREVIEW' | 'IMPORT'
-
 export enum Locale {
     Uk = 'uk',
     En = 'en',
@@ -55,11 +47,7 @@ export const TrackBodySchema = z.strictObject({
     locale: LocaleSchema.optional(),
 })
 
-export const TrackResponseSchema = z.object({
-    slug: z.string(),
-    status: z.enum(CityStatus),
-    previewRunId: z.string().nullable(),
-})
+export const TrackResponseSchema = z.object({ slug: z.string() })
 export type TrackResponse = z.infer<typeof TrackResponseSchema>
 
 export const CitySchema = z.object({
@@ -75,24 +63,8 @@ export const CitySchema = z.object({
     elevationM: z.number().optional(),
     timezone: z.string(),
     population: z.number().optional(),
-    status: z.enum(CityStatus),
-    availableModels: z.array(ModelIdSchema),
-    firstTrackedAt: z.string(),
-    lastViewedAt: z.string(),
-    viewCount: z.number(),
-    runsCollected: z.number(),
 })
 export type City = z.infer<typeof CitySchema>
-
-export const CityDetailSchema = CitySchema.extend({
-    latestIssueTime: z.string().nullable(),
-    isPreviewOnly: z.boolean(),
-})
-export type CityDetail = z.infer<typeof CityDetailSchema>
-
-export const CitiesQuerySchema = z.strictObject({
-    status: z.enum(CityStatus).optional(),
-})
 
 export const LatestQuerySchema = z.strictObject({
     variable: VariableSchema.default(Variable.Temp),
@@ -107,7 +79,6 @@ export type Series = z.infer<typeof SeriesSchema>
 export const LatestResponseSchema = z.object({
     issueTime: z.string(),
     fetchedAt: z.string(),
-    origin: z.enum(['SCHEDULED', 'PREVIEW', 'IMPORT']),
     runId: z.string(),
     steps: z.array(z.string()),
     series: z.array(SeriesSchema),
@@ -128,12 +99,7 @@ export const CompareResponseSchema = z.object({
 })
 export type CompareResponse = z.infer<typeof CompareResponseSchema>
 
-export const HealthResponseSchema = z.object({
-    ok: z.boolean(),
-    latestIssueTime: z.string().nullable(),
-    lagMinutes: z.number().nullable(),
-    activeCities: z.number(),
-})
+export const HealthResponseSchema = z.object({ ok: z.boolean(), cities: z.number() })
 export type HealthResponse = z.infer<typeof HealthResponseSchema>
 
 export interface ApiError {

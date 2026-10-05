@@ -10,7 +10,6 @@ const template = Template.fromStack(
         githubRepo: 'owner/forecast-arena',
         githubBranch: 'main',
         monthlyBudgetUsd: 5,
-        collectorReservedConcurrency: 1,
     }),
 )
 
@@ -35,18 +34,11 @@ describe('ForecastArenaStack', () => {
         })
     })
 
-    it('runs the collector every 6 hours with two retries and a dead-letter queue, one at a time', () => {
-        template.hasResourceProperties('AWS::Scheduler::Schedule', {
-            ScheduleExpression: 'cron(0 0/6 * * ? *)',
-            Target: Match.objectLike({
-                RetryPolicy: { MaximumRetryAttempts: 2, MaximumEventAgeInSeconds: 3600 },
-                DeadLetterConfig: Match.anyValue(),
-            }),
-        })
-        template.hasResourceProperties('AWS::Lambda::Function', {
-            Handler: 'handler.handler',
-            ReservedConcurrentExecutions: 1,
-        })
+    it('has no collector function, schedule, queue or alarm: forecasts are fetched on demand', () => {
+        template.resourcePropertiesCountIs('AWS::Lambda::Function', { Handler: 'handler.handler' }, 0)
+        for (const type of ['AWS::Scheduler::Schedule', 'AWS::SQS::Queue', 'AWS::CloudWatch::Alarm']) {
+            template.resourceCountIs(type, 0)
+        }
     })
 
     it('runs the API behind the Lambda Web Adapter with an IAM-protected function URL', () => {

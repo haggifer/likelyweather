@@ -12,8 +12,7 @@ const pickSeries = (grid: SeriesGrid, field: SeriesField): Series[] =>
 const getFields = (variable: Variable): SeriesField[] =>
     variable === Variable.Wind ? [VARIABLE_BY_ID[variable].field, 'windDir'] : [VARIABLE_BY_ID[variable].field]
 
-// The run id is part of the key, so a scheduled run replacing a preview of the same issue time is never served
-// from a stale entry and nothing needs invalidating.
+// The run id is part of the key, so a newer run is never served from a stale entry and nothing needs invalidating.
 export const getLatestPayload = (meta: SnapshotMeta, variable: Variable) =>
     cached(
         `latest:${meta.cityId}:${meta.runId}:${variable}`,
@@ -24,7 +23,6 @@ export const getLatestPayload = (meta: SnapshotMeta, variable: Variable) =>
             return {
                 issueTime: meta.issueTime,
                 fetchedAt: meta.fetchedAt,
-                origin: meta.origin,
                 runId: meta.runId,
                 steps: grid.steps,
                 series: pickSeries(grid, VARIABLE_BY_ID[variable].field),

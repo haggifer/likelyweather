@@ -6,7 +6,7 @@ Guidance for coding agents working in this repository. Read [README.md](README.m
 
 ```bash
 pnpm install
-cp .env.example .env         # once; the API, the collector and Prisma read the root .env
+cp .env.example .env         # once; the API and Prisma read the root .env
 pnpm db:up                   # Postgres and Redis in Docker
 pnpm db:deploy && pnpm db:seed
 pnpm dev                     # API :4000 and web :3000
@@ -17,8 +17,7 @@ pnpm test                    # database tests run when DATABASE_URL is reachable
 pnpm check:messages          # catalog key parity and literal key usage
 pnpm build && pnpm e2e       # Playwright against a fake upstream and its own database (<DATABASE_URL>_e2e)
 pnpm format
-pnpm build                   # Next.js, the API and collector Lambda bundles, the Prisma client
-pnpm collect [-- --cities a,b] [-- --loop]
+pnpm build                   # Next.js, the API's Lambda bundle, the Prisma client
 pnpm db:migrate              # create a migration after editing packages/db/prisma/schema.prisma
 pnpm cdk:synth               # also cdk:diff, cdk:deploy, cdk:bootstrap; needs pnpm build first
 ```
@@ -28,13 +27,13 @@ pnpm cdk:synth               # also cdk:diff, cdk:deploy, cdk:bootstrap; needs p
 - **UI kit.** Tailwind v4 and shadcn/ui only; no other component library. Colors, fonts and radii come from token-backed utilities (`apps/web/src/app/globals.css`), never literals in components. Dark mode is the `.dark` class on `<html>` (`packages/ui/src/lib/color-mode.ts`); charts re-read their colors when it changes.
 - **Model palette.** `packages/shared/src/models.ts` fixes one color per model; never reassign it. ECMWF AIFS and met.no keep their dash patterns as a second encoding.
 - **API contract.** The zod schemas in `packages/shared/src/api.ts` are the contract; change them first. The server returns stored data; the client derives medians, slots, labels and formatting with `packages/shared`.
-- **Upstream calls.** The browser never calls Open-Meteo or met.no. The API proxies geocoding and performs preview fetches, and only calls upstream when a newer 6-hour run exists. Every upstream request made for a client spends its daily quota first (`packages/server/src/quota.ts`, DECISIONS P27).
+- **Upstream calls.** The browser never calls Open-Meteo or met.no. The API proxies geocoding and fetches a city's forecast when it is opened, and only calls upstream when a newer 6-hour run exists; nothing is collected on a schedule (DECISIONS P46). Every upstream request made for a client spends its daily quota first (`packages/server/src/quota.ts`, DECISIONS P27).
 - **Time.** Timestamps are UTC in storage and the API. The UI shows local time first: the city's zone for anything about a city, the viewer's zone for what belongs to no city (the quota reset), and UTC only as hover text (DECISIONS P39).
 - **Precipitation** is always present in the schema and the UI.
 - **State.** Redux holds UI state only; TanStack Query holds server state. The landing overview's queries never refetch in the background, because a refetch would swap a newer run in under the reader; only Refresh does.
 - **Catalogs.** `apps/web/messages/{uk,en,es,de,fr}.json` keep identical keys.
-- **Shared server code.** Anything the API and the collector both need lives in `packages/server`; the apps stay thin entry points. Database access goes through `packages/server/src/store.ts`, shared expiring state through `packages/server/src/cache.ts`.
-- **Redis is optional at runtime.** Every Redis call must degrade (no cache, no limit, lock granted) rather than fail a request (DECISIONS P31). Never add ElastiCache.
+- **Server code.** The API's domain code lives in `packages/server`; `apps/api` stays a thin entry point. Database access goes through `packages/server/src/store.ts`, shared expiring state through `packages/server/src/cache.ts`.
+- **Redis is optional at runtime.** Every Redis call must degrade (no cache, no limit, claim granted) rather than fail a request (DECISIONS P31). Never add ElastiCache.
 - **Schema changes** go through Prisma migrations in `packages/db`. `Forecast` is partitioned by week: keep `issueTime` in its primary key and never write to it without `ensureForecastPartitions` (the store does this).
 - **Legal pages.** `apps/web/src/content/legal/{privacy,terms}.mdx` describe what the app stores, logs and shares, its cookies and its providers. A change to any of these updates them and their "last updated" date in the same commit (DECISIONS P40).
 - **Scope.** The MVP compares models with each other, not with observations. Truth, skill scores and the scoreboard are post-MVP (DECISIONS P17, P20).
@@ -61,7 +60,7 @@ pnpm cdk:synth               # also cdk:diff, cdk:deploy, cdk:bootstrap; needs p
 - After renaming message keys, the dev server can hot-reload a component before its catalog and log `MISSING_MESSAGE`; a full reload clears it.
 - Recharts' `ResponsiveContainer` renders nothing while its container has zero width, for example in a hidden tab.
 - `import` and `deploy` are built-in pnpm commands (`pnpm import` deletes and rewrites the lockfile), so scripts never use those names and root scripts call filtered packages through `pnpm --filter <pkg> run <script>`.
-- pnpm passes a literal `--` through to the script: write `pnpm cdk:deploy --profile <name>`, not `pnpm cdk:deploy -- --profile <name>` (CDK would read the flags as stack names). The collector CLIs drop a stray `--`, so `pnpm collect -- --cities a,b` still works.
+- pnpm passes a literal `--` through to the script: write `pnpm cdk:deploy --profile <name>`, not `pnpm cdk:deploy -- --profile <name>` (CDK would read the flags as stack names).
 - `prisma generate` runs as `@fa/db`'s build step; Turbo runs it before any package's typecheck or test. After editing the schema, run `pnpm --filter @fa/db build` if the editor reports missing types.
 - `next.config` rewrites are fixed at build time; runtime routing (like forwarding `/api/*` to `API_ORIGIN`) belongs in `apps/web/src/proxy.ts`.
 - The e2e suite runs the production web build: rebuild (`pnpm build`) after web changes before `pnpm e2e`.

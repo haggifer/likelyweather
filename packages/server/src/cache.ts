@@ -1,7 +1,7 @@
-// Shared expiring state for every API and collector instance: the geocode and payload caches, rate limits, the
-// daily quota and the collector lock. Redis (Upstash in the cloud) when REDIS_URL is set, process memory otherwise.
-// Redis is never on the critical path: any Redis error degrades to "no cache, no limit, no lock" for that call, so
-// an outage or a refused request costs latency, not availability.
+// Shared expiring state for every API instance: the geocode and payload caches, rate limits, the daily quota and
+// the daily retention claim. Redis (Upstash in the cloud) when REDIS_URL is set, process memory otherwise.
+// Redis is never on the critical path: any Redis error degrades to "no cache, no limit, claim granted" for that
+// call, so an outage or a refused request costs latency, not availability.
 import { Redis } from 'ioredis'
 import { env } from './env'
 import { getErrorMessage } from './errors'
@@ -15,8 +15,6 @@ interface KeyValue {
     incrementWithinLimits(keys: string[], limits: number[], expiresAt: number): Promise<boolean>
     // Sets the key only if it is absent, with a TTL; true when this caller now holds it.
     setIfAbsent(key: string, value: string, ttlSeconds: number): Promise<boolean>
-    del(key: string): Promise<void>
-    close(): Promise<void>
 }
 
 interface Entry {
@@ -78,14 +76,6 @@ class RedisKeyValue implements KeyValue {
 
         return reply === 'OK'
     }
-
-    async del(key: string) {
-        await this.client.del(key)
-    }
-
-    async close() {
-        this.client.disconnect()
-    }
 }
 
 class MemoryKeyValue implements KeyValue {
@@ -138,14 +128,6 @@ class MemoryKeyValue implements KeyValue {
         await this.set(key, value, ttlSeconds)
 
         return true
-    }
-
-    async del(key: string) {
-        this.entries.delete(key)
-    }
-
-    async close() {
-        this.entries.clear()
     }
 }
 
@@ -219,23 +201,7 @@ export const getCounter = async (key: string) => {
 export const incrementWithinLimits = (keys: string[], limits: number[], expiresAt: Date) =>
     safely(() => getStore().incrementWithinLimits(keys, limits, Math.floor(expiresAt.getTime() / 1000)), true)
 
-// A lock with a TTL, the equivalent of `SET lock:<name> NX EX <ttl>`. Returns a release function, or null when
-// another holder has it. Without Redis the lock is granted: the collector's Lambda has a concurrency of one anyway.
-export const acquireLock = async (name: string, ttlSeconds: number) => {
-    const key = `lock:${name}`
-    const token = `${process.pid}-${Date.now()}`
-    const isHeld = await safely(() => getStore().setIfAbsent(key, token, ttlSeconds), true)
-
-    if (!isHeld) return null
-
-    return async () => {
-        const holder = await safely(() => getStore().get(key), null)
-
-        if (holder === token) await safely(() => getStore().del(key), undefined)
-    }
-}
-
-export const closeCache = async () => {
-    await globalCache.__faKeyValue?.close()
-    globalCache.__faKeyValue = undefined
-}
+// Claims `claim:<name>` for `ttlSeconds`, the equivalent of `SET NX EX`: true for the first caller only. When Redis
+// fails every caller gets the claim, so the work it guards must be safe to repeat.
+export const claim = (name: string, ttlSeconds: number) =>
+    safely(() => getStore().setIfAbsent(`claim:${name}`, '1', ttlSeconds), true)

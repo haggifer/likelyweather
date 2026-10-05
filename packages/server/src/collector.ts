@@ -1,54 +1,36 @@
-import { City, RunOrigin } from '@fa/shared/api'
-import { MODEL_BY_ID, ModelId, MODELS, OPEN_METEO_MODELS } from '@fa/shared/models'
+import { City } from '@fa/shared/api'
+import { MODEL_BY_ID, ModelId, OPEN_METEO_MODELS } from '@fa/shared/models'
 import { compactIso, floorToStep, toIsoMinute } from '@fa/shared/time'
 import { ModelSeries } from '@fa/shared/variables'
-import { chunk, delay } from 'es-toolkit'
 import { getErrorMessage } from './errors'
 import { fetchMetno, parseMetno } from './sources/metno'
-import { fetchOpenMeteoForecast, OPEN_METEO_BATCH_SIZE, parseOpenMeteoModels } from './sources/open-meteo'
-import {
-    getLatestSnapshot,
-    Run,
-    RunStatus,
-    SeriesGrid,
-    Snapshot,
-    SnapshotMeta,
-    updateCities,
-    upsertRun,
-    writeSnapshot,
-} from './store'
+import { fetchOpenMeteoForecast, parseOpenMeteoModels } from './sources/open-meteo'
+import { getLatestSnapshot, Run, RunStatus, SeriesGrid, Snapshot, upsertRun, writeSnapshot } from './store'
 import { getWindowSteps } from './window'
 
-type Log = (message: string) => void
-
 export interface CollectOptions {
-    origin: RunOrigin
-    cities: City[]
+    city: City
     now?: Date
-    log?: Log
 }
 
 export interface CollectResult {
     run: Run
-    snapshots: Snapshot[]
+    snapshot: Snapshot | null
 }
 
-interface FetchModelsOptions {
-    previous?: Map<number, Snapshot | null>
-    log?: Log
-}
+type Models = SeriesGrid['models']
 
-type ModelsByCity = Map<number, Partial<Record<ModelId, ModelSeries>>>
-
-interface FetchModelsResult {
-    models: ModelsByCity
-    metnoLastModified: Map<number, string>
+interface OpenMeteoModels {
+    models: Models
     warnings: string[]
 }
 
-type SnapshotStamp = Omit<SnapshotMeta, 'cityId' | 'metnoLastModified'> & Pick<SeriesGrid, 'steps'>
+interface MetnoModel {
+    series?: ModelSeries
+    lastModified?: string
+    warnings: string[]
+}
 
-const METNO_PACE_MS = 200
 const ERROR_MESSAGE_LENGTH = 160
 
 const getShortErrorMessage = (error: unknown) => getErrorMessage(error).slice(0, ERROR_MESSAGE_LENGTH)
@@ -62,131 +44,47 @@ const realignSeries = (series: ModelSeries, fromSteps: string[], toSteps: string
     ) as unknown as ModelSeries
 }
 
-const countSnapshotRows = (snapshot: Pick<Snapshot, 'models'>) =>
-    Object.values(snapshot.models).reduce((sum, series) => sum + series.temp.filter((v) => v !== null).length, 0)
-
-const realignMetno = (grid: SeriesGrid | null | undefined, toSteps: string[]) =>
+const realignMetno = (grid: SeriesGrid | null, toSteps: string[]) =>
     grid?.models.metno ? realignSeries(grid.models.metno, grid.steps, toSteps) : undefined
 
-// The last snapshot of every city with only its met.no series, which is all a conditional met.no request can reuse.
-const getPreviousMetno = async (cities: City[]) => {
-    const entries = await Promise.all(
-        cities.map(async (city) => {
-            const snapshot = await getLatestSnapshot(city.id, [ModelId.Metno])
-
-            return [city.id, snapshot] as const
-        }),
-    )
-
-    return new Map(entries)
-}
-
-// A scheduled run that repeats an issue time already collected on schedule does not count as a new run.
-const getRecollectedCityIds = (cities: City[], previous: Map<number, Snapshot | null>, issueTime: string) =>
-    new Set(
-        cities
-            .filter((c) => previous.get(c.id)?.origin === 'SCHEDULED' && previous.get(c.id)?.issueTime === issueTime)
-            .map((c) => c.id),
-    )
-
-const getMissingModelWarnings = (parsed: Partial<Record<ModelId, ModelSeries>>, city: City) =>
+const getMissingModelWarnings = (parsed: Models, city: City) =>
     OPEN_METEO_MODELS.filter((model) => !parsed[model] && !MODEL_BY_ID[model].isRegional).map(
         (model) => `${model} returned no data for ${city.name}`,
     )
 
-const fetchOpenMeteoModels = async (cities: City[], steps: string[], log: Log) => {
-    const batches = chunk(cities, OPEN_METEO_BATCH_SIZE)
-    const models: ModelsByCity = new Map(cities.map((c) => [c.id, {}]))
-    const warnings: string[] = []
+const fetchOpenMeteoModels = async (city: City, steps: string[]): Promise<OpenMeteoModels> => {
+    try {
+        const [location] = await fetchOpenMeteoForecast([city])
+        const models = parseOpenMeteoModels(location, steps)
 
-    for (const [i, batch] of batches.entries()) {
-        try {
-            log(`Open-Meteo batch ${i + 1}/${batches.length}: ${batch.length} cities`)
-            const results = await fetchOpenMeteoForecast(batch)
-
-            batch.forEach((city, j) => {
-                const parsed = parseOpenMeteoModels(results[j], steps)
-
-                Object.assign(models.get(city.id)!, parsed)
-                warnings.push(...getMissingModelWarnings(parsed, city))
-            })
-        } catch (error) {
-            warnings.push(`Open-Meteo batch ${i + 1} failed: ${getShortErrorMessage(error)}`)
-        }
+        return { models, warnings: getMissingModelWarnings(models, city) }
+    } catch (error) {
+        return { models: {}, warnings: [`Open-Meteo failed for ${city.name}: ${getShortErrorMessage(error)}`] }
     }
-
-    return { models, warnings }
 }
 
-const fetchMetnoModels = async (cities: City[], steps: string[], previous: Map<number, Snapshot | null>) => {
-    const series = new Map<number, ModelSeries>()
-    const lastModified = new Map<number, string>()
-    const warnings: string[] = []
+// `previous` is the city's last snapshot with only its met.no series, which is all a conditional request can reuse.
+const fetchMetnoModel = async (city: City, steps: string[], previous: Snapshot | null): Promise<MetnoModel> => {
+    const lastMetno = realignMetno(previous, steps)
 
-    for (const [i, city] of cities.entries()) {
-        if (i > 0) await delay(METNO_PACE_MS)
+    try {
+        const res = await fetchMetno(city.lat, city.lon, lastMetno ? previous?.metnoLastModified : undefined)
+        const lastModified = res.lastModified ?? undefined
 
-        const last = previous.get(city.id)
-        const lastMetno = realignMetno(last, steps)
+        if (res.status === 304 && lastMetno) return { series: lastMetno, lastModified, warnings: [] }
 
-        try {
-            const res = await fetchMetno(city.lat, city.lon, lastMetno ? last?.metnoLastModified : undefined)
+        if (!res.body) return { lastModified, warnings: [] }
 
-            if (res.lastModified) lastModified.set(city.id, res.lastModified)
+        const series = parseMetno(res.body, steps) ?? undefined
+        const warnings = series ? [] : [`met.no returned no usable steps for ${city.name}`]
 
-            if (res.status === 304 && lastMetno) {
-                series.set(city.id, lastMetno)
-                continue
-            }
-
-            if (!res.body) continue
-
-            const parsed = parseMetno(res.body, steps)
-
-            if (parsed) series.set(city.id, parsed)
-            else warnings.push(`met.no returned no usable steps for ${city.name}`)
-        } catch (error) {
-            warnings.push(`met.no failed for ${city.name}: ${getShortErrorMessage(error)}`)
-        }
+        return { series, lastModified, warnings }
+    } catch (error) {
+        return { warnings: [`met.no failed for ${city.name}: ${getShortErrorMessage(error)}`] }
     }
-
-    return { series, lastModified, warnings }
 }
 
-const addMetno = (models: ModelsByCity, metno: Map<number, ModelSeries>) => {
-    for (const [cityId, series] of metno) models.get(cityId)!.metno = series
-
-    return models
-}
-
-// Fetches and parses every source for the given cities onto the hourly grid, without touching the store. Partial
-// failures never throw: they become warnings.
-const fetchModels = async (
-    cities: City[],
-    steps: string[],
-    { previous = new Map(), log = () => {} }: FetchModelsOptions = {},
-): Promise<FetchModelsResult> => {
-    const openMeteo = await fetchOpenMeteoModels(cities, steps, log)
-    const metno = await fetchMetnoModels(cities, steps, previous)
-
-    const models = addMetno(openMeteo.models, metno.series)
-
-    return { models, metnoLastModified: metno.lastModified, warnings: [...openMeteo.warnings, ...metno.warnings] }
-}
-
-const toSnapshots = (cities: City[], fetched: FetchModelsResult, stamp: SnapshotStamp): Snapshot[] =>
-    cities
-        .map((city) => ({
-            cityId: city.id,
-            issueTime: stamp.issueTime,
-            runId: stamp.runId,
-            origin: stamp.origin,
-            fetchedAt: stamp.fetchedAt,
-            steps: stamp.steps,
-            models: fetched.models.get(city.id)!,
-            metnoLastModified: fetched.metnoLastModified.get(city.id),
-        }))
-        .filter((s) => Object.keys(s.models).length > 0)
+const getRunId = (cityId: number, issueTime: string) => `preview-${cityId}-${compactIso(issueTime)}`
 
 const checkRunStatus = (rows: number, warnings: string[]): RunStatus => {
     if (rows === 0) return 'FAILED'
@@ -194,54 +92,34 @@ const checkRunStatus = (rows: number, warnings: string[]): RunStatus => {
     return warnings.length ? 'PARTIAL' : 'OK'
 }
 
-const getAvailableModels = (snapshots: Snapshot[]) =>
-    new Map(snapshots.map((s) => [s.cityId, MODELS.map((m) => m.id).filter((id) => s.models[id])]))
+export const countRows = (snapshot: Pick<Snapshot, 'models'>) =>
+    Object.values(snapshot.models).reduce((sum, series) => sum + series.temp.filter((v) => v !== null).length, 0)
 
-const applyAvailableModels = (
-    cities: City[],
-    available: Map<number, ModelId[]>,
-    isCountedRun: (cityId: number) => boolean,
-) =>
-    cities.map((city) => {
-        const availableModels = available.get(city.id)
-
-        if (!availableModels) return city
-
-        return { ...city, availableModels, runsCollected: city.runsCollected + (isCountedRun(city.id) ? 1 : 0) }
-    })
-
-export const getRunId = (origin: RunOrigin, issueTime: string, cityId?: number) =>
-    origin === 'PREVIEW'
-        ? `preview-${cityId}-${compactIso(issueTime)}`
-        : `${origin.toLowerCase()}-${compactIso(issueTime)}`
-
-export const countRows = (snapshots: Pick<Snapshot, 'models'>[]) =>
-    snapshots.reduce((sum, s) => sum + countSnapshotRows(s), 0)
-
-// One code path for scheduled runs, CLI runs, and on-demand previews (DECISIONS P7). FAILED only means no rows.
-export const collect = async ({
-    origin,
-    cities,
-    now = new Date(),
-    log = () => {},
-}: CollectOptions): Promise<CollectResult> => {
+// Fetches every source for one city onto the hourly grid and stores it as one run. Source failures never throw:
+// they become warnings, and the run is FAILED only when no model returned data.
+export const collect = async ({ city, now = new Date() }: CollectOptions): Promise<CollectResult> => {
     const issueTime = toIsoMinute(floorToStep(now))
-    const runId = getRunId(origin, issueTime, origin === 'PREVIEW' ? cities[0]?.id : undefined)
+    const runId = getRunId(city.id, issueTime)
     const startedAt = new Date().toISOString()
     const steps = getWindowSteps(new Date(issueTime))
 
-    const previous = await getPreviousMetno(cities)
-    const recollected = getRecollectedCityIds(cities, previous, issueTime)
-    const fetched = await fetchModels(cities, steps, { previous, log })
-    const { warnings } = fetched
+    const previous = await getLatestSnapshot(city.id, [ModelId.Metno])
+    const [openMeteo, metno] = await Promise.all([
+        fetchOpenMeteoModels(city, steps),
+        fetchMetnoModel(city, steps, previous),
+    ])
     const fetchedAt = new Date().toISOString()
 
-    const snapshots = toSnapshots(cities, fetched, { issueTime, runId, origin, fetchedAt, steps })
+    const models: Models = metno.series ? { ...openMeteo.models, [ModelId.Metno]: metno.series } : openMeteo.models
+    const warnings = [...openMeteo.warnings, ...metno.warnings]
+    const snapshot: Snapshot | null = Object.keys(models).length
+        ? { cityId: city.id, issueTime, runId, fetchedAt, steps, models, metnoLastModified: metno.lastModified }
+        : null
+    const rows = snapshot ? countRows(snapshot) : 0
     const run: Run = {
         id: runId,
         issueTime,
-        origin,
-        cityId: origin === 'PREVIEW' ? (cities[0]?.id ?? null) : null,
+        cityId: city.id,
         startedAt,
         finishedAt: null,
         status: 'FAILED',
@@ -249,19 +127,19 @@ export const collect = async ({
         citiesCount: 0,
         warnings,
     }
-    const rows = countRows(snapshots)
-    const status = checkRunStatus(rows, warnings)
-    const available = getAvailableModels(snapshots)
-    const isCountedRun = (cityId: number) => origin === 'SCHEDULED' && !recollected.has(cityId)
 
-    // Snapshots reference their run, so the run is stored first; it stays FAILED if the process dies mid-write.
+    // A snapshot references its run, so the run is stored first; it stays FAILED if the process dies mid-write.
     await upsertRun(run)
-    await Promise.all(snapshots.map(writeSnapshot))
-    await updateCities((all) => applyAvailableModels(all, available, isCountedRun))
 
-    Object.assign(run, { finishedAt: fetchedAt, status, rows, citiesCount: snapshots.length })
+    if (snapshot) await writeSnapshot(snapshot)
+
+    Object.assign(run, {
+        finishedAt: fetchedAt,
+        status: checkRunStatus(rows, warnings),
+        rows,
+        citiesCount: snapshot ? 1 : 0,
+    })
     await upsertRun(run)
-    log(`Run ${runId}: ${status}, ${rows} rows, ${snapshots.length} cities, ${warnings.length} warnings`)
 
-    return { run, snapshots }
+    return { run, snapshot }
 }

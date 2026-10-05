@@ -47,7 +47,7 @@ Converging: once the collector has stored enough runs, evolution can read the ap
 
 The Python collector this project grew out of used `temporal_resolution=hourly_6`, where precipitation at a step is the one-hour amount (its notes flag the undercount). The prototype fetches hourly data and aggregates on the server: instant variables are sampled at 00/06/12/18 UTC and precipitation is the six hours ending at the step. met.no precipitation uses `next_6_hours` of the entry six hours earlier (or the six `next_1_hours` blocks), so met.no joins the precipitation panel on the same basis. A sum with any missing hour is null rather than an undercount.
 
-## P7. A view refreshes a stale city (local stand-in for the scheduler)
+## P7. A view refreshes a stale city (local stand-in for the scheduler; the only collection path since P46)
 
 There is no EventBridge locally. When `/latest` is requested and the newest snapshot predates the current 6-hour grid, the city is refreshed through the collector's code path with origin `PREVIEW`, de-duplicated so parallel requests share one upstream call. `pnpm collect` is the scheduled path for all active cities (with dormancy, the queue and the lock); `pnpm collect --loop` keeps running it every 6 hours. "Preview" in the UI means the city has no scheduled run yet.
 
@@ -223,10 +223,10 @@ The prototype converged on the target layout: `apps/web`, `apps/api`, `apps/coll
 ## P30. Postgres schema and partitions (2026-09-26)
 
 - **Forecast** has one row per city, issue time, model and hour, and its primary key is that natural key: a partitioned table needs the partition key (`issueTime`) in every unique constraint, so the target's surrogate `id` was dropped. With one hourly grid (P26) the `grid` column went too.
-- **Weekly RANGE partitions on `issueTime`**, Monday to Monday UTC. The init migration declares the partitioned table; `ensureForecastPartitions` creates the week of a write and the next one (once per week and process), and the scheduled run drops weeks older than `RETENTION_DAYS` (14) and their `Snapshot` rows. Runs are kept. Prisma sees no drift from the partitions (checked with `migrate diff`).
+- **Weekly RANGE partitions on `issueTime`**, Monday to Monday UTC. The init migration declares the partitioned table; `ensureForecastPartitions` creates the week of a write and the next one (once per week and process), and the scheduled run drops weeks older than `RETENTION_DAYS` (14) and their `Snapshot` rows (since P46, the first fetch of each UTC day does). Runs are kept. Prisma sees no drift from the partitions (checked with `migrate diff`).
 - **A `Snapshot` table** (city and issue time → run, origin, fetch time, met.no `Last-Modified`) replaces the prototype's per-file metadata, and says which run's rows are current when a scheduled run replaces a preview of the same issue.
 - **Prisma 7 with the `pg` driver adapter everywhere.** Neon's pooled endpoint accepts ordinary TCP connections, so Docker, CI and Lambda share one adapter; the Neon-specific adapter was not needed.
-- **City list writes** keep the prototype's read-modify-write shape, serialized by a transaction-scoped advisory lock; only changed rows are written.
+- **City list writes** keep the prototype's read-modify-write shape, serialized by a transaction-scoped advisory lock; only changed rows are written. Replaced by single-row adds when cities lost their status and counters (P46).
 - **Not created:** `GeocodeCache` (Redis is the cache; a miss simply asks the geocoder) and `Brief` (the optional phase 6 brief is not built).
 
 ## P31. Redis stays, but never on the critical path (2026-09-26)
@@ -234,7 +234,7 @@ The prototype converged on the target layout: `apps/web`, `apps/api`, `apps/coll
 Decided by the author after comparing it with a Postgres-only design: Redis stays, on Upstash's free plan only (no card, so no bill); ElastiCache, which bills a minimum even when idle, is never used.
 
 - **Uses:** the geocode cache (24 h), the `/latest` payload cache (5 min, keyed by run id so a new run never serves a stale entry), fixed-window rate limits, the daily quota (one atomic Lua check-and-increment for the client and the app), and the collector lock (`SET NX EX`).
-- **Fail-open.** Every Redis call has a one-second timeout and a fallback: no cache, no limit, lock granted. A refused or slow Redis costs latency, never availability. The collector's Lambda also runs with a concurrency of one, so a missing lock cannot double-run it.
+- **Fail-open.** Every Redis call has a one-second timeout and a fallback: no cache, no limit, lock granted. A refused or slow Redis costs latency, never availability. The collector's Lambda also runs with a concurrency of one, so a missing lock cannot double-run it. Since P46 the lock is gone; the daily retention claim is granted instead, and pruning is safe to repeat.
 - **Without `REDIS_URL`** the same interface runs in process memory; tests use that.
 - Concurrent refreshes of one city are still de-duplicated in process; across Lambda instances a duplicate refresh writes the same run id and rows, so it only costs an extra upstream call.
 
@@ -247,7 +247,7 @@ Decided by the author after comparing it with a Postgres-only design: Redis stay
 - The city page's title reads the city list, not `/cities/:slug`, which records a view.
 - The API is bundled with esbuild into one ESM file; the same bundle runs under Node locally (`pnpm --filter @fa/api start`) and behind the Lambda Web Adapter.
 
-## P33. Collector app and CSV import (2026-09-26; CSV import removed, see P43)
+## P33. Collector app and CSV import (2026-09-26; removed, see P43 and P46)
 
 - `runScheduled` (lock, dormancy and queue promotion, collection, retention) is shared by the CLI (`pnpm collect`) and the Lambda handler. A FAILED run throws so EventBridge Scheduler retries it and the dead-letter queue raises the alarm; PARTIAL runs succeed.
 - A run is stored before its snapshots, which reference it; if the process dies mid-write it stays FAILED.
@@ -278,11 +278,11 @@ Amplify Hosting documents Next.js support up to version 15, and Next.js 16 suppo
 
 `infra/lib/forecast-arena-stack.ts`, verified with `cdk synth` and 7 template tests (no deploy yet):
 
-- **Functions** (Node 22, arm64): web and API behind the Web Adapter (layer version 30) with IAM-authenticated function URLs reached only through CloudFront origin access control; the collector (`handler.handler`, 10 minutes, reserved concurrency 1, configurable to 0 for new accounts whose concurrency limit is still 10).
+- **Functions** (Node 22, arm64): web and API behind the Web Adapter (layer version 30) with IAM-authenticated function URLs reached only through CloudFront origin access control; the collector (`handler.handler`, 10 minutes, reserved concurrency 1, configurable to 0 for new accounts whose concurrency limit is still 10), removed with the schedule (P46).
 - **Secrets** stay in SSM Parameter Store under `/forecast-arena`; the functions get only `SSM_PREFIX` and read them on a cold start (`packages/server/src/secrets.ts`), because Lambda environment variables cannot reference SecureStrings.
 - **POSTs through CloudFront** to an IAM-protected function URL need the body's SHA-256 in `x-amz-content-sha256`; the web client sends it (`apps/web/src/lib/api.ts`). The origin request policy must not list that header: CloudFront reserves it, rejects the policy (found on the first deploy) and uses the viewer's value when OAC signs.
 - **CloudFront needs two permissions per function URL.** Function URLs created since October 2025 require `lambda:InvokeFunction` (with `lambda:InvokedViaFunctionUrl`) besides `lambda:InvokeFunctionUrl`; CDK's `FunctionUrlOrigin.withOriginAccessControl` (aws-cdk-lib 2.271) only grants the latter, so the stack adds the former for the web and API functions. Without it every request through CloudFront got 403 on the first deploy.
-- **Schedule**: EventBridge Scheduler `cron(0 0/6 * * ? *)`, 2 retries within an hour, then an SQS dead-letter queue; alarms on collector errors and on the queue, e-mailed through SNS.
+- **Schedule**: EventBridge Scheduler `cron(0 0/6 * * ? *)`, 2 retries within an hour, then an SQS dead-letter queue; alarms on collector errors and on the queue, e-mailed through SNS. All removed with the collector (P46).
 - **Storage**: a private, encrypted S3 bucket for run archives, Infrequent Access at 90 days, deleted at 400; logs kept 14 days. The bucket left the stack with the archives (P44).
 - **Deploys**: a GitHub OIDC provider and a role only the repository's default branch can assume, allowed only to assume CDK's bootstrap roles; `.github/workflows/deploy.yml` runs once the role ARN is set as a repository variable.
 - **Budget**: $5 a month, e-mail at 80 % actual and 100 % forecast. Template tests assert there is no VPC, NAT gateway, ElastiCache or RDS.
@@ -364,3 +364,15 @@ Decided by the author. With collection on demand only (P46), the runs page liste
 ## P45. No cities page (2026-10-05)
 
 Decided by the author. The `/cities` page listed every city anyone had opened, with its status, views and scheduled runs; without a schedule (P46) its columns mean nothing, and a visitor's own places are already the chips and the search box's list (P42). The page, its menu entry and its catalog keys are removed. `GET /api/cities` stays: the Compare page offers those cities to add, which the privacy policy and terms now say instead of pointing at the cities page.
+
+## P46. No scheduled collection (2026-10-05)
+
+Decided by the author. The collector fetched every active city every 6 hours, so the eleven seed cities were refreshed whether or not anyone looked, while the places people actually open are countless. Opening a city already fetched its forecast on demand (P7; a live fetch took about 0.3 s), so the schedule bought little for visitors.
+
+- **What it cost.** One request for all cities and nine models made a large response. Three of the fifteen scheduled runs from 2026-10-02 to 10-05 lost all their Open-Meteo data when that body took longer than the 20-second timeout to arrive. The timeout aborted the body after the retry loop had already returned, so nothing was retried (fixed separately: `fetchWithRetry` now reads the body inside each attempt). Because met.no had answered, those runs were PARTIAL, so no retry, dead letter or alarm fired.
+- **Now.** A city's forecast is fetched when it is opened and its stored run predates the current 6-hour issue (`ensureFreshSnapshot`), one city per request, Open-Meteo and met.no in parallel. The first viewer after a new run spends one unit of their daily quota (P27), and the starter cities are no longer fetched for free.
+- **Retention** moved into that path: the first fetch of each UTC day drops forecast partitions and snapshots older than `RETENTION_DAYS` (`retention.ts`), once per process and once across processes through a Redis claim (`claim:retention:<day>`). Failures are logged and never fail the request.
+- **Removed:** `apps/collector` (the Lambda handler and `pnpm collect`), `runScheduled` and its lock, the stack's collector function, schedule, dead-letter queue, alarms and SNS topic, the `collectorReservedConcurrency` setting, city statuses, the active-city cap and dormancy (`ACTIVE_CITY_CAP`, `DORMANT_AFTER_DAYS`), and the "Preview" chip and tracking banner, since every run is now a preview. The migration `on_demand_collection` drops `City.status`, `availableModels`, `lastViewedAt`, `viewCount` and `runsCollected`; nothing read them any more. The API contract loses those fields, `CityDetail`, the run origin in `/latest`, and the status in the track response; `/health` reports `{ ok, cities }`.
+- **Kept:** run ids and the stored origin stay `preview-…` and `PREVIEW` for continuity with earlier rows; `City.firstTrackedAt` orders the city list.
+- **Deploy order.** Deploy the code first, then apply the migration: the old code reads the dropped columns, while the new code never writes them and their defaults cover inserts until the migration runs.
+- **Consequence for post-MVP accuracy** (P17): short lead buckets (6 to 36 hours) assumed the app's own stored runs on a fixed schedule. On-demand runs are irregular, so such scoring would need its own collection.
