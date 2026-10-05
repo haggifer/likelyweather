@@ -1,6 +1,6 @@
 import { City, GeocodeResult, Locale, LOCALES } from '@fa/shared/api'
 import { slugify } from '@fa/shared/seeds'
-import { floorToStep, isCurrentIssue } from '@fa/shared/time'
+import { floorToStep, isRefreshDue } from '@fa/shared/time'
 import { delay } from 'es-toolkit'
 import { claim, dedupe } from './cache'
 import { collect } from './collector'
@@ -81,9 +81,10 @@ const fetchSnapshot = async (city: City, stored: StoredSnapshotMeta | null): Pro
     }
 }
 
-// A partial run (a source failed) stands only for a short cooldown, not for the whole 6-hour issue.
+// A stored forecast is fetched again once it is 3 hours old, when the UI offers Refresh; a partial run (a source
+// failed) only stands for a short cooldown.
 export const isFreshSnapshot = (snapshot: StoredSnapshotMeta, now: Date) =>
-    isCurrentIssue(snapshot.issueTime, now) &&
+    !isRefreshDue(snapshot.fetchedAt, now) &&
     (snapshot.runStatus === 'OK' || now.getTime() - new Date(snapshot.fetchedAt).getTime() < PARTIAL_RETRY_MS)
 
 export const requireCity = async (slug: string) => {
@@ -110,8 +111,8 @@ export const trackCity = async (geocodeId: number, onCreate: () => Promise<void>
     return addCity(toCity(place, getLocalNames(places)))
 }
 
-// A city whose newest snapshot predates the current 6-hour run is fetched again: there is no scheduled collection,
-// so views never wait more than one upstream round trip. Each Lambda instance serves one request at a time, so the
+// A city whose newest snapshot is due for a refresh is fetched again: there is no scheduled collection, so views
+// never wait more than one upstream round trip. Each Lambda instance serves one request at a time, so the
 // parallel requests of one page meet in a shared claim: the first fetches and spends the client's quota, the others
 // wait for its snapshot. With no quota left the stored snapshot is served as it is.
 export const ensureFreshSnapshot = (city: City, client?: string): Promise<SnapshotMeta> =>

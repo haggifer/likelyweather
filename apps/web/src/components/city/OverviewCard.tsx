@@ -5,7 +5,7 @@ import { RefreshButton } from '@/components/city/RefreshButton'
 import { UpdatedChip } from '@/components/city/UpdatedChip'
 import { FlagIcon } from '@/components/shell/FlagIcon'
 import { getCityRegion } from '@/lib/city-region'
-import { isRefreshDue } from '@/lib/refresh-due'
+import { isRefreshOffered } from '@/lib/refresh-due'
 import { MedianOverview, MedianOverviewSkeleton, MedianSeries } from '@fa/charts/MedianOverview'
 import { City, LatestResponse } from '@fa/shared/api'
 import { computeEnsemble, computeMedianDirection } from '@fa/shared/ensemble'
@@ -83,7 +83,7 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
     const name = getCityName(city, locale)
     const region = getCityRegion(city, locale)
     const currentSlot = now ? getSlotStart(now, city.timezone) : anchor
-    const isOutdated = isRefreshDue(hourly[Variable.Temp].fetchedAt, now)
+    const isOutdated = isRefreshOffered(hourly[Variable.Temp].fetchedAt, now)
     const modelCount = hourly[Variable.Temp].series.length
     const slots = useMemo(() => buildSlots(anchor), [anchor])
     const medians = useMemo(() => getVariableMedians(hourly, slots), [hourly, slots])

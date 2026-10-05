@@ -17,7 +17,7 @@ pnpm db:seed              # models and the eleven seed cities
 pnpm dev                  # web on http://localhost:3000, API on http://localhost:4000
 ```
 
-Open any city and its forecast is fetched within a few seconds; search for any other city to open it the same way. Nothing is collected on a schedule: a city's forecast is fetched when someone opens it and a newer 6-hour run exists. The web app forwards `/api/*` to the API, so the browser sees one origin.
+Open any city and its forecast is fetched within a few seconds; search for any other city to open it the same way. Nothing is collected on a schedule: a city's forecast is fetched when someone opens it and the stored one is 3 hours old, the same moment the page offers Refresh. The web app forwards `/api/*` to the API, so the browser sees one origin.
 
 ## What works
 
@@ -84,7 +84,7 @@ What is built and what is still planned.
 - **Web:** Next.js App Router, Tailwind v4 and shadcn/ui with a token system, Redux Toolkit for UI state, TanStack Query for server state, Recharts, D3 for the hero charts, next-intl (uk, en, es, de, fr). On Lambda behind CloudFront (the target named Amplify Hosting, which does not support Next.js 16).
 - **API:** Express 5 REST on AWS Lambda (Web Adapter) behind CloudFront, with the same zod contract.
 - **Data:** Prisma on Postgres (Neon) with forecasts partitioned by issue time; Redis (Upstash) for the geocode and payload caches, rate limits, the quota and the daily retention claim.
-- **Collection:** on demand only, in the API, when a city is opened and a newer run exists; nothing runs on a schedule.
+- **Collection:** on demand only, in the API, when a city is opened and its stored forecast is 3 hours old; nothing runs on a schedule.
 - **Infrastructure and tooling:** one AWS CDK stack; a pnpm and Turborepo monorepo (`apps/web`, `apps/api`, `apps/e2e`, `packages/shared`, `packages/server`, `packages/charts`, `packages/ui`, `packages/db`, `packages/fixtures`, `infra`); CI runs lint, knip, typecheck, tests, the catalog check, end-to-end tests, the build and `cdk synth`.
 - **Not built:** a daily Gemini Flash brief with a claim checker.
 
@@ -113,7 +113,7 @@ The ones a newcomer is most likely to undo by accident:
 - **Redis is never on the critical path.** Upstash's free plan only; any Redis error means no cache, no limit and a granted claim for that call, never an outage or a bill.
 - **One hourly grid per run, weekly partitions.** Forecast rows are partitioned by issue week and dropped after 14 days by the first fetch of each day.
 - **The model palette is fixed,** with dash patterns where two colors are too close for color-vision deficiencies.
-- **Forecasts are fetched on demand, never on a schedule.** Opening a city fetches it when its stored run predates the current 6-hour issue; everyone else then reads the stored run. A scheduled collector refreshed cities nobody opened and was removed; don't add one back for a feature without weighing that cost.
+- **Forecasts are fetched on demand, never on a schedule.** Opening a city fetches it when its stored forecast is 3 hours old (`isRefreshDue`, shared with the UI's Refresh); everyone else then reads the stored one. A scheduled collector refreshed cities nobody opened and was removed; don't add one back for a feature without weighing that cost.
 - **Limits and the quota count per client: an IPv4 address or an IPv6 /64.** An IPv4-mapped address counts as IPv4, and a global daily cap protects the free upstream tiers. Keying IPv6 by the full address would let one /64 rotate through endless fresh quotas.
 
 ## Data and attribution

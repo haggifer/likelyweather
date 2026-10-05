@@ -1,4 +1,4 @@
-import { getAgeHours, isCurrentIssue } from './time'
+import { getAgeHours, isRefreshDue } from './time'
 
 describe('getAgeHours', () => {
     const fetchedAt = '2026-10-02T09:00:00Z'
@@ -10,15 +10,11 @@ describe('getAgeHours', () => {
     })
 })
 
-describe('isCurrentIssue', () => {
-    const now = new Date('2026-10-05T11:49:00Z')
+describe('isRefreshDue', () => {
+    const fetchedAt = '2026-10-05T06:05:00.000Z'
 
-    it('accepts the current 6-hour issue in either ISO spelling', () => {
-        expect(isCurrentIssue('2026-10-05T06:00:00.000Z', now)).toBe(true)
-        expect(isCurrentIssue('2026-10-05T06:00Z', now)).toBe(true)
-    })
-
-    it('rejects an earlier issue', () => {
-        expect(isCurrentIssue('2026-10-05T00:00:00.000Z', now)).toBe(false)
+    it('is due once the forecast is 3 full hours old', () => {
+        expect(isRefreshDue(fetchedAt, new Date('2026-10-05T09:04:59Z'))).toBe(false)
+        expect(isRefreshDue(fetchedAt, new Date('2026-10-05T09:05:00Z'))).toBe(true)
     })
 })

@@ -7,7 +7,7 @@ import { FlagIcon } from '@/components/shell/FlagIcon'
 import { SearchBox } from '@/components/shell/SearchBox'
 import { useLatest } from '@/hooks/useLatest'
 import { getCityRegion } from '@/lib/city-region'
-import { isRefreshDue } from '@/lib/refresh-due'
+import { isRefreshOffered } from '@/lib/refresh-due'
 import { City } from '@fa/shared/api'
 import { getCityName } from '@fa/shared/format'
 import { Variable } from '@fa/shared/variables'
@@ -41,7 +41,7 @@ export function CityHeader({ city }: IProps) {
 
     const name = getCityName(city, locale)
     const region = getCityRegion(city, locale)
-    const isOutdated = isRefreshDue(latest?.fetchedAt, now)
+    const isOutdated = isRefreshOffered(latest?.fetchedAt, now)
 
     // Refetching moves the dashboard chart only when a newer run arrives.
     const handleRefresh = () => void queryClient.refetchQueries({ queryKey: ['latest', city.slug], type: 'active' })

@@ -42,19 +42,14 @@ describe('isFreshSnapshot', () => {
         runStatus,
     })
 
-    it('keeps a complete run for the whole issue', () => {
-        expect(isFreshSnapshot(stored('OK', '2026-10-05T06:10:00Z'), now)).toBe(true)
+    it('keeps a complete run until it is 3 hours old, when the UI offers Refresh', () => {
+        expect(isFreshSnapshot(stored('OK', '2026-10-05T08:01:00Z'), now)).toBe(true)
+        expect(isFreshSnapshot(stored('OK', '2026-10-05T08:00:00Z'), now)).toBe(false)
     })
 
     it('fetches a partial run again after the cooldown', () => {
         expect(isFreshSnapshot(stored('PARTIAL', '2026-10-05T10:50:00Z'), now)).toBe(true)
         expect(isFreshSnapshot(stored('PARTIAL', '2026-10-05T10:40:00Z'), now)).toBe(false)
-    })
-
-    it('fetches a run of an earlier issue', () => {
-        expect(isFreshSnapshot({ ...stored('OK', '2026-10-05T05:00:00Z'), issueTime: '2026-10-05T00:00Z' }, now)).toBe(
-            false,
-        )
     })
 })
 

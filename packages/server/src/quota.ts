@@ -3,8 +3,8 @@ import { DAY_MS } from '@fa/shared/constants'
 import { getCounter, incrementWithinLimits } from './cache'
 import { HttpError } from './errors'
 
-// Daily budget of upstream requests (Open-Meteo, met.no) made on a client's behalf: a city refresh when a newer run
-// exists, or a geocoding search the cache cannot answer. Reading stored data is free. The app-wide cap keeps the
+// Daily budget of upstream requests (Open-Meteo, met.no, geocoding) made on a client's behalf: a city refresh once the
+// stored forecast is 3 hours old, adding a city not stored yet, or a geocoding search the cache cannot answer. Reading stored data is free. The app-wide cap keeps the
 // total within Open-Meteo's free tier for about ten active users even if each model counts as its own variables.
 export const DAILY_QUOTA = 60
 export const DAILY_GLOBAL_QUOTA = 600

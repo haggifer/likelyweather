@@ -1,4 +1,4 @@
-import { HOUR_MS, STEP_HOURS } from './constants'
+import { HOUR_MS, REFRESH_AFTER_HOURS, STEP_HOURS } from './constants'
 import { getOrCreate } from './memo'
 
 const DATE_KEY_FORMATTERS = new Map<string, Intl.DateTimeFormat>()
@@ -27,12 +27,13 @@ export const floorToStep = (date: Date) => floorToHours(date, STEP_HOURS)
 
 export const addHours = (date: Date, hours: number) => new Date(date.getTime() + hours * HOUR_MS)
 
-// Compared as instants: stored times read "06:00:00.000Z" and grid times "06:00Z", which order wrongly as strings.
-export const isCurrentIssue = (issueTime: string, now: Date) => new Date(issueTime) >= floorToStep(now)
-
 // Whole hours elapsed, rounded down, so an age never reads older than it is.
 export const getAgeHours = (from: string | Date, now: Date) =>
     Math.floor((now.getTime() - new Date(from).getTime()) / HOUR_MS)
+
+// The one rule for when a stored forecast is old enough to fetch again: the server fetches, and the UI offers Refresh
+// and shows the age chip, from the same moment.
+export const isRefreshDue = (fetchedAt: string, now: Date) => getAgeHours(fetchedAt, now) >= REFRESH_AFTER_HOURS
 
 export const hoursBetween = (from: string | Date, to: string | Date) =>
     Math.round((new Date(to).getTime() - new Date(from).getTime()) / HOUR_MS)

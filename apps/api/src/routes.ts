@@ -16,7 +16,7 @@ import {
     TrackResponse,
 } from '@fa/shared/api'
 import { MODELS } from '@fa/shared/models'
-import { isCurrentIssue } from '@fa/shared/time'
+import { isRefreshDue } from '@fa/shared/time'
 import { Variable } from '@fa/shared/variables'
 import { Router } from 'express'
 import { enforceRateLimit, getClientKey, getParam, parseBody, parseQuery, rateLimit, sendJson } from './http'
@@ -39,7 +39,7 @@ const requireQuota = async (client: string) => {
 
 // A stored run served because a refresh was not possible (no quota, upstream down) is right for this caller only, so
 // CloudFront must not hand it to everyone for five minutes.
-const isCurrent = (meta: SnapshotMeta) => isCurrentIssue(meta.issueTime, new Date())
+const isCurrent = (meta: SnapshotMeta) => !isRefreshDue(meta.fetchedAt, new Date())
 
 const findCity = (slug: string) =>
     requireCity(slug).catch((error) => {
