@@ -19,12 +19,13 @@ class UpstreamError extends Error {
 }
 
 // `read` consumes the body inside the attempt: the timeout also covers the body, and a body that arrives too slowly
-// is retried like a request that never answered.
+// is retried like a request that never answered. The defaults keep the worst case (8 + 0.5 + 8 s) well inside the
+// API function's 30-second limit, so a failed refresh can still fall back to the stored forecast.
 export const fetchWithRetry = async <T>(
     url: string,
     read: (res: Response) => Promise<T>,
     init: RequestInit = {},
-    { attempts = 3, timeoutMs = 20_000, backoffMs = 1_000 }: RetryOptions = {},
+    { attempts = 2, timeoutMs = 8_000, backoffMs = 500 }: RetryOptions = {},
 ): Promise<T> => {
     let lastError: unknown
 
