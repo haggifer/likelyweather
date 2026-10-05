@@ -51,7 +51,7 @@ pnpm --filter @fa/mobile android   # build and run the development build on a de
 - Formatting is Prettier (`.prettierrc`: 4 spaces, single quotes, no semicolons, width 120); linting is ESLint. Format only the files you touch.
 - Phone layouts (below `sm`, 640 px) switch with `max-sm:` / `sm:` utilities, so the server HTML matches the first client render; a JS media query (`useMediaQuery`, written in `rem` like Tailwind's breakpoints) only where CSS can't do the job, such as the landing overview's chart, whose drawing changes on phones.
 - Comments explain why, not what.
-- Tests land with the code (`*.test.ts` next to the module). `apps/mobile` tests run on Jest (`jest-expo`, React Native Testing Library), because Vitest does not run React Native; every other package uses Vitest.
+- Tests land with the code (`*.test.ts` next to the module). `apps/mobile` tests run on Jest (`jest-expo`, React Native Testing Library), because Vitest does not run React Native; every other package uses Vitest. Expo Router bundles every file in `apps/mobile/src/app` as a route, so route files only re-export a screen from `src/screens`, and tests live next to the screens.
 - Commits follow Conventional Commits (`feat(scope): …`, `fix: …`, `docs: …`), one commit per distinct change.
 - When a change affects a command, env variable, rule above or design decision, update README.md or this file in the same commit.
 

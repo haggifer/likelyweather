@@ -1,7 +1,7 @@
 {
     "name": "@fa/mobile",
     "private": true,
-    "main": "expo-router/entry",
+    "main": "./index.ts",
     "scripts": {
         "start": "expo start",
         "android": "expo run:android",
@@ -17,13 +17,19 @@
             "<rootDir>/jest.setup.ts"
         ],
         "transformIgnorePatterns": [
-            "node_modules/(?!(?:\\.pnpm/[^/]+/node_modules/)?((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|expo-router|react-navigation|@react-navigation/.*|@formatjs/.*|use-intl))"
+            "node_modules/(?!(?:\\.pnpm/[^/]+/node_modules/)?((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|expo-router|react-navigation|@react-navigation/.*|@formatjs/.*|intl-messageformat|use-intl))"
         ]
     },
     "dependencies": {
+        "@fa/messages": "workspace:*",
+        "@fa/shared": "workspace:*",
+        "@formatjs/intl-locale": "^5.3.12",
+        "@formatjs/intl-pluralrules": "^6.3.15",
+        "@formatjs/intl-relativetimeformat": "^12.3.15",
         "expo": "~57.0.26",
         "expo-constants": "~57.0.20",
         "expo-linking": "~57.0.11",
+        "expo-localization": "~57.0.2",
         "expo-router": "~57.0.24",
         "expo-splash-screen": "~57.0.9",
         "expo-system-ui": "~57.0.4",
@@ -34,7 +40,8 @@
         "react-native-reanimated": "4.5.1",
         "react-native-safe-area-context": "~5.7.0",
         "react-native-screens": "~4.26.0",
-        "react-native-worklets": "0.10.1"
+        "react-native-worklets": "0.10.1",
+        "use-intl": "^4.14.9"
     },
     "devDependencies": {
         "@testing-library/react-native": "^14.0.1",
