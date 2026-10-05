@@ -1,6 +1,6 @@
 import { City, GeocodeResult, Locale, LOCALES } from '@fa/shared/api'
 import { slugify } from '@fa/shared/seeds'
-import { floorToStep, toIsoMinute } from '@fa/shared/time'
+import { isCurrentIssue } from '@fa/shared/time'
 import { dedupe } from './cache'
 import { collect } from './collector'
 import { getErrorMessage, HttpError } from './errors'
@@ -61,9 +61,8 @@ export const trackCity = async (geocodeId: number) => {
 export const ensureFreshSnapshot = (city: City, client?: string): Promise<SnapshotMeta> =>
     dedupe(`refresh:${city.id}`, async () => {
         const snapshot = await getLatestSnapshotMeta(city.id)
-        const currentIssue = toIsoMinute(floorToStep(new Date()))
 
-        if (snapshot && snapshot.issueTime >= currentIssue) return snapshot
+        if (snapshot && isCurrentIssue(snapshot.issueTime, new Date())) return snapshot
 
         if (client) {
             const hasQuota = await trySpendQuota(client)
