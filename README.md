@@ -65,14 +65,17 @@ Browser ── TanStack Query ──▶ /api/* ──▶ Express REST (zod-valid
 
 ```
 apps/
-  web/            Next.js pages, components, TanStack Query hooks, Redux slices, next-intl catalogs
+  web/            Next.js pages, components, Redux slices, next-intl setup
   api/            Express app: routes, rate limits, error shape; bundled for Lambda
   e2e/            Playwright flows and the fake upstream they run against
 packages/
-  shared/         zod API contract, model palette, variables, ensemble maths, resampling, 3-hour slots, formatting
+  shared/         zod API contract, model palette, variables, ensemble maths, resampling, 3-hour slots, formatting, places rules
+  api-client/     fetch wrapper (configurable origin and POST digest), TanStack Query hooks, the query client
+  messages/       the five message catalogs and their loader
   server/         the API's domain code: store, cache, quota, collector, retention, sources
   db/             Prisma schema, migrations (weekly Forecast partitions), seed, partition maintenance
   ui/             shadcn components, color mode, generic hooks
+  chart-core/     DOM-free chart geometry: scales, ticks, day labels, spaghetti paths
   charts/         D3 hero charts, Recharts wrappers, chart colors read from the CSS tokens
   fixtures/       real upstream responses and a collector snapshot for tests
 ```
