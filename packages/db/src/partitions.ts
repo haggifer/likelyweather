@@ -30,17 +30,28 @@ export const getForecastPartitionNames = async (prisma: PrismaClient) => {
     return rows.map((r) => r.name)
 }
 
+// Two instances creating the same week at once can both pass IF NOT EXISTS; the loser fails on the catalog, which is
+// fine as long as the partition exists afterwards.
+const createPartition = async (prisma: PrismaClient, start: Date) => {
+    const name = toPartitionName(start)
+    const end = new Date(start.getTime() + WEEK_MS)
+
+    try {
+        await prisma.$executeRawUnsafe(
+            `CREATE TABLE IF NOT EXISTS "${name}" PARTITION OF "Forecast" FOR VALUES FROM ('${start.toISOString()}') TO ('${end.toISOString()}')`,
+        )
+    } catch (error) {
+        const names = await getForecastPartitionNames(prisma)
+
+        if (!names.includes(name)) throw error
+    }
+}
+
 // Creates the weekly partitions covering `issueTime` and the following week, so writes never hit a missing range.
 export const ensureForecastPartitions = async (prisma: PrismaClient, issueTime: Date) => {
     const first = getWeekStart(issueTime)
 
-    for (const start of [first, new Date(first.getTime() + WEEK_MS)]) {
-        const end = new Date(start.getTime() + WEEK_MS)
-
-        await prisma.$executeRawUnsafe(
-            `CREATE TABLE IF NOT EXISTS "${toPartitionName(start)}" PARTITION OF "Forecast" FOR VALUES FROM ('${start.toISOString()}') TO ('${end.toISOString()}')`,
-        )
-    }
+    for (const start of [first, new Date(first.getTime() + WEEK_MS)]) await createPartition(prisma, start)
 }
 
 // Drops every weekly partition whose newest possible issue time is older than `retentionDays`.

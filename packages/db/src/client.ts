@@ -8,6 +8,8 @@ export * from './generated/prisma/client'
 
 const globalPrisma = globalThis as unknown as { __faPrisma?: PrismaClient }
 
+let isLocalEnvLoaded = false
+
 const readLocalEnvFile = () => {
     try {
         return readFileSync(path.join(import.meta.dirname, '../../../.env'), 'utf8')
@@ -37,7 +39,10 @@ export const loadLocalEnv = () => {
 // One client per process. The pg driver adapter works locally and against Neon's pooled endpoint, so the same code
 // runs in Docker, CI and Lambda.
 export const getPrisma = () => {
-    loadLocalEnv()
+    if (!isLocalEnvLoaded) {
+        loadLocalEnv()
+        isLocalEnvLoaded = true
+    }
 
     return (globalPrisma.__faPrisma ??= createPrisma())
 }
