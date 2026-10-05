@@ -17,6 +17,7 @@
     },
     "devDependencies": {
         "@fa/api": "workspace:*",
+        "@fa/web": "workspace:*",
         "@types/node": "^22",
         "aws-cdk": "^2.1143.0",
         "eslint": "^9",

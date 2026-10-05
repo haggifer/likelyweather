@@ -16,8 +16,9 @@
         "infra": {
             // cdk.json runs the app as `npx tsx bin/forecast-arena.ts`.
             "entry": ["bin/forecast-arena.ts"],
-            // tsx runs the CDK app; the workspace link makes Turbo build the API bundle before the stack tests read it.
-            "ignoreDependencies": ["tsx", "@fa/api"],
+            // tsx runs the CDK app; the workspace links make Turbo build the API and web bundles before the stack tests
+            // read them.
+            "ignoreDependencies": ["tsx", "@fa/api", "@fa/web"],
         },
         // Internal packages: a package export that no workspace imports is dead code, not public API.
         "packages/charts": {

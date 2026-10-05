@@ -224,6 +224,9 @@ importers:
       '@fa/api':
         specifier: workspace:*
         version: link:../apps/api
+      '@fa/web':
+        specifier: workspace:*
+        version: link:../apps/web
       '@types/node':
         specifier: ^22
         version: 22.20.4
