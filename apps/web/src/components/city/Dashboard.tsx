@@ -15,6 +15,7 @@ import { formatSpread } from '@/components/city/disagreement-format'
 import { DisagreementTiles } from '@/components/city/DisagreementTiles'
 import { ModelLegend } from '@/components/city/ModelLegend'
 import { VariableSwitch } from '@/components/city/VariableSwitch'
+import { ErrorNotice } from '@/components/shell/ErrorNotice'
 import { useCity } from '@/hooks/useCity'
 import { useLatest } from '@/hooks/useLatest'
 import { useUrlSync } from '@/hooks/useUrlSync'
@@ -203,12 +204,14 @@ export function Dashboard({ slug }: IProps) {
         return (
             <div className="flex flex-col gap-(--card-gap)">
                 {VARIABLE_BAR}
-                <div className="flex items-center gap-2 text-sm text-muted-foreground" role="status">
-                    <Loader2 className="size-4 animate-spin" />
-                    {latestQuery.isError
-                        ? t('fetchFailed', { message: latestQuery.error.message })
-                        : t('fetching', { name: cityName })}
-                </div>
+                {latestQuery.isError ? (
+                    <ErrorNotice error={latestQuery.error} onRetry={() => void latestQuery.refetch()} />
+                ) : (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground" role="status">
+                        <Loader2 className="size-4 animate-spin" />
+                        {t('fetching', { name: cityName })}
+                    </div>
+                )}
                 <div className="grid gap-(--card-gap) lg:grid-cols-[minmax(0,1fr)_18.75rem]">
                     <Skeleton className="h-[25rem]" />
                     <Skeleton className="h-[25rem] max-sm:hidden" />

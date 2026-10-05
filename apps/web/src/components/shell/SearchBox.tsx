@@ -5,6 +5,7 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { useGeocode } from '@/hooks/useGeocode'
 import { usePlaces } from '@/hooks/usePlaces'
 import { useTrackCity } from '@/hooks/useTrackCity'
+import { getErrorKind } from '@/lib/error-kind'
 import { addRecent, getPlaceList, isFavorite, Place, Places, rankByFavorite, toPlace } from '@/lib/places'
 import { updatePlaces } from '@/lib/places-store'
 import { GeocodeResult, Locale } from '@fa/shared/api'
@@ -56,6 +57,7 @@ export function SearchBox({
     className,
 }: IProps) {
     const t = useTranslations('search')
+    const te = useTranslations('errors')
     const locale = useLocale() as Locale
     const router = useRouter()
     const shortcutLabel = useSyncExternalStore(subscribeToNothing, getShortcutLabel, getServerShortcutLabel)
@@ -67,7 +69,7 @@ export function SearchBox({
 
     const isEdited = query !== initialQuery
     const debounced = useDebouncedValue(isEdited ? query.trim() : '', 200)
-    const { data, isFetching, isError } = useGeocode(debounced, locale)
+    const { data, isFetching, isError, error } = useGeocode(debounced, locale)
     const track = useTrackCity()
 
     const sorted = [...(data?.results ?? [])].sort(byPopulation)
@@ -96,7 +98,7 @@ export function SearchBox({
             },
             onError: (error) => {
                 console.error(error)
-                toast.error(t('trackFailed', { message: error.message }))
+                toast.error(te(getErrorKind(error)))
             },
         })
     }
@@ -206,7 +208,7 @@ export function SearchBox({
                         </div>
                     )}
                     {!isPlacesView && isQueryReady && isError && (
-                        <div className="px-3 py-2 text-xs text-destructive">{t('error')}</div>
+                        <div className="px-3 py-2 text-xs text-destructive">{te(getErrorKind(error))}</div>
                     )}
                     {!isPlacesView && isQueryReady && !isFetching && !isError && (
                         <CommandEmpty>{t('empty')}</CommandEmpty>

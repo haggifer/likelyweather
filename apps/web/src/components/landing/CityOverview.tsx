@@ -1,6 +1,7 @@
 'use client'
 
 import { OverviewCard, OverviewCardSkeleton } from '@/components/city/OverviewCard'
+import { ErrorNotice } from '@/components/shell/ErrorNotice'
 import { useCity } from '@/hooks/useCity'
 import { useHourlyAll } from '@/hooks/useHourlyAll'
 import { LatestResponse } from '@fa/shared/api'
@@ -25,7 +26,7 @@ export function CityOverview({ slug }: IProps) {
     const locale = useLocale()
     const now = useNow()
 
-    const { data: city, error } = useCity(slug)
+    const { data: city, error, refetch: refetchCity } = useCity(slug)
     const results = useHourlyAll(slug, Boolean(city))
 
     const failed = results.find((r) => r.isError)
@@ -39,12 +40,17 @@ export function CityOverview({ slug }: IProps) {
     )
 
     const handleRefresh = () => results.forEach((r) => void r.refetch())
+    const handleRetry = () => (error ? void refetchCity() : handleRefresh())
 
     if (error || failed || isEmpty) {
         return (
             <Card>
-                <CardContent className="py-10 text-center text-sm text-muted-foreground">
-                    {isEmpty ? t('unavailable') : t('failed', { message: (error ?? failed?.error)?.message ?? '' })}
+                <CardContent className="py-10">
+                    {isEmpty ? (
+                        <p className="text-center text-sm text-muted-foreground">{t('unavailable')}</p>
+                    ) : (
+                        <ErrorNotice error={error ?? failed?.error} onRetry={handleRetry} />
+                    )}
                 </CardContent>
             </Card>
         )

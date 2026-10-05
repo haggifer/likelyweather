@@ -71,6 +71,13 @@ test('compare shows one chart per city on a shared axis', async ({ page }) => {
     await expect(page.locator('main svg[role=img]')).toHaveCount(2)
 })
 
+test('an unknown city page says so and offers the search', async ({ page }) => {
+    await page.goto('/city/nowhere-xx-1')
+
+    await expect(page.getByRole('heading', { name: 'This city is not in Forecast Arena' })).toBeVisible()
+    await expect(page.getByRole('combobox', { name: 'Search any city' })).toBeVisible()
+})
+
 test('the language menu switches the interface to Ukrainian', async ({ page }) => {
     await page.goto('/')
     await page.getByRole('button', { name: 'Language' }).click()

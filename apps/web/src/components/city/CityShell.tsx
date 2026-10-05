@@ -1,8 +1,10 @@
 'use client'
 
 import { CityHeader } from '@/components/city/CityHeader'
+import { ErrorNotice } from '@/components/shell/ErrorNotice'
 import { SearchBox } from '@/components/shell/SearchBox'
 import { useCity } from '@/hooks/useCity'
+import { isNotFound } from '@/lib/error-kind'
 import { Skeleton } from '@fa/ui/components/skeleton'
 import { useTranslations } from 'next-intl'
 import { ReactNode } from 'react'
@@ -15,17 +17,19 @@ interface IProps {
 export function CityShell({ slug, children }: IProps) {
     const t = useTranslations('city')
 
-    const { data: city, error } = useCity(slug)
+    const { data: city, error, refetch } = useCity(slug)
 
-    if (error) {
+    if (error && isNotFound(error)) {
         return (
             <div className="mx-auto flex max-w-xl flex-col items-center gap-4 py-16 text-center">
-                <h1 className="text-xl font-semibold">{t('notTracked')}</h1>
-                <p className="text-sm text-muted-foreground">{t('notTrackedBody')}</p>
+                <h1 className="text-xl font-semibold">{t('notFound')}</h1>
+                <p className="text-sm text-muted-foreground">{t('notFoundBody')}</p>
                 <SearchBox />
             </div>
         )
     }
+
+    if (error) return <ErrorNotice error={error} onRetry={() => void refetch()} className="py-16" />
 
     if (!city) {
         return (

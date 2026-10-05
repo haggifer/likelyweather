@@ -31,10 +31,8 @@
         "placeholder": "Search any city…",
         "hint": "Type at least 3 letters",
         "searching": "Searching…",
-        "error": "Search failed. Try again in a moment.",
         "empty": "No places found",
         "results": "Places, largest first",
-        "trackFailed": "Could not open this city: {message}",
         "places": "Your places"
     },
     "chart": {
@@ -60,8 +58,8 @@
         "refresh": "Refresh",
         "refreshTitle": "Check for a newer run and restart the chart at the current time",
         "upToDate": "Up to date: fetched less than {hours} hours ago.",
-        "notTracked": "This city is not tracked yet",
-        "notTrackedBody": "Search for it to start tracking: the forecast appears within seconds.",
+        "notFound": "This city is not in Forecast Arena",
+        "notFoundBody": "Search for it to open its forecast within seconds.",
         "medianTotal": "Median total",
         "chanceOfRain": "Chance of rain",
         "back": "Back to overview",
@@ -74,7 +72,6 @@
     },
     "dashboard": {
         "fetching": "Fetching ten models for {name}…",
-        "fetchFailed": "Could not fetch the forecast: {message}",
         "summary": "Median {variable} over the next four days ranges from {min} to {max} {unit} across {count} models. They disagree most on {day} (spread {spread} {unit}).",
         "median": "Median",
         "time": "Time (city)",
@@ -167,7 +164,6 @@
         "aria": "Median forecast for {name} across {count} models: temperature, wind speed, pressure and precipitation",
         "fetching": "Fetching ten models for {name}…",
         "loading": "Loading…",
-        "failed": "Could not load this city: {message}",
         "perSlot": "{unit} / next {hours} h",
         "unavailable": "No hourly forecast is available for this city yet. Try again in a minute."
     },
@@ -176,5 +172,14 @@
         "terms": "Terms of Use",
         "lastUpdated": "Last updated {date}",
         "englishOnly": "This document is available in English only."
+    },
+    "errors": {
+        "quotaExceeded": "You have used today's searches. Stored forecasts stay available, and new ones resume after the daily reset.",
+        "rateLimited": "Too many requests. Wait a minute and try again.",
+        "notFound": "This city is not in Forecast Arena.",
+        "pending": "The forecast is still being fetched. Try again in a moment.",
+        "unavailable": "The weather services are not answering. Try again later.",
+        "generic": "Something went wrong. Try again in a moment.",
+        "retry": "Try again"
     }
 }

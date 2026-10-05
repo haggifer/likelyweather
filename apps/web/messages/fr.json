@@ -31,10 +31,8 @@
         "placeholder": "Rechercher une ville…",
         "hint": "Saisissez au moins 3 lettres",
         "searching": "Recherche…",
-        "error": "La recherche a échoué. Réessayez dans un instant.",
         "empty": "Aucun lieu trouvé",
         "results": "Lieux, les plus grands d’abord",
-        "trackFailed": "Impossible d’ouvrir cette ville : {message}",
         "places": "Vos lieux"
     },
     "chart": {
@@ -60,8 +58,8 @@
         "refresh": "Actualiser",
         "refreshTitle": "Chercher une émission plus récente et faire commencer le graphique maintenant",
         "upToDate": "À jour : récupéré il y a moins de {hours} heures.",
-        "notTracked": "Cette ville n’est pas encore suivie",
-        "notTrackedBody": "Recherchez-la pour commencer le suivi : la prévision apparaît en quelques secondes.",
+        "notFound": "Cette ville n’est pas dans Forecast Arena",
+        "notFoundBody": "Recherchez-la pour ouvrir sa prévision en quelques secondes.",
         "medianTotal": "Total médian",
         "chanceOfRain": "Probabilité de pluie",
         "back": "Retour à l’aperçu",
@@ -74,7 +72,6 @@
     },
     "dashboard": {
         "fetching": "Récupération de dix modèles pour {name}…",
-        "fetchFailed": "Impossible de récupérer la prévision : {message}",
         "summary": "La médiane ({variable}) des quatre prochains jours va de {min} à {max} {unit} sur {count} modèles. Ils divergent le plus le {day} (écart {spread} {unit}).",
         "median": "Médiane",
         "time": "Heure (locale)",
@@ -167,7 +164,6 @@
         "aria": "Prévision médiane pour {name} sur {count} modèles : température, vitesse du vent, pression et précipitations",
         "fetching": "Récupération de dix modèles pour {name}…",
         "loading": "Chargement…",
-        "failed": "Impossible de charger cette ville : {message}",
         "perSlot": "{unit} / {hours} h à venir",
         "unavailable": "Aucune prévision horaire n’est encore disponible pour cette ville. Réessayez dans une minute."
     },
@@ -176,5 +172,14 @@
         "terms": "Conditions d’utilisation",
         "lastUpdated": "Dernière mise à jour : {date}",
         "englishOnly": "Ce document est disponible uniquement en anglais."
+    },
+    "errors": {
+        "quotaExceeded": "Vous avez utilisé les recherches du jour. Les prévisions enregistrées restent disponibles ; les nouvelles reviennent après la remise à zéro quotidienne.",
+        "rateLimited": "Trop de requêtes. Attendez une minute et réessayez.",
+        "notFound": "Cette ville n’est pas dans Forecast Arena.",
+        "pending": "La prévision est encore en cours de récupération. Réessayez dans un instant.",
+        "unavailable": "Les services météo ne répondent pas. Réessayez plus tard.",
+        "generic": "Une erreur s’est produite. Réessayez dans un instant.",
+        "retry": "Réessayer"
     }
 }
