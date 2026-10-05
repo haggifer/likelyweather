@@ -13,6 +13,7 @@
     },
     "dependencies": {
         "@fa/api-client": "workspace:*",
+        "@fa/chart-core": "workspace:*",
         "@fa/charts": "workspace:*",
         "@fa/messages": "workspace:*",
         "@fa/shared": "workspace:*",

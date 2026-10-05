@@ -1,5 +1,8 @@
 'use client'
 
+import { clamp, getBarWidth, getNowX, getTimeScale, getValueScale } from '@fa/chart-core/plot-geometry'
+import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
+import { getNearestIndex, getSumBarCenter } from '@fa/chart-core/spaghetti-geometry'
 import { HOUR_MS } from '@fa/shared/constants'
 import { formatNumber, formatStepLabel } from '@fa/shared/format'
 import { SLOT_HOURS } from '@fa/shared/slots'
@@ -14,9 +17,7 @@ import { getArrowStep } from './arrow-keys'
 import { DayGrid } from './DayGrid'
 import { useChartTheme } from './hooks/useChartTheme'
 import { useElementWidth } from './hooks/useElementWidth'
-import { clamp, getBarWidth, getNowX, getPointerTime, getTimeScale, getValueScale } from './plot-geometry'
-import { formatYTick, getYDomain, getYTicks } from './scales'
-import { getNearestIndex, getSumBarCenter } from './spaghetti-geometry'
+import { getPointerTime } from './pointer-time'
 import { WindArrows } from './WindArrows'
 
 export interface MedianSeries {

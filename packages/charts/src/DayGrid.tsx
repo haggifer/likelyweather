@@ -1,7 +1,7 @@
+import { getDayLabel } from '@fa/chart-core/day-labels'
 import { getLocalMidnights } from '@fa/shared/format'
 import { ScaleTime } from 'd3-scale'
 import { useMemo } from 'react'
-import { getDayLabel } from './day-labels'
 
 interface Span {
     top: number

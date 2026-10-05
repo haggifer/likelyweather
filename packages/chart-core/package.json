@@ -1,0 +1,31 @@
+{
+    "name": "@fa/chart-core",
+    "private": true,
+    "type": "module",
+    "exports": {
+        "./day-labels": "./src/day-labels.ts",
+        "./plot-geometry": "./src/plot-geometry.ts",
+        "./scales": "./src/scales.ts",
+        "./spaghetti-geometry": "./src/spaghetti-geometry.ts"
+    },
+    "scripts": {
+        "lint": "eslint .",
+        "typecheck": "tsc --noEmit",
+        "test": "vitest run"
+    },
+    "dependencies": {
+        "@fa/shared": "workspace:*",
+        "d3-array": "^3.2.4",
+        "d3-scale": "^4.0.2",
+        "d3-shape": "^3.2.0"
+    },
+    "devDependencies": {
+        "@fa/fixtures": "workspace:*",
+        "@types/d3-array": "^3.2.2",
+        "@types/d3-scale": "^4.0.9",
+        "@types/d3-shape": "^3.2.0",
+        "eslint": "^9",
+        "typescript": "^5",
+        "vitest": "^5.0.1"
+    }
+}
