@@ -61,7 +61,7 @@ Forecast Arena has no accounts, sign-up, forms or uploads. You can use every par
 **_In Short:_** _Your IP address is used in short-lived counters that limit how many requests one visitor can make._
 
 - _Request limits._ Each request to our server comes with your IP address. We count the requests from each address over short time windows (1 minute for reading forecasts and for searches, 1 hour for opening new cities), and the requests that make our server fetch new data from the weather services for you, which are limited per address per day. Each count is stored with the address (for an IPv6 address, only its first half, which identifies your network or device rather than the full address) and deleted automatically when its window ends: after 1 minute, after 1 hour, or at 00:00 UTC for the daily limit. We do not use the address for anything else, and our logs do not record it.
-- _Delivering the website._ Like any website, ours receives your IP address and browser information with each request, because our hosting provider needs them to deliver the pages to you. We do not keep access logs.
+- _Delivering the website._ Like any website, ours receives your IP address and browser information with each request, because our hosting provider needs them to deliver the pages to you. We do not keep access logs. When a request fails, we log the page or API path it asked for, without your IP address or search text, and keep that log for 14 days.
 
 We do not use analytics, advertising or tracking tools.
 
