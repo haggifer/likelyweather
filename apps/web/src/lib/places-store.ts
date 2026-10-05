@@ -1,4 +1,4 @@
-import { parsePlaces, Places } from '@/lib/places'
+import { parsePlaces, Places } from '@fa/shared/places'
 
 const STORAGE_KEY = 'fa.places'
 const PLACES_EVENT = 'placeschange'
