@@ -53,7 +53,6 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('store (database)', () => {
             rows: 0,
             citiesCount: 1,
             warnings: [],
-            archivePath: null,
         })
     })
 

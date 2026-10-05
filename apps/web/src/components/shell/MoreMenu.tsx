@@ -7,7 +7,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@fa/ui/components/dropdown-menu'
-import { BookOpen, Building2, Columns3, History, Menu } from 'lucide-react'
+import { BookOpen, Building2, Columns3, Menu } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 
@@ -30,11 +30,6 @@ export function MoreMenu() {
                 <DropdownMenuItem asChild>
                     <Link href="/compare">
                         <Columns3 /> {t('compare')}
-                    </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                    <Link href="/runs">
-                        <History /> {t('runs')}
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>

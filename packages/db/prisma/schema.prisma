@@ -74,7 +74,6 @@ model CollectionRun {
   rows        Int        @default(0)
   citiesCount Int        @default(0)
   warnings    Json?
-  archivePath String?
   snapshots   Snapshot[]
 
   @@index([issueTime(sort: Desc)])

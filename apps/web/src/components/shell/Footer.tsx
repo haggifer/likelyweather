@@ -27,9 +27,6 @@ export async function Footer() {
                     <Link href="/methodology" className="hover:text-foreground">
                         {t('methodology')}
                     </Link>
-                    <Link href="/runs" className="hover:text-foreground">
-                        {t('runs')}
-                    </Link>
                     <Link href="/privacy" className="hover:text-foreground">
                         {tl('privacy')}
                     </Link>

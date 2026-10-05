@@ -20,13 +20,11 @@
         "more": "More pages",
         "cities": "Cities",
         "compare": "Compare",
-        "runs": "Runs",
         "methodology": "Methodology"
     },
     "footer": {
         "attribution": "Weather data by <openMeteo>Open-Meteo.com</openMeteo> (CC BY 4.0) and <metno>MET Norway</metno>. Geocoding by Open-Meteo.",
         "methodology": "Methodology",
-        "runs": "Runs",
         "repo": "Source code"
     },
     "search": {
@@ -123,42 +121,6 @@
         "empty": "Add cities to compare their forecasts.",
         "remove": "Remove city",
         "sharedAxis": "All panels share one vertical axis so values compare directly."
-    },
-    "runs": {
-        "title": "Collection runs",
-        "description": "Every scheduled run and on-demand preview, with status, row counts, warnings and the raw upstream responses.",
-        "timelineTitle": "Last 30 days",
-        "timelineDescription": "One square per 6-hour model run, in your time zone. Dashed squares are runs that were never collected.",
-        "tableTitle": "Run history",
-        "tableDescription": "{count, plural, one {# run} other {# runs}} stored. Times are in your time zone; hover one for UTC.",
-        "issueTime": "Model run",
-        "origin": "Origin",
-        "status": "Status",
-        "rows": "Rows",
-        "cities": "Cities",
-        "warnings": "Warnings",
-        "duration": "Duration",
-        "archive": "Raw archive",
-        "showMore": "Show {count} more",
-        "empty": "No runs yet. Opening a city collects its forecast.",
-        "origins": {
-            "SCHEDULED": "Scheduled",
-            "PREVIEW": "Preview",
-            "IMPORT": "Import"
-        },
-        "statuses": {
-            "OK": "OK",
-            "PARTIAL": "Partial",
-            "FAILED": "Failed"
-        },
-        "slot": {
-            "OK": "OK",
-            "PARTIAL": "Partial",
-            "FAILED": "Failed",
-            "PREVIEW": "Previews only",
-            "MISSING": "No run",
-            "FUTURE": "Upcoming"
-        }
     },
     "cities": {
         "title": "Tracked cities",

@@ -20,13 +20,11 @@
         "more": "Weitere Seiten",
         "cities": "Städte",
         "compare": "Vergleich",
-        "runs": "Läufe",
         "methodology": "Methodik"
     },
     "footer": {
         "attribution": "Wetterdaten von <openMeteo>Open-Meteo.com</openMeteo> (CC BY 4.0) und <metno>MET Norway</metno>. Geokodierung von Open-Meteo.",
         "methodology": "Methodik",
-        "runs": "Läufe",
         "repo": "Quellcode"
     },
     "search": {
@@ -123,42 +121,6 @@
         "empty": "Füge Städte hinzu, um ihre Vorhersagen zu vergleichen.",
         "remove": "Stadt entfernen",
         "sharedAxis": "Alle Felder teilen eine senkrechte Achse, damit sich Werte direkt vergleichen lassen."
-    },
-    "runs": {
-        "title": "Sammelläufe",
-        "description": "Jeder geplante Lauf und jede Vorschau auf Abruf, mit Status, Zeilenzahl, Warnungen und den Rohantworten der Quellen.",
-        "timelineTitle": "Letzte 30 Tage",
-        "timelineDescription": "Ein Feld pro Modelllauf alle 6 Stunden, in deiner Zeitzone. Gestrichelte Felder sind Läufe, die nicht gesammelt wurden.",
-        "tableTitle": "Laufverlauf",
-        "tableDescription": "{count, plural, one {# Lauf} other {# Läufe}} gespeichert. Zeiten in deiner Zeitzone; zeige auf eine für UTC.",
-        "issueTime": "Modelllauf",
-        "origin": "Herkunft",
-        "status": "Status",
-        "rows": "Zeilen",
-        "cities": "Städte",
-        "warnings": "Warnungen",
-        "duration": "Dauer",
-        "archive": "Rohdaten",
-        "showMore": "{count} weitere anzeigen",
-        "empty": "Noch keine Läufe. Öffne eine Stadt, um ihre Vorhersage zu sammeln.",
-        "origins": {
-            "SCHEDULED": "Geplant",
-            "PREVIEW": "Vorschau",
-            "IMPORT": "Import"
-        },
-        "statuses": {
-            "OK": "OK",
-            "PARTIAL": "Teilweise",
-            "FAILED": "Fehlgeschlagen"
-        },
-        "slot": {
-            "OK": "OK",
-            "PARTIAL": "Teilweise",
-            "FAILED": "Fehlgeschlagen",
-            "PREVIEW": "Nur Vorschauen",
-            "MISSING": "Kein Lauf",
-            "FUTURE": "Kommend"
-        }
     },
     "cities": {
         "title": "Verfolgte Städte",

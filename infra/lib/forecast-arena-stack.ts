@@ -10,7 +10,6 @@ import {
     aws_logs as logs,
     aws_cloudfront_origins as origins,
     RemovalPolicy,
-    aws_s3 as s3,
     aws_scheduler as scheduler,
     aws_sns as sns,
     aws_sqs as sqs,
@@ -74,20 +73,6 @@ const createDecryptSecretsStatement = (stack: Stack) =>
         actions: ['kms:Decrypt'],
         resources: ['*'],
         conditions: { StringEquals: { 'kms:ViaService': `ssm.${stack.region}.amazonaws.com` } },
-    })
-
-const createRawBucket = (scope: Construct) =>
-    new s3.Bucket(scope, 'RawBucket', {
-        blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-        encryption: s3.BucketEncryption.S3_MANAGED,
-        enforceSSL: true,
-        removalPolicy: RemovalPolicy.RETAIN,
-        lifecycleRules: [
-            {
-                transitions: [{ storageClass: s3.StorageClass.INFREQUENT_ACCESS, transitionAfter: Duration.days(90) }],
-                expiration: Duration.days(400),
-            },
-        ],
     })
 
 // The web app and the API are HTTP servers that the Lambda Web Adapter starts through run.sh.
@@ -248,10 +233,8 @@ export class ForecastArenaStack extends Stack {
         const alerts = new sns.Topic(this, 'Alerts')
         alerts.addSubscription(new subscriptions.EmailSubscription(props.alertEmail))
 
-        const rawBucket = createRawBucket(this)
         const environment = {
             SSM_PREFIX,
-            RAW_BUCKET: rawBucket.bucketName,
             NODE_OPTIONS: '--enable-source-maps',
             // One small pool per instance; Neon's pooler multiplexes the instances.
             PG_POOL_MAX: '2',
@@ -277,9 +260,6 @@ export class ForecastArenaStack extends Stack {
         })
         api.addToRolePolicy(readSecrets)
         api.addToRolePolicy(decryptSecrets)
-        rawBucket.grantRead(api)
-        // Preview collects run in the API and archive their raw responses like scheduled runs.
-        rawBucket.grantPut(api)
         const apiUrl = api.addFunctionUrl({ authType: lambda.FunctionUrlAuthType.AWS_IAM })
 
         const collector = new lambda.Function(this, 'Collector', {
@@ -295,7 +275,6 @@ export class ForecastArenaStack extends Stack {
         })
         collector.addToRolePolicy(readSecrets)
         collector.addToRolePolicy(decryptSecrets)
-        rawBucket.grantPut(collector)
 
         const deadLetters = scheduleCollector(this, collector)
 
@@ -335,6 +314,5 @@ export class ForecastArenaStack extends Stack {
         new CfnOutput(this, 'ApiFunctionUrl', { value: apiUrl.url })
         new CfnOutput(this, 'WebFunctionUrl', { value: webUrl.url })
         new CfnOutput(this, 'DeployRoleArn', { value: deployRole.roleArn })
-        new CfnOutput(this, 'RawBucketName', { value: rawBucket.bucketName })
     }
 }

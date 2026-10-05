@@ -82,24 +82,9 @@ describe('ForecastArenaStack', () => {
         })
     })
 
-    it('keeps logs for two weeks and the raw archive private, moving it to Infrequent Access at 90 days', () => {
+    it('keeps logs for two weeks and stores no files', () => {
         template.allResourcesProperties('AWS::Logs::LogGroup', { RetentionInDays: 14 })
-        template.hasResourceProperties('AWS::S3::Bucket', {
-            PublicAccessBlockConfiguration: {
-                BlockPublicAcls: true,
-                BlockPublicPolicy: true,
-                IgnorePublicAcls: true,
-                RestrictPublicBuckets: true,
-            },
-            LifecycleConfiguration: {
-                Rules: [
-                    Match.objectLike({
-                        ExpirationInDays: 400,
-                        Transitions: [{ StorageClass: 'STANDARD_IA', TransitionInDays: 90 }],
-                    }),
-                ],
-            },
-        })
+        template.resourceCountIs('AWS::S3::Bucket', 0)
     })
 })
 
@@ -137,19 +122,6 @@ describe('ForecastArenaStack web', () => {
                 InvokedViaFunctionUrl: true,
             },
             2,
-        )
-    })
-
-    it('lets the API and the collector write run archives, since the API runs preview collects', () => {
-        const writers = Object.values(template.findResources('AWS::IAM::Policy'))
-            .filter((policy) => JSON.stringify(policy).includes('s3:PutObject'))
-            .flatMap((policy) => policy.Properties.Roles.map((role: { Ref: string }) => role.Ref))
-
-        expect(writers).toEqual(
-            expect.arrayContaining([
-                expect.stringMatching(/^ApiServiceRole/),
-                expect.stringMatching(/^CollectorServiceRole/),
-            ]),
         )
     })
 

@@ -62,10 +62,7 @@ export const formatDayLabel = (iso: string, timeZone: string, locale: string, st
 export const formatDateKey = (day: string, locale: string, options: Intl.DateTimeFormatOptions) =>
     formatTime(`${day}T12:00:00Z`, 'UTC', locale, options)
 
-export const formatDateTime = (iso: string, timeZone: string, locale: string) =>
-    formatTime(iso, timeZone, locale, { day: 'numeric', month: 'short', ...CLOCK })
-
-// The viewer's own zone, for times that belong to no city (runs, the quota reset). Read it only after mount: the
+// The viewer's own zone, for times that belong to no city (the quota reset). Read it only after mount: the
 // server renders in UTC, so using it in the first render would mismatch on hydration.
 export const getViewerTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone
 

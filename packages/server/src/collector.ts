@@ -1,16 +1,23 @@
-import { City, Run, RunOrigin, RunStatus } from '@fa/shared/api'
+import { City, RunOrigin } from '@fa/shared/api'
 import { MODEL_BY_ID, ModelId, MODELS, OPEN_METEO_MODELS } from '@fa/shared/models'
 import { compactIso, floorToStep, toIsoMinute } from '@fa/shared/time'
 import { ModelSeries } from '@fa/shared/variables'
 import { chunk, delay } from 'es-toolkit'
-import { writeRunArchive } from './archive'
 import { getErrorMessage } from './errors'
 import { fetchMetno, parseMetno } from './sources/metno'
 import { fetchOpenMeteoForecast, OPEN_METEO_BATCH_SIZE, parseOpenMeteoModels } from './sources/open-meteo'
-import { getLatestSnapshot, SeriesGrid, Snapshot, SnapshotMeta, updateCities, upsertRun, writeSnapshot } from './store'
+import {
+    getLatestSnapshot,
+    Run,
+    RunStatus,
+    SeriesGrid,
+    Snapshot,
+    SnapshotMeta,
+    updateCities,
+    upsertRun,
+    writeSnapshot,
+} from './store'
 import { getWindowSteps } from './window'
-
-type Archive = (name: string, body: unknown) => Promise<unknown>
 
 type Log = (message: string) => void
 
@@ -28,7 +35,6 @@ export interface CollectResult {
 
 interface FetchModelsOptions {
     previous?: Map<number, Snapshot | null>
-    archive?: Archive
     log?: Log
 }
 
@@ -88,7 +94,7 @@ const getMissingModelWarnings = (parsed: Partial<Record<ModelId, ModelSeries>>, 
         (model) => `${model} returned no data for ${city.name}`,
     )
 
-const fetchOpenMeteoModels = async (cities: City[], steps: string[], archive: Archive, log: Log) => {
+const fetchOpenMeteoModels = async (cities: City[], steps: string[], log: Log) => {
     const batches = chunk(cities, OPEN_METEO_BATCH_SIZE)
     const models: ModelsByCity = new Map(cities.map((c) => [c.id, {}]))
     const warnings: string[] = []
@@ -97,7 +103,6 @@ const fetchOpenMeteoModels = async (cities: City[], steps: string[], archive: Ar
         try {
             log(`Open-Meteo batch ${i + 1}/${batches.length}: ${batch.length} cities`)
             const results = await fetchOpenMeteoForecast(batch)
-            await archive(`open-meteo-${i + 1}`, results)
 
             batch.forEach((city, j) => {
                 const parsed = parseOpenMeteoModels(results[j], steps)
@@ -113,12 +118,7 @@ const fetchOpenMeteoModels = async (cities: City[], steps: string[], archive: Ar
     return { models, warnings }
 }
 
-const fetchMetnoModels = async (
-    cities: City[],
-    steps: string[],
-    previous: Map<number, Snapshot | null>,
-    archive: Archive,
-) => {
+const fetchMetnoModels = async (cities: City[], steps: string[], previous: Map<number, Snapshot | null>) => {
     const series = new Map<number, ModelSeries>()
     const lastModified = new Map<number, string>()
     const warnings: string[] = []
@@ -141,7 +141,6 @@ const fetchMetnoModels = async (
 
             if (!res.body) continue
 
-            await archive(`metno-${city.id}`, res.body)
             const parsed = parseMetno(res.body, steps)
 
             if (parsed) series.set(city.id, parsed)
@@ -165,10 +164,10 @@ const addMetno = (models: ModelsByCity, metno: Map<number, ModelSeries>) => {
 const fetchModels = async (
     cities: City[],
     steps: string[],
-    { previous = new Map(), archive = async () => {}, log = () => {} }: FetchModelsOptions = {},
+    { previous = new Map(), log = () => {} }: FetchModelsOptions = {},
 ): Promise<FetchModelsResult> => {
-    const openMeteo = await fetchOpenMeteoModels(cities, steps, archive, log)
-    const metno = await fetchMetnoModels(cities, steps, previous, archive)
+    const openMeteo = await fetchOpenMeteoModels(cities, steps, log)
+    const metno = await fetchMetnoModels(cities, steps, previous)
 
     const models = addMetno(openMeteo.models, metno.series)
 
@@ -230,17 +229,10 @@ export const collect = async ({
     const runId = getRunId(origin, issueTime, origin === 'PREVIEW' ? cities[0]?.id : undefined)
     const startedAt = new Date().toISOString()
     const steps = getWindowSteps(new Date(issueTime))
-    const files: Record<string, unknown> = {}
 
     const previous = await getPreviousMetno(cities)
     const recollected = getRecollectedCityIds(cities, previous, issueTime)
-    const fetched = await fetchModels(cities, steps, {
-        previous,
-        archive: async (name, body) => {
-            files[name] = body
-        },
-        log,
-    })
+    const fetched = await fetchModels(cities, steps, { previous, log })
     const { warnings } = fetched
     const fetchedAt = new Date().toISOString()
 
@@ -256,7 +248,6 @@ export const collect = async ({
         rows: 0,
         citiesCount: 0,
         warnings,
-        archivePath: null,
     }
     const rows = countRows(snapshots)
     const status = checkRunStatus(rows, warnings)
@@ -269,14 +260,6 @@ export const collect = async ({
     await updateCities((all) => applyAvailableModels(all, available, isCountedRun))
 
     Object.assign(run, { finishedAt: fetchedAt, status, rows, citiesCount: snapshots.length })
-
-    const archivePath = await writeRunArchive({ run, files }).catch((error) => {
-        run.warnings.push(`Raw archive not written: ${getShortErrorMessage(error)}`)
-
-        return null
-    })
-
-    run.archivePath = archivePath
     await upsertRun(run)
     log(`Run ${runId}: ${status}, ${rows} rows, ${snapshots.length} cities, ${warnings.length} warnings`)
 

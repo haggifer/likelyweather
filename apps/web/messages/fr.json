@@ -20,13 +20,11 @@
         "more": "Autres pages",
         "cities": "Villes",
         "compare": "Comparer",
-        "runs": "Exécutions",
         "methodology": "Méthodologie"
     },
     "footer": {
         "attribution": "Données météo : <openMeteo>Open-Meteo.com</openMeteo> (CC BY 4.0) et <metno>MET Norway</metno>. Géocodage : Open-Meteo.",
         "methodology": "Méthodologie",
-        "runs": "Exécutions",
         "repo": "Code source"
     },
     "search": {
@@ -123,42 +121,6 @@
         "empty": "Ajoutez des villes pour comparer leurs prévisions.",
         "remove": "Retirer la ville",
         "sharedAxis": "Tous les panneaux partagent un même axe vertical pour comparer les valeurs directement."
-    },
-    "runs": {
-        "title": "Exécutions de collecte",
-        "description": "Chaque exécution programmée et chaque aperçu à la demande, avec statut, nombre de lignes, avertissements et réponses brutes des sources.",
-        "timelineTitle": "30 derniers jours",
-        "timelineDescription": "Un carré par exécution des modèles, toutes les 6 heures, dans votre fuseau horaire. Les carrés en pointillés sont des exécutions non collectées.",
-        "tableTitle": "Historique des exécutions",
-        "tableDescription": "{count, plural, one {# exécution stockée} other {# exécutions stockées}}. Heures dans votre fuseau horaire ; survolez-en une pour l’UTC.",
-        "issueTime": "Exécution",
-        "origin": "Origine",
-        "status": "Statut",
-        "rows": "Lignes",
-        "cities": "Villes",
-        "warnings": "Avertissements",
-        "duration": "Durée",
-        "archive": "Archive brute",
-        "showMore": "Afficher {count} de plus",
-        "empty": "Aucune exécution pour l’instant. Ouvrez une ville pour collecter sa prévision.",
-        "origins": {
-            "SCHEDULED": "Programmée",
-            "PREVIEW": "Aperçu",
-            "IMPORT": "Import"
-        },
-        "statuses": {
-            "OK": "OK",
-            "PARTIAL": "Partielle",
-            "FAILED": "Échouée"
-        },
-        "slot": {
-            "OK": "OK",
-            "PARTIAL": "Partielle",
-            "FAILED": "Échouée",
-            "PREVIEW": "Aperçus seulement",
-            "MISSING": "Aucune exécution",
-            "FUTURE": "À venir"
-        }
     },
     "cities": {
         "title": "Villes suivies",

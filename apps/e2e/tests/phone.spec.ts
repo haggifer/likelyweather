@@ -6,7 +6,6 @@ const PAGES = [
     '/',
     `/city/${KYIV}`,
     `/compare?cities=${KYIV},${LONDON}`,
-    '/runs',
     '/cities',
     '/methodology',
     '/privacy',
@@ -89,19 +88,7 @@ test('model names in the phone legend wrap instead of clipping', async ({ page, 
     }
 })
 
-test('runs and cities are cards on phones and tables elsewhere', async ({ page, isMobile }) => {
-    // Opening a city makes sure at least one run exists.
-    await page.goto(`/city/${KYIV}`)
-    await expect(page.locator('main svg[role=img]').first()).toBeVisible()
-
-    await page.goto('/runs')
-
-    const runsList = page.getByRole('list', { name: 'Run history' })
-    const runsTable = page.locator('main table').last()
-
-    await expect(isMobile ? runsList : runsTable).toBeVisible()
-    await expect(isMobile ? runsTable : runsList).toBeVisible({ visible: false })
-
+test('cities are cards on phones and a table elsewhere', async ({ page, isMobile }) => {
     await page.goto('/cities')
 
     const citiesList = page.getByRole('list', { name: 'Tracked cities' })
@@ -109,20 +96,4 @@ test('runs and cities are cards on phones and tables elsewhere', async ({ page, 
 
     await expect(isMobile ? citiesList : citiesTable).toBeVisible()
     await expect(isMobile ? citiesTable : citiesList).toBeVisible({ visible: false })
-})
-
-test('the runs table renders rows after widening past the phone breakpoint', async ({ page, isMobile }) => {
-    test.skip(
-        !isMobile,
-        'non-regression guard: the table only mounts once it becomes visible, starting from phone width',
-    )
-
-    // Opening a city makes sure at least one run exists.
-    await page.goto(`/city/${KYIV}`)
-    await expect(page.locator('main svg[role=img]').first()).toBeVisible()
-
-    await page.goto('/runs')
-    await page.setViewportSize({ width: 1280, height: 900 })
-
-    await expect(page.locator('main table tbody tr:not([aria-hidden])').first()).toBeVisible()
 })

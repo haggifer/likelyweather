@@ -243,7 +243,7 @@ Decided by the author after comparing it with a Postgres-only design: Redis stay
 - The Next.js route handlers became an Express 5 app with the same paths, zod schemas, error shape, cache headers and limits. Next.js forwards `/api/*` to it locally (`API_ORIGIN`); on AWS CloudFront routes `/api/*` before requests reach Next.js.
 - **Client identity** comes from `CloudFront-Viewer-Address`; `X-Forwarded-For` is only trusted when that header is absent (local development).
 - **Tracking a city no longer pre-fetches its preview in the background.** A Lambda function is frozen as soon as its response is sent, so background work would stall; the page's first `/latest` request fetches it.
-- **Run archives** are one JSON document per run (the run plus every raw response), written to `RAW_DIR` locally or to S3 when `RAW_BUCKET` is set. The archive endpoint serves the document locally and redirects to a 10-minute presigned S3 URL on AWS, so the web app's link works in both.
+- **Run archives** are one JSON document per run (the run plus every raw response), written to `RAW_DIR` locally or to S3 when `RAW_BUCKET` is set. The archive endpoint serves the document locally and redirects to a 10-minute presigned S3 URL on AWS, so the web app's link works in both. Removed with the runs page (P44).
 - The city page's title reads the city list, not `/cities/:slug`, which records a view.
 - The API is bundled with esbuild into one ESM file; the same bundle runs under Node locally (`pnpm --filter @fa/api start`) and behind the Lambda Web Adapter.
 
@@ -283,7 +283,7 @@ Amplify Hosting documents Next.js support up to version 15, and Next.js 16 suppo
 - **POSTs through CloudFront** to an IAM-protected function URL need the body's SHA-256 in `x-amz-content-sha256`; the web client sends it (`apps/web/src/lib/api.ts`). The origin request policy must not list that header: CloudFront reserves it, rejects the policy (found on the first deploy) and uses the viewer's value when OAC signs.
 - **CloudFront needs two permissions per function URL.** Function URLs created since October 2025 require `lambda:InvokeFunction` (with `lambda:InvokedViaFunctionUrl`) besides `lambda:InvokeFunctionUrl`; CDK's `FunctionUrlOrigin.withOriginAccessControl` (aws-cdk-lib 2.271) only grants the latter, so the stack adds the former for the web and API functions. Without it every request through CloudFront got 403 on the first deploy.
 - **Schedule**: EventBridge Scheduler `cron(0 0/6 * * ? *)`, 2 retries within an hour, then an SQS dead-letter queue; alarms on collector errors and on the queue, e-mailed through SNS.
-- **Storage**: a private, encrypted S3 bucket for run archives, Infrequent Access at 90 days, deleted at 400; logs kept 14 days.
+- **Storage**: a private, encrypted S3 bucket for run archives, Infrequent Access at 90 days, deleted at 400; logs kept 14 days. The bucket left the stack with the archives (P44).
 - **Deploys**: a GitHub OIDC provider and a role only the repository's default branch can assume, allowed only to assume CDK's bootstrap roles; `.github/workflows/deploy.yml` runs once the role ARN is set as a repository variable.
 - **Budget**: $5 a month, e-mail at 80 % actual and 100 % forecast. Template tests assert there is no VPC, NAT gateway, ElastiCache or RDS.
 - Not done: `cdk diff` on pull requests (the deploy role is limited to the default branch), a custom domain.
@@ -292,10 +292,10 @@ Amplify Hosting documents Next.js support up to version 15, and Next.js 16 suppo
 
 Below 640 px (Tailwind `sm`) phones get their own layouts where the desktop ones did not fit; the layout at 640 px and wider is unchanged, while shorter day labels, the methodology model list and the sticky time column in the table view apply at every width. The frozen design (P25) stays: only layout, sizes and copy differ.
 
-- **CSS switching.** Phone and desktop variants are chosen with `max-sm:` / `sm:` utilities (tables and their card lists are both rendered, one hidden), so server HTML matches the first client render. Touch copy uses `pointer-coarse:`. The runs table is the one exception: it is mounted only at 640 px and wider (`useMediaQuery`), because a virtualized table that is mounted while hidden has no size to measure; its card list still switches in CSS like everything else.
+- **CSS switching.** Phone and desktop variants are chosen with `max-sm:` / `sm:` utilities (tables and their card lists are both rendered, one hidden), so server HTML matches the first client render. Touch copy uses `pointer-coarse:`. The runs table was the one exception until the runs page was removed (P44): it was mounted only at 640 px and wider (`useMediaQuery`), because a virtualized table that is mounted while hidden has no size to measure.
 - **Dashboard.** A compact header, the variable switch pinned under the top bar, the model list inside the chart card in two columns, a swipeable row of disagreement tiles (a named, focusable `role="region"` so keyboards can scroll it), a sticky time column in the table view. The chart is 280 px high below 480 px of width.
 - **Day labels** pick the longest form that fits ("Sat 26 Sept", "Sat 26", "Sat") instead of disappearing below a fixed width.
-- **Runs and cities** are card lists on phones; run history shows 30 runs at a time.
+- **Runs and cities** are card lists on phones; run history shows 30 runs at a time. The runs page is gone (P44).
 - **Not done on purpose:** a bottom tab bar (it would promote secondary pages to the level of the forecast) and swiping between variables (it would fight touch scrubbing, P28).
 - **Landscape phones** are usually wider than 640 px and get the tablet layout; a height-based phone layer was left out.
 
@@ -315,7 +315,7 @@ Decided by the author, applying their code-style rules to the whole repository i
 Decided by the author: every time the UI shows is local first, and UTC appears only as hover text.
 
 - **City times stay in the city's zone**, as the charts already were (P18, P21). The forecast chip on the dashboard and the landing overview no longer leads with UTC ("Updated 12:00 UTC · 08:00 local") or says "Stale" without saying what is old; see the age chip below. Dates on the cities page are in each city's zone too.
-- **Times that belong to no city use the viewer's zone**: the runs page and the quota reset. The runs timeline puts the 00, 06, 12 and 18 UTC runs on the viewer's calendar (`apps/web/src/components/runs/timeline-grid.ts`): a column per local day, a row per run in local clock order, so a run that starts after local midnight sits in the next day's column. Row labels use today's offset; after a daylight-saving change, older squares sit an hour off their label, and their tooltips stay exact. The viewer's zone is read only after mount (the server renders in UTC), so these views render from client-side data.
+- **Times that belong to no city use the viewer's zone**: the runs page and the quota reset. The runs timeline puts the 00, 06, 12 and 18 UTC runs on the viewer's calendar (`apps/web/src/components/runs/timeline-grid.ts`): a column per local day, a row per run in local clock order, so a run that starts after local midnight sits in the next day's column. Row labels use today's offset; after a daylight-saving change, older squares sit an hour off their label, and their tooltips stay exact. The viewer's zone is read only after mount (the server renders in UTC), so these views render from client-side data. The runs page and its timeline were removed (P44).
 - **Model runs are still named by UTC in the methodology copy** ("collected at 00, 06, 12 and 18 UTC"), because that is how the forecast centres publish them.
 - **The forecast chip shows the run's age** ("19 hours old"), amber past 9 hours, with the run's city and UTC times in its tooltip. A clock time on the chip read as the viewer's own time (a New York run "from Thu 14:00" looked 7 hours off to a viewer in Kyiv); an age reads the same everywhere.
 - **The now line is always drawn, at the exact current time** (overview, dashboard, Compare), with the past shaded and the readouts on the slot nearest to now. Before, it appeared only once the current time had moved into a later 3-hour slot than the one the chart starts at, on the idea that "now" is the chart start (P19, P21, P22). It is not: the chart starts at the beginning of the slot, so the current time can sit up to 3 hours in with no line. Refresh still enables only once the chart is a slot old.
@@ -352,3 +352,11 @@ Decided by the author: the "Start with" chips become the viewer's own places, an
 ## P43. The CSV import is removed (2026-10-05)
 
 `pnpm import:csv` loaded the CSVs of the Python collector this project grew out of as IMPORT runs. The UI shows only each city's latest run, so imported history was visible nowhere but the runs table, and the author asked for it to go. The importer, its test and the CSV fixtures are deleted; the `IMPORT` value stays in the database's `RunOrigin` enum for rows already stored.
+
+## P44. No runs page and no run archives (2026-10-05)
+
+Decided by the author. With collection on demand only (P46), the runs page listed which cities other visitors had opened and served no reader of the forecasts; upstream failures still show in the API's logs and in the stored run rows.
+
+- **Removed:** the `/runs` page and its links, `/api/runs`, `/api/runs/timeline` and `/api/runs/:id/archive`, the run schemas in the API contract (`Run` is now the store's own type), the raw archive (`archive.ts`, `RAW_DIR`, `RAW_BUCKET`), the S3 bucket and its grants in the stack, and TanStack Table and Virtual, which only the runs table used.
+- **Kept:** `CollectionRun` rows, because every snapshot references its run; they record status, row counts and warnings. The migration `drop_run_archive` drops `archivePath`.
+- **The bucket is retained by AWS** (`RemovalPolicy.RETAIN`): leaving the stack orphans it with its archives, to be deleted by hand.

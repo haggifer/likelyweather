@@ -2,7 +2,7 @@
 // routes did not change when the JSON-file store was replaced.
 import { getPrisma, Prisma } from '@fa/db/client'
 import { ensureForecastPartitions, getWeekStart } from '@fa/db/partitions'
-import { City, CityStatus, Run, RunOrigin } from '@fa/shared/api'
+import { City, CityStatus, RunOrigin } from '@fa/shared/api'
 import { HOUR_MS } from '@fa/shared/constants'
 import { ModelId } from '@fa/shared/models'
 import { ModelSeries, SeriesField } from '@fa/shared/variables'
@@ -25,6 +25,21 @@ export interface SnapshotMeta {
 
 // One run for one city on the hourly grid (`getWindowSteps`).
 export interface Snapshot extends SnapshotMeta, SeriesGrid {}
+
+export type RunStatus = 'OK' | 'PARTIAL' | 'FAILED'
+
+export interface Run {
+    id: string
+    issueTime: string
+    origin: RunOrigin
+    cityId: number | null
+    startedAt: string
+    finishedAt: string | null
+    status: RunStatus
+    rows: number
+    citiesCount: number
+    warnings: string[]
+}
 
 type CityRow = Prisma.CityGetPayload<object>
 type RunRow = Prisma.CollectionRunGetPayload<object>
@@ -100,7 +115,6 @@ const toRun = (row: RunRow): Run => ({
     rows: row.rows,
     citiesCount: row.citiesCount,
     warnings: (row.warnings ?? []) as string[],
-    archivePath: row.archivePath,
 })
 
 const toMeta = (row: SnapshotRow): SnapshotMeta => ({
@@ -210,12 +224,6 @@ export const getRuns = async () => {
     const rows = await getPrisma().collectionRun.findMany({ orderBy: { startedAt: 'desc' } })
 
     return rows.map(toRun)
-}
-
-export const getRun = async (id: string) => {
-    const row = await getPrisma().collectionRun.findUnique({ where: { id } })
-
-    return row ? toRun(row) : undefined
 }
 
 export const upsertRun = async (run: Run) => {

@@ -1,4 +1,3 @@
-import { getRunArchive } from '@fa/server/archive'
 import {
     ensureFreshSnapshot,
     getPreviewRunId,
@@ -7,11 +6,10 @@ import {
     toCityDetail,
     trackCity,
 } from '@fa/server/cities'
-import { HttpError } from '@fa/server/errors'
 import { getLatestPayload } from '@fa/server/latest'
 import { getQuota, quotaExceeded, trySpendQuota } from '@fa/server/quota'
 import { searchPlaces } from '@fa/server/sources/geocoding'
-import { getCities, getRun, getRuns } from '@fa/server/store'
+import { getCities, getRuns, Run } from '@fa/server/store'
 import {
     CitiesQuerySchema,
     CityStatus,
@@ -22,17 +20,10 @@ import {
     GeocodeResponse,
     HealthResponse,
     LatestQuerySchema,
-    Run,
-    RunsQuerySchema,
-    RunsResponse,
-    TimelineQuerySchema,
-    TimelineResponse,
     TrackBodySchema,
     TrackResponse,
 } from '@fa/shared/api'
-import { DAY_MS } from '@fa/shared/constants'
 import { MODELS } from '@fa/shared/models'
-import { toIsoMinute } from '@fa/shared/time'
 import { Variable } from '@fa/shared/variables'
 import { Router } from 'express'
 import { getClientIp, getParam, parseBody, parseQuery, rateLimit, sendJson } from './http'
@@ -69,16 +60,6 @@ const getCompareItem = async (slug: string, variable: Variable, client: string) 
     const latest = await getLatestPayload(meta, variable)
 
     return { city, latest }
-}
-
-const getArchivedRun = async (id: string) => {
-    const run = await getRun(id)
-
-    if (!run) return null
-
-    const archive = await getRunArchive(run.id)
-
-    return archive && { run, archive }
 }
 
 export const apiRouter = Router()
@@ -160,49 +141,4 @@ apiRouter.get('/compare', rateLimit('read'), async (req, res) => {
     const items = await Promise.all(cities.map((slug) => getCompareItem(slug, variable, client)))
 
     sendJson(res, { items } satisfies CompareResponse)
-})
-
-apiRouter.get('/runs', rateLimit('read'), async (req, res) => {
-    const { limit, cursor } = parseQuery(req, RunsQuerySchema)
-
-    const runs = await getRuns()
-    const start = cursor ? runs.findIndex((r) => r.id === cursor) + 1 : 0
-    const items = runs.slice(start, start + limit)
-    const nextCursor = runs[start + limit] ? items.at(-1)?.id : undefined
-
-    sendJson(res, { items, nextCursor } satisfies RunsResponse, { isCacheable: false })
-})
-
-apiRouter.get('/runs/timeline', rateLimit('read'), async (req, res) => {
-    const { days } = parseQuery(req, TimelineQuerySchema)
-    const to = new Date()
-    const from = new Date(to.getTime() - days * DAY_MS)
-
-    const allRuns = await getRuns()
-    const runs = allRuns
-        .filter((r) => new Date(r.issueTime) >= from)
-        .map(({ id, issueTime, status, origin }) => ({ id, issueTime, status, origin }))
-
-    sendJson(res, { from: toIsoMinute(from), to: toIsoMinute(to), runs } satisfies TimelineResponse, {
-        isCacheable: false,
-    })
-})
-
-// On AWS a redirect to a presigned S3 URL valid for 10 minutes; locally the stored document itself.
-apiRouter.get('/runs/:id/archive', rateLimit('read'), async (req, res) => {
-    const id = getParam(req, 'id')
-
-    const found = await getArchivedRun(id)
-
-    if (!found) throw new HttpError(404, 'run_not_found', `No archive for run "${id}"`)
-
-    const { run, archive } = found
-
-    if ('url' in archive) return res.redirect(302, archive.url)
-
-    res.set({
-        'Content-Type': 'application/json; charset=utf-8',
-        'Content-Disposition': `inline; filename="${run.id}.json"`,
-        'Cache-Control': 'public, max-age=300',
-    }).send(archive.body)
 })

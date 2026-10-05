@@ -9,7 +9,6 @@ export enum CityStatus {
     Queued = 'QUEUED',
 }
 
-export type RunStatus = 'OK' | 'PARTIAL' | 'FAILED'
 export type RunOrigin = 'SCHEDULED' | 'PREVIEW' | 'IMPORT'
 
 export enum Locale {
@@ -128,40 +127,6 @@ export const CompareResponseSchema = z.object({
     items: z.array(z.object({ city: CitySchema, latest: LatestResponseSchema.nullable() })),
 })
 export type CompareResponse = z.infer<typeof CompareResponseSchema>
-
-export const RunSchema = z.object({
-    id: z.string(),
-    issueTime: z.string(),
-    origin: z.enum(['SCHEDULED', 'PREVIEW', 'IMPORT']),
-    cityId: z.number().nullable(),
-    startedAt: z.string(),
-    finishedAt: z.string().nullable(),
-    status: z.enum(['OK', 'PARTIAL', 'FAILED']),
-    rows: z.number(),
-    citiesCount: z.number(),
-    warnings: z.array(z.string()),
-    archivePath: z.string().nullable(),
-})
-export type Run = z.infer<typeof RunSchema>
-
-export const RunsQuerySchema = z.strictObject({
-    limit: z.coerce.number().int().min(1).max(500).default(200),
-    cursor: z.string().optional(),
-})
-
-export const RunsResponseSchema = z.object({ items: z.array(RunSchema), nextCursor: z.string().optional() })
-export type RunsResponse = z.infer<typeof RunsResponseSchema>
-
-export const TimelineQuerySchema = z.strictObject({
-    days: z.coerce.number().int().min(1).max(90).default(30),
-})
-
-export const TimelineResponseSchema = z.object({
-    from: z.string(),
-    to: z.string(),
-    runs: z.array(RunSchema.pick({ id: true, issueTime: true, status: true, origin: true })),
-})
-export type TimelineResponse = z.infer<typeof TimelineResponseSchema>
 
 export const HealthResponseSchema = z.object({
     ok: z.boolean(),
