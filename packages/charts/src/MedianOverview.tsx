@@ -81,11 +81,15 @@ const getSummaryValues = (s: MedianSeries, from: Date) => {
     })
 }
 
-const formatTotal = (values: number[]) =>
-    formatNumber(
-        values.reduce((sum, v) => sum + v, 0),
-        1,
-    )
+const getSlotCount = (s: MedianSeries) =>
+    s.steps.length > 1
+        ? (SUMMARY_HOURS * HOUR_MS) / (new Date(s.steps[1]).getTime() - new Date(s.steps[0]).getTime())
+        : Infinity
+
+// A total over fewer slots than the window holds (an old run served without a refresh ends early) would read as a
+// drier forecast than it is, so it is shown as unknown.
+const formatTotal = (values: number[], slotCount: number) =>
+    formatNumber(values.length >= slotCount ? values.reduce((sum, v) => sum + v, 0) : null, 1)
 
 const formatRange = (values: number[], decimals: number) => ({
     min: formatNumber(values.length ? Math.min(...values) : null, decimals),
@@ -197,7 +201,7 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                     const isSum = variable === Variable.Precip
                     const upcoming = getSummaryValues(s, summaryStart)
                     const summary = isSum
-                        ? t('total', { value: formatTotal(upcoming), unit: info.unit })
+                        ? t('total', { value: formatTotal(upcoming, getSlotCount(s)), unit: info.unit })
                         : t('range', { ...formatRange(upcoming, info.decimals), unit: info.unit })
 
                     return (
