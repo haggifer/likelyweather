@@ -39,16 +39,19 @@ const getClientIp = (req: Request) => {
 
 export const getClientKey = (req: Request) => toClientKey(getClientIp(req))
 
+export const enforceRateLimit = async (bucket: RateBucket, client: string) => {
+    if (ARE_LIMITS_DISABLED) return
+
+    const { limit, windowSeconds } = RATE_LIMITS[bucket]
+    const count = await incrementWindow(`ratelimit:${bucket}:${client}`, windowSeconds)
+
+    if (count > limit) throw new HttpError(429, 'rate_limited', `Too many ${bucket} requests, slow down`)
+}
+
 export const rateLimit =
     (bucket: RateBucket): RequestHandler =>
     async (req, _res, next) => {
-        if (ARE_LIMITS_DISABLED) return next()
-
-        const { limit, windowSeconds } = RATE_LIMITS[bucket]
-        const count = await incrementWindow(`ratelimit:${bucket}:${getClientKey(req)}`, windowSeconds)
-
-        if (count > limit) throw new HttpError(429, 'rate_limited', `Too many ${bucket} requests, slow down`)
-
+        await enforceRateLimit(bucket, getClientKey(req))
         next()
     }
 
@@ -73,8 +76,15 @@ export const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
         return sendError(res, 400, 'invalid_json', 'Request body must be JSON')
     }
 
+    const status = (error as { status?: number }).status
+
+    // body-parser's own errors (a body too large, a bad charset) carry their 4xx status and a safe message.
+    if (status && status >= 400 && status < 500)
+        return sendError(res, status, 'invalid_request', getErrorMessage(error))
+
+    // Anything else is unexpected (the database, a bug): logged in full, answered without internals.
     req.log?.error(error)
-    sendError(res, 502, 'upstream_error', getErrorMessage(error))
+    sendError(res, 500, 'internal_error', 'Something went wrong; try again in a moment')
 }
 
 export const notFound: RequestHandler = (req, res) =>

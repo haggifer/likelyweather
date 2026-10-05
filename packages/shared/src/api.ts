@@ -43,7 +43,8 @@ export const GeocodeResponseSchema = z.object({ results: z.array(GeocodeResultSc
 export type GeocodeResponse = z.infer<typeof GeocodeResponseSchema>
 
 export const TrackBodySchema = z.strictObject({
-    geocodeId: z.number().int().positive(),
+    // Open-Meteo geocoding ids fit Postgres INT4, the column type.
+    geocodeId: z.number().int().positive().max(2_147_483_647),
     locale: LocaleSchema.optional(),
 })
 

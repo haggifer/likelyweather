@@ -29,6 +29,21 @@ describe('API without the database', () => {
         expect(res.body.error.code).toBe('invalid_json')
     })
 
+    it('rejects an oversized body with 413, not as an upstream failure', async () => {
+        const body = JSON.stringify({ geocodeId: 1, padding: 'x'.repeat(20_000) })
+        const res = await request(app).post('/api/cities/track').set('Content-Type', 'application/json').send(body)
+
+        expect(res.status).toBe(413)
+        expect(res.body.error.code).toBe('invalid_request')
+    })
+
+    it('rejects a geocoding id beyond the database column before touching it', async () => {
+        const res = await request(app).post('/api/cities/track').send({ geocodeId: 3_000_000_000 })
+
+        expect(res.status).toBe(400)
+        expect(res.body.error.code).toBe('invalid_request')
+    })
+
     it('answers unknown routes with 404', async () => {
         const res = await request(app).get('/api/nope')
 
