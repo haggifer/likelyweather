@@ -42,19 +42,25 @@ const getPrecipEndingAt = (byTime: Map<string, MetnoEntry>, step: string) => {
     return amount === undefined ? null : round(amount)
 }
 
-export const fetchMetno = async (lat: number, lon: number, ifModifiedSince?: string): Promise<MetnoResult> => {
-    const params = new URLSearchParams({ lat: lat.toFixed(4), lon: lon.toFixed(4) })
-    const headers: Record<string, string> = { 'User-Agent': env.METNO_USER_AGENT }
-
-    if (ifModifiedSince) headers['If-Modified-Since'] = ifModifiedSince
-
-    const res = await fetchWithRetry(`${env.METNO_BASE}/weatherapi/locationforecast/2.0/compact?${params}`, { headers })
-
+const readMetno = async (res: Response, ifModifiedSince?: string): Promise<MetnoResult> => {
     if (res.status === 304) return { status: 304, body: null, lastModified: ifModifiedSince ?? null }
 
     const body: MetnoBody = await res.json()
 
     return { status: 200, body, lastModified: res.headers.get('last-modified') }
+}
+
+export const fetchMetno = (lat: number, lon: number, ifModifiedSince?: string): Promise<MetnoResult> => {
+    const params = new URLSearchParams({ lat: lat.toFixed(4), lon: lon.toFixed(4) })
+    const headers: Record<string, string> = { 'User-Agent': env.METNO_USER_AGENT }
+
+    if (ifModifiedSince) headers['If-Modified-Since'] = ifModifiedSince
+
+    return fetchWithRetry(
+        `${env.METNO_BASE}/weatherapi/locationforecast/2.0/compact?${params}`,
+        (res) => readMetno(res, ifModifiedSince),
+        { headers },
+    )
 }
 
 export const parseMetno = (body: MetnoBody, steps: string[]): ModelSeries | null => {

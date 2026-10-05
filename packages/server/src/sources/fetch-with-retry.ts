@@ -18,18 +18,21 @@ class UpstreamError extends Error {
     }
 }
 
-export const fetchWithRetry = async (
+// `read` consumes the body inside the attempt: the timeout also covers the body, and a body that arrives too slowly
+// is retried like a request that never answered.
+export const fetchWithRetry = async <T>(
     url: string,
+    read: (res: Response) => Promise<T>,
     init: RequestInit = {},
     { attempts = 3, timeoutMs = 20_000, backoffMs = 1_000 }: RetryOptions = {},
-) => {
+): Promise<T> => {
     let lastError: unknown
 
     for (let attempt = 1; attempt <= attempts; attempt++) {
         try {
             const res = await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs), cache: 'no-store' })
 
-            if (res.ok || res.status === 304) return res
+            if (res.ok || res.status === 304) return await read(res)
 
             const body = await res.text()
             const reason = body.slice(0, 200)
@@ -47,9 +50,5 @@ export const fetchWithRetry = async (
     throw lastError instanceof Error ? lastError : new Error(String(lastError))
 }
 
-export const fetchJson = async <T>(url: string, init?: RequestInit, options?: RetryOptions) => {
-    const res = await fetchWithRetry(url, init, options)
-    const body: T = await res.json()
-
-    return body
-}
+export const fetchJson = <T>(url: string, init?: RequestInit, options?: RetryOptions) =>
+    fetchWithRetry(url, (res): Promise<T> => res.json(), init, options)
