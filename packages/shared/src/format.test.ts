@@ -7,6 +7,22 @@ describe('time zones', () => {
         expect(getTimeZoneOffsetMinutes(new Date('2026-01-15T12:00Z'), 'America/New_York')).toBe(-300)
     })
 
+    it('finds local midnight on the days Sydney changes its clocks', () => {
+        const spring = getLocalMidnights(
+            new Date('2026-10-03T00:00Z'),
+            new Date('2026-10-05T00:00Z'),
+            'Australia/Sydney',
+        )
+        const autumn = getLocalMidnights(
+            new Date('2026-04-04T00:00Z'),
+            new Date('2026-04-06T00:00Z'),
+            'Australia/Sydney',
+        )
+
+        expect(spring.map((d) => d.toISOString())).toEqual(['2026-10-03T14:00:00.000Z', '2026-10-04T13:00:00.000Z'])
+        expect(autumn.map((d) => d.toISOString())).toEqual(['2026-04-04T13:00:00.000Z', '2026-04-05T14:00:00.000Z'])
+    })
+
     it('lists local midnights inside a UTC range', () => {
         const midnights = getLocalMidnights(new Date('2026-09-22T12:00Z'), new Date('2026-09-24T12:00Z'), 'Europe/Kyiv')
 

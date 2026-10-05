@@ -102,6 +102,14 @@ export const getTimeZoneOffsetMinutes = (date: Date, timeZone: string) => {
     return Math.round((asUtc - Math.floor(date.getTime() / MINUTE_MS) * MINUTE_MS) / MINUTE_MS)
 }
 
+// The offset at UTC midnight can differ from the one at local midnight on a daylight-saving day (Sydney's clocks
+// go forward at 02:00 local, which is 16:00 UTC the day before), so the first estimate is corrected once.
+const toLocalMidnight = (day: number, timeZone: string) => {
+    const estimate = new Date(day - getTimeZoneOffsetMinutes(new Date(day), timeZone) * MINUTE_MS)
+
+    return new Date(day - getTimeZoneOffsetMinutes(estimate, timeZone) * MINUTE_MS)
+}
+
 export const getLocalMidnights = (start: Date, end: Date, timeZone: string) => {
     const midnights: Date[] = []
 
@@ -110,8 +118,7 @@ export const getLocalMidnights = (start: Date, end: Date, timeZone: string) => {
     let day = Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate())
 
     for (let i = 0; i < 20; i++) {
-        const guess = new Date(day)
-        const utc = new Date(day - getTimeZoneOffsetMinutes(guess, timeZone) * MINUTE_MS)
+        const utc = toLocalMidnight(day, timeZone)
 
         if (utc > end) break
 
