@@ -17,7 +17,8 @@ import { useIsFetching, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Pencil } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 
 interface IProps {
     city: City
@@ -31,6 +32,7 @@ export function CityHeader({ city }: IProps) {
     const now = useNow()
     const queryClient = useQueryClient()
 
+    const pencilRef = useRef<HTMLButtonElement>(null)
     const [isEditing, setIsEditing] = useState(false)
 
     // The dashboard anchors its chart to the precipitation query, so that query also dates the run shown here.
@@ -43,6 +45,13 @@ export function CityHeader({ city }: IProps) {
 
     // Refetching moves the dashboard chart only when a newer run arrives.
     const handleRefresh = () => void queryClient.refetchQueries({ queryKey: ['latest', city.slug], type: 'active' })
+    // Closing the switcher unmounts its input; unless the click that closed it focused something else, keyboard focus
+    // goes back to the pencil that opened it.
+    const handleDismiss = () => {
+        flushSync(() => setIsEditing(false))
+
+        if (document.activeElement === document.body) pencilRef.current?.focus()
+    }
 
     return (
         <div className="mb-(--card-gap) flex flex-col gap-2 sm:gap-3">
@@ -52,7 +61,7 @@ export function CityHeader({ city }: IProps) {
                 </Link>
             </Button>
             {isEditing ? (
-                <SearchBox initialQuery={name} autoFocus onDismiss={() => setIsEditing(false)} className="max-w-none" />
+                <SearchBox initialQuery={name} autoFocus onDismiss={handleDismiss} className="max-w-none" />
             ) : (
                 <div className="flex min-h-12 flex-wrap items-center gap-x-4 gap-y-2">
                     <div className="flex min-w-0 items-center gap-1.5">
@@ -77,6 +86,7 @@ export function CityHeader({ city }: IProps) {
                         </h1>
                         <FavoriteToggle place={city} />
                         <Button
+                            ref={pencilRef}
                             variant="ghost"
                             size="icon-sm"
                             onClick={() => setIsEditing(true)}
