@@ -22,6 +22,7 @@ pnpm db:migrate              # create a migration after editing packages/db/pris
 pnpm cdk:synth               # also cdk:diff, cdk:deploy, cdk:bootstrap; needs pnpm build first
 pnpm --filter @fa/mobile start     # Expo dev server for the mobile development build (apps/mobile)
 pnpm --filter @fa/mobile android   # build and run the development build on a device or emulator (JDK 17)
+pnpm --filter @fa/mobile tokens    # regenerate the app's design tokens after editing globals.css (a test fails until you do)
 ```
 
 ## Rules that must not break

@@ -2,7 +2,7 @@
 
 Ten weather models for any city and how much they disagree. Public, no login. Measuring which model has been right is a separate feature planned after the MVP.
 
-A pnpm and Turborepo monorepo: a Next.js web app and an Express REST API on Postgres (Prisma) and Redis, with an AWS CDK stack for Lambda and CloudFront. Live data comes from Open-Meteo and MET Norway. The [design decisions](#design-decisions) a newcomer is most likely to undo are at the end.
+A pnpm and Turborepo monorepo: a Next.js web app, an Expo (React Native) app in progress and an Express REST API on Postgres (Prisma) and Redis, with an AWS CDK stack for Lambda and CloudFront. Live data comes from Open-Meteo and MET Norway. The [design decisions](#design-decisions) a newcomer is most likely to undo are at the end.
 
 ## Run it
 
@@ -18,6 +18,18 @@ pnpm dev                  # web on http://localhost:3000, API on http://localhos
 ```
 
 Open any city and its forecast is fetched within a few seconds; search for any other city to open it the same way. Nothing is collected on a schedule: a city's forecast is fetched when someone opens it and a newer 6-hour run exists. The web app forwards `/api/*` to the API, so the browser sees one origin.
+
+### Mobile app
+
+`apps/mobile` is an Expo app (SDK 57, Expo Router, New Architecture) that will show the same product on Android and iOS; today it opens on a Home screen drawn from the shared catalogs and design tokens. It needs a development build, not Expo Go, and an Android device or emulator; builds need JDK 17 (`JAVA_HOME`).
+
+```bash
+pnpm --filter @fa/mobile android   # build, install and start the development build
+pnpm --filter @fa/mobile start     # Metro for an installed development build
+pnpm --filter @fa/mobile tokens    # regenerate src/theme/tokens.ts after editing apps/web/src/app/globals.css
+```
+
+iOS builds run only in the cloud (`eas build --profile simulator --platform ios`): without a Mac the app is checked in a simulator, never on an iPhone.
 
 ## What works
 
@@ -66,6 +78,7 @@ Browser ── TanStack Query ──▶ /api/* ──▶ Express REST (zod-valid
 ```
 apps/
   web/            Next.js pages, components, Redux slices, next-intl setup
+  mobile/         Expo app: Expo Router routes in src/app re-export screens from src/screens; tokens generated from the web CSS
   api/            Express app: routes, rate limits, error shape; bundled for Lambda
   e2e/            Playwright flows and the fake upstream they run against
 packages/
@@ -118,6 +131,7 @@ The ones a newcomer is most likely to undo by accident:
 - **The model palette is fixed,** with dash patterns where two colors are too close for color-vision deficiencies.
 - **Forecasts are fetched on demand, never on a schedule.** Opening a city fetches it when its stored run predates the current 6-hour issue; everyone else then reads the stored run. A scheduled collector refreshed cities nobody opened and was removed; don't add one back for a feature without weighing that cost.
 - **Limits and the quota count per client: an IPv4 address or an IPv6 /64.** An IPv4-mapped address counts as IPv4, and a global daily cap protects the free upstream tiers. Keying IPv6 by the full address would let one /64 rotate through endless fresh quotas.
+- **The mobile app shares code, not UI.** It consumes `@fa/shared`, `@fa/api-client`, `@fa/chart-core` and `@fa/messages`; its components are React Native, and its colours come from tokens generated from `globals.css`. React may differ between the apps (Expo pins its own); shared packages declare `react` only as a peer.
 
 ## Data and attribution
 
