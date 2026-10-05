@@ -10,9 +10,9 @@
         },
         "language": "Idioma",
         "quota": {
-            "short": "Búsquedas",
-            "label": "Búsquedas restantes hoy",
-            "value": "Quedan {left} de {limit} búsquedas hoy",
+            "short": "Solicitudes",
+            "label": "Solicitudes de pronóstico restantes hoy",
+            "value": "Quedan {left} de {limit} solicitudes hoy",
             "resets": "Se reinicia a las {time}"
         }
     },
@@ -174,7 +174,7 @@
         "englishOnly": "Este documento solo está disponible en inglés."
     },
     "errors": {
-        "quotaExceeded": "Has agotado las búsquedas de hoy. Los pronósticos guardados siguen disponibles y los nuevos vuelven tras el reinicio diario.",
+        "quotaExceeded": "Has agotado las solicitudes de hoy. Los pronósticos guardados siguen disponibles y los nuevos vuelven tras el reinicio diario.",
         "rateLimited": "Demasiadas solicitudes. Espera un minuto y vuelve a intentarlo.",
         "notFound": "Esta ciudad no está en Forecast Arena.",
         "pending": "El pronóstico aún se está obteniendo. Inténtalo de nuevo en un momento.",
