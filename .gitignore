@@ -46,6 +46,7 @@ data/
 
 # Personal agent settings and notes (.claude/launch.json is shared and stays tracked)
 .claude/settings.local.json
+.claude/worktrees/
 CLAUDE.local.md
 
 # build and tool output
