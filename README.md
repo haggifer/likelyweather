@@ -21,7 +21,7 @@ Open any city and its forecast is fetched within a few seconds; search for any o
 
 ### Mobile app
 
-`apps/mobile` is an Expo app (SDK 57, Expo Router, New Architecture) that will show the same product on Android and iOS; today it opens on a Home screen drawn from the shared catalogs and design tokens. It needs a development build, not Expo Go, and an Android device or emulator; builds need a JDK 17 or 21 (on PATH or in `JAVA_HOME`, not Android Studio's bundled 25) and CMake 3.31.6 from Android Studio's SDK Manager, the version `app.json` pins through `expo-build-properties` because the SDK's default CMake ships a ninja that cannot stat the long paths of a pnpm workspace on Windows.
+`apps/mobile` is an Expo app (SDK 57, Expo Router, New Architecture) that will show the same product on Android and iOS; today it opens on a Home screen drawn from the shared catalogs and design tokens. It needs a development build, not Expo Go, and an Android device or emulator; builds need a JDK 17 or 21 (on PATH or in `JAVA_HOME`, not Android Studio's bundled 25) and CMake 4.1.2 from Android Studio's SDK Manager, the version `app.json` pins through `expo-build-properties` because the SDK's default CMake ships a ninja that cannot stat the long paths of a pnpm workspace on Windows.
 
 ```bash
 pnpm --filter @fa/mobile android   # build, install and start the development build
