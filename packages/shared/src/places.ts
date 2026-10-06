@@ -1,5 +1,5 @@
-import { City } from '@fa/shared/api'
-import { SEEDS, slugify, START_WITH_IDS } from '@fa/shared/seeds'
+import { City } from './api'
+import { SEEDS, slugify, START_WITH_IDS } from './seeds'
 
 export type Place = Pick<City, 'id' | 'slug' | 'name' | 'nameLocal' | 'admin1' | 'country' | 'countryCode'>
 

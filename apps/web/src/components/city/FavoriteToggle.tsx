@@ -1,8 +1,8 @@
 'use client'
 
 import { usePlaces } from '@/hooks/usePlaces'
-import { isFavorite, isPinnable, MAX_PLACES, Place, togglePlace } from '@/lib/places'
 import { updatePlaces } from '@/lib/places-store'
+import { isFavorite, isPinnable, MAX_PLACES, Place, togglePlace } from '@fa/shared/places'
 import { Button } from '@fa/ui/components/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@fa/ui/components/tooltip'
 import { cn } from '@fa/ui/lib/cn'

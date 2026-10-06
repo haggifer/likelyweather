@@ -1,5 +1,6 @@
 'use client'
 
+import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
 import { Series } from '@fa/shared/api'
 import { formatNumber, formatPercent, formatPeriodLabel, formatTime } from '@fa/shared/format'
 import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
@@ -19,7 +20,6 @@ import {
 } from 'recharts'
 import { useChartTheme } from './hooks/useChartTheme'
 import { useElementWidth } from './hooks/useElementWidth'
-import { formatYTick, getYDomain, getYTicks } from './scales'
 
 interface Row {
     step: string

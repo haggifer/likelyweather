@@ -1,4 +1,4 @@
-import { getNearestIndex } from '@fa/charts/spaghetti-geometry'
+import { getNearestIndex } from '@fa/chart-core/spaghetti-geometry'
 import { LatestResponse, Series } from '@fa/shared/api'
 import {
     computeChanceOfRain,

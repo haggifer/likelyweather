@@ -2,8 +2,8 @@
 
 import { OverviewCard, OverviewCardSkeleton } from '@/components/city/OverviewCard'
 import { ErrorNotice } from '@/components/shell/ErrorNotice'
-import { useCity } from '@/hooks/useCity'
-import { useHourlyAll } from '@/hooks/useHourlyAll'
+import { useCity } from '@fa/api-client/hooks/useCity'
+import { useHourlyAll } from '@fa/api-client/hooks/useHourlyAll'
 import { LatestResponse } from '@fa/shared/api'
 import { getCityName } from '@fa/shared/format'
 import { getChartStart } from '@fa/shared/slots'

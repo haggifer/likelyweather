@@ -1,0 +1,22 @@
+{
+    "name": "@fa/messages",
+    "private": true,
+    "type": "module",
+    "exports": {
+        "./load": "./src/load.ts",
+        "./catalogs/*": "./catalogs/*"
+    },
+    "scripts": {
+        "lint": "eslint .",
+        "typecheck": "tsc --noEmit",
+        "test": "vitest run"
+    },
+    "dependencies": {
+        "@fa/shared": "workspace:*"
+    },
+    "devDependencies": {
+        "eslint": "^9",
+        "typescript": "^5",
+        "vitest": "^5.0.1"
+    }
+}

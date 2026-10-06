@@ -1,6 +1,6 @@
 'use client'
 
-import { useQuota } from '@/hooks/useQuota'
+import { useStoredQuota } from '@/hooks/useStoredQuota'
 import { formatTime, getViewerTimeZone } from '@fa/shared/format'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@fa/ui/components/tooltip'
 import { cn } from '@fa/ui/lib/cn'
@@ -15,7 +15,7 @@ export function QuotaMeter() {
     const t = useTranslations('shell.quota')
     const locale = useLocale()
 
-    const { quota: data } = useQuota()
+    const { quota: data } = useStoredQuota()
 
     if (!data) return null
 

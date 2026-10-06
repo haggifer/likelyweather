@@ -1,5 +1,5 @@
-import { apiGet } from '@/lib/api'
 import { getRoundedPosition } from '@/lib/nearest'
+import { apiGet } from '@fa/api-client/api'
 import { NearestResponse } from '@fa/shared/api'
 import { Coordinates } from '@fa/shared/geo'
 import { useMutation, UseMutationResult } from '@tanstack/react-query'

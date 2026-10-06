@@ -1,4 +1,4 @@
-import { apiGet } from '@/lib/api'
+import { apiGet } from '@fa/api-client/api'
 import { StartersResponse } from '@fa/shared/api'
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 

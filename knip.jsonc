@@ -8,6 +8,10 @@
         ".": {
             "entry": ["scripts/*.mjs"],
         },
+        "apps/mobile": {
+            // knip's Expo plugin expects expo-updates from app.json; EAS Update is added with the first release.
+            "ignoreDependencies": ["expo-updates"],
+        },
         "apps/e2e": {
             // Started by playwright.config.ts as a webServer command.
             "entry": ["fake-upstream.mjs"],

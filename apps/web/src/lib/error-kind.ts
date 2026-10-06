@@ -1,4 +1,4 @@
-import { ApiRequestError } from './api'
+import { ApiRequestError } from '@fa/api-client/api'
 
 enum ErrorKind {
     QuotaExceeded = 'quotaExceeded',
@@ -21,5 +21,3 @@ const KIND_BY_CODE: Record<string, ErrorKind> = {
 // The API's messages are English and meant for developers; the UI shows its own copy, chosen by the error code.
 export const getErrorKind = (error: unknown) =>
     error instanceof ApiRequestError ? (KIND_BY_CODE[error.code] ?? ErrorKind.Generic) : ErrorKind.Generic
-
-export const isNotFound = (error: unknown) => error instanceof ApiRequestError && error.status === 404

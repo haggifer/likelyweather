@@ -8,3 +8,6 @@ dist
 apps/web/src/vitest.d.ts
 packages/db/src/generated
 pnpm-workspace.yaml
+apps/mobile/android
+apps/mobile/ios
+apps/mobile/.expo
