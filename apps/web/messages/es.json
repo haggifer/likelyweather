@@ -88,7 +88,9 @@
         "show": "Mostrar {model}",
         "hide": "Ocultar {model}",
         "hint": "Pasa el cursor por un modelo para resaltarlo y haz clic para fijarlo. Las teclas 1–9 y 0 muestran u ocultan modelos.",
-        "hintTouch": "Toca un modelo para fijarlo; el ojo lo oculta."
+        "hintTouch": "Toca un modelo para fijarlo; el ojo lo oculta.",
+        "showMedian": "Mostrar la mediana",
+        "hideMedian": "Ocultar la mediana"
     },
     "disagreement": {
         "title": "Discrepancia por día",

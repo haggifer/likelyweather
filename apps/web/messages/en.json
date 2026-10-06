@@ -88,7 +88,9 @@
         "show": "Show {model}",
         "hide": "Hide {model}",
         "hint": "Hover a model to highlight it, click to pin. Keys 1–9 and 0 toggle models.",
-        "hintTouch": "Tap a model to pin it; the eye hides it."
+        "hintTouch": "Tap a model to pin it; the eye hides it.",
+        "showMedian": "Show the median",
+        "hideMedian": "Hide the median"
     },
     "disagreement": {
         "title": "Disagreement by day",

@@ -1,7 +1,13 @@
 'use client'
 
 import { useAppDispatch, useAppSelector } from '@/store'
-import { setHighlightedModel, showAllModels, toggleHiddenModel, togglePinnedModel } from '@/store/dashboard-slice'
+import {
+    setHighlightedModel,
+    showAllModels,
+    toggleHiddenModel,
+    toggleMedian,
+    togglePinnedModel,
+} from '@/store/dashboard-slice'
 import { Series } from '@fa/shared/api'
 import { formatNumber } from '@fa/shared/format'
 import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
@@ -54,6 +60,7 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
     const dispatch = useAppDispatch()
     const hidden = useAppSelector((s) => s.dashboard.hiddenModels)
     const pinned = useAppSelector((s) => s.dashboard.pinnedModels)
+    const isMedianHidden = useAppSelector((s) => s.dashboard.isMedianHidden)
 
     const { decimals, unit } = VARIABLE_BY_ID[variable]
     const rows = getLegendRows(series, readoutIndex, hidden)
@@ -62,7 +69,7 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
         <div className="flex flex-col gap-2">
             <div className="flex min-h-4.5 items-center justify-between gap-2 text-xs">
                 <span className="font-medium">{readoutLabel}</span>
-                {(hidden.length > 0 || pinned.length > 0) && (
+                {(hidden.length > 0 || pinned.length > 0 || isMedianHidden) && (
                     <Button
                         variant="link"
                         size="xs"
@@ -73,9 +80,14 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
                     </Button>
                 )}
             </div>
-            <div className="flex items-center justify-between rounded-md bg-muted px-2 py-1.5 text-[0.8125rem]">
-                <span className="flex items-center gap-2 font-semibold">
-                    <svg width="18" height="6" aria-hidden="true">
+            <div
+                className={cn(
+                    'flex items-center gap-1.5 rounded-md bg-muted py-1 pr-0.5 pl-2 text-[0.8125rem] sm:gap-2',
+                    isMedianHidden && 'opacity-45',
+                )}
+            >
+                <span className="flex min-w-0 flex-1 items-center gap-2 font-semibold">
+                    <svg width="18" height="6" aria-hidden="true" className="shrink-0">
                         <line
                             x1="1"
                             x2="17"
@@ -86,12 +98,21 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
                             strokeLinecap="round"
                         />
                     </svg>
-                    {t('median')}
+                    <span className={cn(isMedianHidden && 'line-through')}>{t('median')}</span>
                 </span>
-                <span className="font-semibold">
-                    {formatNumber(median, decimals)}{' '}
-                    <span className="text-xs font-normal text-muted-foreground">{unit}</span>
+                <span className="text-right font-semibold">
+                    {isMedianHidden ? '' : formatNumber(median, decimals)}{' '}
+                    {!isMedianHidden && <span className="text-xs font-normal text-muted-foreground">{unit}</span>}
                 </span>
+                <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => dispatch(toggleMedian())}
+                    aria-label={isMedianHidden ? t('showMedian') : t('hideMedian')}
+                    aria-pressed={isMedianHidden}
+                >
+                    {isMedianHidden ? <EyeOff /> : <Eye />}
+                </Button>
             </div>
             <ul className="grid grid-cols-2 gap-x-3 gap-y-0.5 lg:grid-cols-1">
                 {rows.map(({ modelId, value, isHidden }) => {

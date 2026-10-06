@@ -88,7 +88,9 @@
         "show": "Afficher {model}",
         "hide": "Masquer {model}",
         "hint": "Survolez un modèle pour le mettre en évidence, cliquez pour l’épingler. Les touches 1–9 et 0 affichent ou masquent les modèles.",
-        "hintTouch": "Touchez un modèle pour l’épingler ; l’œil le masque."
+        "hintTouch": "Touchez un modèle pour l’épingler ; l’œil le masque.",
+        "showMedian": "Afficher la médiane",
+        "hideMedian": "Masquer la médiane"
     },
     "disagreement": {
         "title": "Désaccord par jour",

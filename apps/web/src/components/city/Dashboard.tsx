@@ -151,6 +151,7 @@ export function Dashboard({ slug }: IProps) {
     const highlighted = useAppSelector((s) => s.dashboard.highlightedModel)
     const pinned = useAppSelector((s) => s.dashboard.pinnedModels)
     const hidden = useAppSelector((s) => s.dashboard.hiddenModels)
+    const isMedianHidden = useAppSelector((s) => s.dashboard.isMedianHidden)
 
     const { data: city } = useCity(slug)
     const latestQuery = useLatest(slug, variable, isHydrated)
@@ -289,6 +290,7 @@ export function Dashboard({ slug }: IProps) {
                         emphasized={emphasized}
                         directions={variable === Variable.Wind ? derived.directions : null}
                         now={chartNow}
+                        isMedianHidden={isMedianHidden}
                     />
                     {variable === Variable.Wind && (
                         <p className="mt-1 text-xs text-muted-foreground">{t('windArrows')}</p>

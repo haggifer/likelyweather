@@ -99,6 +99,7 @@ interface IProps {
     showTooltip?: boolean
     yDomain?: [number, number]
     now?: Date | null
+    isMedianHidden?: boolean
 }
 
 export function SpaghettiChart({
@@ -118,6 +119,7 @@ export function SpaghettiChart({
     showTooltip = false,
     yDomain,
     now: nowProp,
+    isMedianHidden = false,
 }: IProps) {
     const t = useTranslations('chart')
     const theme = useChartTheme()
@@ -270,7 +272,7 @@ export function SpaghettiChart({
 
                         return (
                             <g key={times[i].toISOString()}>
-                                {median !== null && (
+                                {median !== null && !isMedianHidden && (
                                     <rect
                                         x={center - barWidth / 2}
                                         y={y(median)}
@@ -317,7 +319,7 @@ export function SpaghettiChart({
                                 opacity={isDimmed(modelId) ? 0.15 : 0.9}
                             />
                         ))}
-                    {!isBars && (
+                    {!isBars && !isMedianHidden && (
                         <path
                             d={geometry.median}
                             fill="none"
@@ -388,7 +390,7 @@ export function SpaghettiChart({
                                     />
                                 )
                             })}
-                        {!isBars && stats.median[hover] !== null && (
+                        {!isBars && !isMedianHidden && stats.median[hover] !== null && (
                             <circle
                                 cx={hoverX}
                                 cy={y(stats.median[hover]!)}
