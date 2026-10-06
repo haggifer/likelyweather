@@ -55,3 +55,6 @@ dist/
 cdk.out/
 playwright-report/
 test-results/
+
+# IDE project files (Android Studio opens the repository for the emulator and SDK Manager)
+.idea/
