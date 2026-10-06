@@ -17,13 +17,15 @@
             "dependsOn": ["^build"]
         },
         "test": {
-            "dependsOn": ["^build"]
+            "dependsOn": ["^build"],
+            "passThroughEnv": ["DATABASE_URL"]
         },
         "@fa/db#typecheck": {
             "dependsOn": ["build"]
         },
         "@fa/db#test": {
-            "dependsOn": ["build"]
+            "dependsOn": ["build"],
+            "passThroughEnv": ["DATABASE_URL"]
         },
         "@fa/db#lint": {
             "dependsOn": ["build"]

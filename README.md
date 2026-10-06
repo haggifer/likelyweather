@@ -61,18 +61,18 @@ Ukrainian, English, Spanish, German and French (language menu in the top bar; th
 
 ## Scripts
 
-| Command                                                        | What it does                                                                           |
-| -------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `pnpm dev`                                                     | Starts the Docker services, then the API (`tsx watch`) and the web app (Turbopack)     |
-| `pnpm db:up` / `db:deploy` / `db:migrate` / `db:seed`          | Docker services; apply migrations; create a new migration; seed models and cities      |
-| `pnpm build`                                                   | Next.js build, the API's Lambda bundle (esbuild), Prisma client                        |
-| `pnpm test`                                                    | Vitest in every package; database tests run when `DATABASE_URL` is reachable           |
-| `pnpm lint` / `typecheck` / `format` / `format:check`          | ESLint, TypeScript, Prettier with organize-imports                                     |
-| `pnpm check:messages`                                          | Key parity across the five catalogs and literal key usage in code                      |
-| `pnpm knip`                                                    | Unused files, exports and dependencies across the workspace (`knip.jsonc`)             |
-| `pnpm e2e`                                                     | Playwright flows on desktop and phone against a fake upstream (run `pnpm build` first) |
-| `pnpm cdk:synth` / `cdk:diff` / `cdk:deploy` / `cdk:bootstrap` | The AWS CDK stack in `infra/` (run `pnpm build` first; see [Deploy](#deploy))          |
-| `pnpm --filter @fa/web flags`                                  | Re-copy the SVG country flags into `apps/web/public/flags`                             |
+| Command                                                        | What it does                                                                                    |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `pnpm dev`                                                     | Starts the Docker services, then the API (`tsx watch`) and the web app (Turbopack)              |
+| `pnpm db:up` / `db:deploy` / `db:migrate` / `db:seed`          | Docker services; apply migrations; create a new migration; seed models and cities               |
+| `pnpm build`                                                   | Next.js build, the API's Lambda bundle (esbuild), Prisma client                                 |
+| `pnpm test`                                                    | Vitest in every package but `apps/mobile` (Jest); database tests run when `DATABASE_URL` is set |
+| `pnpm lint` / `typecheck` / `format` / `format:check`          | ESLint, TypeScript, Prettier with organize-imports                                              |
+| `pnpm check:messages`                                          | Key parity across the five catalogs and literal key usage in code                               |
+| `pnpm knip`                                                    | Unused files, exports and dependencies across the workspace (`knip.jsonc`)                      |
+| `pnpm e2e`                                                     | Playwright flows on desktop and phone against a fake upstream (run `pnpm build` first)          |
+| `pnpm cdk:synth` / `cdk:diff` / `cdk:deploy` / `cdk:bootstrap` | The AWS CDK stack in `infra/` (run `pnpm build` first; see [Deploy](#deploy))                   |
+| `pnpm --filter @fa/web flags`                                  | Re-copy the SVG country flags into `apps/web/public/flags`                                      |
 
 ## Architecture
 
