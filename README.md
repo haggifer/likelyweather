@@ -33,6 +33,7 @@ Open any city and its forecast is fetched within a few seconds; search for any o
 
 A daily quota per user (60 upstream fetches a day per client, 600 for the whole app) is shown as a meter in the top bar; the last answer is kept in local storage so the meter is there as soon as a page opens.
 
+Android phones get a dismissible "Get the app" bar on the landing and city pages when `NEXT_PUBLIC_APP_PROMO_URL` names the latest APK release at build time (`apps/web/.env.example`); dismissed, it stays away for 30 days.
 
 Phones (below 640 px) get their own layouts where the desktop ones don't fit: the dashboard pins the variable switch under the top bar and puts the model list under the chart, and day labels shorten to fit.
 

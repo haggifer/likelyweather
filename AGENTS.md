@@ -63,4 +63,4 @@ pnpm cdk:synth               # also cdk:diff, cdk:deploy, cdk:bootstrap; needs p
 - pnpm passes a literal `--` through to the script: write `pnpm cdk:deploy --profile <name>`, not `pnpm cdk:deploy -- --profile <name>` (CDK would read the flags as stack names).
 - `prisma generate` runs as `@fa/db`'s build step; Turbo runs it before any package's typecheck or test. After editing the schema, run `pnpm --filter @fa/db build` if the editor reports missing types.
 - `next.config` rewrites are fixed at build time; runtime routing (like forwarding `/api/*` to `API_ORIGIN`) belongs in `apps/web/src/proxy.ts`.
-- The e2e suite runs the production web build: rebuild (`pnpm build`) after web changes before `pnpm e2e`.
+- The e2e suite runs the production web build: rebuild (`pnpm build`) after web changes before `pnpm e2e`. The phone suite asserts the "Get the app" bar only when `NEXT_PUBLIC_APP_PROMO_URL` is set in its shell, and the bar exists only in a build made with it: set it for both `pnpm build` and `pnpm e2e` to cover it (CI does), and leave it out of `apps/web/.env.local` until the first APK release exists, or a deploy built here would link to nothing.

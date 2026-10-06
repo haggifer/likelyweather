@@ -162,6 +162,14 @@ for (const path of ['/', `/city/${KYIV}`]) {
     })
 }
 
+test('a desktop never sees the "Get the app" bar', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'desktop only')
+
+    await page.goto('/')
+    await expect(page.locator('main h1').first()).toBeVisible()
+    await expect(page.getByRole('region', { name: 'Get the Android app' })).toHaveCount(0)
+})
+
 test('the footer links to the privacy policy and the terms', async ({ page }) => {
     for (const [link, heading] of [
         ['Privacy Policy', 'Privacy Policy'],

@@ -188,5 +188,13 @@
         "unavailable": "Los servicios meteorológicos no responden. Inténtalo más tarde.",
         "generic": "Algo salió mal. Inténtalo de nuevo en un momento.",
         "retry": "Reintentar"
+    },
+    "promo": {
+        "label": "Obtener la app para Android",
+        "title": "Forecast Arena para Android",
+        "body": "Tu ubicación, widget en la pantalla de inicio, funciona sin conexión",
+        "cta": "Obtener la app",
+        "dismiss": "Cerrar",
+        "note": "Un APK de las versiones del proyecto en GitHub; Android te pedirá permitir instalaciones desde esa fuente."
     }
 }

@@ -188,5 +188,13 @@
         "unavailable": "The weather services are not answering. Try again later.",
         "generic": "Something went wrong. Try again in a moment.",
         "retry": "Try again"
+    },
+    "promo": {
+        "label": "Get the Android app",
+        "title": "Forecast Arena for Android",
+        "body": "Your location, home-screen widget, works offline",
+        "cta": "Get the app",
+        "dismiss": "Dismiss",
+        "note": "An APK from the project’s GitHub releases; Android asks you to allow installs from that source."
     }
 }

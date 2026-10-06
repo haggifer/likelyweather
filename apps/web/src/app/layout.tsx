@@ -1,4 +1,5 @@
 import { Providers } from '@/app/Providers'
+import { AppPromoBanner } from '@/components/shell/AppPromoBanner'
 import { Footer } from '@/components/shell/Footer'
 import { TopBar } from '@/components/shell/TopBar'
 import { MODE_RESTORE } from '@fa/ui/lib/color-mode'
@@ -26,7 +27,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
             <head>
                 <script dangerouslySetInnerHTML={{ __html: MODE_RESTORE }} />
             </head>
-            <body className="flex min-h-full flex-col">
+            <body className="flex min-h-full flex-col pb-(--app-promo-h,0px)">
                 <NextIntlClientProvider>
                     <Providers>
                         <TopBar />
@@ -34,6 +35,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
                             {children}
                         </main>
                         <Footer />
+                        <AppPromoBanner />
                     </Providers>
                 </NextIntlClientProvider>
             </body>

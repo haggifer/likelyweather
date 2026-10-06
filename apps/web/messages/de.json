@@ -188,5 +188,13 @@
         "unavailable": "Die Wetterdienste antworten nicht. Bitte später erneut versuchen.",
         "generic": "Etwas ist schiefgelaufen. Bitte gleich noch einmal versuchen.",
         "retry": "Erneut versuchen"
+    },
+    "promo": {
+        "label": "Android-App holen",
+        "title": "Forecast Arena für Android",
+        "body": "Dein Standort, Startbildschirm-Widget, funktioniert offline",
+        "cta": "App holen",
+        "dismiss": "Schließen",
+        "note": "Eine APK aus den GitHub-Releases des Projekts; Android fragt, ob Installationen aus dieser Quelle erlaubt sind."
     }
 }
