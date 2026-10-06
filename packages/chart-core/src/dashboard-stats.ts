@@ -1,4 +1,3 @@
-import { getNearestIndex } from '@fa/chart-core/spaghetti-geometry'
 import { LatestResponse, Series } from '@fa/shared/api'
 import {
     computeChanceOfRain,
@@ -8,10 +7,12 @@ import {
     DayDisagreement,
     EnsembleStats,
 } from '@fa/shared/ensemble'
+import { formatNumber } from '@fa/shared/format'
 import { indexSteps, toStepSeries } from '@fa/shared/resample'
 import { DASHBOARD_HOURS, SLOT_HOURS } from '@fa/shared/slots'
 import { addHours, toIsoMinute } from '@fa/shared/time'
 import { Variable } from '@fa/shared/variables'
+import { getNearestIndex } from './spaghetti-geometry'
 
 interface DashboardStats {
     stats: EnsembleStats
@@ -103,3 +104,7 @@ export const getFutureRange = (values: (number | null)[], steps: string[], now: 
 export const countRainySteps = (chance: (number | null)[]) => chance.filter((c) => (c ?? 0) >= 0.5).length
 
 export const sumValues = (values: (number | null)[]) => values.reduce<number>((sum, v) => sum + (v ?? 0), 0)
+
+// A spread of a whole-number variable still needs its tenths: two models at 1012 and 1013 hPa differ by 1.0, not 1.
+export const formatSpread = (spread: number | undefined, decimals: number) =>
+    formatNumber(spread, decimals === 0 ? 1 : decimals)

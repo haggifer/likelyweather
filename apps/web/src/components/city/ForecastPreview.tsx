@@ -1,6 +1,6 @@
 'use client'
 
-import { getEnsembleStats } from '@/components/city/dashboard-stats'
+import { getEnsembleStats } from '@fa/chart-core/dashboard-stats'
 import { SpaghettiChart } from '@fa/charts/SpaghettiChart'
 import { City, LatestResponse } from '@fa/shared/api'
 import { Variable } from '@fa/shared/variables'

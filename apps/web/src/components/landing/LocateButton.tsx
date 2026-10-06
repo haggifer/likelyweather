@@ -1,10 +1,10 @@
 'use client'
 
 import { PositionError, useNearestCity } from '@/hooks/useNearestCity'
-import { getErrorKind } from '@/lib/error-kind'
-import { formatDistanceKm, isNearEnough } from '@/lib/nearest'
+import { getErrorKind } from '@fa/api-client/error-kind'
 import { City, Locale } from '@fa/shared/api'
 import { getCityName } from '@fa/shared/format'
+import { formatDistanceKm, isNearEnough } from '@fa/shared/geo'
 import { Button } from '@fa/ui/components/button'
 import { Loader2, LocateFixed } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'

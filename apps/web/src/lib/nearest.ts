@@ -1,12 +1,6 @@
-import { NEAREST_MAX_KM } from '@fa/shared/constants'
 import { Coordinates, roundCoordinates } from '@fa/shared/geo'
 
 const POSITION_TIMEOUT_MS = 10_000
-
-export const isNearEnough = (distanceKm: number) => distanceKm <= NEAREST_MAX_KM
-
-export const formatDistanceKm = (distanceKm: number, locale: string) =>
-    new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(distanceKm)
 
 // The browser's position, rounded before it leaves the page: a denied permission, a timeout and an unavailable
 // position all reject alike, because the page answers them with the same message.

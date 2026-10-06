@@ -1,4 +1,4 @@
-import { ApiRequestError } from '@fa/api-client/api'
+import { ApiRequestError } from './api'
 
 enum ErrorKind {
     QuotaExceeded = 'quotaExceeded',

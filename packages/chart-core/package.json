@@ -3,6 +3,7 @@
     "private": true,
     "type": "module",
     "exports": {
+        "./dashboard-stats": "./src/dashboard-stats.ts",
         "./day-labels": "./src/day-labels.ts",
         "./plot-geometry": "./src/plot-geometry.ts",
         "./scales": "./src/scales.ts",

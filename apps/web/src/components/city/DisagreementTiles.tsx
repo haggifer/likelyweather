@@ -1,8 +1,8 @@
 'use client'
 
-import { formatSpread } from '@/components/city/disagreement-format'
 import { StatusChip } from '@/components/shell/StatusChip'
 import { ChipTone } from '@/components/types'
+import { formatSpread } from '@fa/chart-core/dashboard-stats'
 import { DayDisagreement, DisagreementLabel } from '@fa/shared/ensemble'
 import { formatDateKey, formatNumber } from '@fa/shared/format'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'

@@ -1,4 +1,4 @@
-import { getDistanceKm, roundCoordinates } from './geo'
+import { formatDistanceKm, getDistanceKm, isNearEnough, roundCoordinates } from './geo'
 
 const KHARKIV = { lat: 49.9808, lon: 36.2527 }
 const KYIV = { lat: 50.4547, lon: 30.5238 }
@@ -22,5 +22,20 @@ describe('roundCoordinates', () => {
     it('keeps two decimals, about a kilometre', () => {
         expect(roundCoordinates({ lat: 49.98081, lon: 36.25272 })).toEqual({ lat: 49.98, lon: 36.25 })
         expect(roundCoordinates({ lat: -33.8688, lon: 179.999 })).toEqual({ lat: -33.87, lon: 180 })
+    })
+})
+
+describe('isNearEnough', () => {
+    it('accepts the nearest city up to 50 km away', () => {
+        expect(isNearEnough(0)).toBe(true)
+        expect(isNearEnough(50)).toBe(true)
+        expect(isNearEnough(50.1)).toBe(false)
+    })
+})
+
+describe('formatDistanceKm', () => {
+    it('rounds to whole kilometres in the locale', () => {
+        expect(formatDistanceKm(409.6, 'en')).toBe('410')
+        expect(formatDistanceKm(1234.4, 'de')).toBe('1.234')
     })
 })

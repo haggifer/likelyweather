@@ -1,17 +1,5 @@
 'use client'
 
-import {
-    countRainySteps,
-    getDashboardStats,
-    getFutureRange,
-    getPrecipTotals,
-    getReadoutIndex,
-    getSlotEnd,
-    PRECIP_WINDOW_HOURS,
-    PrecipTotals,
-    sumValues,
-} from '@/components/city/dashboard-stats'
-import { formatSpread } from '@/components/city/disagreement-format'
 import { DisagreementTiles } from '@/components/city/DisagreementTiles'
 import { ModelLegend } from '@/components/city/ModelLegend'
 import { VariableSwitch } from '@/components/city/VariableSwitch'
@@ -21,6 +9,18 @@ import { useAppDispatch, useAppSelector } from '@/store'
 import { setHoverStep, toggleHiddenModel } from '@/store/dashboard-slice'
 import { useCity } from '@fa/api-client/hooks/useCity'
 import { useLatest } from '@fa/api-client/hooks/useLatest'
+import {
+    countRainySteps,
+    formatSpread,
+    getDashboardStats,
+    getFutureRange,
+    getPrecipTotals,
+    getReadoutIndex,
+    getSlotEnd,
+    PRECIP_WINDOW_HOURS,
+    PrecipTotals,
+    sumValues,
+} from '@fa/chart-core/dashboard-stats'
 import { ChartFrame } from '@fa/charts/ChartFrame'
 import { SpaghettiChart } from '@fa/charts/SpaghettiChart'
 import { Series } from '@fa/shared/api'

@@ -1,3 +1,5 @@
+import { NEAREST_MAX_KM } from './constants'
+
 export interface Coordinates {
     lat: number
     lon: number
@@ -27,3 +29,9 @@ export const roundCoordinates = ({ lat, lon }: Coordinates): Coordinates => ({
     lat: roundCoordinate(lat),
     lon: roundCoordinate(lon),
 })
+
+// "Use my location" opens the nearest stored city only this close; farther away it names the city and the distance.
+export const isNearEnough = (distanceKm: number) => distanceKm <= NEAREST_MAX_KM
+
+export const formatDistanceKm = (distanceKm: number, locale: string) =>
+    new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(distanceKm)

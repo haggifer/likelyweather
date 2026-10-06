@@ -1,21 +1,6 @@
-import { formatDistanceKm, getRoundedPosition, isNearEnough } from './nearest'
+import { getRoundedPosition } from './nearest'
 
 const stubGeolocation = (geolocation: Partial<Geolocation> | undefined) => vi.stubGlobal('navigator', { geolocation })
-
-describe('isNearEnough', () => {
-    it('accepts the nearest city up to 50 km away', () => {
-        expect(isNearEnough(0)).toBe(true)
-        expect(isNearEnough(50)).toBe(true)
-        expect(isNearEnough(50.1)).toBe(false)
-    })
-})
-
-describe('formatDistanceKm', () => {
-    it('rounds to whole kilometres in the locale', () => {
-        expect(formatDistanceKm(409.6, 'en')).toBe('410')
-        expect(formatDistanceKm(1234.4, 'de')).toBe('1.234')
-    })
-})
 
 describe('getRoundedPosition', () => {
     afterEach(() => vi.unstubAllGlobals())
