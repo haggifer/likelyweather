@@ -20,9 +20,14 @@ concurrency:
 
 jobs:
     deploy:
+        # A `workflow_run` is also fired by CI runs of pull requests, including one from a fork whose branch is named
+        # `main`; only a run that CI itself started for a push to this repository's default branch may deploy.
         if: >-
             vars.AWS_DEPLOY_ROLE_ARN != '' &&
-            (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success')
+            (github.event_name == 'workflow_dispatch' ||
+             (github.event.workflow_run.conclusion == 'success' &&
+              github.event.workflow_run.event == 'push' &&
+              github.event.workflow_run.head_repository.full_name == github.repository))
         runs-on: ubuntu-latest
         timeout-minutes: 30
         steps:
