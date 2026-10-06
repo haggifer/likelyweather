@@ -17,17 +17,10 @@ import { Command as CommandPrimitive } from 'cmdk'
 import { Loader2, Search, Star } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { KeyboardEvent as ReactKeyboardEvent, useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { KeyboardEvent as ReactKeyboardEvent, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 const MIN_QUERY = 3
-
-const subscribeToNothing = () => () => {}
-
-const getShortcutLabel = () =>
-    /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent) ? '⌘K' : 'Ctrl K'
-
-const getServerShortcutLabel = () => null
 
 const byPopulation = (a: GeocodeResult, b: GeocodeResult) => (b.population ?? 0) - (a.population ?? 0)
 
@@ -37,7 +30,6 @@ const FavoriteMark = ({ places, id }: { places: Places | null; id: number }) =>
     ) : null
 
 interface IProps {
-    enableShortcut?: boolean
     isLocateShown?: boolean
     initialQuery?: string
     autoFocus?: boolean
@@ -52,7 +44,6 @@ interface IProps {
 // typing replaces it, and results only appear once it has been edited. `onDismiss` fires on Escape and on blur.
 // `isLocateShown` adds the "Use my location" button, whose city is already stored and so needs no tracking.
 export function SearchBox({
-    enableShortcut = false,
     isLocateShown = false,
     initialQuery = '',
     autoFocus = false,
@@ -64,7 +55,6 @@ export function SearchBox({
     const te = useTranslations('errors')
     const locale = useLocale() as Locale
     const router = useRouter()
-    const shortcutLabel = useSyncExternalStore(subscribeToNothing, getShortcutLabel, getServerShortcutLabel)
     const places = usePlaces()
 
     const inputRef = useRef<HTMLInputElement>(null)
@@ -144,21 +134,6 @@ export function SearchBox({
         inputRef.current?.select()
     }, [autoFocus])
 
-    useEffect(() => {
-        if (!enableShortcut) return
-
-        const handleKey = (e: KeyboardEvent) => {
-            if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'k') {
-                e.preventDefault()
-                inputRef.current?.focus()
-                setIsOpen(true)
-            }
-        }
-
-        window.addEventListener('keydown', handleKey)
-        return () => window.removeEventListener('keydown', handleKey)
-    }, [enableShortcut])
-
     return (
         <CommandPrimitive
             shouldFilter={false}
@@ -178,11 +153,6 @@ export function SearchBox({
                     className="h-full min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground"
                 />
                 {track.isPending && <Loader2 className="size-4 shrink-0 animate-spin text-muted-foreground" />}
-                {enableShortcut && shortcutLabel && !track.isPending && (
-                    <kbd className="hidden shrink-0 rounded border bg-muted px-1.5 py-0.5 font-mono text-[0.6875rem] text-muted-foreground sm:inline">
-                        {shortcutLabel}
-                    </kbd>
-                )}
                 {isLocateShown && (
                     <LocateButton onSelect={handleSelectNearest} onSearch={() => inputRef.current?.focus()} />
                 )}
