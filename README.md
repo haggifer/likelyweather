@@ -21,7 +21,15 @@ Open any city and its forecast is fetched within a few seconds; search for any o
 
 ### Mobile app
 
-`apps/mobile` is an Expo app (SDK 57, Expo Router, New Architecture) that will show the same product on Android and iOS; today it opens on a Home screen drawn from the shared catalogs and design tokens. It needs a development build, not Expo Go, and an Android device or emulator; builds need a JDK 17 or 21 (on PATH or in `JAVA_HOME`, not Android Studio's bundled 25) and CMake 4.1.2 from Android Studio's SDK Manager, the version `app.json` pins through `expo-build-properties` because the SDK's default CMake ships a ninja that cannot stat the long paths of a pnpm workspace on Windows.
+`apps/mobile` is the same product as an Expo app for Android (SDK 57, Expo Router, New Architecture), drawn with React Native and `react-native-svg` from the same packages as the web: the API client and its hooks, the chart geometry and dashboard maths, the places rules and the five catalogs.
+
+- **Home:** search any place (or "Use my location", which beyond the nearest stored city's 50 km asks Android's geocoder for the town's name and searches it), the four "Start with" chips with their stars, the 72-hour overview with touch scrubbing, the age chip and Refresh, "Open details", and the explanation tiles.
+- **City:** the variable switch pinned above the scroll, the multi-model chart with its bands and median and a table view, the model list (tap to pin, eye to hide, the median too), the disagreement tiles and the 6-hour precipitation panel. The search icon switches city.
+- **Compare** (up to four cities on a shared axis), **Methodology**, and **Settings:** language and theme (device default or chosen), the day's request quota, the cities the widgets show, and links to the privacy policy and terms on the site.
+- **Offline:** forecasts, places and settings live on the device (MMKV); the query cache is restored at launch and kept for a day, and queries wait while the network is down.
+- **Home-screen widget** (`react-native-android-widget`): a 2 × 1 with the city, the median temperature and today's agreement, and a 4 × 2 that adds the next 24 hours' range, wind, rain and the run's age. Placing one asks for the city among the viewer's places; it refreshes every hour and whenever the app loads that city, keeps its last numbers offline, and a tap opens the city.
+
+Development builds call the live API unless `apps/mobile/.env.local` sets `EXPO_PUBLIC_API_ORIGIN` (`apps/mobile/.env.example`; for the local API also run `adb reverse tcp:4000 tcp:4000`). The app needs a development build, not Expo Go, and an Android device or emulator; builds need a JDK 17 or 21 (on PATH or in `JAVA_HOME`, not Android Studio's bundled 25) and CMake 4.1.2 from Android Studio's SDK Manager, the version `app.json` pins through `expo-build-properties` because the SDK's default CMake ships a ninja that cannot stat the long paths of a pnpm workspace on Windows.
 
 ```bash
 pnpm --filter @fa/mobile android   # build, install and start the development build

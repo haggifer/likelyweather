@@ -1,0 +1,52 @@
+import { getCityName } from '@fa/shared/format'
+import { isFavorite, isPinnable, MAX_PLACES, Place, togglePlace } from '@fa/shared/places'
+import { Star } from 'lucide-react-native'
+import { Alert, Pressable } from 'react-native'
+import { useLocale, useTranslations } from 'use-intl'
+import { usePlaces } from '../../hooks/usePlaces'
+import { useTheme } from '../../hooks/useTheme'
+import { placesStore } from '../../lib/places-store'
+
+interface IProps {
+    place: Place
+    size?: number
+    tone?: 'default' | 'inverse'
+}
+
+// Pins a place to the front of the chips. With four favorites already, a tap explains the limit instead of failing
+// silently: a disabled control on a phone gives no hint why.
+export function FavoriteToggle({ place, size = 22, tone = 'default' }: IProps) {
+    const t = useTranslations('city')
+    const locale = useLocale()
+    const places = usePlaces()
+    const { colors } = useTheme()
+
+    const isPinned = isFavorite(places, place.id)
+    const label = t(isPinned ? 'unpinCity' : 'pinCity', { name: getCityName(place, locale) })
+    const idleColor = tone === 'inverse' ? colors['primary-foreground'] : colors['muted-foreground']
+
+    const handlePress = () => {
+        if (!isPinnable(places, place.id)) {
+            Alert.alert(t('pin'), t('pinLimit', { max: MAX_PLACES }))
+            return
+        }
+
+        placesStore.set((current) => togglePlace(current, place))
+    }
+
+    return (
+        <Pressable
+            onPress={handlePress}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={label}
+            accessibilityState={{ selected: isPinned }}
+        >
+            <Star
+                size={size}
+                color={isPinned ? colors.favorite : idleColor}
+                fill={isPinned ? colors.favorite : 'transparent'}
+            />
+        </Pressable>
+    )
+}

@@ -19,7 +19,8 @@
                 "backgroundImage": "./assets/images/android-icon-background.png",
                 "monochromeImage": "./assets/images/android-icon-monochrome.png"
             },
-            "predictiveBackGestureEnabled": false
+            "predictiveBackGestureEnabled": false,
+            "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"]
         },
         "plugins": [
             "expo-router",
@@ -38,6 +39,45 @@
                     "android": {
                         "cmakeVersion": "4.1.2"
                     }
+                }
+            ],
+            [
+                "expo-location",
+                {
+                    "locationWhenInUsePermission": "Forecast Arena uses your location once, when you tap Use my location, to open the nearest city.",
+                    "isAndroidBackgroundLocationEnabled": false,
+                    "isIosBackgroundLocationEnabled": false
+                }
+            ],
+            [
+                "react-native-android-widget",
+                {
+                    "widgets": [
+                        {
+                            "name": "ForecastSmall",
+                            "label": "Forecast Arena",
+                            "description": "Median temperature and today’s agreement for one city",
+                            "minWidth": "110dp",
+                            "minHeight": "50dp",
+                            "targetCellWidth": 2,
+                            "targetCellHeight": 1,
+                            "resizeMode": "horizontal|vertical",
+                            "updatePeriodMillis": 3600000,
+                            "widgetFeatures": "reconfigurable"
+                        },
+                        {
+                            "name": "ForecastMedium",
+                            "label": "Forecast Arena (detailed)",
+                            "description": "Temperature, the next 24 hours, wind and rain for one city",
+                            "minWidth": "250dp",
+                            "minHeight": "110dp",
+                            "targetCellWidth": 4,
+                            "targetCellHeight": 2,
+                            "resizeMode": "horizontal|vertical",
+                            "updatePeriodMillis": 3600000,
+                            "widgetFeatures": "reconfigurable"
+                        }
+                    ]
                 }
             ]
         ],

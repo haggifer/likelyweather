@@ -196,5 +196,33 @@
         "cta": "App holen",
         "dismiss": "Schließen",
         "note": "Eine APK aus den GitHub-Releases des Projekts; Android fragt, ob Installationen aus dieser Quelle erlaubt sind."
+    },
+    "mobile": {
+        "settings": "Einstellungen",
+        "language": "Sprache",
+        "languageSystem": "Gerätesprache",
+        "theme": "Design",
+        "themeSystem": "Wie das Gerät",
+        "themeLight": "Hell",
+        "themeDark": "Dunkel",
+        "quota": "Prognoseanfragen",
+        "about": "Über die App",
+        "version": "Version {version}",
+        "widgets": "Startbildschirm-Widgets",
+        "widgetsHint": "Halte eine freie Stelle auf dem Startbildschirm gedrückt, tippe auf Widgets und wähle Forecast Arena.",
+        "widgetsNone": "Auf dem Startbildschirm ist noch kein Widget.",
+        "widgetCity": "Ein Widget zeigt {city}",
+        "search": "Suchen",
+        "explore": "Entdecken"
+    },
+    "widget": {
+        "configureTitle": "Stadt für dieses Widget wählen",
+        "configureEmpty": "Suche oder markiere zuerst einen Ort in Forecast Arena; dann erscheint er hier.",
+        "openApp": "Öffne Forecast Arena, um {city} zu laden",
+        "today": "Heute",
+        "next24": "Nächste 24 h",
+        "wind": "Wind",
+        "rain": "Regen",
+        "cancel": "Abbrechen"
     }
 }

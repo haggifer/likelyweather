@@ -196,5 +196,33 @@
         "cta": "Get the app",
         "dismiss": "Dismiss",
         "note": "An APK from the project’s GitHub releases; Android asks you to allow installs from that source."
+    },
+    "mobile": {
+        "settings": "Settings",
+        "language": "Language",
+        "languageSystem": "Device language",
+        "theme": "Theme",
+        "themeSystem": "Device setting",
+        "themeLight": "Light",
+        "themeDark": "Dark",
+        "quota": "Forecast requests",
+        "about": "About",
+        "version": "Version {version}",
+        "widgets": "Home-screen widgets",
+        "widgetsHint": "Touch and hold an empty spot on your home screen, tap Widgets and pick Forecast Arena.",
+        "widgetsNone": "No widget is on your home screen yet.",
+        "widgetCity": "A widget shows {city}",
+        "search": "Search",
+        "explore": "Explore"
+    },
+    "widget": {
+        "configureTitle": "Choose the city for this widget",
+        "configureEmpty": "Pick or pin a place in Forecast Arena first; it then appears here.",
+        "openApp": "Open Forecast Arena to load {city}",
+        "today": "Today",
+        "next24": "Next 24 h",
+        "wind": "Wind",
+        "rain": "Rain",
+        "cancel": "Cancel"
     }
 }

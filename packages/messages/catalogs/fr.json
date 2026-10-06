@@ -196,5 +196,33 @@
         "cta": "Obtenir l’app",
         "dismiss": "Fermer",
         "note": "Un APK issu des versions GitHub du projet ; Android demande d’autoriser les installations depuis cette source."
+    },
+    "mobile": {
+        "settings": "Réglages",
+        "language": "Langue",
+        "languageSystem": "Langue de l’appareil",
+        "theme": "Thème",
+        "themeSystem": "Réglage de l’appareil",
+        "themeLight": "Clair",
+        "themeDark": "Sombre",
+        "quota": "Requêtes de prévision",
+        "about": "À propos",
+        "version": "Version {version}",
+        "widgets": "Widgets de l’écran d’accueil",
+        "widgetsHint": "Appuyez longuement sur un espace libre de l’écran d’accueil, touchez Widgets et choisissez Forecast Arena.",
+        "widgetsNone": "Aucun widget sur l’écran d’accueil pour l’instant.",
+        "widgetCity": "Un widget affiche {city}",
+        "search": "Rechercher",
+        "explore": "Explorer"
+    },
+    "widget": {
+        "configureTitle": "Choisissez la ville de ce widget",
+        "configureEmpty": "Cherchez ou épinglez d’abord un lieu dans Forecast Arena ; il apparaîtra ici.",
+        "openApp": "Ouvrez Forecast Arena pour charger {city}",
+        "today": "Aujourd’hui",
+        "next24": "Prochaines 24 h",
+        "wind": "Vent",
+        "rain": "Pluie",
+        "cancel": "Annuler"
     }
 }
