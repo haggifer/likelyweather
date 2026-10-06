@@ -7,7 +7,8 @@ import { cn } from '@fa/ui/lib/cn'
 import { useLocale, useTranslations } from 'next-intl'
 
 const LOW_SHARE = 0.2
-const RESET_TIME_FORMAT: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
+// No hour cycle: each language's usual clock, "3:00 AM" in English and "03:00" in Ukrainian or German.
+const RESET_TIME_FORMAT: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit' }
 
 // Requests left today out of the daily quota. The reset time is shown in the viewer's own time zone.
 export function QuotaMeter() {
