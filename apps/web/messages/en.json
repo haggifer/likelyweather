@@ -33,7 +33,12 @@
         "searching": "Searching…",
         "empty": "No places found",
         "results": "Places, largest first",
-        "places": "Your places"
+        "places": "Your places",
+        "locate": "Use my location",
+        "locateFar": "The nearest stored city is {name}, {km} km away",
+        "locateUse": "Use it",
+        "locateSearch": "Search",
+        "locateUnavailable": "Location is not available; search for your city instead"
     },
     "chart": {
         "table": "Table",

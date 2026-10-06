@@ -3,6 +3,9 @@ import { expect, Page, test } from '@playwright/test'
 
 const KYIV = 'kyiv-ua-703448'
 const LONDON = 'london-gb-2643743'
+// A seed city, so the nearest stored city is right there; and a spot in the ocean, hundreds of kilometres from any.
+const KHARKIV_POSITION = { latitude: 49.9935, longitude: 36.2304 }
+const MID_ATLANTIC = { latitude: 30, longitude: -40 }
 
 // The overview card is the first card on the landing page; its title names the city.
 const getOverviewTitle = (page: Page) => page.locator('[data-slot=card] [data-slot=card-title]').first()
@@ -59,6 +62,42 @@ test('a first visit starts with the largest places of the viewer country', async
     await expect(getOverviewTitle(page)).toContainText('Kyiv')
 
     await context.close()
+})
+
+test('"Use my location" opens the nearest stored city when it is close', async ({ browser }) => {
+    const context = await browser.newContext({ permissions: ['geolocation'], geolocation: KHARKIV_POSITION })
+    const page = await context.newPage()
+
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Use my location' }).click()
+
+    await expect(page).toHaveURL(/city=kharkiv-ua-706483/)
+    await expect(getOverviewTitle(page)).toContainText('Kharkiv')
+    await expect.poll(() => getChipNames(page)).toContain('Kharkiv')
+
+    await context.close()
+})
+
+test('"Use my location" far from every stored city offers the nearest one instead', async ({ browser }) => {
+    const context = await browser.newContext({ permissions: ['geolocation'], geolocation: MID_ATLANTIC })
+    const page = await context.newPage()
+
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Use my location' }).click()
+
+    await expect(page.getByText(/The nearest stored city is .*, [\d,]+ km away/)).toBeVisible()
+    await page.getByRole('button', { name: 'Search' }).click()
+    await expect(page.getByRole('combobox', { name: 'Search any place' })).toBeFocused()
+
+    await context.close()
+})
+
+test('"Use my location" without permission says so and leaves the city alone', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Use my location' }).click()
+
+    await expect(page.getByText('Location is not available; search for your city instead')).toBeVisible()
+    await expect(page).not.toHaveURL(/city=/)
 })
 
 test('a "Start with" chip switches the overview in place', async ({ page }) => {

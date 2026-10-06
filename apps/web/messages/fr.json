@@ -33,7 +33,12 @@
         "searching": "Recherche…",
         "empty": "Aucun lieu trouvé",
         "results": "Lieux, les plus grands d’abord",
-        "places": "Vos lieux"
+        "places": "Vos lieux",
+        "locate": "Utiliser ma position",
+        "locateFar": "La ville enregistrée la plus proche est {name}, à {km} km",
+        "locateUse": "L’ouvrir",
+        "locateSearch": "Rechercher",
+        "locateUnavailable": "La position n’est pas disponible ; recherchez votre ville"
     },
     "chart": {
         "table": "Tableau",

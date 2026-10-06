@@ -33,7 +33,12 @@
         "searching": "Suche…",
         "empty": "Keine Orte gefunden",
         "results": "Orte, größte zuerst",
-        "places": "Deine Orte"
+        "places": "Deine Orte",
+        "locate": "Meinen Standort verwenden",
+        "locateFar": "Die nächste gespeicherte Stadt ist {name}, {km} km entfernt",
+        "locateUse": "Öffnen",
+        "locateSearch": "Suchen",
+        "locateUnavailable": "Der Standort ist nicht verfügbar; suche stattdessen deine Stadt"
     },
     "chart": {
         "table": "Tabelle",

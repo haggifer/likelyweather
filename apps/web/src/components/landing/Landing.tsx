@@ -52,7 +52,7 @@ export function Landing() {
                 <h1 className="max-w-3xl text-4xl font-bold tracking-tight text-balance sm:text-5xl">{t('hero')}</h1>
                 <p className="max-w-2xl text-base text-pretty text-muted-foreground">{t('sub')}</p>
                 <div className="flex w-full flex-col items-center gap-3">
-                    <SearchBox enableShortcut onSelectCity={(next) => void setSlug(next)} />
+                    <SearchBox enableShortcut isLocateShown onSelectCity={(next) => void setSlug(next)} />
                     <div
                         role="group"
                         aria-label={t('seeds')}

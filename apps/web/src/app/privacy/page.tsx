@@ -13,7 +13,7 @@ export default async function PrivacyPage() {
     const t = await getTranslations('legal')
 
     return (
-        <LegalPage title={t('privacy')} lastUpdated="2026-10-05">
+        <LegalPage title={t('privacy')} lastUpdated="2026-10-06">
             <Privacy />
         </LegalPage>
     )

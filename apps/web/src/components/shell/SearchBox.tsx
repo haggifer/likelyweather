@@ -1,5 +1,6 @@
 'use client'
 
+import { LocateButton } from '@/components/landing/LocateButton'
 import { FlagIcon } from '@/components/shell/FlagIcon'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { useGeocode } from '@/hooks/useGeocode'
@@ -8,7 +9,7 @@ import { useTrackCity } from '@/hooks/useTrackCity'
 import { getErrorKind } from '@/lib/error-kind'
 import { addRecent, getPlaceList, isFavorite, Place, Places, rankByFavorite, toPlace } from '@/lib/places'
 import { updatePlaces } from '@/lib/places-store'
-import { GeocodeResult, Locale } from '@fa/shared/api'
+import { City, GeocodeResult, Locale } from '@fa/shared/api'
 import { getCityLabel } from '@fa/shared/format'
 import { CommandEmpty, CommandGroup, CommandItem, CommandList } from '@fa/ui/components/command'
 import { cn } from '@fa/ui/lib/cn'
@@ -37,6 +38,7 @@ const FavoriteMark = ({ places, id }: { places: Places | null; id: number }) =>
 
 interface IProps {
     enableShortcut?: boolean
+    isLocateShown?: boolean
     initialQuery?: string
     autoFocus?: boolean
     onSelectCity?: (slug: string) => void
@@ -48,8 +50,10 @@ interface IProps {
 // without a handler the box navigates to the city dashboard. While the text is empty or untouched, the box offers the
 // viewer's places instead. With an `initialQuery` (the current city) the text starts selected, so
 // typing replaces it, and results only appear once it has been edited. `onDismiss` fires on Escape and on blur.
+// `isLocateShown` adds the "Use my location" button, whose city is already stored and so needs no tracking.
 export function SearchBox({
     enableShortcut = false,
+    isLocateShown = false,
     initialQuery = '',
     autoFocus = false,
     onSelectCity,
@@ -107,6 +111,12 @@ export function SearchBox({
     const handleSelectPlace = (place: Place) => {
         closeList()
         goToCity(place.slug)
+    }
+
+    const handleSelectNearest = (city: City) => {
+        updatePlaces((current) => addRecent(current, toPlace(city)))
+        closeList()
+        goToCity(city.slug)
     }
 
     const handleKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
@@ -172,6 +182,9 @@ export function SearchBox({
                     <kbd className="hidden shrink-0 rounded border bg-muted px-1.5 py-0.5 font-mono text-[0.6875rem] text-muted-foreground sm:inline">
                         {shortcutLabel}
                     </kbd>
+                )}
+                {isLocateShown && (
+                    <LocateButton onSelect={handleSelectNearest} onSearch={() => inputRef.current?.focus()} />
                 )}
             </div>
             {/* Always rendered, only hidden: the input's aria-controls points at this list. */}
