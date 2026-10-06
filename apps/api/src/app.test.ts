@@ -44,6 +44,15 @@ describe('API without the database', () => {
         expect(res.body.error.code).toBe('invalid_request')
     })
 
+    it('rejects coordinates off the globe or missing before touching the database', async () => {
+        const offGlobe = await request(app).get('/api/cities/nearest').query({ lat: 91, lon: 0 })
+        const missing = await request(app).get('/api/cities/nearest').query({ lat: 50 })
+
+        expect(offGlobe.status).toBe(400)
+        expect(offGlobe.body.error.code).toBe('invalid_request')
+        expect(missing.status).toBe(400)
+    })
+
     it('answers unknown routes with 404', async () => {
         const res = await request(app).get('/api/nope')
 
@@ -73,6 +82,15 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('API with the database', () =>
         expect(health.status).toBe(200)
         expect(health.body.ok).toBe(true)
         expect(health.body.cities).toBeGreaterThanOrEqual(11)
+    })
+
+    it('finds the nearest stored city for rounded coordinates, publicly cacheable', async () => {
+        const res = await request(app).get('/api/cities/nearest').query({ lat: 49.98, lon: 36.25 })
+
+        expect(res.status).toBe(200)
+        expect(res.headers['cache-control']).toBe('public, max-age=300')
+        expect(res.body.city.slug).toBe('kharkiv-ua-706483')
+        expect(res.body.distanceKm).toBeLessThan(2)
     })
 
     it('answers an unknown city with 404', async () => {

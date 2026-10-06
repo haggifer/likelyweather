@@ -1,7 +1,15 @@
 import { getPrisma, loadLocalEnv } from '@fa/db/client'
 import { City } from '@fa/shared/api'
 import { ModelId } from '@fa/shared/models'
-import { addCity, getLatestSnapshot, getLatestSnapshotMeta, getSnapshotGrid, upsertRun, writeSnapshot } from './store'
+import {
+    addCity,
+    getLatestSnapshot,
+    getLatestSnapshotMeta,
+    getNearestCity,
+    getSnapshotGrid,
+    upsertRun,
+    writeSnapshot,
+} from './store'
 import { getWindowSteps } from './window'
 
 loadLocalEnv()
@@ -86,5 +94,11 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('store (database)', () => {
         const added = await addCity({ ...CITY, name: 'Renamed' })
 
         expect(added).toEqual(CITY)
+    })
+
+    it('finds the nearest stored city by great-circle distance', async () => {
+        const nearest = await getNearestCity({ lat: 1.3, lon: 2.4 })
+
+        expect(nearest).toEqual(CITY)
     })
 })

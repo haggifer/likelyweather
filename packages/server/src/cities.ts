@@ -1,4 +1,5 @@
-import { City, GeocodeResult, Locale, LOCALES } from '@fa/shared/api'
+import { City, GeocodeResult, Locale, LOCALES, NearestResponse } from '@fa/shared/api'
+import { Coordinates, getDistanceKm } from '@fa/shared/geo'
 import { slugify } from '@fa/shared/seeds'
 import { floorToStep, isRefreshDue } from '@fa/shared/time'
 import { delay } from 'es-toolkit'
@@ -9,7 +10,15 @@ import { getErrorMessage, HttpError } from './errors'
 import { quotaExceeded, trySpendQuota } from './quota'
 import { pruneExpiredForecasts } from './retention'
 import { getPlace } from './sources/geocoding'
-import { addCity, getCityById, getCityBySlug, getLatestSnapshotMeta, SnapshotMeta, StoredSnapshotMeta } from './store'
+import {
+    addCity,
+    getCityById,
+    getCityBySlug,
+    getLatestSnapshotMeta,
+    getNearestCity,
+    SnapshotMeta,
+    StoredSnapshotMeta,
+} from './store'
 
 const PARTIAL_RETRY_MS = 15 * 60_000
 const REFRESH_CLAIM_SECONDS = 30
@@ -94,6 +103,16 @@ export const requireCity = async (slug: string) => {
     if (!city) throw new HttpError(404, 'city_not_found', `No city with slug "${slug}"`)
 
     return city
+}
+
+// The nearest stored city, however far: whether it is close enough is the client's call. The distance is computed
+// here, from the same function the clients use, so the SQL ordering only has to pick the row.
+export const findNearestCity = async (coordinates: Coordinates): Promise<NearestResponse> => {
+    const city = await getNearestCity(coordinates)
+
+    if (!city) throw new HttpError(404, 'not_found', 'No city is stored yet')
+
+    return { city, distanceKm: getDistanceKm(coordinates, city) }
 }
 
 // Adds a geocoded place to the stored cities, named in every locale, so its slug can be opened. `onCreate` runs

@@ -3,6 +3,7 @@ import { getPrisma, Prisma } from '@fa/db/client'
 import { ensureForecastPartitions, getWeekStart } from '@fa/db/partitions'
 import { City } from '@fa/shared/api'
 import { HOUR_MS } from '@fa/shared/constants'
+import { Coordinates } from '@fa/shared/geo'
 import { ModelId } from '@fa/shared/models'
 import { ModelSeries, SeriesField } from '@fa/shared/variables'
 import { getWindowSteps } from './window'
@@ -173,6 +174,20 @@ export const getCityBySlug = async (slug: string) => {
     const row = await getPrisma().city.findUnique({ where: { slug } })
 
     return row ? toCity(row) : undefined
+}
+
+// Ordered by the great-circle distance computed in SQL (haversine over lat and lon). A full scan: with hundreds of
+// cities that is cheaper than an index; past tens of thousands, add `earthdistance` or PostGIS.
+export const getNearestCity = async ({ lat, lon }: Coordinates) => {
+    const rows = await getPrisma().$queryRaw<CityRow[]>`
+        SELECT * FROM "City"
+        ORDER BY asin(least(1.0, sqrt(
+            power(sin(radians(lat - ${lat}) / 2), 2)
+            + cos(radians(${lat})) * cos(radians(lat)) * power(sin(radians(lon - ${lon}) / 2), 2)
+        )))
+        LIMIT 1`
+
+    return rows[0] ? toCity(rows[0]) : undefined
 }
 
 // Keeps the stored city when two requests add the same one.

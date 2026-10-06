@@ -1,4 +1,4 @@
-import { ensureFreshSnapshot, getStarterCities, requireCity, trackCity } from '@fa/server/cities'
+import { ensureFreshSnapshot, findNearestCity, getStarterCities, requireCity, trackCity } from '@fa/server/cities'
 import { getErrorMessage, HttpError } from '@fa/server/errors'
 import { getLatestPayload } from '@fa/server/latest'
 import { getQuota, quotaExceeded, trySpendQuota } from '@fa/server/quota'
@@ -12,6 +12,8 @@ import {
     GeocodeResponse,
     HealthResponse,
     LatestQuerySchema,
+    NearestQuerySchema,
+    NearestResponse,
     StartersResponse,
     TrackBodySchema,
     TrackResponse,
@@ -126,6 +128,15 @@ apiRouter.get('/starters', rateLimit('read'), async (req, res) => {
     const items = await getStarterCities(getViewerCountry(req))
 
     sendJson(res, { items } satisfies StartersResponse, { isCacheable: false })
+})
+
+// Clients round the coordinates to two decimals first, so CloudFront can share the answer; nothing is stored, no
+// quota is spent, and the API never logs query strings.
+apiRouter.get('/cities/nearest', rateLimit('read'), async (req, res) => {
+    const coordinates = parseQuery(req, NearestQuerySchema)
+    const nearest = await findNearestCity(coordinates)
+
+    sendJson(res, nearest satisfies NearestResponse)
 })
 
 apiRouter.get('/cities/:slug', rateLimit('read'), async (req, res) => {
