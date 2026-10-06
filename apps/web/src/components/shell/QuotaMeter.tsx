@@ -14,7 +14,7 @@ export function QuotaMeter() {
     const t = useTranslations('shell.quota')
     const locale = useLocale()
 
-    const { data } = useQuota()
+    const { quota: data } = useQuota()
 
     if (!data) return null
 

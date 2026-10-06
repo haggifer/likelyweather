@@ -31,7 +31,7 @@ Open any city and its forecast is fetched within a few seconds; search for any o
 
 "Use my location" in the landing search card opens the nearest stored city when it is within 50 km (`GET /api/cities/nearest`, coordinates rounded to about a kilometre, nothing stored), and otherwise names it with its distance. On the dashboard the median line hides and shows like any model.
 
-A daily quota per user (60 upstream fetches a day per client, 600 for the whole app) is shown as a meter in the top bar.
+A daily quota per user (60 upstream fetches a day per client, 600 for the whole app) is shown as a meter in the top bar; the last answer is kept in local storage so the meter is there as soon as a page opens.
 
 
 Phones (below 640 px) get their own layouts where the desktop ones don't fit: the dashboard pins the variable switch under the top bar and puts the model list under the chart, and day labels shorten to fit.
