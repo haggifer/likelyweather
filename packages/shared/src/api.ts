@@ -70,6 +70,14 @@ export type City = z.infer<typeof CitySchema>
 export const StartersResponseSchema = z.object({ items: z.array(CitySchema) })
 export type StartersResponse = z.infer<typeof StartersResponseSchema>
 
+export const NearestQuerySchema = z.strictObject({
+    lat: z.coerce.number().min(-90).max(90),
+    lon: z.coerce.number().min(-180).max(180),
+})
+
+export const NearestResponseSchema = z.object({ city: CitySchema, distanceKm: z.number() })
+export type NearestResponse = z.infer<typeof NearestResponseSchema>
+
 export const LatestQuerySchema = z.strictObject({
     variable: VariableSchema.default(Variable.Temp),
 })

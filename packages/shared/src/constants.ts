@@ -13,5 +13,7 @@ export const REFRESH_AFTER_HOURS = 3
 
 export const RAIN_THRESHOLD_MM = 0.2
 export const MAX_COMPARE_CITIES = 4
+// "Use my location" opens the nearest stored city only this close; farther away it offers the city instead.
+export const NEAREST_MAX_KM = 50
 
 export const SEED_CITY_IDS = [706483, 703448, 702550, 698740, 2643743, 2950159, 756135, 5128581, 1850147, 2147714]
