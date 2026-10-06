@@ -1,14 +1,12 @@
 'use client'
 
 import { useStoredQuota } from '@/hooks/useStoredQuota'
-import { formatTime, getViewerTimeZone } from '@fa/shared/format'
+import { formatClockTime, getViewerTimeZone } from '@fa/shared/format'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@fa/ui/components/tooltip'
 import { cn } from '@fa/ui/lib/cn'
 import { useLocale, useTranslations } from 'next-intl'
 
 const LOW_SHARE = 0.2
-// No hour cycle: each language's usual clock, "3:00 AM" in English and "03:00" in Ukrainian or German.
-const RESET_TIME_FORMAT: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit' }
 
 // Requests left today out of the daily quota. The reset time is shown in the viewer's own time zone.
 export function QuotaMeter() {
@@ -21,7 +19,7 @@ export function QuotaMeter() {
 
     const left = Math.max(0, data.limit - data.used)
     const share = left / data.limit
-    const resetsAt = formatTime(data.resetsAt, getViewerTimeZone(), locale, RESET_TIME_FORMAT)
+    const resetsAt = formatClockTime(data.resetsAt, getViewerTimeZone(), locale)
 
     return (
         <Tooltip>

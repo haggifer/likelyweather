@@ -129,3 +129,17 @@ export const getLocalMidnights = (start: Date, end: Date, timeZone: string) => {
 
     return midnights
 }
+
+// A clock time in each language's usual notation: English in 12-hour time ("3:00 AM"), the others in 24-hour
+// ("03:00"). The other formatters keep en-GB's 24-hour clock for chart labels, where a 12-hour time is too wide.
+export const formatClockTime = (iso: string | Date, timeZone: string, locale: string) =>
+    getOrCreate(
+        FORMATTERS,
+        `clock|${locale}|${timeZone}`,
+        () =>
+            new Intl.DateTimeFormat(locale === Locale.En ? 'en-US' : getIntlLocale(locale), {
+                timeZone,
+                hour: locale === Locale.En ? 'numeric' : '2-digit',
+                minute: '2-digit',
+            }),
+    ).format(new Date(iso))

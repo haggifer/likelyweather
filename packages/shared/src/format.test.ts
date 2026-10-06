@@ -1,4 +1,11 @@
-import { formatDateKey, formatDayLabel, formatPeriodLabel, getLocalMidnights, getTimeZoneOffsetMinutes } from './format'
+import {
+    formatClockTime,
+    formatDateKey,
+    formatDayLabel,
+    formatPeriodLabel,
+    getLocalMidnights,
+    getTimeZoneOffsetMinutes,
+} from './format'
 
 describe('time zones', () => {
     it('computes offsets including DST', () => {
@@ -52,5 +59,16 @@ describe('day labels', () => {
 describe('formatDateKey', () => {
     it('formats a local date key as that calendar day in any time zone', () => {
         expect(formatDateKey('2026-10-02', 'en', { weekday: 'long', day: 'numeric' })).toBe('Friday 2')
+    })
+})
+
+describe('formatClockTime', () => {
+    it('reads 12-hour in English and 24-hour in the other languages', () => {
+        const midnightKyiv = '2026-10-06T21:00:00Z'
+
+        expect(formatClockTime(midnightKyiv, 'Europe/Kyiv', 'en')).toBe('12:00 AM')
+        expect(formatClockTime('2026-10-07T00:00:00Z', 'Europe/Kyiv', 'en')).toBe('3:00 AM')
+        expect(formatClockTime(midnightKyiv, 'Europe/Kyiv', 'uk')).toBe('00:00')
+        expect(formatClockTime(midnightKyiv, 'Europe/Kyiv', 'de')).toBe('00:00')
     })
 })
