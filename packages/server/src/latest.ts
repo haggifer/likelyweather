@@ -1,5 +1,6 @@
 import { LatestResponse, Series } from '@fa/shared/api'
 import { MODELS } from '@fa/shared/models'
+import { compactIso } from '@fa/shared/time'
 import { SeriesField, Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { cached } from './cache'
 import { getSnapshotGrid, SeriesGrid, SnapshotMeta } from './store'
@@ -12,10 +13,11 @@ const pickSeries = (grid: SeriesGrid, field: SeriesField): Series[] =>
 const getFields = (variable: Variable): SeriesField[] =>
     variable === Variable.Wind ? [VARIABLE_BY_ID[variable].field, 'windDir'] : [VARIABLE_BY_ID[variable].field]
 
-// The run id is part of the key, so a newer run is never served from a stale entry and nothing needs invalidating.
+// The run id repeats for every fetch inside one 6-hour step while a refresh happens at 3 hours, so the fetch time is
+// part of the key: a newer fetch is never served from the previous one's entry, and nothing needs invalidating.
 export const getLatestPayload = (meta: SnapshotMeta, variable: Variable) =>
     cached(
-        `latest:${meta.cityId}:${meta.runId}:${variable}`,
+        `latest:${meta.cityId}:${meta.runId}:${compactIso(meta.fetchedAt)}:${variable}`,
         PAYLOAD_TTL_SECONDS,
         async (): Promise<LatestResponse> => {
             const grid = await getSnapshotGrid(meta, getFields(variable))
