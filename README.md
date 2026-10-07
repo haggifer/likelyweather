@@ -135,7 +135,7 @@ The ones a newcomer is most likely to undo by accident:
 
 - **Models are compared with each other, not with observations.** Accuracy needs truth data and its own UI; it is a post-MVP feature.
 - **The server returns raw series; the client derives everything.** Medians, quartiles, slots, disagreement and labels are pure functions in `packages/shared`, unit-tested.
-- **Charts start where the data starts.** They start at the local 3-hour slot the run was fetched in, with a now line at the current time; a background refetch could swap in a newer run under the reader, so the landing chart only moves on Refresh.
+- **Charts start where the data starts.** They start at the local 3-hour slot the run was fetched in, with a now line at the current time; forecast queries never refetch on a timer (a refetch past 3 hours would collect the city and spend the viewer's quota without a click, and swap a newer run in under the reader), so a chart only moves on Refresh.
 - **Precipitation is a total over a span:** bars, not lines, and hovered as the period each bar covers.
 - **The design is frozen in `globals.css`.** The Theme Lab that chose it was removed; it is in the history if a redesign needs it.
 - **Redis is never on the critical path.** Upstash's free plan only; any Redis error means no cache, no limit and a granted claim for that call, never an outage or a bill.
