@@ -209,10 +209,12 @@ export const upsertRun = async (run: Run) => {
     await getPrisma().collectionRun.upsert({ where: { id: run.id }, create: data, update: data })
 }
 
-// Replaces the city's rows for that issue time, so fetching one issue twice never duplicates them.
+// Replaces only the rows of the models the snapshot carries, so fetching one issue twice never duplicates them and a
+// refetch that lost a source (a partial run) keeps that source's rows from the earlier, complete fetch.
 export const writeSnapshot = async (snapshot: Snapshot) => {
     const prisma = getPrisma()
     const issueTime = new Date(snapshot.issueTime)
+    const modelIds = Object.keys(snapshot.models)
 
     const rows = toForecastRows(snapshot, issueTime)
     const meta = {
@@ -224,7 +226,7 @@ export const writeSnapshot = async (snapshot: Snapshot) => {
 
     await ensurePartitionsOnce(issueTime)
     await prisma.$transaction([
-        prisma.forecast.deleteMany({ where: { cityId: snapshot.cityId, issueTime } }),
+        prisma.forecast.deleteMany({ where: { cityId: snapshot.cityId, issueTime, modelId: { in: modelIds } } }),
         // Another instance can write the same run between the delete and the insert; its rows are identical.
         prisma.forecast.createMany({ data: rows, skipDuplicates: true }),
         prisma.snapshot.upsert({

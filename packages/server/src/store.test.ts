@@ -31,6 +31,16 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('store (database)', () => {
     const prisma = getPrisma()
     const steps = getWindowSteps(new Date(ISSUE))
     const values = (base: number) => steps.map((_, i) => (i % 5 === 0 ? null : base + i))
+    const series = {
+        temp: values(10),
+        wind: values(1),
+        windDir: values(90),
+        pressure: values(1000),
+        pressureSfc: values(990),
+        precip: values(0),
+        rain: values(0),
+        snow: values(0),
+    }
 
     beforeAll(async () => {
         await prisma.city.deleteMany({ where: { id: CITY_ID } })
@@ -55,17 +65,6 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('store (database)', () => {
     })
 
     it('writes a snapshot and reads the same grid back, whole or by field and model', async () => {
-        const series = {
-            temp: values(10),
-            wind: values(1),
-            windDir: values(90),
-            pressure: values(1000),
-            pressureSfc: values(990),
-            precip: values(0),
-            rain: values(0),
-            snow: values(0),
-        }
-
         await writeSnapshot({
             cityId: CITY_ID,
             issueTime: ISSUE,
@@ -88,6 +87,24 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('store (database)', () => {
 
         expect(Object.keys(temps.models)).toEqual([ModelId.Metno])
         expect(temps.models[ModelId.Metno]).toEqual({ temp: values(20) })
+    })
+
+    it('keeps the models of a stored run that a partial refetch did not bring back', async () => {
+        await writeSnapshot({
+            cityId: CITY_ID,
+            issueTime: ISSUE,
+            runId: 'test-run',
+            fetchedAt: '2030-03-04T10:01:00.000Z',
+            steps,
+            models: { [ModelId.Metno]: { ...series, temp: values(30) } },
+        })
+
+        const snapshot = await getLatestSnapshot(CITY_ID)
+
+        expect(Object.keys(snapshot?.models ?? {}).sort()).toEqual([ModelId.Gfs, ModelId.Metno].sort())
+        expect(snapshot?.models[ModelId.Metno]?.temp).toEqual(values(30))
+        expect(snapshot?.models[ModelId.Gfs]?.temp).toEqual(values(10))
+        expect(snapshot?.fetchedAt).toBe('2030-03-04T10:01:00.000Z')
     })
 
     it('keeps the stored city when the same city is added again', async () => {
