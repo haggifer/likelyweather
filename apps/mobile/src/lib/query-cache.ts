@@ -3,6 +3,7 @@ import NetInfo from '@react-native-community/netinfo'
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
 import { onlineManager } from '@tanstack/react-query'
 import Constants from 'expo-constants'
+import { getColdStartRefetch } from './cold-start-refetch'
 import { storage } from './storage'
 
 const DAY_MS = 86_400_000
@@ -20,7 +21,11 @@ export const queryClient = makeQueryClient()
 
 queryClient.setDefaultOptions({
     ...queryClient.getDefaultOptions(),
-    queries: { ...queryClient.getDefaultOptions().queries, gcTime: CACHE_MAX_AGE_MS },
+    queries: {
+        ...queryClient.getDefaultOptions().queries,
+        gcTime: CACHE_MAX_AGE_MS,
+        refetchOnMount: getColdStartRefetch(Date.now()),
+    },
 })
 
 export const queryPersister = createAsyncStoragePersister({
