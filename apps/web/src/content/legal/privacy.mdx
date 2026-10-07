@@ -67,7 +67,7 @@ Forecast Arena has no accounts, sign-up, forms or uploads. You can use every par
 
 **_In Short:_** _Your IP address is used in short-lived counters that limit how many requests one visitor can make._
 
-- _Request limits._ Each request to our server comes with your IP address. We count the requests from each address over short time windows (1 minute for reading forecasts and for searches, 1 hour for opening new cities), and the requests that make our server fetch new data from the weather services for you, which are limited per address per day. Each count is stored with the address (for an IPv6 address, only its first half, which identifies your network or device rather than the full address) and deleted automatically when its window ends: after 1 minute, after 1 hour, or at 00:00 UTC for the daily limit. We do not use the address for anything else, and our logs do not record it.
+- _Request limits._ Each request to our server comes with your IP address. We count the requests from each address over short time windows (1 minute for reading forecasts and for searches, 1 hour for opening new cities), and the requests that make our server fetch new data from the weather services for you, which are limited per address per day. Each count is stored with the address (for an IPv6 address, only its first half, which identifies your network or device rather than the full address) and deleted automatically 1 minute or 1 hour after the last request it counts (so at most a minute or an hour after its window ends), or at 00:00 UTC for the daily limit. We do not use the address for anything else, and our logs do not record it.
 - _Delivering the website._ Like any website, ours receives your IP address and browser information with each request, because our hosting provider needs them to deliver the pages to you. We do not keep access logs. When a request fails, we log the page or API path it asked for, without your IP address or search text, and keep that log for 14 days.
 
 We do not use analytics, advertising or tracking tools.
@@ -119,19 +119,19 @@ We do not use analytics or advertising cookies, and we do not allow third partie
 
 - **NEXT_LOCALE** (a cookie): remembers the language you choose. It is set only when you switch the language, and expires after one year.
 - **fa.mode** (in your browser's local storage, not sent to us): remembers whether you chose the light or dark theme. It is set only when you switch the theme, and stays until you clear your browser's site data.
-- **fa.places** (in your browser's local storage, not sent to us): remembers your favorite places and up to 50 places you last picked in the city search, which the website shows as shortcuts. It is set only when you pick a place in the search or add or remove a favorite, and stays until you clear your browser's site data.
+- **fa.places** (in your browser's local storage, not sent to us): remembers your favorite places and up to 50 places you last picked in the city search, which the website shows as shortcuts. It is set when you pick a place in the search, add or remove a favorite, open the nearest city with "Use my location", or on your first visit, when the website fills the shortcuts with the largest cities of your country; it stays until you clear your browser's site data.
 - **fa.appPromo.dismissedAt** (in your browser's local storage, not sent to us): the moment you closed the "Get the app" bar on an Android phone, so it stays closed for 30 days. It is set only when you close the bar.
 - **fa.quota** (in your browser's local storage, not sent to us): the last answer our server gave about your daily request count, so the meter in the top bar shows it at once when a page opens. It holds only the limit, the count and the reset time, is replaced on every answer, and is ignored once the reset time has passed.
 
-The Android app keeps on your phone, in its own storage and never sent to us: your favorite and recent places, your language and theme choices, the city each home-screen widget shows with the numbers it last displayed, and the forecasts it last loaded, kept for up to one day so they stay readable offline. Uninstalling the app or clearing its storage in Android's settings deletes all of it.
+The Android app keeps on your phone, in its own storage and never sent to us: your favorite and recent places, your language and theme choices, the city each home-screen widget shows with the numbers it last displayed, and the answers it last received from our server, kept for up to one day so they stay readable offline. Those answers include the forecasts, your request count, the starter cities, and your recent searches with what you typed and their results. Uninstalling the app or clearing its storage in Android's settings deletes all of it.
 
-Because these only store a choice you made, we do not ask for your consent to them. You can delete or block them in your browser settings; the website then uses its default language, your system's color theme and its starter cities.
+Because these only keep the website working as you use it, we do not ask for your consent to them. You can delete or block them in your browser settings; the website then uses its default language, your system's color theme and its starter cities.
 
 ## 6. How long do we keep your information?
 
 **_In Short:_** _Request counters are deleted within a day at most._
 
-Each request counter, and the IP address stored with it, is deleted automatically when its window ends: 1 minute or 1 hour after the first request it counts, or at 00:00 UTC for the daily limit. We keep no other personal information.
+Each request counter, and the IP address stored with it, is deleted automatically 1 minute or 1 hour after the last request it counts (so at most a minute or an hour after its window ends), or at 00:00 UTC for the daily limit. We keep no other personal information.
 
 ## 7. How do we keep your information safe?
 
