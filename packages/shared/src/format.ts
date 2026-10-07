@@ -1,5 +1,5 @@
 import { City, Locale } from './api'
-import { DAY_MS } from './constants'
+import { DAY_MS, HOUR_MS } from './constants'
 import { getOrCreate } from './memo'
 
 export type DayLabelStyle = 'long' | 'short' | 'narrow'
@@ -103,11 +103,15 @@ export const getTimeZoneOffsetMinutes = (date: Date, timeZone: string) => {
 }
 
 // The offset at UTC midnight can differ from the one at local midnight on a daylight-saving day (Sydney's clocks
-// go forward at 02:00 local, which is 16:00 UTC the day before), so the first estimate is corrected once.
+// go forward at 02:00 local, which is 16:00 UTC the day before), so the first estimate is corrected once. A zone
+// whose clocks jump forward at midnight itself (Santiago, Havana) has no 00:00 that day: the correction lands on
+// 23:00 of the day before, and the day's first instant is one hour later.
 const toLocalMidnight = (day: number, timeZone: string) => {
     const estimate = new Date(day - getTimeZoneOffsetMinutes(new Date(day), timeZone) * MINUTE_MS)
+    const midnight = new Date(day - getTimeZoneOffsetMinutes(estimate, timeZone) * MINUTE_MS)
+    const localMs = midnight.getTime() + getTimeZoneOffsetMinutes(midnight, timeZone) * MINUTE_MS
 
-    return new Date(day - getTimeZoneOffsetMinutes(estimate, timeZone) * MINUTE_MS)
+    return localMs < day ? new Date(midnight.getTime() + HOUR_MS) : midnight
 }
 
 export const getLocalMidnights = (start: Date, end: Date, timeZone: string) => {

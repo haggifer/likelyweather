@@ -30,6 +30,16 @@ describe('time zones', () => {
         expect(autumn.map((d) => d.toISOString())).toEqual(['2026-04-04T13:00:00.000Z', '2026-04-05T14:00:00.000Z'])
     })
 
+    it('starts a day at 01:00 where the clocks jump forward at midnight', () => {
+        const midnights = getLocalMidnights(
+            new Date('2026-09-05T12:00Z'),
+            new Date('2026-09-07T12:00Z'),
+            'America/Santiago',
+        )
+
+        expect(midnights.map((d) => d.toISOString())).toEqual(['2026-09-06T04:00:00.000Z', '2026-09-07T03:00:00.000Z'])
+    })
+
     it('lists local midnights inside a UTC range', () => {
         const midnights = getLocalMidnights(new Date('2026-09-22T12:00Z'), new Date('2026-09-24T12:00Z'), 'Europe/Kyiv')
 
