@@ -10,7 +10,7 @@ import { IntlProvider, useTranslations } from 'use-intl'
 import { useSettings } from '../hooks/useSettings'
 import { useTheme } from '../hooks/useTheme'
 import { CATALOGS } from '../lib/catalogs'
-import { CACHE_MAX_AGE_MS, queryClient, queryPersister } from '../lib/query-cache'
+import { CACHE_BUSTER, CACHE_MAX_AGE_MS, queryClient, queryPersister } from '../lib/query-cache'
 import { resolveLocale } from '../lib/settings'
 
 const HomeActions = () => {
@@ -72,7 +72,7 @@ export default function RootLayout() {
         <GestureHandlerRootView style={{ flex: 1 }}>
             <PersistQueryClientProvider
                 client={queryClient}
-                persistOptions={{ persister: queryPersister, maxAge: CACHE_MAX_AGE_MS }}
+                persistOptions={{ persister: queryPersister, maxAge: CACHE_MAX_AGE_MS, buster: CACHE_BUSTER }}
             >
                 <IntlProvider locale={locale} messages={CATALOGS[locale]} timeZone={getViewerTimeZone()}>
                     <AppStack />
