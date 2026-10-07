@@ -23,7 +23,7 @@ export function FavoriteToggle({ place, size = 22, tone = 'default' }: IProps) {
 
     const isPinned = isFavorite(places, place.id)
     const label = t(isPinned ? 'unpinCity' : 'pinCity', { name: getCityName(place, locale) })
-    const idleColor = tone === 'inverse' ? colors['primary-foreground'] : colors['muted-foreground']
+    const idleColor = tone === 'inverse' ? colors['primary-foreground'] : colors['favorite-idle']
 
     const handlePress = () => {
         if (!isPinnable(places, place.id)) {

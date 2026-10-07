@@ -30,6 +30,7 @@
     --color-warning: var(--warning);
     --color-favorite: var(--favorite);
     --color-favorite-fill: var(--favorite-fill);
+    --color-favorite-idle: var(--favorite-idle);
     --color-success: var(--success);
     --color-code-background: var(--code-background);
     --color-ring: var(--ring);
@@ -84,6 +85,8 @@
        grey outline of unpinned ones by their fill. */
     --favorite: #e4d00a;
     --favorite-fill: #fffd78;
+    /* The outline of a star that is not pinned: a step lighter than muted text, still 3.4:1 on the page. */
+    --favorite-idle: #7b889e;
     --success: #15803d;
     --code-background: #eef2f8;
     --chart-1: #1e5eff;
@@ -128,6 +131,7 @@
     --warning: #f59e0b;
     --favorite: #e1ad01;
     --favorite-fill: #e1ad01;
+    --favorite-idle: #9aa8c2;
     --success: #4ade80;
     --code-background: #0a1020;
     --chart-1: #7aa2ff;

@@ -37,7 +37,7 @@ export function FavoriteToggle({ place, className }: IProps) {
             title={isAvailable ? label : undefined}
             className={cn('shrink-0', !places && 'invisible', className)}
         >
-            <Star className={cn('size-5', isPinned ? 'fill-favorite-fill text-favorite' : 'text-muted-foreground')} />
+            <Star className={cn('size-5', isPinned ? 'fill-favorite-fill text-favorite' : 'text-favorite-idle')} />
         </Button>
     )
 
