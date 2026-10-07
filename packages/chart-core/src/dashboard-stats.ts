@@ -1,4 +1,5 @@
 import { LatestResponse, Series } from '@fa/shared/api'
+import { HOUR_MS } from '@fa/shared/constants'
 import {
     computeChanceOfRain,
     computeDisagreement,
@@ -12,7 +13,7 @@ import { indexSteps, toStepSeries } from '@fa/shared/resample'
 import { DASHBOARD_HOURS, SLOT_HOURS } from '@fa/shared/slots'
 import { addHours, toIsoMinute } from '@fa/shared/time'
 import { Variable } from '@fa/shared/variables'
-import { getNearestIndex } from './spaghetti-geometry'
+import { getNearestIndex, getSpanIndex } from './spaghetti-geometry'
 
 interface DashboardStats {
     stats: EnsembleStats
@@ -33,6 +34,8 @@ interface ValueRange {
 }
 
 export const PRECIP_WINDOW_HOURS = 6
+
+const SLOT_MS = SLOT_HOURS * HOUR_MS
 
 export const getSlotEnd = (step: string) => toIsoMinute(addHours(new Date(step), SLOT_HOURS))
 
@@ -84,15 +87,16 @@ export const getPrecipTotals = (data: LatestResponse, anchor: Date): PrecipTotal
     }
 }
 
-export const getReadoutIndex = (steps: string[], hoverIndex: number, now: Date | null) => {
+// The slot a readout follows: the hovered one, else the one for `now`. An instant reads at the nearest slot; a sum
+// covers the 3 hours after its slot, so it reads at the slot whose span contains `now`, like a bar under the pointer.
+export const getReadoutIndex = (steps: string[], hoverIndex: number, now: Date | null, isSum = false) => {
     if (hoverIndex >= 0) return hoverIndex
 
-    return now
-        ? getNearestIndex(
-              steps.map((s) => new Date(s)),
-              now,
-          )
-        : 0
+    if (!now) return 0
+
+    const times = steps.map((s) => new Date(s))
+
+    return isSum ? getSpanIndex(times, now, SLOT_MS) : getNearestIndex(times, now)
 }
 
 export const getFutureRange = (values: (number | null)[], steps: string[], now: Date): ValueRange => {

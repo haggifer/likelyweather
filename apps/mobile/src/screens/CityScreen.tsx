@@ -193,7 +193,7 @@ const Dashboard = ({ city }: DashboardProps) => {
 
     const visibleSeries = latest.series.filter((s) => !hidden.includes(s.modelId))
     const hoverIndex = hoverStep ? latest.steps.indexOf(hoverStep) : -1
-    const readoutIndex = getReadoutIndex(latest.steps, hoverIndex, now)
+    const readoutIndex = getReadoutIndex(latest.steps, hoverIndex, now, info.aggregation === 'sum')
     const futureRange = getFutureRange(derived.stats.median, latest.steps, now)
     const mostSplit = [...derived.disagreement].sort((a, b) => b.spread - a.spread)[0]
     const summary = t('summary', {

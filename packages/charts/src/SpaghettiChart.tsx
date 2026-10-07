@@ -182,7 +182,8 @@ export function SpaghettiChart({
 
         if (!step) return
 
-        const current = hoverIndex ?? getNearestIndex(times, now ?? times[0])
+        const at = now ?? times[0]
+        const current = hoverIndex ?? (isBars ? getSpanIndex(times, at, stepMs) : getNearestIndex(times, at))
 
         e.preventDefault()
         onHoverIndex?.(clamp(current + step, minIndex, maxIndex))

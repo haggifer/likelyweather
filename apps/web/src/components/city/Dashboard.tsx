@@ -247,7 +247,7 @@ export function Dashboard({ slug }: IProps) {
     const visibleSeries = latest.series.filter((s) => !hidden.includes(s.modelId))
     const emphasized: ModelId[] = [...pinned, ...(highlighted ? [highlighted] : [])]
     const hoverIndex = hoverStep ? latest.steps.indexOf(hoverStep) : -1
-    const readoutIndex = getReadoutIndex(latest.steps, hoverIndex, chartNow)
+    const readoutIndex = getReadoutIndex(latest.steps, hoverIndex, chartNow, info.aggregation === 'sum')
     const futureRange = getFutureRange(derived.stats.median, latest.steps, now)
     const mostSplit = [...derived.disagreement].sort((a, b) => b.spread - a.spread)[0]
     const summary = t('summary', {
