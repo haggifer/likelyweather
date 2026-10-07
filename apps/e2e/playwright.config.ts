@@ -41,6 +41,7 @@ export default defineConfig({
     timeout: 60_000,
     expect: { timeout: 20_000 },
     retries: IS_CI ? 1 : 0,
+    forbidOnly: IS_CI,
     workers: 1,
     reporter: IS_CI ? [['github'], ['html', { open: 'never' }]] : 'list',
     use: { baseURL: `http://localhost:${WEB_PORT}`, trace: 'retain-on-failure' },

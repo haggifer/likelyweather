@@ -58,12 +58,14 @@ createServer((req, res) => {
     const url = new URL(req.url, `http://localhost:${PORT}`)
     const getNumbers = (name) => (url.searchParams.get(name) ?? '').split(',').filter(Boolean).map(Number)
 
+    // Open-Meteo answers a single location with a bare object and several with an array; the collector always asks
+    // for one, so the object branch is the one production runs.
     if (url.pathname === '/v1/forecast') {
         const lats = getNumbers('latitude')
         const lons = getNumbers('longitude')
         const forecasts = lats.map((lat, i) => getOpenMeteoForecast(lat, lons[i]))
 
-        return send(res, 200, forecasts)
+        return send(res, 200, forecasts.length === 1 ? forecasts[0] : forecasts)
     }
 
     if (url.pathname === '/v1/search') {
