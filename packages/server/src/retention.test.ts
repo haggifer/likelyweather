@@ -1,9 +1,8 @@
-import { dropExpiredForecastPartitions } from '@fa/db/partitions'
 import { pruneExpiredForecasts } from './retention'
-import { deleteSnapshotsBefore } from './store'
+import { deleteSnapshotsBefore, dropExpiredForecastPartitions } from './store'
 
-vi.mock('@fa/db/partitions', () => ({ dropExpiredForecastPartitions: vi.fn(async () => []) }))
 vi.mock('./store', () => ({
+    dropExpiredForecastPartitions: vi.fn(async () => []),
     deleteSnapshotsBefore: vi.fn(async () => ({ count: 0 })),
     deleteRunsBefore: vi.fn(async () => ({ count: 0 })),
 }))

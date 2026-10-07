@@ -1,6 +1,10 @@
 // Postgres through Prisma.
 import { getPrisma, Prisma } from '@fa/db/client'
-import { ensureForecastPartitions, getWeekStart } from '@fa/db/partitions'
+import {
+    dropExpiredForecastPartitions as dropExpiredPartitions,
+    ensureForecastPartitions,
+    getWeekStart,
+} from '@fa/db/partitions'
 import { City } from '@fa/shared/api'
 import { HOUR_MS } from '@fa/shared/constants'
 import { Coordinates } from '@fa/shared/geo'
@@ -278,3 +282,6 @@ export const deleteSnapshotsBefore = (cutoff: Date) =>
 // Runs older than the forecasts they produced; deleting a run also deletes its snapshots.
 export const deleteRunsBefore = (cutoff: Date) =>
     getPrisma().collectionRun.deleteMany({ where: { issueTime: { lt: cutoff } } })
+
+export const dropExpiredForecastPartitions = (now: Date, retentionDays: number) =>
+    dropExpiredPartitions(getPrisma(), now, retentionDays)

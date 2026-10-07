@@ -1,9 +1,7 @@
-import { getPrisma } from '@fa/db/client'
-import { dropExpiredForecastPartitions } from '@fa/db/partitions'
 import { DAY_MS } from '@fa/shared/constants'
 import { claim } from './cache'
 import { env } from './env'
-import { deleteRunsBefore, deleteSnapshotsBefore } from './store'
+import { deleteRunsBefore, deleteSnapshotsBefore, dropExpiredForecastPartitions } from './store'
 
 const CLAIM_SECONDS = DAY_MS / 1000
 
@@ -24,7 +22,7 @@ export const pruneExpiredForecasts = async (now = new Date()) => {
 
     const cutoff = new Date(now.getTime() - env.RETENTION_DAYS * DAY_MS)
 
-    await dropExpiredForecastPartitions(getPrisma(), now, env.RETENTION_DAYS)
+    await dropExpiredForecastPartitions(now, env.RETENTION_DAYS)
     await deleteSnapshotsBefore(cutoff)
     await deleteRunsBefore(cutoff)
 }
