@@ -1,5 +1,6 @@
 'use client'
 
+import { LineSwatch } from '@/components/shell/LineSwatch'
 import { useAppDispatch, useAppSelector } from '@/store'
 import {
     setHighlightedModel,
@@ -16,27 +17,6 @@ import { Button } from '@fa/ui/components/button'
 import { cn } from '@fa/ui/lib/cn'
 import { Eye, EyeOff, Pin } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-
-interface SwatchProps {
-    color: string
-    dash?: string
-    width?: number
-}
-
-const LineSwatch = ({ color, dash, width = 18 }: SwatchProps) => (
-    <svg width={width} height="6" aria-hidden="true" className="shrink-0 max-sm:w-3">
-        <line
-            x1="1"
-            x2={width - 1}
-            y1="3"
-            y2="3"
-            stroke={color}
-            strokeWidth="2.5"
-            strokeDasharray={dash}
-            strokeLinecap="round"
-        />
-    </svg>
-)
 
 const getLegendRows = (series: Series[], readoutIndex: number, hidden: ModelId[]) =>
     series

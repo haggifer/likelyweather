@@ -306,7 +306,7 @@ export function SpaghettiChart({
                                         stroke={MODEL_BY_ID[modelId].color}
                                         strokeWidth={emphasized.includes(modelId) ? 2.5 : 1.5}
                                         strokeDasharray={MODEL_BY_ID[modelId].dash}
-                                        strokeLinecap="round"
+                                        strokeLinecap={MODEL_BY_ID[modelId].dash ? 'butt' : 'round'}
                                         opacity={isDimmed(modelId) ? 0.15 : 0.9}
                                     />
                                 ))}
