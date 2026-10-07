@@ -122,7 +122,7 @@ The web app runs on Lambda instead of Amplify. Truth, skill scores, the scoreboa
 
 One CDK stack (`infra/`, deployed to your AWS profile's region; use `eu-central-1`, where Neon and Upstash run) holds the web and API functions, CloudFront with security headers, an error alarm e-mailed through SNS, the GitHub deploy role and a monthly budget alarm. Postgres (Neon) and Redis (Upstash) are external.
 
-1. Create three SecureString parameters the functions read at cold start: `/forecast-arena/DATABASE_URL` (the pooled connection string), `/forecast-arena/REDIS_URL` (`rediss://…`) and `/forecast-arena/METNO_USER_AGENT`.
+1. Create three SecureString parameters the functions read at cold start: `/forecast-arena/DATABASE_URL` (the pooled connection string), `/forecast-arena/REDIS_URL` (`rediss://…`) and `/forecast-arena/METNO_USER_AGENT`. The API refuses to start on AWS when `METNO_USER_AGENT` is missing, and logs a warning when `REDIS_URL` is.
 2. Apply migrations from your machine with the unpooled URL: `DIRECT_URL=<url> DATABASE_URL=<url> pnpm db:deploy` (deploys never migrate), then `pnpm db:seed` with the same variables. On a live stack, a migration that only adds runs before the deploy; one that drops columns the running code reads runs after it.
 3. Once per account and region: `pnpm build && pnpm cdk:bootstrap --profile <profile>`.
 4. Deploy: `pnpm build && pnpm cdk:deploy --profile <profile> -c budgetEmail=<address> -c githubRepo=<owner>/<repo>`. The stack output `SiteUrl` is the site. Confirm the SNS subscription e-mail once, or the error alarm reaches nobody.
