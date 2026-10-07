@@ -25,6 +25,12 @@
             "ignoreDependencies": ["tsx", "@fa/api", "@fa/web"],
         },
         // Internal packages: a package export that no workspace imports is dead code, not public API.
+        "packages/api-client": {
+            "includeEntryExports": true,
+        },
+        "packages/chart-core": {
+            "includeEntryExports": true,
+        },
         "packages/charts": {
             "includeEntryExports": true,
         },
@@ -34,6 +40,9 @@
             "ignoreDependencies": ["@prisma/client"],
         },
         "packages/fixtures": {},
+        "packages/messages": {
+            "includeEntryExports": true,
+        },
         "packages/server": {
             "includeEntryExports": true,
             // The tests read fixture files by path; the link makes Turbo rerun them when the fixtures change.
