@@ -2,6 +2,7 @@ import {
     formatClockTime,
     formatDateKey,
     formatDayLabel,
+    formatNumber,
     formatPeriodLabel,
     getLocalMidnights,
     getTimeZoneOffsetMinutes,
@@ -80,5 +81,14 @@ describe('formatClockTime', () => {
         expect(formatClockTime('2026-10-07T00:00:00Z', 'Europe/Kyiv', 'en')).toBe('3:00 AM')
         expect(formatClockTime(midnightKyiv, 'Europe/Kyiv', 'uk')).toBe('00:00')
         expect(formatClockTime(midnightKyiv, 'Europe/Kyiv', 'de')).toBe('00:00')
+    })
+})
+
+describe('formatNumber', () => {
+    it('never shows a sign on a value that rounds to zero', () => {
+        expect(formatNumber(-0.04, 1)).toBe('0.0')
+        expect(formatNumber(-0.4, 0)).toBe('0')
+        expect(formatNumber(-0.06, 1)).toBe('-0.1')
+        expect(formatNumber(null)).toBe('–')
     })
 })

@@ -66,8 +66,14 @@ export const formatDateKey = (day: string, locale: string, options: Intl.DateTim
 // server renders in UTC, so using it in the first render would mismatch on hydration.
 export const getViewerTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone
 
-export const formatNumber = (value: number | null | undefined, decimals = 1) =>
-    value === null || value === undefined || Number.isNaN(value) ? '–' : value.toFixed(decimals)
+export const formatNumber = (value: number | null | undefined, decimals = 1) => {
+    if (value === null || value === undefined || Number.isNaN(value)) return '–'
+
+    const text = value.toFixed(decimals)
+
+    // "-0.0" is a rounding artefact of a small negative median, not a reading.
+    return Number(text) === 0 ? text.replace('-', '') : text
+}
 
 export const formatPercent = (value: number | null | undefined) =>
     value === null || value === undefined ? '–' : `${Math.round(value * 100)}%`
