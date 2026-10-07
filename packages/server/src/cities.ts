@@ -1,7 +1,8 @@
 import { City, GeocodeResult, Locale, LOCALES, NearestResponse } from '@fa/shared/api'
+import { HOUR_MS, REFRESH_AFTER_HOURS } from '@fa/shared/constants'
 import { Coordinates, getDistanceKm } from '@fa/shared/geo'
 import { slugify } from '@fa/shared/seeds'
-import { floorToStep, isRefreshDue } from '@fa/shared/time'
+import { floorToStep } from '@fa/shared/time'
 import { delay } from 'es-toolkit'
 import { claim, dedupe, releaseClaim } from './cache'
 import { collect } from './collector'
@@ -10,15 +11,7 @@ import { getErrorMessage, HttpError } from './errors'
 import { quotaExceeded, trySpendQuota } from './quota'
 import { pruneExpiredForecasts } from './retention'
 import { getPlace } from './sources/geocoding'
-import {
-    addCity,
-    getCityById,
-    getCityBySlug,
-    getLatestSnapshotMeta,
-    getNearestCity,
-    SnapshotMeta,
-    StoredSnapshotMeta,
-} from './store'
+import { addCity, getCityById, getCityBySlug, getLatestSnapshotMeta, getNearestCity, StoredSnapshotMeta } from './store'
 
 const PARTIAL_RETRY_MS = 15 * 60_000
 const REFRESH_CLAIM_SECONDS = 30
@@ -75,13 +68,13 @@ const waitForRefresh = async (city: City, stored: StoredSnapshotMeta | null) => 
 // Source failures never throw from `collect`; without any data the stored snapshot is served, or the view fails.
 // A failure past that (the database, the partition DDL) also falls back to the stored run, but is logged: the
 // stored run stays due, so every view would otherwise keep fetching and spending quota in silence.
-const fetchSnapshot = async (city: City, stored: StoredSnapshotMeta | null): Promise<SnapshotMeta> => {
+const fetchSnapshot = async (city: City, stored: StoredSnapshotMeta | null): Promise<StoredSnapshotMeta> => {
     try {
-        const { snapshot } = await collect({ city })
+        const { run, snapshot } = await collect({ city })
 
         await pruneQuietly()
 
-        const latest = snapshot ?? stored
+        const latest = snapshot ? { ...snapshot, runStatus: run.status } : stored
 
         if (!latest) throw new HttpError(502, 'upstream_error', `No forecast source answered for ${city.name}`)
 
@@ -95,11 +88,15 @@ const fetchSnapshot = async (city: City, stored: StoredSnapshotMeta | null): Pro
     }
 }
 
-// A stored forecast is fetched again once it is 3 hours old, when the UI offers Refresh; a partial run (a source
-// failed) only stands for a short cooldown.
-export const isFreshSnapshot = (snapshot: StoredSnapshotMeta, now: Date) =>
-    !isRefreshDue(snapshot.fetchedAt, now) &&
-    (snapshot.runStatus === 'OK' || now.getTime() - new Date(snapshot.fetchedAt).getTime() < PARTIAL_RETRY_MS)
+// A stored forecast is fetched again once it is 3 hours old, when the UI offers Refresh (`isRefreshDue`); a partial
+// run (a source failed), or one whose process died before marking it done, only stands for a short cooldown.
+export const getRefreshDueAt = (snapshot: StoredSnapshotMeta) => {
+    const lifetimeMs = snapshot.runStatus === 'OK' ? REFRESH_AFTER_HOURS * HOUR_MS : PARTIAL_RETRY_MS
+
+    return new Date(new Date(snapshot.fetchedAt).getTime() + lifetimeMs)
+}
+
+export const isFreshSnapshot = (snapshot: StoredSnapshotMeta, now: Date) => now < getRefreshDueAt(snapshot)
 
 export const requireCity = async (slug: string) => {
     const city = await getCityBySlug(slug)
@@ -140,7 +137,7 @@ export const trackCity = async (geocodeId: number, onCreate: () => Promise<void>
 // parallel requests of one page meet in a shared claim: the first fetches and spends the client's quota, the others
 // wait for its snapshot. With no quota left the stored snapshot is served as it is, and the claim is given back so
 // the next viewer does not wait 12 seconds for a fetch that never starts.
-export const ensureFreshSnapshot = (city: City, client?: string): Promise<SnapshotMeta> =>
+export const ensureFreshSnapshot = (city: City, client?: string): Promise<StoredSnapshotMeta> =>
     dedupe(`refresh:${city.id}`, async () => {
         const now = new Date()
         const stored = await getLatestSnapshotMeta(city.id)

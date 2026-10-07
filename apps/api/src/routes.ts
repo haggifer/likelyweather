@@ -75,7 +75,7 @@ const getCompareItem = async (slug: string, variable: Variable, client: string) 
 
     const latest = await getLatestPayload(meta, variable)
 
-    return { item: { city, latest }, maxAge: getLatestMaxAge(meta.fetchedAt, new Date()) }
+    return { item: { city, latest }, maxAge: getLatestMaxAge(meta, new Date()) }
 }
 
 // Shared only when every requested city was found and every run can still be shared, for the shortest of their times.
@@ -151,7 +151,7 @@ apiRouter.get('/cities/:slug/latest', rateLimit('read'), async (req, res) => {
     const meta = await ensureFreshSnapshot(city, getClientKey(req))
     const payload = await getLatestPayload(meta, variable)
 
-    sendJson(res, payload, { maxAge: getLatestMaxAge(meta.fetchedAt, new Date()) })
+    sendJson(res, payload, { maxAge: getLatestMaxAge(meta, new Date()) })
 })
 
 apiRouter.get('/quota', rateLimit('read'), async (req, res) => {

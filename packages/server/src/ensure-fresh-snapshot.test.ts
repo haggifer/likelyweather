@@ -4,7 +4,7 @@ import { ensureFreshSnapshot } from './cities'
 import { collect } from './collector'
 import { HttpError } from './errors'
 import { trySpendQuota } from './quota'
-import { getLatestSnapshotMeta, StoredSnapshotMeta } from './store'
+import { getLatestSnapshotMeta, Run, StoredSnapshotMeta } from './store'
 
 vi.mock('./store', () => ({ getLatestSnapshotMeta: vi.fn(async () => null) }))
 vi.mock('./collector', () => ({ collect: vi.fn() }))
@@ -39,7 +39,7 @@ const STORED: StoredSnapshotMeta = { ...SNAPSHOT, fetchedAt: '2020-01-01T01:00:0
 
 describe('ensureFreshSnapshot', () => {
     beforeEach(() => {
-        vi.mocked(collect).mockResolvedValue({ run: {} as never, snapshot: SNAPSHOT })
+        vi.mocked(collect).mockResolvedValue({ run: { status: 'PARTIAL' } as Run, snapshot: SNAPSHOT })
     })
 
     afterEach(() => {
@@ -56,7 +56,7 @@ describe('ensureFreshSnapshot', () => {
 
         const served = await ensureFreshSnapshot(CITY, 'rich')
 
-        expect(served.fetchedAt).toBe(SNAPSHOT.fetchedAt)
+        expect(served).toMatchObject({ fetchedAt: SNAPSHOT.fetchedAt, runStatus: 'PARTIAL' })
         expect(collect).toHaveBeenCalledTimes(1)
     })
 
