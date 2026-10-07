@@ -14,7 +14,7 @@ pnpm lint
 pnpm knip                    # unused files, exports and dependencies (knip.jsonc)
 pnpm typecheck
 pnpm test                    # database tests run when DATABASE_URL is set (the root .env sets it locally; CI passes it through turbo.json), and are skipped otherwise
-pnpm check:messages          # catalog key parity and literal key usage
+pnpm check:messages          # catalog key and ICU argument parity, and literal key usage
 pnpm build && pnpm e2e       # Playwright against a fake upstream and its own database (<DATABASE_URL>_e2e)
 pnpm format
 pnpm build                   # Next.js, the API's Lambda bundle, the Prisma client

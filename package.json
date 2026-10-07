@@ -23,6 +23,7 @@
         "cdk:bootstrap": "pnpm --filter @fa/infra run bootstrap"
     },
     "devDependencies": {
+        "@formatjs/icu-messageformat-parser": "3.5.20",
         "eslint": "^9",
         "eslint-plugin-react-hooks": "^7",
         "knip": "6.38.0",

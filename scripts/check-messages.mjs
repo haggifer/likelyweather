@@ -1,5 +1,7 @@
-// Fails when the five message catalogs disagree on their keys, or when code uses a literal key that the English
-// catalog lacks. Keys built at runtime (template literals) are not checked.
+// Fails when the five message catalogs disagree on their keys or on the ICU arguments and tags a message needs, or
+// when code uses a literal key that the English catalog lacks. Keys built at runtime (template literals) are not
+// checked.
+import { parse, TYPE } from '@formatjs/icu-messageformat-parser'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import path from 'node:path'
 
@@ -11,9 +13,37 @@ const SOURCE_DIRS = ['apps/web/src', 'apps/mobile/src', 'packages/charts/src', '
 )
 const BINDING = /(?:const|let)\s+(\w+)\s*=\s*(?:await\s+)?(?:useTranslations|getTranslations)\(\s*(?:'([\w.]+)')?\s*\)/g
 
+// Every argument and tag a message needs: `{name}`, `{count, plural, …}` (and the arguments inside its options),
+// `<link>…</link>`. A translation that drops or renames one passes a key check and fails at runtime. A regex could not
+// tell an argument from a plural option's text, so messages go through the parser next-intl itself uses.
+const collectArguments = (elements, found = new Set()) => {
+    for (const element of elements) {
+        if ('value' in element && element.type !== TYPE.literal && element.type !== TYPE.pound) found.add(element.value)
+
+        if (element.type === TYPE.tag) collectArguments(element.children, found)
+
+        if ('options' in element) {
+            for (const option of Object.values(element.options)) collectArguments(option.value, found)
+        }
+    }
+
+    return found
+}
+
+// A message the parser rejects is reported by next-intl at runtime already; here it simply has no arguments.
+const getArguments = (message) => {
+    try {
+        return [...collectArguments(parse(String(message)))].sort()
+    } catch {
+        return []
+    }
+}
+
 const flatten = (object, prefix = '') =>
     Object.entries(object).flatMap(([key, value]) =>
-        value && typeof value === 'object' ? flatten(value, `${prefix}${key}.`) : [`${prefix}${key}`],
+        value && typeof value === 'object'
+            ? flatten(value, `${prefix}${key}.`)
+            : [[`${prefix}${key}`, getArguments(value)]],
     )
 
 const walk = (dir) =>
@@ -26,16 +56,24 @@ const walk = (dir) =>
     })
 
 const readCatalog = (locale) =>
-    new Set(flatten(JSON.parse(readFileSync(path.join(CATALOG_DIR, `${locale}.json`), 'utf8'))))
+    new Map(flatten(JSON.parse(readFileSync(path.join(CATALOG_DIR, `${locale}.json`), 'utf8'))))
+
+const hasOtherArguments = (catalog, key, args) => catalog.has(key) && catalog.get(key).join() !== args.join()
 
 const findParityProblems = (catalogs) =>
     LOCALES.slice(1).flatMap((locale) => [
-        ...[...catalogs.en]
+        ...[...catalogs.en.keys()]
             .filter((key) => !catalogs[locale].has(key))
             .map((key) => `${locale}.json is missing ${key}`),
-        ...[...catalogs[locale]]
+        ...[...catalogs[locale].keys()]
             .filter((key) => !catalogs.en.has(key))
             .map((key) => `${locale}.json has ${key}, which en.json lacks`),
+        ...[...catalogs.en]
+            .filter(([key, args]) => hasOtherArguments(catalogs[locale], key, args))
+            .map(
+                ([key, args]) =>
+                    `${locale}.json ${key} needs {${args.join(', ')}}, has {${catalogs[locale].get(key).join(', ')}}`,
+            ),
     ])
 
 // Every literal key passed to a translator bound in `file`, prefixed with the translator's namespace.
@@ -50,7 +88,7 @@ const findLiteralKeys = (file) => {
 }
 
 // A key may name a subtree used with `t.raw`, so a prefix of existing keys also counts.
-const isKnownKey = (catalog, key) => catalog.has(key) || [...catalog].some((k) => k.startsWith(`${key}.`))
+const isKnownKey = (catalog, key) => catalog.has(key) || [...catalog.keys()].some((k) => k.startsWith(`${key}.`))
 
 const catalogs = Object.fromEntries(LOCALES.map((locale) => [locale, readCatalog(locale)]))
 const uses = SOURCE_DIRS.flatMap(walk).flatMap((file) => findLiteralKeys(file).map((key) => ({ file, key })))
