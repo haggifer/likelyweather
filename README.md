@@ -17,7 +17,7 @@ pnpm db:seed              # models and the eleven seed cities
 pnpm dev                  # web on http://localhost:3000, API on http://localhost:4000
 ```
 
-Open any city and its forecast is fetched within a few seconds; search for any other city to open it the same way. Nothing is collected on a schedule: a city's forecast is fetched when someone opens it and the stored one is 3 hours old, the same moment the page offers Refresh (the Android widget, which its owner places, is the one hourly reader). The web app forwards `/api/*` to the API, so the browser sees one origin.
+Open any city and its forecast is fetched within a few seconds; search for any other city to open it the same way. Nothing is collected on a schedule (the Android widget, which its owner places, is the one hourly reader): a city's forecast is fetched when someone opens it and the stored one is 3 hours old, the same moment the page offers Refresh, and a run that lost a source (a PARTIAL run) is fetched again after 15 minutes. The web app forwards `/api/*` to the API, so the browser sees one origin.
 
 ### Mobile app
 
@@ -113,7 +113,7 @@ What is built and what is still planned.
 - **API:** Express 5 REST on AWS Lambda (Web Adapter) behind CloudFront, with the same zod contract.
 - **Data:** Prisma on Postgres (Neon) with forecasts partitioned by issue time; Redis (Upstash) for the geocode and payload caches, rate limits, the quota and the daily retention claim.
 - **Collection:** on demand only, in the API, when a city is opened and its stored forecast is 3 hours old; nothing runs on a schedule but the Android widget's hourly redraw, which reads like an open.
-- **Infrastructure and tooling:** one AWS CDK stack; a pnpm and Turborepo monorepo (`apps/web`, `apps/api`, `apps/e2e`, `packages/shared`, `packages/server`, `packages/charts`, `packages/ui`, `packages/db`, `packages/fixtures`, `infra`); CI runs lint, knip, typecheck, tests, the catalog check, end-to-end tests, the build and `cdk synth`.
+- **Infrastructure and tooling:** one AWS CDK stack; a pnpm and Turborepo monorepo (`apps/web`, `apps/api`, `apps/mobile`, `apps/e2e`, `packages/shared`, `packages/server`, `packages/api-client`, `packages/charts`, `packages/chart-core`, `packages/ui`, `packages/messages`, `packages/db`, `packages/fixtures`, `infra`); CI runs lint, knip, typecheck, tests, the catalog check, end-to-end tests, the build and `cdk synth`.
 - **Not built:** a daily Gemini Flash brief with a claim checker.
 
 The web app runs on Lambda instead of Amplify. Truth, skill scores, the scoreboard and the evolution view are out of the MVP.
@@ -141,7 +141,7 @@ The ones a newcomer is most likely to undo by accident:
 - **Redis is never on the critical path.** Upstash's free plan only; any Redis error means no cache, no limit and a granted claim for that call, never an outage or a bill.
 - **One hourly grid per run, weekly partitions.** Forecast rows are partitioned by issue week and dropped after 14 days by the first fetch of each day.
 - **The model palette is fixed,** with dash patterns where two colors are too close for color-vision deficiencies.
-- **Forecasts are fetched on demand, with one scheduled reader.** Opening a city fetches it when its stored forecast is 3 hours old (`isRefreshDue`, shared with the UI's Refresh); everyone else then reads the stored one. The Android widget is the one scheduled reader: Android redraws it hourly through the same `/latest` route, so it costs its owner's quota and nobody else's. A scheduled collector refreshed cities nobody opened and was removed; don't add one back for a feature without weighing that cost.
+- **Forecasts are fetched on demand, with one scheduled reader.** Opening a city fetches it when its stored forecast is 3 hours old (`isRefreshDue`, shared with the UI's Refresh); a PARTIAL run is retried after 15 minutes; everyone else then reads the stored one. The Android widget is the one scheduled reader: Android redraws it hourly through the same `/latest` route, so it costs its owner's quota and nobody else's. A scheduled collector refreshed cities nobody opened and was removed; don't add one back for a feature without weighing that cost.
 - **Limits and the quota count per client: an IPv4 address or an IPv6 /64.** An IPv4-mapped address counts as IPv4, and a global daily cap protects the free upstream tiers. Keying IPv6 by the full address would let one /64 rotate through endless fresh quotas.
 - **The mobile app shares code, not UI.** It consumes `@fa/shared`, `@fa/api-client`, `@fa/chart-core` and `@fa/messages`; its components are React Native, and its colours come from tokens generated from `globals.css`. Both apps run the React version the Expo SDK pins (19.2.3), because the flat `node_modules` that Android builds on Windows need allows only one; upgrade React with the Expo SDK. Shared packages declare `react` only as a peer.
 
