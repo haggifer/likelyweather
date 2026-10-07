@@ -3,7 +3,7 @@ import { getErrorMessage, HttpError } from '@fa/server/errors'
 import { getLatestPayload } from '@fa/server/latest'
 import { getQuota, quotaExceeded, trySpendQuota } from '@fa/server/quota'
 import { searchPlaces } from '@fa/server/sources/geocoding'
-import { countCities, SnapshotMeta } from '@fa/server/store'
+import { countCities } from '@fa/server/store'
 import {
     CompareQuerySchema,
     CompareResponse,
@@ -19,7 +19,6 @@ import {
     TrackResponse,
 } from '@fa/shared/api'
 import { MODELS } from '@fa/shared/models'
-import { isRefreshDue } from '@fa/shared/time'
 import { Variable } from '@fa/shared/variables'
 import { Router } from 'express'
 import {
@@ -32,6 +31,7 @@ import {
     rateLimit,
     sendJson,
 } from './http'
+import { getLatestMaxAge } from './latest-cache'
 
 type CompareItem = CompareResponse['items'][number]
 
@@ -48,10 +48,6 @@ const requireQuota = async (client: string) => {
 
     if (!hasQuota) throw quotaExceeded()
 }
-
-// A stored run served because a refresh was not possible (no quota, upstream down) is right for this caller only, so
-// CloudFront must not hand it to everyone for five minutes.
-const isCurrent = (meta: SnapshotMeta) => !isRefreshDue(meta.fetchedAt, new Date())
 
 const findCity = (slug: string) =>
     requireCity(slug).catch((error) => {
@@ -75,18 +71,21 @@ const getCompareItem = async (slug: string, variable: Variable, client: string) 
 
     const meta = await getCompareMeta(city, client)
 
-    if (!meta) return { item: { city, latest: null }, isCurrent: false }
+    if (!meta) return { item: { city, latest: null }, maxAge: null }
 
     const latest = await getLatestPayload(meta, variable)
 
-    return { item: { city, latest }, isCurrent: isCurrent(meta) }
+    return { item: { city, latest }, maxAge: getLatestMaxAge(meta.fetchedAt, new Date()) }
 }
 
+// Shared only when every requested city was found and every run can still be shared, for the shortest of their times.
 const toCompareResponse = (results: Awaited<ReturnType<typeof getCompareItem>>[]) => {
     const found = results.filter((r) => r !== null)
     const items: CompareItem[] = found.map((r) => r.item)
+    const ages = found.map((r) => r.maxAge)
+    const isShared = found.length === results.length && ages.every((age) => age !== null)
 
-    return { items, isCacheable: found.length === results.length && found.every((r) => r.isCurrent) }
+    return { items, maxAge: isShared ? Math.min(...(ages as number[])) : null }
 }
 
 export const apiRouter = Router()
@@ -94,7 +93,7 @@ export const apiRouter = Router()
 apiRouter.get('/health', rateLimit('read'), async (_req, res) => {
     const cities = await countCities()
 
-    sendJson(res, { ok: true, cities } satisfies HealthResponse, { isCacheable: false })
+    sendJson(res, { ok: true, cities } satisfies HealthResponse, { maxAge: null })
 })
 
 apiRouter.get('/geocode', rateLimit('geocode'), async (req, res) => {
@@ -120,14 +119,14 @@ apiRouter.post('/cities/track', rateLimit('read'), async (req, res) => {
         toUpstreamError('The place could not be looked up'),
     )
 
-    sendJson(res, { slug: city.slug } satisfies TrackResponse, { isCacheable: false })
+    sendJson(res, { slug: city.slug } satisfies TrackResponse, { maxAge: null })
 })
 
 // The viewer's country picks the first visit's chips; the answer depends on the caller, so CloudFront must not share it.
 apiRouter.get('/starters', rateLimit('read'), async (req, res) => {
     const items = await getStarterCities(getViewerCountry(req))
 
-    sendJson(res, { items } satisfies StartersResponse, { isCacheable: false })
+    sendJson(res, { items } satisfies StartersResponse, { maxAge: null })
 })
 
 // Clients round the coordinates to two decimals first, so CloudFront can share the answer; nothing is stored, no
@@ -152,13 +151,13 @@ apiRouter.get('/cities/:slug/latest', rateLimit('read'), async (req, res) => {
     const meta = await ensureFreshSnapshot(city, getClientKey(req))
     const payload = await getLatestPayload(meta, variable)
 
-    sendJson(res, payload, { isCacheable: isCurrent(meta) })
+    sendJson(res, payload, { maxAge: getLatestMaxAge(meta.fetchedAt, new Date()) })
 })
 
 apiRouter.get('/quota', rateLimit('read'), async (req, res) => {
     const quota = await getQuota(getClientKey(req))
 
-    sendJson(res, quota, { isCacheable: false })
+    sendJson(res, quota, { maxAge: null })
 })
 
 apiRouter.get('/models', rateLimit('read'), (_req, res) => {
@@ -170,7 +169,7 @@ apiRouter.get('/compare', rateLimit('read'), async (req, res) => {
     const client = getClientKey(req)
 
     const results = await Promise.all(cities.map((slug) => getCompareItem(slug, variable, client)))
-    const { items, isCacheable } = toCompareResponse(results)
+    const { items, maxAge } = toCompareResponse(results)
 
-    sendJson(res, { items } satisfies CompareResponse, { isCacheable })
+    sendJson(res, { items } satisfies CompareResponse, { maxAge })
 })

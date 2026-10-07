@@ -4,6 +4,7 @@ import { ApiError } from '@fa/shared/api'
 import type { ErrorRequestHandler, Request, RequestHandler, Response } from 'express'
 import { z, ZodError } from 'zod'
 import { toClientKey } from './client-key'
+import { PUBLIC_MAX_AGE_SECONDS } from './latest-cache'
 
 export type RateBucket = 'read' | 'geocode' | 'track'
 
@@ -12,8 +13,6 @@ const RATE_LIMITS: Record<RateBucket, { limit: number; windowSeconds: number }> 
     geocode: { limit: 30, windowSeconds: 60 },
     track: { limit: 10, windowSeconds: 3600 },
 }
-
-const PUBLIC_CACHE = 'public, max-age=300'
 
 // Only the end-to-end suite sets this: all of its traffic comes from one address.
 const ARE_LIMITS_DISABLED = process.env.DISABLE_RATE_LIMITS === '1'
@@ -69,8 +68,12 @@ export const parseQuery = <S extends z.ZodType>(req: Request, schema: S): z.infe
 
 export const parseBody = <S extends z.ZodType>(req: Request, schema: S): z.infer<S> => schema.parse(req.body)
 
-export const sendJson = (res: Response, data: unknown, { isCacheable = true }: { isCacheable?: boolean } = {}) =>
-    res.set('Cache-Control', isCacheable ? PUBLIC_CACHE : 'no-store').json(data)
+// `maxAge` is how long CloudFront and browsers may share the answer; null means not at all.
+export const sendJson = (
+    res: Response,
+    data: unknown,
+    { maxAge = PUBLIC_MAX_AGE_SECONDS }: { maxAge?: number | null } = {},
+) => res.set('Cache-Control', maxAge === null ? 'no-store' : `public, max-age=${maxAge}`).json(data)
 
 export const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
     if (res.headersSent) return next(error)
