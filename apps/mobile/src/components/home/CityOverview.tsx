@@ -47,16 +47,19 @@ export function CityOverview({ slug }: IProps) {
         [anchorRun, timeZone],
     )
     const hourly = isReady ? getHourlyByVariable(results) : null
-    const fetchedAt = anchorRun?.fetchedAt
+    // Refresh settles the four variables one by one; the widgets must get them as one run, so the effect waits until
+    // nothing is fetching and follows every fetch time rather than `hourly`, whose identity changes every render.
+    const isSettled = !results.some((r) => r.isFetching)
+    const fetchedAts = results.map((r) => r.data?.fetchedAt).join('|')
 
     const handleRefresh = () => results.forEach((r) => void r.refetch())
     const handleRetry = () => (error ? void refetchCity() : handleRefresh())
 
     // A home-screen widget showing this city redraws with the run the app just loaded.
     useEffect(() => {
-        if (city && hourly) void updateWidgetsForCity(city, hourly)
+        if (city && hourly && isSettled) void updateWidgetsForCity(city, hourly)
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [city, fetchedAt, isReady])
+    }, [city, fetchedAts, isSettled])
 
     if (error || failed || isEmpty) {
         return (

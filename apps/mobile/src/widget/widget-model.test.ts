@@ -1,6 +1,6 @@
 import { LatestResponse } from '@fa/shared/api'
 import { ModelId } from '@fa/shared/models'
-import { buildWidgetModel, WidgetCity } from './widget-model'
+import { buildWidgetModel, isNewerRun, WidgetCity } from './widget-model'
 
 const HOUR_MS = 3_600_000
 const FETCHED_AT = '2026-10-06T09:05:00.000Z'
@@ -60,5 +60,22 @@ describe('buildWidgetModel', () => {
         const model = buildWidgetModel(CITY, { temp: makeLatest([10, 12, 14]), precip: short }, NOW)
 
         expect(model.precipTotal).toBeNull()
+    })
+})
+
+describe('isNewerRun', () => {
+    const saved = (fetchedAt: string, city = CITY) => ({ city, fetchedAt })
+
+    it('is true with nothing saved or a later fetch, false for the same or an earlier one', () => {
+        expect(isNewerRun(null, CITY.slug, FETCHED_AT)).toBe(true)
+        expect(isNewerRun(saved('2026-10-06T06:05:00.000Z'), CITY.slug, FETCHED_AT)).toBe(true)
+        expect(isNewerRun(saved(FETCHED_AT), CITY.slug, FETCHED_AT)).toBe(false)
+        expect(isNewerRun(saved('2026-10-06T12:05:00.000Z'), CITY.slug, FETCHED_AT)).toBe(false)
+    })
+
+    it('replaces a model saved for another city, whatever its age', () => {
+        const other = { ...CITY, slug: 'kyiv-ua-703448', name: 'Kyiv' }
+
+        expect(isNewerRun(saved('2026-10-06T12:05:00.000Z', other), CITY.slug, FETCHED_AT)).toBe(true)
     })
 })
