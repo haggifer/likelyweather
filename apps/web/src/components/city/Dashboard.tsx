@@ -78,20 +78,29 @@ const getReadoutLabel = (step: string, variable: Variable, timeZone: string, loc
         ? formatPeriodLabel(step, getSlotEnd(step), timeZone, locale)
         : formatStepLabel(step, timeZone, locale)
 
-const renderPrecipChart = (precip: PrecipTotals | null, timeZone: string, locale: string) =>
-    precip ? (
-        <PrecipPanel
-            steps={precip.steps}
-            series={precip.series}
-            median={precip.median}
-            chance={precip.chance}
-            timeZone={timeZone}
-            locale={locale}
-            windowHours={PRECIP_WINDOW_HOURS}
-        />
-    ) : (
-        <Skeleton className="h-[14.375rem]" />
-    )
+const renderPrecipChart = (
+    precip: PrecipTotals | null,
+    error: unknown,
+    onRetry: () => void,
+    timeZone: string,
+    locale: string,
+) => {
+    if (precip) {
+        return (
+            <PrecipPanel
+                steps={precip.steps}
+                series={precip.series}
+                median={precip.median}
+                chance={precip.chance}
+                timeZone={timeZone}
+                locale={locale}
+                windowHours={PRECIP_WINDOW_HOURS}
+            />
+        )
+    }
+
+    return error ? <ErrorNotice error={error} onRetry={onRetry} /> : <Skeleton className="h-[14.375rem]" />
+}
 
 const SeriesTable = ({
     steps,
@@ -180,7 +189,11 @@ export function Dashboard({ slug }: IProps) {
     )
     // The precipitation panel does not depend on the selected variable; a stable element keeps a variable switch
     // from re-rendering the Recharts tree.
-    const precipChart = useMemo(() => renderPrecipChart(precip, timeZone, locale), [precip, timeZone, locale])
+    const { error: precipError, refetch: refetchPrecip } = precipQuery
+    const precipChart = useMemo(
+        () => renderPrecipChart(precip, precipError, () => void refetchPrecip(), timeZone, locale),
+        [precip, precipError, refetchPrecip, timeZone, locale],
+    )
     const chartNow = anchor ? now : null
 
     useEffect(() => {
@@ -205,8 +218,14 @@ export function Dashboard({ slug }: IProps) {
         return (
             <div className="flex flex-col gap-(--card-gap)">
                 {VARIABLE_BAR}
-                {latestQuery.isError ? (
-                    <ErrorNotice error={latestQuery.error} onRetry={() => void latestQuery.refetch()} />
+                {latestQuery.isError || precipQuery.isError ? (
+                    <ErrorNotice
+                        error={latestQuery.error ?? precipQuery.error}
+                        onRetry={() => {
+                            void latestQuery.refetch()
+                            void precipQuery.refetch()
+                        }}
+                    />
                 ) : (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground" role="status">
                         <Loader2 className="size-4 animate-spin" />

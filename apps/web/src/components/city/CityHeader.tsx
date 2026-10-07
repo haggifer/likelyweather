@@ -35,13 +35,15 @@ export function CityHeader({ city }: IProps) {
     const pencilRef = useRef<HTMLButtonElement>(null)
     const [isEditing, setIsEditing] = useState(false)
 
-    // The dashboard anchors its chart to the precipitation query, so that query also dates the run shown here.
-    const { data: latest } = useLatest(city.slug, Variable.Precip)
+    // The dashboard anchors its chart to the precipitation query, so that query also dates the run shown here. When
+    // it failed before any run arrived there is no date, but Refresh must stay available: it is the only way to ask
+    // again. A failed refetch with a run on screen keeps the 3-hour rule.
+    const { data: latest, isError } = useLatest(city.slug, Variable.Precip)
     const isFetching = useIsFetching({ queryKey: ['latest', city.slug] }) > 0
 
     const name = getCityName(city, locale)
     const region = getCityRegion(city, locale)
-    const isOutdated = isRefreshOffered(latest?.fetchedAt, now)
+    const isOutdated = (isError && !latest) || isRefreshOffered(latest?.fetchedAt, now)
 
     // Refetching moves the dashboard chart only when a newer run arrives.
     const handleRefresh = () => void queryClient.refetchQueries({ queryKey: ['latest', city.slug], type: 'active' })
