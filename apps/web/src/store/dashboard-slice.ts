@@ -9,7 +9,6 @@ interface DashboardState {
     pinnedModels: ModelId[]
     hiddenModels: ModelId[]
     isMedianHidden: boolean
-    isUrlHydrated: boolean
 }
 
 const initialState: DashboardState = {
@@ -19,7 +18,6 @@ const initialState: DashboardState = {
     pinnedModels: [],
     hiddenModels: [],
     isMedianHidden: false,
-    isUrlHydrated: false,
 }
 
 const toggle = (list: ModelId[], id: ModelId) => (list.includes(id) ? list.filter((m) => m !== id) : [...list, id])
@@ -52,9 +50,6 @@ const dashboardSlice = createSlice({
             state.pinnedModels = []
             state.isMedianHidden = false
         },
-        markUrlHydrated: (state) => {
-            state.isUrlHydrated = true
-        },
     },
 })
 
@@ -66,7 +61,6 @@ export const {
     toggleHiddenModel,
     toggleMedian,
     showAllModels,
-    markUrlHydrated,
 } = dashboardSlice.actions
 
 export const dashboardReducer = dashboardSlice.reducer
