@@ -41,7 +41,8 @@ yarn-error.log*
 next-env.d.ts
 
 # leftovers of the prototype's local JSON store and run archives
-data/
+/data/
+/apps/web/data/
 !.env.example
 
 # Personal agent settings and notes (.claude/launch.json is shared and stays tracked)

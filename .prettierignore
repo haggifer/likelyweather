@@ -11,3 +11,5 @@ pnpm-workspace.yaml
 apps/mobile/android
 apps/mobile/ios
 apps/mobile/.expo
+.superpowers
+apps/mobile/expo-env.d.ts
