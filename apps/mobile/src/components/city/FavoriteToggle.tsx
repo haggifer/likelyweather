@@ -45,7 +45,7 @@ export function FavoriteToggle({ place, size = 22, tone = 'default' }: IProps) {
             <Star
                 size={size}
                 color={isPinned ? colors.favorite : idleColor}
-                fill={isPinned ? colors.favorite : 'transparent'}
+                fill={isPinned ? colors['favorite-fill'] : 'transparent'}
             />
         </Pressable>
     )

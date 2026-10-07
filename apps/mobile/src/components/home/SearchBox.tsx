@@ -89,7 +89,7 @@ export function SearchBox({ onSelectCity, isLocateShown = false, autoFocus = fal
     }
 
     const renderStar = (id: number) =>
-        isFavorite(places, id) ? <Star size={14} color={colors.favorite} fill={colors.favorite} /> : null
+        isFavorite(places, id) ? <Star size={14} color={colors.favorite} fill={colors['favorite-fill']} /> : null
 
     const renderResults = () => {
         if (!isQueryReady) return <Text style={[styles.hint, { color: colors['muted-foreground'] }]}>{t('hint')}</Text>

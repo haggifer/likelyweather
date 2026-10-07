@@ -29,6 +29,7 @@
     --color-info: var(--info);
     --color-warning: var(--warning);
     --color-favorite: var(--favorite);
+    --color-favorite-fill: var(--favorite-fill);
     --color-success: var(--success);
     --color-code-background: var(--code-background);
     --color-ring: var(--ring);
@@ -78,8 +79,11 @@
     --ring: #1e5eff;
     --info: #1e5eff;
     --warning: #b45309;
-    /* A filled star needs 3:1 against the card (WCAG 1.4.11); amber-500 has only 2.1:1 on white. */
-    --favorite: #dddd77;
+    /* A pale fill inside a darker stroke (author's choice, 2026-10-07). The stroke has only about 1.6:1 on white,
+       under the 3:1 WCAG 1.4.11 asks of graphics; the look was preferred, and pinned stars also differ from the
+       grey outline of unpinned ones by their fill. */
+    --favorite: #e4d00a;
+    --favorite-fill: #fffd78;
     --success: #15803d;
     --code-background: #eef2f8;
     --chart-1: #1e5eff;
@@ -122,7 +126,8 @@
     --ring: #5b8cff;
     --info: #7aa2ff;
     --warning: #f59e0b;
-    --favorite: #fbbf24;
+    --favorite: #e1ad01;
+    --favorite-fill: #e1ad01;
     --success: #4ade80;
     --code-background: #0a1020;
     --chart-1: #7aa2ff;

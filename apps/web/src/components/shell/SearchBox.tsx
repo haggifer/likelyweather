@@ -26,7 +26,7 @@ const byPopulation = (a: GeocodeResult, b: GeocodeResult) => (b.population ?? 0)
 
 const FavoriteMark = ({ places, id }: { places: Places | null; id: number }) =>
     places && isFavorite(places, id) ? (
-        <Star className="size-3.5 shrink-0 fill-favorite text-favorite" aria-hidden="true" />
+        <Star className="size-3.5 shrink-0 fill-favorite-fill text-favorite" aria-hidden="true" />
     ) : null
 
 interface IProps {

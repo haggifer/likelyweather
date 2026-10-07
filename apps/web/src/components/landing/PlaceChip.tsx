@@ -11,7 +11,7 @@ import { useLocale, useTranslations } from 'next-intl'
 const FOCUS_RING = 'outline-none focus-visible:ring-2 focus-visible:ring-ring'
 
 const getStarTone = (isPinned: boolean, isSelected: boolean) => {
-    if (isPinned) return 'fill-favorite text-favorite'
+    if (isPinned) return 'fill-favorite-fill text-favorite'
 
     return isSelected ? 'text-primary-foreground/70' : 'text-muted-foreground'
 }
