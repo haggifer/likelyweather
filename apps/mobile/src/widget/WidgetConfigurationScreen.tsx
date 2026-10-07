@@ -26,12 +26,12 @@ const styles = StyleSheet.create({
 })
 
 // A stored place has no time zone, which the widget needs for local days; the city record has it. Without the
-// network the widget falls back to UTC until the app next loads that city and redraws it.
+// network the zone stays unknown until the widget's first refresh that reaches the server.
 const getWidgetCity = async (place: Place): Promise<WidgetCity> => {
     try {
         return toWidgetCity(await apiGet<City>(`/cities/${place.slug}`))
     } catch {
-        return { ...place, timezone: 'UTC' }
+        return { ...place, timezone: null }
     }
 }
 

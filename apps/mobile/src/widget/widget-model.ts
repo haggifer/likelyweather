@@ -8,7 +8,8 @@ import { buildSlots, getChartStart, getSlotStart, SLOT_HOURS, toSlotLatest } fro
 import { Variable } from '@fa/shared/variables'
 
 export interface WidgetCity extends Place {
-    timezone: string
+    // null until the city record has been read: a widget placed offline knows only the stored place.
+    timezone: string | null
 }
 
 export interface WidgetData {
@@ -69,12 +70,14 @@ const getTotal = (values: number[]) => (values.length >= SLOTS_PER_DAY ? values.
 
 // Today's disagreement label and the current medians, with the same shared maths as the app and the web.
 export const buildWidgetModel = (city: WidgetCity, data: WidgetData, now: Date): WidgetModel => {
-    const temp = toSlots(data.temp, city.timezone, Variable.Temp)
-    const wind = data.wind ? toSlots(data.wind, city.timezone, Variable.Wind) : null
-    const precip = data.precip ? toSlots(data.precip, city.timezone, Variable.Precip) : null
-    const from = getSlotStart(now, city.timezone)
+    const timeZone = city.timezone ?? 'UTC'
+
+    const temp = toSlots(data.temp, timeZone, Variable.Temp)
+    const wind = data.wind ? toSlots(data.wind, timeZone, Variable.Wind) : null
+    const precip = data.precip ? toSlots(data.precip, timeZone, Variable.Precip) : null
+    const from = getSlotStart(now, timeZone)
     const next24 = getNext24(temp, from)
-    const today = getDashboardStats(temp, Variable.Temp, city.timezone, now).disagreement[0]
+    const today = getDashboardStats(temp, Variable.Temp, timeZone, now).disagreement[0]
 
     return {
         city,

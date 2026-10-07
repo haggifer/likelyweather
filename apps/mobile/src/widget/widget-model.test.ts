@@ -61,6 +61,13 @@ describe('buildWidgetModel', () => {
 
         expect(model.precipTotal).toBeNull()
     })
+
+    it('falls back to UTC days while the city’s time zone is unknown', () => {
+        const model = buildWidgetModel({ ...CITY, timezone: null }, { temp: makeLatest([10, 12, 14]) }, NOW)
+
+        expect(model.temp).toBe(12)
+        expect(model.label).not.toBeNull()
+    })
 })
 
 describe('isNewerRun', () => {

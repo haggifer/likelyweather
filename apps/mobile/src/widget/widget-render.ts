@@ -48,22 +48,36 @@ export const drawWidget = (
     })
 }
 
+// A widget placed offline is bound to a place without a time zone; the first refresh that reaches the server fills
+// it in and keeps it.
+const resolveWidgetCity = async (widgetId: number, bound: WidgetCity): Promise<WidgetCity> => {
+    if (bound.timezone !== null) return bound
+
+    const city = toWidgetCity(await apiGet<City>(`/cities/${bound.slug}`))
+
+    widgetBindings.set((bindings) => ({ ...bindings, [widgetId]: city }))
+
+    return city
+}
+
 // Fetches the bound city's latest run (the API serves it from the CDN unless a newer run is due) and draws it; on
 // any failure the widget keeps its last numbers with their age.
 export const refreshWidget = async (widgetId: number, widgetName: string): Promise<WidgetRepresentation> => {
-    const city = widgetBindings.get()[widgetId] ?? null
+    const bound = widgetBindings.get()[widgetId] ?? null
 
-    if (!city) return drawWidget(widgetName, null, null)
+    if (!bound) return drawWidget(widgetName, null, null)
 
     try {
-        const model = buildWidgetModel(city, await fetchWidgetData(city, widgetName), new Date())
+        const city = await resolveWidgetCity(widgetId, bound)
+        const data = await fetchWidgetData(city, widgetName)
+        const model = buildWidgetModel(city, data, new Date())
 
         saveWidgetModel(widgetId, model)
 
         return drawWidget(widgetName, city, model)
     } catch (error) {
-        console.warn(`Widget ${widgetId} could not refresh ${city.slug}: ${String(error)}`)
+        console.warn(`Widget ${widgetId} could not refresh ${bound.slug}: ${String(error)}`)
 
-        return drawWidget(widgetName, city, widgetModels.get()[widgetId] ?? null)
+        return drawWidget(widgetName, bound, widgetModels.get()[widgetId] ?? null)
     }
 }
