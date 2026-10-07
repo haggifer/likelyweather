@@ -2,6 +2,7 @@
 
 import { OverviewCard, OverviewCardSkeleton } from '@/components/city/OverviewCard'
 import { ErrorNotice } from '@/components/shell/ErrorNotice'
+import { getErrorKind } from '@fa/api-client/error-kind'
 import { useCity } from '@fa/api-client/hooks/useCity'
 import { useHourlyAll } from '@fa/api-client/hooks/useHourlyAll'
 import { LatestResponse } from '@fa/shared/api'
@@ -13,6 +14,7 @@ import { useNow } from '@fa/ui/hooks/useNow'
 import { UseQueryResult } from '@tanstack/react-query'
 import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
+import { toast } from 'sonner'
 
 const getHourlyByVariable = (results: UseQueryResult<LatestResponse, Error>[]) =>
     Object.fromEntries(VARIABLES.map((v, i) => [v.id, results[i].data])) as Record<Variable, LatestResponse>
@@ -23,13 +25,15 @@ interface IProps {
 
 export function CityOverview({ slug }: IProps) {
     const t = useTranslations('overview')
+    const te = useTranslations('errors')
     const locale = useLocale()
     const now = useNow()
 
     const { data: city, error, refetch: refetchCity } = useCity(slug)
     const results = useHourlyAll(slug, Boolean(city))
 
-    const failed = results.find((r) => r.isError)
+    // An error with data still in place is a failed Refresh: the chart stays and the handler reports the failure.
+    const failed = results.find((r) => r.isError && !r.data)
     const isReady = results.every((r) => r.data)
     const isEmpty = results.some((r) => r.data && !r.data.steps.length)
     const anchorRun = results[0].data
@@ -39,8 +43,14 @@ export function CityOverview({ slug }: IProps) {
         [anchorRun, timeZone],
     )
 
-    const handleRefresh = () => results.forEach((r) => void r.refetch())
-    const handleRetry = () => (error ? void refetchCity() : handleRefresh())
+    const refetchAll = () => Promise.all(results.map((r) => r.refetch()))
+    const handleRefresh = async () => {
+        const refreshed = await refetchAll()
+        const failure = refreshed.find((r) => r.isError)
+
+        if (failure) toast.error(te(getErrorKind(failure.error)))
+    }
+    const handleRetry = () => (error ? void refetchCity() : void refetchAll())
 
     if (error || failed || isEmpty) {
         return (

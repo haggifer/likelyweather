@@ -1,3 +1,4 @@
+import { getErrorKind } from '@fa/api-client/error-kind'
 import { useCity } from '@fa/api-client/hooks/useCity'
 import { useHourlyAll } from '@fa/api-client/hooks/useHourlyAll'
 import { LatestResponse } from '@fa/shared/api'
@@ -6,7 +7,7 @@ import { getChartStart } from '@fa/shared/slots'
 import { Variable, VARIABLES } from '@fa/shared/variables'
 import { UseQueryResult } from '@tanstack/react-query'
 import { useEffect, useMemo } from 'react'
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { useNow } from '../../hooks/useNow'
 import { useTheme } from '../../hooks/useTheme'
@@ -30,6 +31,7 @@ interface IProps {
 
 export function CityOverview({ slug }: IProps) {
     const t = useTranslations('overview')
+    const te = useTranslations('errors')
     const locale = useLocale()
     const now = useNow()
     const { colors } = useTheme()
@@ -37,7 +39,8 @@ export function CityOverview({ slug }: IProps) {
     const { data: city, error, refetch: refetchCity } = useCity(slug)
     const results = useHourlyAll(slug, Boolean(city))
 
-    const failed = results.find((r) => r.isError)
+    // An error with data still in place is a failed Refresh: the chart stays and the handler reports the failure.
+    const failed = results.find((r) => r.isError && !r.data)
     const isReady = results.every((r) => r.data)
     const isEmpty = results.some((r) => r.data && !r.data.steps.length)
     const anchorRun = results[0].data
@@ -52,8 +55,14 @@ export function CityOverview({ slug }: IProps) {
     const isSettled = !results.some((r) => r.isFetching)
     const fetchedAts = results.map((r) => r.data?.fetchedAt).join('|')
 
-    const handleRefresh = () => results.forEach((r) => void r.refetch())
-    const handleRetry = () => (error ? void refetchCity() : handleRefresh())
+    const refetchAll = () => Promise.all(results.map((r) => r.refetch()))
+    const handleRefresh = async () => {
+        const refreshed = await refetchAll()
+        const failure = refreshed.find((r) => r.isError)
+
+        if (failure) Alert.alert(te(getErrorKind(failure.error)))
+    }
+    const handleRetry = () => (error ? void refetchCity() : void refetchAll())
 
     // A home-screen widget showing this city redraws with the run the app just loaded.
     useEffect(() => {
