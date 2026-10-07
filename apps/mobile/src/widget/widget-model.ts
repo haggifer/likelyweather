@@ -91,7 +91,7 @@ export const buildWidgetModel = (city: WidgetCity, data: WidgetData, now: Date):
     }
 }
 
-// The widget fetches on its own every hour, so the run the app holds (possibly restored from a day-old cache) may be
+// The widget fetches on its own every 3 hours, so the run the app holds (possibly restored from a day-old cache) may be
 // older than what the widget already shows. A model saved for another city (a widget reconfigured offline) is
 // always replaced.
 export const isNewerRun = (saved: Pick<WidgetModel, 'city' | 'fetchedAt'> | null, slug: string, fetchedAt: string) =>

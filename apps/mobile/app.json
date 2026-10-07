@@ -62,7 +62,7 @@
                             "targetCellWidth": 2,
                             "targetCellHeight": 1,
                             "resizeMode": "horizontal|vertical",
-                            "updatePeriodMillis": 3600000,
+                            "updatePeriodMillis": 10800000,
                             "widgetFeatures": "reconfigurable"
                         },
                         {
@@ -74,7 +74,7 @@
                             "targetCellWidth": 4,
                             "targetCellHeight": 2,
                             "resizeMode": "horizontal|vertical",
-                            "updatePeriodMillis": 3600000,
+                            "updatePeriodMillis": 10800000,
                             "widgetFeatures": "reconfigurable"
                         }
                     ]
