@@ -2,8 +2,8 @@ export type ColorMode = 'light' | 'dark'
 
 const MODE_STORAGE_KEY = 'fa.mode'
 
-// Charts read their colors from CSS variables, so they listen for this to re-read them after a mode switch.
-export const COLOR_MODE_EVENT = 'colormodechange'
+// Charts read their colors from CSS variables, so they subscribe to this (`subscribeColorMode`) to re-read them.
+const COLOR_MODE_EVENT = 'colormodechange'
 
 // Runs in <head> before paint: explicit choice first, system preference otherwise.
 export const MODE_RESTORE = `(function(){try{var m=localStorage.getItem(${JSON.stringify(MODE_STORAGE_KEY)});var d=m?m==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.toggle('dark',d)}catch(e){}})();`

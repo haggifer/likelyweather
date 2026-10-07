@@ -10,6 +10,7 @@
         "./SpaghettiChart": "./src/SpaghettiChart.tsx",
         "./WindArrows": "./src/WindArrows.tsx",
         "./theme": "./src/theme.ts",
+        "./chart-theme-store": "./src/chart-theme-store.ts",
         "./hooks/useAnimatedDomain": "./src/hooks/useAnimatedDomain.ts",
         "./hooks/useChartTheme": "./src/hooks/useChartTheme.ts",
         "./hooks/useElementWidth": "./src/hooks/useElementWidth.ts"
@@ -17,7 +18,7 @@
     "scripts": {
         "lint": "eslint .",
         "typecheck": "tsc --noEmit",
-        "test": "vitest run --passWithNoTests"
+        "test": "vitest run"
     },
     "dependencies": {
         "@fa/chart-core": "workspace:*",
