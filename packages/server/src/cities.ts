@@ -3,7 +3,7 @@ import { Coordinates, getDistanceKm } from '@fa/shared/geo'
 import { slugify } from '@fa/shared/seeds'
 import { floorToStep, isRefreshDue } from '@fa/shared/time'
 import { delay } from 'es-toolkit'
-import { claim, dedupe } from './cache'
+import { claim, dedupe, releaseClaim } from './cache'
 import { collect } from './collector'
 import { COUNTRY_STARTERS } from './country-starters'
 import { getErrorMessage, HttpError } from './errors'
@@ -73,6 +73,8 @@ const waitForRefresh = async (city: City, stored: StoredSnapshotMeta | null) => 
 }
 
 // Source failures never throw from `collect`; without any data the stored snapshot is served, or the view fails.
+// A failure past that (the database, the partition DDL) also falls back to the stored run, but is logged: the
+// stored run stays due, so every view would otherwise keep fetching and spending quota in silence.
 const fetchSnapshot = async (city: City, stored: StoredSnapshotMeta | null): Promise<SnapshotMeta> => {
     try {
         const { snapshot } = await collect({ city })
@@ -85,9 +87,11 @@ const fetchSnapshot = async (city: City, stored: StoredSnapshotMeta | null): Pro
 
         return latest
     } catch (error) {
-        if (stored) return stored
+        if (!stored) throw error
 
-        throw error
+        console.error(`Refresh of ${city.name} failed, serving the stored run: ${getErrorMessage(error)}`)
+
+        return stored
     }
 }
 
@@ -134,7 +138,8 @@ export const trackCity = async (geocodeId: number, onCreate: () => Promise<void>
 // A city whose newest snapshot is due for a refresh is fetched again: there is no scheduled collection, so views
 // never wait more than one upstream round trip. Each Lambda instance serves one request at a time, so the
 // parallel requests of one page meet in a shared claim: the first fetches and spends the client's quota, the others
-// wait for its snapshot. With no quota left the stored snapshot is served as it is.
+// wait for its snapshot. With no quota left the stored snapshot is served as it is, and the claim is given back so
+// the next viewer does not wait 12 seconds for a fetch that never starts.
 export const ensureFreshSnapshot = (city: City, client?: string): Promise<SnapshotMeta> =>
     dedupe(`refresh:${city.id}`, async () => {
         const now = new Date()
@@ -142,16 +147,21 @@ export const ensureFreshSnapshot = (city: City, client?: string): Promise<Snapsh
 
         if (stored && isFreshSnapshot(stored, now)) return stored
 
-        const isClaimed = await claim(`refresh:${city.id}:${floorToStep(now).getTime()}`, REFRESH_CLAIM_SECONDS)
+        const claimName = `refresh:${city.id}:${floorToStep(now).getTime()}`
+        const isClaimed = await claim(claimName, REFRESH_CLAIM_SECONDS)
 
         if (!isClaimed) return waitForRefresh(city, stored)
 
         if (client) {
             const hasQuota = await trySpendQuota(client)
 
-            if (!hasQuota && stored) return stored
+            if (!hasQuota) {
+                await releaseClaim(claimName)
 
-            if (!hasQuota) throw quotaExceeded()
+                if (stored) return stored
+
+                throw quotaExceeded()
+            }
         }
 
         return fetchSnapshot(city, stored)

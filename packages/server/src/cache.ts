@@ -15,6 +15,7 @@ interface KeyValue {
     incrementWithinLimits(keys: string[], limits: number[], expiresAt: number): Promise<boolean>
     // Sets the key only if it is absent, with a TTL; true when this caller now holds it.
     setIfAbsent(key: string, value: string, ttlSeconds: number): Promise<boolean>
+    del(key: string): Promise<void>
 }
 
 interface Entry {
@@ -76,6 +77,10 @@ class RedisKeyValue implements KeyValue {
 
         return reply === 'OK'
     }
+
+    async del(key: string) {
+        await this.client.del(key)
+    }
 }
 
 class MemoryKeyValue implements KeyValue {
@@ -128,6 +133,10 @@ class MemoryKeyValue implements KeyValue {
         await this.set(key, value, ttlSeconds)
 
         return true
+    }
+
+    async del(key: string) {
+        this.entries.delete(key)
     }
 }
 
@@ -205,3 +214,6 @@ export const incrementWithinLimits = (keys: string[], limits: number[], expiresA
 // fails every caller gets the claim, so the work it guards must be safe to repeat.
 export const claim = (name: string, ttlSeconds: number) =>
     safely(() => getStore().setIfAbsent(`claim:${name}`, '1', ttlSeconds), true)
+
+// Gives a claim back before its TTL, for a holder that will not do the work after all.
+export const releaseClaim = (name: string) => safely(() => getStore().del(`claim:${name}`), undefined)
