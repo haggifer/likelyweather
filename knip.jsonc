@@ -48,8 +48,5 @@
         "packages/shared": {
             "includeEntryExports": true,
         },
-        "packages/ui": {
-            "includeEntryExports": true,
-        },
     },
 }

@@ -1,7 +1,7 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import { useAppPromo } from '@/hooks/useAppPromo'
-import { Button } from '@fa/ui/components/button'
 import { X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'

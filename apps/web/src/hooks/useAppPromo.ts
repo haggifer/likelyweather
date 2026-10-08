@@ -1,5 +1,5 @@
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { DISMISSED_AT_KEY, getDevicePlatform, isAppPromoShown, PromoPlatform } from '@/lib/app-promo'
-import { useMediaQuery } from '@fa/ui/hooks/useMediaQuery'
 import { usePathname } from 'next/navigation'
 import { useSyncExternalStore } from 'react'
 

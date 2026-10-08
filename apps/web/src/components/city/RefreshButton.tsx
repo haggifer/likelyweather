@@ -1,9 +1,9 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { cn } from '@/lib/cn'
 import { REFRESH_AFTER_HOURS } from '@fa/shared/constants'
-import { Button } from '@fa/ui/components/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@fa/ui/components/tooltip'
-import { cn } from '@fa/ui/lib/cn'
 import { RefreshCw } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 

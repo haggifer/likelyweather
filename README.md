@@ -89,8 +89,9 @@ Browser ── TanStack Query ──▶ /api/* ──▶ Express REST (zod-valid
 
 ```
 apps/
-  web/            Next.js pages, components, Redux slices, next-intl setup; src/components/charts holds the D3 hero
-                  charts and Recharts wrappers, with chart colors read from the CSS tokens
+  web/            Next.js pages, components, Redux slices, next-intl setup; src/components/ui holds the shadcn
+                  components, src/components/charts the D3 hero charts and Recharts wrappers (chart colors read
+                  from the CSS tokens)
   mobile/         Expo app: Expo Router routes in src/app re-export screens from src/screens; tokens generated from the web CSS
   api/            Express app: routes, rate limits, error shape; bundled for Lambda
   e2e/            Playwright flows and the fake upstream they run against
@@ -100,7 +101,6 @@ packages/
   messages/       the five message catalogs and their loader
   server/         the API's domain code: store, cache, quota, collector, retention, sources
   db/             Prisma schema, migrations (weekly Forecast partitions), seed, partition maintenance
-  ui/             shadcn components, color mode, generic hooks
   chart-core/     DOM-free chart geometry: scales, ticks, day labels, spaghetti paths
   fixtures/       real upstream responses and a collector snapshot for tests
 ```
@@ -113,7 +113,7 @@ What is built and what is still planned.
 - **API:** Express 5 REST on AWS Lambda (Web Adapter) behind CloudFront, with the same zod contract.
 - **Data:** Prisma on Postgres (Neon) with forecasts partitioned by issue time; Redis (Upstash) for the geocode and payload caches, rate limits, the quota and the daily retention claim.
 - **Collection:** on demand only, in the API, when a city is opened and its stored forecast is 3 hours old; nothing runs on a schedule but the Android widget's 3-hourly redraw, which reads like an open.
-- **Infrastructure and tooling:** one AWS CDK stack; a pnpm and Turborepo monorepo (`apps/web`, `apps/api`, `apps/mobile`, `apps/e2e`, `packages/shared`, `packages/server`, `packages/api-client`, `packages/chart-core`, `packages/ui`, `packages/messages`, `packages/db`, `packages/fixtures`, `infra`); CI runs lint, knip, typecheck, tests, the catalog check, end-to-end tests, the build and `cdk synth`.
+- **Infrastructure and tooling:** one AWS CDK stack; a pnpm and Turborepo monorepo (`apps/web`, `apps/api`, `apps/mobile`, `apps/e2e`, `packages/shared`, `packages/server`, `packages/api-client`, `packages/chart-core`, `packages/messages`, `packages/db`, `packages/fixtures`, `infra`); CI runs lint, knip, typecheck, tests, the catalog check, end-to-end tests, the build and `cdk synth`.
 - **Not built:** a daily Gemini Flash brief with a claim checker.
 
 The web app runs on Lambda instead of Amplify. Truth, skill scores, the scoreboard and the evolution view are out of the MVP.

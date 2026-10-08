@@ -2,10 +2,10 @@
 
 import { StatusChip } from '@/components/shell/StatusChip'
 import { ChipTone } from '@/components/types'
+import { cn } from '@/lib/cn'
 import { REFRESH_AFTER_HOURS, STALE_AFTER_HOURS } from '@fa/shared/constants'
 import { formatStepLabel, formatTime } from '@fa/shared/format'
 import { getAgeHours } from '@fa/shared/time'
-import { cn } from '@fa/ui/lib/cn'
 import { useLocale, useTranslations } from 'next-intl'
 
 const CLOCK: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }

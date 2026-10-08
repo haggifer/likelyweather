@@ -1,8 +1,8 @@
 'use client'
 
-import { Button } from '@fa/ui/components/button'
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@fa/ui/components/card'
-import { cn } from '@fa/ui/lib/cn'
+import { Button } from '@/components/ui/button'
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { cn } from '@/lib/cn'
 import { BarChart3, Table2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { ReactNode, useState } from 'react'

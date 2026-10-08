@@ -1,9 +1,9 @@
 'use client'
 
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useStoredQuota } from '@/hooks/useStoredQuota'
+import { cn } from '@/lib/cn'
 import { formatClockTime, getViewerTimeZone } from '@fa/shared/format'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@fa/ui/components/tooltip'
-import { cn } from '@fa/ui/lib/cn'
 import { useLocale, useTranslations } from 'next-intl'
 
 const LOW_SHARE = 0.2

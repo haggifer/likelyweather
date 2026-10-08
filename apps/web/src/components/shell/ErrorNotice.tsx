@@ -1,8 +1,8 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/cn'
 import { getErrorKind } from '@fa/api-client/error-kind'
-import { Button } from '@fa/ui/components/button'
-import { cn } from '@fa/ui/lib/cn'
 import { RefreshCw } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 

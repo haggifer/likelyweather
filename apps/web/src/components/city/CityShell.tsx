@@ -3,9 +3,9 @@
 import { CityHeader } from '@/components/city/CityHeader'
 import { ErrorNotice } from '@/components/shell/ErrorNotice'
 import { SearchBox } from '@/components/shell/SearchBox'
+import { Skeleton } from '@/components/ui/skeleton'
 import { isNotFound } from '@fa/api-client/api'
 import { useCity } from '@fa/api-client/hooks/useCity'
-import { Skeleton } from '@fa/ui/components/skeleton'
 import { useTranslations } from 'next-intl'
 import { ReactNode } from 'react'
 

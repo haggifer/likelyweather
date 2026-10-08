@@ -1,10 +1,10 @@
 'use client'
 
 import { FlagIcon } from '@/components/shell/FlagIcon'
+import { cn } from '@/lib/cn'
 import { updatePlaces } from '@/lib/places-store'
 import { getCityName } from '@fa/shared/format'
 import { Place, togglePlace } from '@fa/shared/places'
-import { cn } from '@fa/ui/lib/cn'
 import { Star } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 

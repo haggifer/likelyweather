@@ -1,4 +1,4 @@
-import { ColorMode, getColorMode } from '@fa/ui/lib/color-mode'
+import { ColorMode, getColorMode } from '@/lib/color-mode'
 import { ChartTheme, FALLBACK_CHART_THEME, readChartTheme } from './theme'
 
 interface Snapshot {

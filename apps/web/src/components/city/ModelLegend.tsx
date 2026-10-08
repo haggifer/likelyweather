@@ -1,6 +1,8 @@
 'use client'
 
 import { LineSwatch } from '@/components/shell/LineSwatch'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/cn'
 import { useAppDispatch, useAppSelector } from '@/store'
 import {
     setHighlightedModel,
@@ -13,8 +15,6 @@ import { Series } from '@fa/shared/api'
 import { formatNumber } from '@fa/shared/format'
 import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
-import { Button } from '@fa/ui/components/button'
-import { cn } from '@fa/ui/lib/cn'
 import { Eye, EyeOff, Pin } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 

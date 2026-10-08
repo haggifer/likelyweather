@@ -1,11 +1,11 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { usePlaces } from '@/hooks/usePlaces'
+import { cn } from '@/lib/cn'
 import { updatePlaces } from '@/lib/places-store'
 import { isFavorite, isPinnable, MAX_PLACES, Place, togglePlace } from '@fa/shared/places'
-import { Button } from '@fa/ui/components/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@fa/ui/components/tooltip'
-import { cn } from '@fa/ui/lib/cn'
 import { Star } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 

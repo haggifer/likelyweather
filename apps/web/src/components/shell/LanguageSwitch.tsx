@@ -1,8 +1,6 @@
 'use client'
 
-import { LOCALE_COOKIE } from '@/i18n/locale-cookie'
-import { Locale, LOCALES } from '@fa/shared/api'
-import { Button } from '@fa/ui/components/button'
+import { Button } from '@/components/ui/button'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -10,8 +8,10 @@ import {
     DropdownMenuRadioGroup,
     DropdownMenuRadioItem,
     DropdownMenuTrigger,
-} from '@fa/ui/components/dropdown-menu'
-import { cn } from '@fa/ui/lib/cn'
+} from '@/components/ui/dropdown-menu'
+import { LOCALE_COOKIE } from '@/i18n/locale-cookie'
+import { cn } from '@/lib/cn'
+import { Locale, LOCALES } from '@fa/shared/api'
 import { Languages } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'

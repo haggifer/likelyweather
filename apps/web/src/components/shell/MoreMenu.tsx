@@ -1,12 +1,7 @@
 'use client'
 
-import { Button } from '@fa/ui/components/button'
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@fa/ui/components/dropdown-menu'
+import { Button } from '@/components/ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { BookOpen, Columns3, Menu } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'

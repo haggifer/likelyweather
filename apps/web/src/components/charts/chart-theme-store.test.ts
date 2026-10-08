@@ -1,8 +1,8 @@
-import { getColorMode } from '@fa/ui/lib/color-mode'
+import { getColorMode } from '@/lib/color-mode'
 import { getChartThemeSnapshot } from './chart-theme-store'
 import { readChartTheme } from './theme'
 
-vi.mock('@fa/ui/lib/color-mode', () => ({ getColorMode: vi.fn(() => 'light') }))
+vi.mock('@/lib/color-mode', () => ({ getColorMode: vi.fn(() => 'light') }))
 vi.mock('./theme', () => ({
     FALLBACK_CHART_THEME: { median: 'fallback' },
     readChartTheme: vi.fn(() => ({ median: 'light-median' })),

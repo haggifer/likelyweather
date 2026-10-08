@@ -1,10 +1,10 @@
 'use client'
 
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { cn } from '@/lib/cn'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { setVariable } from '@/store/dashboard-slice'
 import { Variable, VARIABLES } from '@fa/shared/variables'
-import { ToggleGroup, ToggleGroupItem } from '@fa/ui/components/toggle-group'
-import { cn } from '@fa/ui/lib/cn'
 import { CloudRain, Gauge, LucideIcon, Thermometer, Wind } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 

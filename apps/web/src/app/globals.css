@@ -2,9 +2,6 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 
-/* Workspace packages render Tailwind classes too. */
-@source '../../../../packages/ui/src';
-
 @custom-variant dark (&:is(.dark *));
 
 @theme {
