@@ -9,7 +9,7 @@ import { addCity, getLatestSnapshot } from './store'
 
 loadLocalEnv()
 
-const UPSTREAM = path.resolve(import.meta.dirname, '../../fixtures/upstream')
+const UPSTREAM = path.resolve(import.meta.dirname, '../../../../packages/fixtures/upstream')
 const OPEN_METEO = readFileSync(path.join(UPSTREAM, 'open-meteo-new-york-20260924T1200Z.json'), 'utf8')
 const METNO = readFileSync(path.join(UPSTREAM, 'metno-new-york-20260924T1200Z.json'), 'utf8')
 const NOW = new Date('2026-09-24T13:30:00Z')

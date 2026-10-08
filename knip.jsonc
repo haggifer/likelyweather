@@ -8,6 +8,10 @@
         ".": {
             "entry": ["scripts/*.mjs"],
         },
+        "apps/api": {
+            // The domain tests read fixture files by path; the link makes Turbo rerun them when the fixtures change.
+            "ignoreDependencies": ["@fa/fixtures"],
+        },
         "apps/mobile": {
             // knip's Expo plugin expects expo-updates from app.json; EAS Update is added with the first release.
             "ignoreDependencies": ["expo-updates"],
@@ -39,11 +43,6 @@
         "packages/fixtures": {},
         "packages/messages": {
             "includeEntryExports": true,
-        },
-        "packages/server": {
-            "includeEntryExports": true,
-            // The tests read fixture files by path; the link makes Turbo rerun them when the fixtures change.
-            "ignoreDependencies": ["@fa/fixtures"],
         },
         "packages/shared": {
             "includeEntryExports": true,

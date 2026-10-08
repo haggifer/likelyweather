@@ -9,7 +9,7 @@ import { addCity, StoredSnapshotMeta } from './store'
 
 loadLocalEnv()
 
-const UPSTREAM = path.resolve(import.meta.dirname, '../../fixtures/upstream')
+const UPSTREAM = path.resolve(import.meta.dirname, '../../../../packages/fixtures/upstream')
 const OPEN_METEO = readFileSync(path.join(UPSTREAM, 'open-meteo-new-york-20260924T1200Z.json'), 'utf8')
 const METNO = readFileSync(path.join(UPSTREAM, 'metno-new-york-20260924T1200Z.json'), 'utf8')
 

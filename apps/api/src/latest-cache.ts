@@ -1,5 +1,5 @@
-import { getRefreshDueAt } from '@fa/server/cities'
-import { StoredSnapshotMeta } from '@fa/server/store'
+import { getRefreshDueAt } from './domain/cities'
+import { StoredSnapshotMeta } from './domain/store'
 
 export const PUBLIC_MAX_AGE_SECONDS = 300
 

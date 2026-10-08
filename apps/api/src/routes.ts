@@ -1,9 +1,3 @@
-import { ensureFreshSnapshot, findNearestCity, getStarterCities, requireCity, trackCity } from '@fa/server/cities'
-import { getErrorMessage, HttpError } from '@fa/server/errors'
-import { getLatestPayload } from '@fa/server/latest'
-import { getQuota, quotaExceeded, trySpendQuota } from '@fa/server/quota'
-import { searchPlaces } from '@fa/server/sources/geocoding'
-import { countCities } from '@fa/server/store'
 import {
     CompareQuerySchema,
     CompareResponse,
@@ -21,6 +15,12 @@ import {
 import { MODELS } from '@fa/shared/models'
 import { Variable } from '@fa/shared/variables'
 import { Router } from 'express'
+import { ensureFreshSnapshot, findNearestCity, getStarterCities, requireCity, trackCity } from './domain/cities'
+import { getErrorMessage, HttpError } from './domain/errors'
+import { getLatestPayload } from './domain/latest'
+import { getQuota, quotaExceeded, trySpendQuota } from './domain/quota'
+import { searchPlaces } from './domain/sources/geocoding'
+import { countCities } from './domain/store'
 import {
     enforceRateLimit,
     getClientKey,

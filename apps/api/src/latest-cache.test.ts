@@ -1,4 +1,4 @@
-import { StoredSnapshotMeta } from '@fa/server/store'
+import { StoredSnapshotMeta } from './domain/store'
 import { getLatestMaxAge } from './latest-cache'
 
 const OK_RUN: StoredSnapshotMeta = {

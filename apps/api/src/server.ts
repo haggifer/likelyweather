@@ -1,4 +1,4 @@
-import { loadSecrets } from '@fa/server/secrets'
+import { loadSecrets } from './domain/secrets'
 
 // Secrets first: the app's modules read process.env when they load.
 await loadSecrets()

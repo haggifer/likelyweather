@@ -41,18 +41,27 @@ importers:
 
   apps/api:
     dependencies:
-      '@fa/server':
+      '@aws-sdk/client-ssm':
+        specifier: ^3.899.0
+        version: 3.1140.0
+      '@fa/db':
         specifier: workspace:*
-        version: link:../../packages/server
+        version: link:../../packages/db
       '@fa/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      es-toolkit:
+        specifier: ^1.52.0
+        version: 1.52.0
       express:
         specifier: ^5.2.1
         version: 5.2.1(supports-color@8.1.1)
       helmet:
         specifier: ^8.3.0
         version: 8.3.0
+      ioredis:
+        specifier: ^5.8.2
+        version: 5.11.1(supports-color@8.1.1)
       pino-http:
         specifier: ^11.0.0
         version: 11.0.0
@@ -60,9 +69,9 @@ importers:
         specifier: ^4.6.5
         version: 4.6.5
     devDependencies:
-      '@fa/db':
+      '@fa/fixtures':
         specifier: workspace:*
-        version: link:../../packages/db
+        version: link:../../packages/fixtures
       '@types/express':
         specifier: ^5.0.3
         version: 5.0.6
@@ -543,43 +552,6 @@ importers:
         specifier: workspace:*
         version: link:../shared
     devDependencies:
-      eslint:
-        specifier: ^9
-        version: 9.39.5(jiti@2.7.0)(supports-color@8.1.1)
-      typescript:
-        specifier: ^5
-        version: 5.9.3
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.1(@types/node@22.20.4)(jsdom@30.1.1(@noble/hashes@1.8.0))(vite@8.3.0(@types/node@22.20.4)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
-
-  packages/server:
-    dependencies:
-      '@aws-sdk/client-ssm':
-        specifier: ^3.899.0
-        version: 3.1140.0
-      '@fa/db':
-        specifier: workspace:*
-        version: link:../db
-      '@fa/shared':
-        specifier: workspace:*
-        version: link:../shared
-      es-toolkit:
-        specifier: ^1.52.0
-        version: 1.52.0
-      ioredis:
-        specifier: ^5.8.2
-        version: 5.11.1(supports-color@7.2.0)
-      zod:
-        specifier: ^4.6.5
-        version: 4.6.5
-    devDependencies:
-      '@fa/fixtures':
-        specifier: workspace:*
-        version: link:../fixtures
-      '@types/node':
-        specifier: ^22
-        version: 22.20.4
       eslint:
         specifier: ^9
         version: 9.39.5(jiti@2.7.0)(supports-color@8.1.1)
@@ -15869,11 +15841,11 @@ snapshots:
     dependencies:
       loose-envify: 1.4.0
 
-  ioredis@5.11.1(supports-color@7.2.0):
+  ioredis@5.11.1(supports-color@8.1.1):
     dependencies:
       '@ioredis/commands': 1.10.0
       cluster-key-slot: 1.1.1
-      debug: 4.4.3(supports-color@7.2.0)
+      debug: 4.4.3(supports-color@8.1.1)
       denque: 2.1.0
       redis-errors: 1.2.0
       redis-parser: 3.0.0
