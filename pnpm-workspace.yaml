@@ -7,10 +7,10 @@ packages:
 # the NDK tools can handle on Windows.
 nodeLinker: hoisted
 allowBuilds:
-  '@parcel/watcher': false
+  '@parcel/watcher': true
   '@prisma/engines': true
-  '@swc/core': false
+  '@swc/core': true
   esbuild: true
   prisma: true
-  sharp: false
-  unrs-resolver: false
+  sharp: true
+  unrs-resolver: true
