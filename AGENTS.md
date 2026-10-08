@@ -9,7 +9,8 @@ pnpm install
 cp .env.example .env         # once; the API and Prisma read the root .env
 pnpm db:up                   # Postgres and Redis in Docker
 pnpm db:deploy && pnpm db:seed
-pnpm dev                     # API :4000 and web :3000
+pnpm api                     # Docker services, then the API on :4000 (one terminal per app)
+pnpm web                     # web on :3000
 pnpm lint
 pnpm knip                    # unused files, exports and dependencies (knip.jsonc)
 pnpm typecheck
@@ -20,7 +21,7 @@ pnpm format
 pnpm build                   # Next.js, the API's Lambda bundle, the Prisma client
 pnpm db:migrate              # create a migration after editing packages/db/prisma/schema.prisma
 pnpm cdk:synth               # also cdk:diff, cdk:deploy, cdk:bootstrap; needs pnpm build first
-pnpm --filter @fa/mobile start     # Expo dev server for the mobile development build (apps/mobile)
+pnpm mobile                        # Expo dev server (Metro) for the mobile development build (apps/mobile)
 pnpm --filter @fa/mobile android   # build and run the development build on a device or emulator (JDK 17 or 21)
 pnpm --filter @fa/mobile tokens    # regenerate the app's design tokens after editing globals.css (a test fails until you do)
 ```

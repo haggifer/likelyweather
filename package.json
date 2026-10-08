@@ -3,7 +3,9 @@
     "private": true,
     "license": "MIT",
     "scripts": {
-        "dev": "docker compose up -d --wait && turbo run dev --filter=@fa/api --filter=@fa/web",
+        "api": "pnpm db:up && pnpm --filter @fa/api run dev",
+        "web": "pnpm --filter @fa/web run dev",
+        "mobile": "pnpm --filter @fa/mobile run start",
         "build": "turbo run build",
         "lint": "turbo run lint",
         "knip": "knip",

@@ -14,7 +14,8 @@ cp .env.example .env      # then put a real contact in METNO_USER_AGENT
 pnpm db:up                # Postgres 16 and Redis 7 in Docker
 pnpm db:deploy            # apply the Prisma migrations
 pnpm db:seed              # models and the eleven seed cities
-pnpm dev                  # web on http://localhost:3000, API on http://localhost:4000
+pnpm api                  # Docker services, then the API on http://localhost:4000
+pnpm web                  # in a second terminal: the web app on http://localhost:3000
 ```
 
 Open any city and its forecast is fetched within a few seconds; search for any other city to open it the same way. Nothing is collected on a schedule (the Android widget, which its owner places, is the one scheduled reader, every 3 hours): a city's forecast is fetched when someone opens it and the stored one is 3 hours old, the same moment the page offers Refresh, and a run that lost a source (a PARTIAL run) is fetched again after 15 minutes. The web app forwards `/api/*` to the API, so the browser sees one origin.
@@ -33,7 +34,7 @@ Development builds call the live API unless `apps/mobile/.env.local` sets `EXPO_
 
 ```bash
 pnpm --filter @fa/mobile android   # build, install and start the development build
-pnpm --filter @fa/mobile start     # Metro for an installed development build
+pnpm mobile                        # Metro for an installed development build
 pnpm --filter @fa/mobile tokens    # regenerate src/theme/tokens.ts after editing apps/web/src/app/globals.css
 ```
 
@@ -63,7 +64,7 @@ Ukrainian, English, Spanish, German and French (language menu in the top bar; th
 
 | Command                                                        | What it does                                                                                    |
 | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `pnpm dev`                                                     | Starts the Docker services, then the API (`tsx watch`) and the web app (Turbopack)              |
+| `pnpm api` / `web` / `mobile`                                  | One terminal each: Docker services then the API (`tsx watch`); the web app (Turbopack); Metro   |
 | `pnpm db:up` / `db:deploy` / `db:migrate` / `db:seed`          | Docker services; apply migrations; create a new migration; seed models and cities               |
 | `pnpm build`                                                   | Next.js build, the API's Lambda bundle (esbuild), Prisma client                                 |
 | `pnpm test`                                                    | Vitest in every package but `apps/mobile` (Jest); database tests run when `DATABASE_URL` is set |

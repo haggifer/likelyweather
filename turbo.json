@@ -6,10 +6,6 @@
             "dependsOn": ["^build"],
             "outputs": [".next/**", "!.next/cache/**", "dist/**", "cdk.out/**", "src/generated/**"]
         },
-        "dev": {
-            "cache": false,
-            "persistent": true
-        },
         "lint": {
             "dependsOn": ["^build"]
         },

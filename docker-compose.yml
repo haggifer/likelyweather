@@ -1,4 +1,4 @@
-# Local Postgres and Redis for `pnpm dev`. The cloud uses Neon and Upstash instead (see README).
+# Local Postgres and Redis for `pnpm api`. The cloud uses Neon and Upstash instead (see README).
 services:
     postgres:
         image: postgres:16-alpine
