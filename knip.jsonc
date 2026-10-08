@@ -31,9 +31,6 @@
         "packages/chart-core": {
             "includeEntryExports": true,
         },
-        "packages/charts": {
-            "includeEntryExports": true,
-        },
         "packages/db": {
             "includeEntryExports": true,
             // Imported by the Prisma client generated into the git-ignored src/generated.

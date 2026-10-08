@@ -1,5 +1,7 @@
 'use client'
 
+import { useChartTheme } from '@/hooks/useChartTheme'
+import { useElementWidth } from '@/hooks/useElementWidth'
 import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
 import { Series } from '@fa/shared/api'
 import { formatNumber, formatPercent, formatPeriodLabel, formatTime } from '@fa/shared/format'
@@ -18,8 +20,6 @@ import {
     XAxis,
     YAxis,
 } from 'recharts'
-import { useChartTheme } from './hooks/useChartTheme'
-import { useElementWidth } from './hooks/useElementWidth'
 
 interface Row {
     step: string

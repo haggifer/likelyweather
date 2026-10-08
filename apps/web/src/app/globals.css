@@ -4,7 +4,6 @@
 
 /* Workspace packages render Tailwind classes too. */
 @source '../../../../packages/ui/src';
-@source '../../../../packages/charts/src';
 
 @custom-variant dark (&:is(.dark *));
 

@@ -1,5 +1,8 @@
 'use client'
 
+import { useAnimatedDomain } from '@/hooks/useAnimatedDomain'
+import { useChartTheme } from '@/hooks/useChartTheme'
+import { useElementWidth } from '@/hooks/useElementWidth'
 import { clamp, getBarWidth, getNowX } from '@fa/chart-core/plot-geometry'
 import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
 import {
@@ -22,9 +25,6 @@ import { useTranslations } from 'next-intl'
 import { KeyboardEvent, PointerEvent, useId, useMemo } from 'react'
 import { getArrowStep } from './arrow-keys'
 import { DayGrid } from './DayGrid'
-import { useAnimatedDomain } from './hooks/useAnimatedDomain'
-import { useChartTheme } from './hooks/useChartTheme'
-import { useElementWidth } from './hooks/useElementWidth'
 import { getPointerTime } from './pointer-time'
 import { WindArrows } from './WindArrows'
 

@@ -8,9 +8,7 @@ import path from 'node:path'
 const ROOT = path.resolve(import.meta.dirname, '..')
 const CATALOG_DIR = path.join(ROOT, 'packages/messages/catalogs')
 const LOCALES = ['en', 'uk', 'es', 'de', 'fr']
-const SOURCE_DIRS = ['apps/web/src', 'apps/mobile/src', 'packages/charts/src', 'packages/ui/src'].map((d) =>
-    path.join(ROOT, d),
-)
+const SOURCE_DIRS = ['apps/web/src', 'apps/mobile/src', 'packages/ui/src'].map((d) => path.join(ROOT, d))
 const BINDING = /(?:const|let)\s+(\w+)\s*=\s*(?:await\s+)?(?:useTranslations|getTranslations)\(\s*(?:'([\w.]+)')?\s*\)/g
 
 // Every argument and tag a message needs: `{name}`, `{count, plural, …}` (and the arguments inside its options),

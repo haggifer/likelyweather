@@ -1,7 +1,7 @@
 'use client'
 
+import { SpaghettiChart } from '@/components/charts/SpaghettiChart'
 import { getEnsembleStats } from '@fa/chart-core/dashboard-stats'
-import { SpaghettiChart } from '@fa/charts/SpaghettiChart'
 import { City, LatestResponse } from '@fa/shared/api'
 import { Variable } from '@fa/shared/variables'
 import { useLocale } from 'next-intl'

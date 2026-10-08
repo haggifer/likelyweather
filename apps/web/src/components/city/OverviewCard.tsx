@@ -1,11 +1,11 @@
 'use client'
 
+import { MedianOverview, MedianOverviewSkeleton, MedianSeries } from '@/components/charts/MedianOverview'
 import { FavoriteToggle } from '@/components/city/FavoriteToggle'
 import { RefreshButton } from '@/components/city/RefreshButton'
 import { UpdatedChip } from '@/components/city/UpdatedChip'
 import { FlagIcon } from '@/components/shell/FlagIcon'
 import { isRefreshOffered } from '@fa/api-client/refresh-due'
-import { MedianOverview, MedianOverviewSkeleton, MedianSeries } from '@fa/charts/MedianOverview'
 import { City, LatestResponse } from '@fa/shared/api'
 import { getCityRegion } from '@fa/shared/city-region'
 import { computeEnsemble, computeMedianDirection } from '@fa/shared/ensemble'

@@ -1,5 +1,7 @@
 'use client'
 
+import { ChartFrame } from '@/components/charts/ChartFrame'
+import { SpaghettiChart } from '@/components/charts/SpaghettiChart'
 import { DisagreementTiles } from '@/components/city/DisagreementTiles'
 import { ModelLegend } from '@/components/city/ModelLegend'
 import { VariableSwitch } from '@/components/city/VariableSwitch'
@@ -21,8 +23,6 @@ import {
     PrecipTotals,
     sumValues,
 } from '@fa/chart-core/dashboard-stats'
-import { ChartFrame } from '@fa/charts/ChartFrame'
-import { SpaghettiChart } from '@fa/charts/SpaghettiChart'
 import { Series } from '@fa/shared/api'
 import { EnsembleStats } from '@fa/shared/ensemble'
 import { formatDateKey, formatNumber, formatPeriodLabel, formatStepLabel, getCityName } from '@fa/shared/format'
@@ -54,7 +54,7 @@ const STICKY_TIME_CELL =
     'sticky left-0 z-1 bg-card group-hover:bg-[color-mix(in_srgb,var(--color-muted)_50%,var(--color-card))]'
 
 // Recharts is the heaviest chart library here and the panel sits below the fold, so it loads after the main chart.
-const PrecipPanel = dynamic(() => import('@fa/charts/PrecipPanel').then((mod) => mod.PrecipPanel), {
+const PrecipPanel = dynamic(() => import('@/components/charts/PrecipPanel').then((mod) => mod.PrecipPanel), {
     ssr: false,
     loading: () => <Skeleton className="h-[14.375rem]" />,
 })

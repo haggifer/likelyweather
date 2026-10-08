@@ -1,5 +1,7 @@
 'use client'
 
+import { useChartTheme } from '@/hooks/useChartTheme'
+import { useElementWidth } from '@/hooks/useElementWidth'
 import { clamp, getBarWidth, getNowX, getTimeScale, getValueScale } from '@fa/chart-core/plot-geometry'
 import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
 import { getNearestIndex, getSumBarCenter } from '@fa/chart-core/spaghetti-geometry'
@@ -15,8 +17,6 @@ import { useTranslations } from 'next-intl'
 import { CSSProperties, KeyboardEvent, PointerEvent, useId, useState } from 'react'
 import { getArrowStep } from './arrow-keys'
 import { DayGrid } from './DayGrid'
-import { useChartTheme } from './hooks/useChartTheme'
-import { useElementWidth } from './hooks/useElementWidth'
 import { getPointerTime } from './pointer-time'
 import { WindArrows } from './WindArrows'
 
