@@ -25,7 +25,9 @@ interface IProps {
 }
 
 // The city name doubles as a switcher: the pencil swaps it for a search box holding the current name, selected so
-// typing replaces it. Picking a result opens that city; Escape or clicking away keeps this one.
+// typing replaces it. Picking a result opens that city; Escape or clicking away keeps this one. On phones the header
+// matches the app's: the name and region wrap, the star and the pencil sit at the right edge, and the age chip and
+// Refresh form a second line.
 export function CityHeader({ city }: IProps) {
     const t = useTranslations('city')
     const locale = useLocale()
@@ -66,12 +68,12 @@ export function CityHeader({ city }: IProps) {
                 <SearchBox initialQuery={name} autoFocus onDismiss={handleDismiss} className="max-w-none" />
             ) : (
                 <div className="flex min-h-12 flex-wrap items-center gap-x-4 gap-y-2">
-                    <div className="flex min-w-0 items-center gap-1.5">
+                    <div className="flex min-w-0 items-center gap-1.5 max-sm:w-full">
                         <Button
                             asChild
                             variant="ghost"
                             size="icon-sm"
-                            className="-ml-1.5 shrink-0 text-muted-foreground sm:hidden"
+                            className="-ml-1.5 shrink-0 text-muted-foreground pointer-coarse:size-9 sm:hidden"
                         >
                             <Link href={`/?city=${city.slug}`} aria-label={t('back')} title={t('back')}>
                                 <ArrowLeft />
@@ -79,25 +81,25 @@ export function CityHeader({ city }: IProps) {
                         </Button>
                         <h1 className="flex min-w-0 items-center gap-2.5 text-xl tracking-tight sm:text-2xl">
                             <FlagIcon countryCode={city.countryCode} className="h-4 w-6 shrink-0" />
-                            <span className="truncate" title={region ? `${name}, ${region}` : name}>
+                            <span className="sm:truncate" title={region ? `${name}, ${region}` : name}>
                                 <span className="font-bold">{name}</span>
-                                {region && (
-                                    <span className="font-medium text-muted-foreground max-sm:hidden">, {region}</span>
-                                )}
+                                {region && <span className="font-medium text-muted-foreground">, {region}</span>}
                             </span>
                         </h1>
-                        <FavoriteToggle place={city} />
-                        <Button
-                            ref={pencilRef}
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() => setIsEditing(true)}
-                            aria-label={t('change')}
-                            title={t('change')}
-                            className="shrink-0 text-muted-foreground"
-                        >
-                            <Pencil />
-                        </Button>
+                        <div className="flex shrink-0 items-center gap-1.5 max-sm:ml-auto">
+                            <FavoriteToggle place={city} />
+                            <Button
+                                ref={pencilRef}
+                                variant="ghost"
+                                size="icon-sm"
+                                onClick={() => setIsEditing(true)}
+                                aria-label={t('change')}
+                                title={t('change')}
+                                className="shrink-0 text-muted-foreground pointer-coarse:size-9"
+                            >
+                                <Pencil />
+                            </Button>
+                        </div>
                     </div>
                     <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
                         {latest && (
@@ -112,7 +114,7 @@ export function CityHeader({ city }: IProps) {
                             isAvailable={isOutdated}
                             isFetching={isFetching}
                             onRefresh={handleRefresh}
-                            labelClassName="max-sm:sr-only"
+                            className="pointer-coarse:h-9"
                         />
                     </div>
                 </div>
