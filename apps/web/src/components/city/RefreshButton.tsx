@@ -1,7 +1,7 @@
 'use client'
 
+import { Hint } from '@/components/shell/Hint'
 import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/cn'
 import { REFRESH_AFTER_HOURS } from '@fa/shared/constants'
 import { RefreshCw } from 'lucide-react'
@@ -13,19 +13,11 @@ interface IProps {
     onRefresh?: () => void
     className?: string
     wrapperClassName?: string
-    labelClassName?: string
 }
 
 // Refresh is offered once the data on screen is REFRESH_AFTER_HOURS old, when its age chip appears; before that it
-// is disabled and its tooltip says why.
-export function RefreshButton({
-    isAvailable,
-    isFetching = false,
-    onRefresh,
-    className,
-    wrapperClassName,
-    labelClassName,
-}: IProps) {
+// is disabled and its hint says why.
+export function RefreshButton({ isAvailable, isFetching = false, onRefresh, className, wrapperClassName }: IProps) {
     const t = useTranslations('city')
     const isEnabled = isAvailable && Boolean(onRefresh)
     const button = (
@@ -37,28 +29,24 @@ export function RefreshButton({
             title={isEnabled ? t('refreshTitle') : undefined}
             className={className}
         >
-            <RefreshCw className={cn(isFetching && 'animate-spin')} />{' '}
-            <span className={labelClassName}>{t('refresh')}</span>
+            <RefreshCw className={cn(isFetching && 'animate-spin')} /> {t('refresh')}
         </Button>
     )
 
     if (isEnabled) return button
 
     return (
-        <Tooltip>
-            <TooltipTrigger asChild>
-                {/* A disabled button gets no pointer events, so the tooltip hangs on a focusable wrapper. */}
-                <span
-                    tabIndex={0}
-                    className={cn(
-                        'inline-flex rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                        wrapperClassName,
-                    )}
-                >
-                    {button}
-                </span>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">{t('upToDate', { hours: REFRESH_AFTER_HOURS })}</TooltipContent>
-        </Tooltip>
+        <Hint content={t('upToDate', { hours: REFRESH_AFTER_HOURS })}>
+            {/* A disabled button gets no pointer events, so the hint hangs on a focusable wrapper. */}
+            <span
+                tabIndex={0}
+                className={cn(
+                    'inline-flex rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    wrapperClassName,
+                )}
+            >
+                {button}
+            </span>
+        </Hint>
     )
 }

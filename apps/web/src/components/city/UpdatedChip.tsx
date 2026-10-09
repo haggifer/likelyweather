@@ -1,5 +1,6 @@
 'use client'
 
+import { Hint } from '@/components/shell/Hint'
 import { StatusChip } from '@/components/shell/StatusChip'
 import { ChipTone } from '@/components/types'
 import { cn } from '@/lib/cn'
@@ -20,7 +21,7 @@ interface IProps {
 
 // How long ago the data on screen was fetched, the moment the chart starts at, shown once it is REFRESH_AFTER_HOURS
 // old (when Refresh turns on). An age reads the same in every time zone, unlike a clock time that is the city's; the
-// run's times, city and UTC, are in the tooltip.
+// run's times, city and UTC, are in its hint (a tooltip, or a tap on touch screens).
 export function UpdatedChip({ issueTime, fetchedAt, timeZone, now, className }: IProps) {
     const t = useTranslations('city')
     const locale = useLocale()
@@ -37,12 +38,18 @@ export function UpdatedChip({ issueTime, fetchedAt, timeZone, now, className }: 
     })
 
     return (
-        <StatusChip
-            tone={isStale ? ChipTone.Warn : ChipTone.Ok}
-            className={cn('h-7', className)}
-            title={isStale ? `${title} ${t('forecastOldTitle')}` : title}
-        >
-            {t('forecastAge', { hours })}
-        </StatusChip>
+        <Hint content={isStale ? `${title} ${t('forecastOldTitle')}` : title}>
+            <button
+                type="button"
+                className={cn(
+                    'shrink-0 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    className,
+                )}
+            >
+                <StatusChip tone={isStale ? ChipTone.Warn : ChipTone.Ok} className="h-7">
+                    {t('forecastAge', { hours })}
+                </StatusChip>
+            </button>
+        </Hint>
     )
 }

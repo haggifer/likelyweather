@@ -1,6 +1,6 @@
 'use client'
 
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Hint } from '@/components/shell/Hint'
 import { useStoredQuota } from '@/hooks/useStoredQuota'
 import { cn } from '@/lib/cn'
 import { formatClockTime, getViewerTimeZone } from '@fa/shared/format'
@@ -22,34 +22,31 @@ export function QuotaMeter() {
     const resetsAt = formatClockTime(data.resetsAt, getViewerTimeZone(), locale)
 
     return (
-        <Tooltip>
-            <TooltipTrigger asChild>
-                <div
-                    role="meter"
-                    tabIndex={0}
-                    aria-label={t('label')}
-                    aria-valuemin={0}
-                    aria-valuemax={data.limit}
-                    aria-valuenow={left}
-                    aria-valuetext={t('value', { left, limit: data.limit })}
-                    className="flex items-center gap-2 rounded-md px-1.5 py-1 text-xs text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                    <span className="hidden sm:inline">{t('short')}</span>
-                    <span className="hidden h-1.5 w-16 overflow-hidden rounded-full bg-muted sm:block">
-                        <span
-                            className={cn(
-                                'block h-full rounded-full transition-[width]',
-                                share <= LOW_SHARE ? 'bg-warning' : 'bg-primary',
-                            )}
-                            style={{ width: `${share * 100}%` }}
-                        />
-                    </span>
-                    <span className="font-medium text-foreground tabular-nums">
-                        {left}/{data.limit}
-                    </span>
-                </div>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">{t('resets', { time: resetsAt })}</TooltipContent>
-        </Tooltip>
+        <Hint content={t('resets', { time: resetsAt })}>
+            <div
+                role="meter"
+                tabIndex={0}
+                aria-label={t('label')}
+                aria-valuemin={0}
+                aria-valuemax={data.limit}
+                aria-valuenow={left}
+                aria-valuetext={t('value', { left, limit: data.limit })}
+                className="flex items-center gap-2 rounded-md px-1.5 py-1 text-xs text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+                <span className="hidden sm:inline">{t('short')}</span>
+                <span className="hidden h-1.5 w-16 overflow-hidden rounded-full bg-muted sm:block">
+                    <span
+                        className={cn(
+                            'block h-full rounded-full transition-[width]',
+                            share <= LOW_SHARE ? 'bg-warning' : 'bg-primary',
+                        )}
+                        style={{ width: `${share * 100}%` }}
+                    />
+                </span>
+                <span className="font-medium text-foreground tabular-nums">
+                    {left}/{data.limit}
+                </span>
+            </div>
+        </Hint>
     )
 }
