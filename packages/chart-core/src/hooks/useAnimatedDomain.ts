@@ -14,8 +14,13 @@ const easeOut = (t: number) => 1 - Math.pow(1 - t, 3)
 
 // Tweens a y-domain with D3 interpolators inside requestAnimationFrame when the same series refreshes. A new
 // `resetKey` (another variable, with other units) jumps straight to the target: tweening between unrelated scales
-// shows nothing and re-renders the whole chart on every frame. Instant under reduced motion.
-export function useAnimatedDomain(target: UseAnimatedDomainResult, resetKey = ''): UseAnimatedDomainResult {
+// shows nothing and re-renders the whole chart on every frame. Instant under reduced motion, which each app reads
+// from its own platform.
+export function useAnimatedDomain(
+    target: UseAnimatedDomainResult,
+    resetKey: string,
+    isReducedMotion: boolean,
+): UseAnimatedDomainResult {
     const [state, setState] = useState<AnimatedDomain>({ key: resetKey, domain: target })
     const latest = useRef(state)
 
@@ -24,7 +29,6 @@ export function useAnimatedDomain(target: UseAnimatedDomainResult, resetKey = ''
     useEffect(() => {
         const from = latest.current
         const isSameTarget = from.key === resetKey && from.domain[0] === lo && from.domain[1] === hi
-        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
         const settle = (next: AnimatedDomain) => {
             latest.current = next
@@ -33,7 +37,7 @@ export function useAnimatedDomain(target: UseAnimatedDomainResult, resetKey = ''
 
         if (isSameTarget) return
 
-        if (reduced || from.key !== resetKey) {
+        if (isReducedMotion || from.key !== resetKey) {
             settle({ key: resetKey, domain: [lo, hi] })
             return
         }
@@ -52,7 +56,7 @@ export function useAnimatedDomain(target: UseAnimatedDomainResult, resetKey = ''
 
         frame = requestAnimationFrame(tick)
         return () => cancelAnimationFrame(frame)
-    }, [lo, hi, resetKey])
+    }, [lo, hi, resetKey, isReducedMotion])
 
     return state.key === resetKey ? state.domain : target
 }

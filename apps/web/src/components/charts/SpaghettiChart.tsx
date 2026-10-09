@@ -1,9 +1,10 @@
 'use client'
 
-import { useAnimatedDomain } from '@/hooks/useAnimatedDomain'
 import { useChartTheme } from '@/hooks/useChartTheme'
 import { useElementWidth } from '@/hooks/useElementWidth'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useNow } from '@/hooks/useNow'
+import { useAnimatedDomain } from '@fa/chart-core/hooks/useAnimatedDomain'
 import { clamp, getBarWidth, getNowX } from '@fa/chart-core/plot-geometry'
 import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
 import {
@@ -43,6 +44,7 @@ const MAX_TICK_WIDTH = 16
 const HOVER_LABEL_HALF_WIDTH = 34
 const PERIOD_LABEL_HALF_WIDTH = 50
 const UNIT_LABEL_WIDTH = 28
+const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
 // Phones get a shorter plot so the model list under it stays in view while scrubbing.
 const NARROW_WIDTH = 480
 const NARROW_HEIGHT = 280
@@ -125,6 +127,7 @@ export function SpaghettiChart({
     const t = useTranslations('chart')
     const theme = useChartTheme()
     const liveNow = useNow()
+    const isReducedMotion = useMediaQuery(REDUCED_MOTION_QUERY)
     const clipId = useId().replace(/[^\w-]/g, '')
 
     const { ref, width } = useElementWidth<HTMLDivElement>()
@@ -136,7 +139,7 @@ export function SpaghettiChart({
     const hasArrows = Boolean(directions)
     const margin = useMemo(() => getMargin(compact, hasArrows), [compact, hasArrows])
     const target = useMemo(() => yDomain ?? getSeriesYDomain(series, variable), [yDomain, series, variable])
-    const domain = useAnimatedDomain(target, variable)
+    const domain = useAnimatedDomain(target, variable, isReducedMotion)
     const geometry = useMemo(
         () => buildSpaghettiGeometry({ steps, series, stats, width, height, domain, margin }),
         [steps, series, stats, width, height, domain, margin],

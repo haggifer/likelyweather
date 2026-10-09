@@ -322,9 +322,6 @@ importers:
       cn:
         specifier: ^0.4.0
         version: 0.4.0
-      d3-interpolate:
-        specifier: ^3.0.1
-        version: 3.0.1
       d3-scale:
         specifier: ^4.0.2
         version: 4.0.2
@@ -371,9 +368,6 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.3.3
-      '@types/d3-interpolate':
-        specifier: ^3.0.4
-        version: 3.0.4
       '@types/d3-scale':
         specifier: ^4.0.9
         version: 4.0.9
@@ -487,6 +481,9 @@ importers:
       d3-array:
         specifier: ^3.2.4
         version: 3.2.4
+      d3-interpolate:
+        specifier: ^3.0.1
+        version: 3.0.1
       d3-scale:
         specifier: ^4.0.2
         version: 4.0.2
@@ -500,15 +497,24 @@ importers:
       '@types/d3-array':
         specifier: ^3.2.2
         version: 3.2.2
+      '@types/d3-interpolate':
+        specifier: ^3.0.4
+        version: 3.0.4
       '@types/d3-scale':
         specifier: ^4.0.9
         version: 4.0.9
       '@types/d3-shape':
         specifier: ^3.2.0
         version: 3.2.0
+      '@types/react':
+        specifier: ~19.2.2
+        version: 19.2.18
       eslint:
         specifier: ^9
         version: 9.39.5(jiti@2.7.0)(supports-color@8.1.1)
+      react:
+        specifier: 19.2.3
+        version: 19.2.3
       typescript:
         specifier: ^5
         version: 5.9.3

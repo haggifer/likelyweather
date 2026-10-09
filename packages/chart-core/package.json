@@ -13,15 +13,22 @@
     "dependencies": {
         "@fa/shared": "workspace:*",
         "d3-array": "^3.2.4",
+        "d3-interpolate": "^3.0.1",
         "d3-scale": "^4.0.2",
         "d3-shape": "^3.2.0"
+    },
+    "peerDependencies": {
+        "react": "^19"
     },
     "devDependencies": {
         "@fa/fixtures": "workspace:*",
         "@types/d3-array": "^3.2.2",
+        "@types/d3-interpolate": "^3.0.4",
         "@types/d3-scale": "^4.0.9",
         "@types/d3-shape": "^3.2.0",
+        "@types/react": "~19.2.2",
         "eslint": "^9",
+        "react": "19.2.3",
         "typescript": "^5",
         "vitest": "^5.0.1"
     }
