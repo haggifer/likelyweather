@@ -3,12 +3,7 @@
     "private": true,
     "type": "module",
     "exports": {
-        "./api": "./src/api.ts",
-        "./error-kind": "./src/error-kind.ts",
-        "./query-client": "./src/query-client.ts",
-        "./latest-query": "./src/latest-query.ts",
-        "./refresh-due": "./src/refresh-due.ts",
-        "./hooks/*": "./src/hooks/*.ts"
+        "./*": "./src/*.ts"
     },
     "scripts": {
         "lint": "eslint .",

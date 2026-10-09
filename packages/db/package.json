@@ -3,9 +3,7 @@
     "private": true,
     "type": "module",
     "exports": {
-        "./client": "./src/client.ts",
-        "./partitions": "./src/partitions.ts",
-        "./seed-data": "./src/seed-data.ts"
+        "./*": "./src/*.ts"
     },
     "scripts": {
         "generate": "prisma generate",
