@@ -43,6 +43,7 @@ const AppStack = () => {
                 <Stack.Screen name="compare" options={{ title: '' }} />
                 <Stack.Screen name="methodology" options={{ title: '' }} />
                 <Stack.Screen name="settings" options={{ title: tm('settings') }} />
+                <Stack.Screen name="+not-found" options={{ title: '' }} />
             </Stack>
             <SnackbarHost />
         </>
