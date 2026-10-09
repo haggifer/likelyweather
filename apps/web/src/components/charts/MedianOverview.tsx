@@ -74,9 +74,9 @@ const PHONE_SIZE: ChartSize = {
         { variable: Variable.Precip, height: 92 },
     ],
     marginLeft: 44,
-    tickFontSize: 14,
-    labelFontSize: 14,
-    hoverLabelHalfWidth: 44,
+    tickFontSize: 13,
+    labelFontSize: 13,
+    hoverLabelHalfWidth: 42,
     // The panel names sit in the panels' top-left corner, where the "now" line always is right after a fetch.
     isNowLabelAbove: true,
 }
