@@ -11,6 +11,7 @@ import { getErrorKind } from '@fa/api-client/error-kind'
 import { useGeocode } from '@fa/api-client/hooks/useGeocode'
 import { useTrackCity } from '@fa/api-client/hooks/useTrackCity'
 import { City, GeocodeResult, Locale } from '@fa/shared/api'
+import { SEARCH_DEBOUNCE_MS } from '@fa/shared/constants'
 import { getCityLabel } from '@fa/shared/format'
 import { addRecent, getPlaceList, isFavorite, Place, Places, rankByFavorite, toPlace } from '@fa/shared/places'
 import { Command as CommandPrimitive } from 'cmdk'
@@ -62,7 +63,7 @@ export function SearchBox({
     const [isOpen, setIsOpen] = useState(false)
 
     const isEdited = query !== initialQuery
-    const debounced = useDebouncedValue(isEdited ? query.trim() : '', 200)
+    const debounced = useDebouncedValue(isEdited ? query.trim() : '', SEARCH_DEBOUNCE_MS)
     const { data, isFetching, isError, error } = useGeocode(debounced, locale)
     const track = useTrackCity()
 
