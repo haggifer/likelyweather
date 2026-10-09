@@ -4,14 +4,25 @@ const TICK_MS = 60_000
 
 let current = new Date()
 
+// Browsers throttle timers in a hidden tab, so the clock also ticks when the tab is shown again; otherwise the now
+// line would lag for up to a minute after the reader comes back.
 const subscribe = (onChange: () => void) => {
-    current = new Date()
-    const timer = setInterval(() => {
+    const tick = () => {
         current = new Date()
         onChange()
-    }, TICK_MS)
+    }
+    const handleVisibility = () => {
+        if (document.visibilityState === 'visible') tick()
+    }
 
-    return () => clearInterval(timer)
+    current = new Date()
+    const timer = setInterval(tick, TICK_MS)
+    document.addEventListener('visibilitychange', handleVisibility)
+
+    return () => {
+        clearInterval(timer)
+        document.removeEventListener('visibilitychange', handleVisibility)
+    }
 }
 
 const getSnapshot = () => current
