@@ -105,7 +105,7 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
                         <span className="font-bold">{name}</span>
                         {region && <span className="font-medium text-muted-foreground">, {region}</span>}
                     </span>
-                    <FavoriteToggle place={city} className="-ml-1" />
+                    <FavoriteToggle place={city} className="-ml-1 max-sm:ml-auto" />
                 </CardTitle>
                 <CardAction className={ACTIONS}>
                     <UpdatedChip
