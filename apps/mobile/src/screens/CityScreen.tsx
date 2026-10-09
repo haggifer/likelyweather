@@ -45,7 +45,8 @@ import { getSlugTitle } from '../lib/city-slug'
 import { setSelectedCity } from '../lib/selected-city-store'
 
 const GAP = 12
-// The switch sticks under the native header; its bar keeps 8 px of page colour around it while content scrolls under.
+// The switch sticks under the native header; its bar keeps 8 px of page colour around it while content scrolls under,
+// the web's `py-2` pinned bar.
 const BAR_PADDING = 8
 const REFRESH_PLACEHOLDER_WIDTH = 104
 // The header is the scroll's first child and the variable bar its second, the one that sticks.
@@ -53,7 +54,7 @@ const STICKY_INDICES = [1]
 
 const styles = StyleSheet.create({
     content: { padding: 16, paddingTop: 8, gap: GAP },
-    bar: { marginHorizontal: -16, marginVertical: -BAR_PADDING, paddingHorizontal: 16, paddingVertical: BAR_PADDING },
+    bar: { marginHorizontal: -16, paddingHorizontal: 16, paddingVertical: BAR_PADDING },
     header: { gap: 8 },
     note: { fontSize: 12, lineHeight: 17 },
     legend: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 12 },

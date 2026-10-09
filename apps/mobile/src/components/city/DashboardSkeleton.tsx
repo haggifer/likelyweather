@@ -3,9 +3,9 @@ import { Skeleton } from '../ui/Skeleton'
 
 // The loaded cards' heights on a phone: the chart card with its two-column model list and summary, the row of day
 // tiles and the precipitation panel, so nothing jumps when the forecast arrives.
-const CHART_CARD_HEIGHT = 700
-const TILES_CARD_HEIGHT = 220
-const PRECIP_CARD_HEIGHT = 400
+const CHART_CARD_HEIGHT = 690
+const TILES_CARD_HEIGHT = 210
+const PRECIP_CARD_HEIGHT = 380
 
 interface IProps {
     gap: number
