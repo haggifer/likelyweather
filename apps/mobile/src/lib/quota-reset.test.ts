@@ -3,8 +3,11 @@ import { dropExpiredQuota } from './quota-reset'
 
 const NOW = new Date('2026-10-09T12:00:00Z')
 
-const makeClient = (resetsAt: string) => {
-    const client = new QueryClient()
+// No garbage-collection timer, which would keep Jest running after the tests.
+const makeClient = (resetsAt?: string) => {
+    const client = new QueryClient({ defaultOptions: { queries: { gcTime: Infinity } } })
+
+    if (!resetsAt) return client
 
     client.setQueryData(['quota'], { used: 12, limit: 60, resetsAt })
 
@@ -29,7 +32,7 @@ describe('dropExpiredQuota', () => {
     })
 
     it('does nothing without a stored count', () => {
-        const client = new QueryClient()
+        const client = makeClient()
 
         expect(() => dropExpiredQuota(client, NOW)).not.toThrow()
     })
