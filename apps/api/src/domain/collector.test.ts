@@ -5,7 +5,7 @@ import { ModelSeries } from '@fa/shared/variables'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { collect, countRows } from './collector'
-import { addCity, getLatestSnapshot } from './store'
+import { addCity, getLatestSnapshot, getLatestSnapshotMeta } from './store'
 
 loadLocalEnv()
 
@@ -89,5 +89,19 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('collect (database, recorded u
         expect(run.status).toBe('PARTIAL')
         expect(Object.keys(snapshot!.models)).toEqual([ModelId.Metno])
         expect(run.warnings.join(' ')).toMatch(/Open-Meteo failed/)
+    })
+
+    it('leaves a served run alone when a refetch in the same step gets no data', async () => {
+        vi.stubGlobal('fetch', respond(200))
+        const { run: served } = await collect({ city: CITY, now: NOW })
+
+        vi.stubGlobal('fetch', respond(404, 400))
+        const { run: failed, snapshot } = await collect({ city: CITY, now: NOW })
+        const stored = await prisma.collectionRun.findUniqueOrThrow({ where: { id: served.id } })
+
+        expect(snapshot).toBeNull()
+        expect(failed).toMatchObject({ id: served.id, status: 'FAILED' })
+        expect(stored.status).toBe('OK')
+        expect(await getLatestSnapshotMeta(CITY.id)).toMatchObject({ runId: served.id, runStatus: 'OK' })
     })
 })

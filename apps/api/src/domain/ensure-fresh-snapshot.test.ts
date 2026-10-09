@@ -60,6 +60,33 @@ describe('ensureFreshSnapshot', () => {
         expect(collect).toHaveBeenCalledTimes(1)
     })
 
+    it('serves the stored run without fetching or spending quota for a while after a refresh got no data', async () => {
+        const city = { ...CITY, id: 9 }
+        vi.mocked(getLatestSnapshotMeta)
+            .mockResolvedValueOnce({ ...STORED, cityId: 9 })
+            .mockResolvedValueOnce({ ...STORED, cityId: 9 })
+        vi.mocked(collect).mockResolvedValue({ run: { status: 'FAILED' } as Run, snapshot: null })
+        vi.mocked(trySpendQuota).mockResolvedValue(true)
+
+        const first = await ensureFreshSnapshot(city, 'viewer')
+        const second = await ensureFreshSnapshot(city, 'viewer')
+
+        expect(first.fetchedAt).toBe(STORED.fetchedAt)
+        expect(second.fetchedAt).toBe(STORED.fetchedAt)
+        expect(collect).toHaveBeenCalledTimes(1)
+        expect(trySpendQuota).toHaveBeenCalledTimes(1)
+    })
+
+    it('fails fast for a city with no stored run while the cooldown lasts', async () => {
+        const city = { ...CITY, id: 10 }
+        vi.mocked(collect).mockResolvedValue({ run: { status: 'FAILED' } as Run, snapshot: null })
+        vi.mocked(trySpendQuota).mockResolvedValue(true)
+
+        await expect(ensureFreshSnapshot(city, 'viewer')).rejects.toMatchObject({ status: 502 })
+        await expect(ensureFreshSnapshot(city, 'viewer')).rejects.toMatchObject({ status: 502 })
+        expect(collect).toHaveBeenCalledTimes(1)
+    })
+
     it('logs a refresh that failed before serving the stored run', async () => {
         const error = vi.spyOn(console, 'error').mockImplementation(() => {})
         vi.mocked(getLatestSnapshotMeta).mockResolvedValueOnce({ ...STORED, cityId: 8 })

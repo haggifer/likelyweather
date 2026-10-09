@@ -217,3 +217,8 @@ export const claim = (name: string, ttlSeconds: number) =>
 
 // Gives a claim back before its TTL, for a holder that will not do the work after all.
 export const releaseClaim = (name: string) => safely(() => getStore().del(`claim:${name}`), undefined)
+
+// A short-lived marker, such as a cooldown. With Redis down it is never set, so nothing is held back.
+export const mark = (name: string, ttlSeconds: number) => cacheSet(`mark:${name}`, 1, ttlSeconds)
+
+export const isMarked = async (name: string) => (await cacheGet<number>(`mark:${name}`)) !== undefined

@@ -5,7 +5,16 @@ import { ModelSeries } from '@fa/shared/variables'
 import { getErrorMessage } from './errors'
 import { fetchMetno, parseMetno } from './sources/metno'
 import { fetchOpenMeteoForecast, parseOpenMeteoModels } from './sources/open-meteo'
-import { getLatestSnapshot, Run, RunStatus, SeriesGrid, Snapshot, upsertRun, writeSnapshot } from './store'
+import {
+    getLatestSnapshot,
+    recordRunWithoutSnapshot,
+    Run,
+    RunStatus,
+    SeriesGrid,
+    Snapshot,
+    upsertRun,
+    writeSnapshot,
+} from './store'
 import { getWindowSteps } from './window'
 
 export interface CollectOptions {
@@ -129,9 +138,10 @@ export const collect = async ({ city, now = new Date() }: CollectOptions): Promi
     }
 
     // A snapshot references its run, so the run is stored first; it stays FAILED if the process dies mid-write.
-    await upsertRun(run)
-
-    if (snapshot) await writeSnapshot(snapshot)
+    if (snapshot) {
+        await upsertRun(run)
+        await writeSnapshot(snapshot)
+    }
 
     Object.assign(run, {
         finishedAt: fetchedAt,
@@ -139,7 +149,9 @@ export const collect = async ({ city, now = new Date() }: CollectOptions): Promi
         rows,
         citiesCount: snapshot ? 1 : 0,
     })
-    await upsertRun(run)
+
+    if (snapshot) await upsertRun(run)
+    else await recordRunWithoutSnapshot(run)
 
     // The run rows are not shown anywhere, so the logs are where a failing source shows up.
     if (warnings.length) console.warn(`Run ${runId} ${run.status}: ${warnings.join('; ')}`)

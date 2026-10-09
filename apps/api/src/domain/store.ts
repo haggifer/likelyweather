@@ -201,16 +201,29 @@ export const addCity = async (city: City) => {
     return toCity(row)
 }
 
+const toRunData = (run: Run) => ({
+    ...run,
+    origin: ORIGIN,
+    issueTime: new Date(run.issueTime),
+    startedAt: new Date(run.startedAt),
+    finishedAt: run.finishedAt ? new Date(run.finishedAt) : null,
+})
+
 export const upsertRun = async (run: Run) => {
-    const data = {
-        ...run,
-        origin: ORIGIN,
-        issueTime: new Date(run.issueTime),
-        startedAt: new Date(run.startedAt),
-        finishedAt: run.finishedAt ? new Date(run.finishedAt) : null,
-    }
+    const data = toRunData(run)
 
     await getPrisma().collectionRun.upsert({ where: { id: run.id }, create: data, update: data })
+}
+
+// A run id repeats within a step, and a stored snapshot lives as long as its run's status allows, so a refetch that
+// got no data records its run only where no snapshot is being served from it. Both statements are atomic, so a
+// concurrent fetch that commits its snapshot first is never overwritten.
+export const recordRunWithoutSnapshot = async (run: Run) => {
+    const prisma = getPrisma()
+    const data = toRunData(run)
+
+    await prisma.collectionRun.createMany({ data: [data], skipDuplicates: true })
+    await prisma.collectionRun.updateMany({ where: { id: run.id, snapshots: { none: {} } }, data })
 }
 
 // Replaces only the rows of the models the snapshot carries, so fetching one issue twice never duplicates them and a
