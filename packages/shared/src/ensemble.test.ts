@@ -80,6 +80,17 @@ describe('disagreement', () => {
         ])
     })
 
+    it('counts a step less than an hour ahead as future', () => {
+        const steps = ['2026-09-23T21:00Z', '2026-09-24T00:00Z']
+        const series = [
+            [0, 10],
+            [6, 11],
+        ]
+        const days = computeDisagreement(steps, series, Variable.Temp, 'UTC', new Date('2026-09-23T20:31Z'))
+
+        expect(days.map((d) => d.day)).toEqual(['2026-09-23', '2026-09-24'])
+    })
+
     it('uses the range of daily totals for precipitation', () => {
         const steps = ['2026-09-23T06:00Z', '2026-09-23T12:00Z', '2026-09-24T00:00Z']
         const series = [

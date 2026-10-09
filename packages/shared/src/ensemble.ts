@@ -1,5 +1,5 @@
 import { RAIN_THRESHOLD_MM } from './constants'
-import { getLocalDateKey, hoursBetween } from './time'
+import { getLocalDateKey } from './time'
 import { DisagreementThresholds, Variable, VARIABLE_BY_ID } from './variables'
 
 export type DisagreementLabel = 'agree' | 'mixed' | 'split'
@@ -32,7 +32,7 @@ const groupFutureStepsByDay = (steps: string[], variable: Variable, timeZone: st
     const byDay = new Map<string, number[]>()
 
     steps.forEach((step, i) => {
-        if (hoursBetween(now, step) <= 0) return
+        if (new Date(step).getTime() <= now.getTime()) return
 
         const day = getStepDay(step, variable, timeZone)
 
