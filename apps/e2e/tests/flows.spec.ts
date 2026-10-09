@@ -197,9 +197,12 @@ test('a searched city becomes the first chip and the oldest one drops', async ({
 
 test('a pinned city moves to the front of the chips and opens the landing page', async ({ page }) => {
     await page.goto(`/city/${LONDON}`)
-    await page.getByRole('button', { name: 'Add to favorites' }).click()
+    await page.getByRole('button', { name: 'Add London to favorites' }).click()
 
-    await expect(page.getByRole('button', { name: 'Remove from favorites' })).toHaveAttribute('aria-pressed', 'true')
+    await expect(page.getByRole('button', { name: 'Remove London from favorites' })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+    )
 
     await page.goto('/')
 
@@ -207,7 +210,7 @@ test('a pinned city moves to the front of the chips and opens the landing page',
     await expect(getOverviewTitle(page)).toContainText('London')
 })
 
-test('the star explains why it is disabled once four places are favorites', async ({ page }) => {
+test('the star explains why it is disabled once four places are favorites', async ({ page, isMobile }) => {
     const favorites = [
         toStoredPlace(1, 'Alpha'),
         toStoredPlace(2, 'Beta'),
@@ -222,13 +225,18 @@ test('the star explains why it is disabled once four places are favorites', asyn
 
     await page.goto(`/city/${KYIV}`)
 
-    const star = page.getByRole('button', { name: 'Add to favorites' })
+    const star = page.getByRole('button', { name: 'Add Kyiv to favorites' })
 
     await expect(star).toBeDisabled()
 
-    await star.locator('..').hover()
-
-    await expect(page.getByRole('tooltip')).toContainText('You already have 4 favorites')
+    // A touch screen opens the hint on a tap, a mouse on hover.
+    if (isMobile) {
+        await star.locator('..').tap()
+        await expect(page.getByRole('dialog')).toContainText('You already have 4 favorites')
+    } else {
+        await star.locator('..').hover()
+        await expect(page.getByRole('tooltip')).toContainText('You already have 4 favorites')
+    }
 })
 
 test('the empty search box offers your places', async ({ page }) => {
