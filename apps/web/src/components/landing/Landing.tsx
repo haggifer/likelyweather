@@ -70,7 +70,10 @@ export function Landing() {
                                 onSelect={(next) => void setSlug(next)}
                             />
                         ))}
-                        {!chips && CHIP_PLACEHOLDERS.map((i) => <Skeleton key={i} className="h-7 w-24 rounded-full" />)}
+                        {!chips &&
+                            CHIP_PLACEHOLDERS.map((i) => (
+                                <Skeleton key={i} className="h-7 w-24 rounded-full pointer-coarse:h-9" />
+                            ))}
                     </div>
                 </div>
             </section>

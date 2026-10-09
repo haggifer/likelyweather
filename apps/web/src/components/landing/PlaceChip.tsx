@@ -45,7 +45,7 @@ export function PlaceChip({ place, isSelected, isPinned, onSelect }: IProps) {
                 onClick={() => onSelect(place.slug)}
                 aria-pressed={isSelected}
                 className={cn(
-                    'inline-flex items-center gap-1.5 rounded-l-full py-1 pr-1 pl-3 transition-colors',
+                    'inline-flex items-center gap-1.5 rounded-l-full py-1 pr-1 pl-3 transition-colors pointer-coarse:py-2',
                     FOCUS_RING,
                     !isSelected && 'hover:text-primary',
                 )}
@@ -59,7 +59,7 @@ export function PlaceChip({ place, isSelected, isPinned, onSelect }: IProps) {
                 aria-pressed={isPinned}
                 aria-label={starLabel}
                 title={starLabel}
-                className={cn('rounded-r-full py-1 pr-2.5 pl-1', FOCUS_RING)}
+                className={cn('rounded-r-full py-1 pr-2.5 pl-1 pointer-coarse:py-2', FOCUS_RING)}
             >
                 <Star className={cn('size-4', getStarTone(isPinned, isSelected))} aria-hidden="true" />
             </button>

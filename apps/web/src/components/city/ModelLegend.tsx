@@ -80,6 +80,7 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
                 <Button
                     variant="ghost"
                     size="icon-xs"
+                    className="relative pointer-coarse:after:absolute pointer-coarse:after:-inset-1.5"
                     onClick={() => dispatch(toggleMedian())}
                     aria-label={isMedianHidden ? t('showMedian') : t('hideMedian')}
                     aria-pressed={isMedianHidden}
@@ -120,6 +121,7 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
                             <Button
                                 variant="ghost"
                                 size="icon-xs"
+                                className="relative pointer-coarse:after:absolute pointer-coarse:after:-inset-1.5"
                                 onClick={() => dispatch(toggleHiddenModel(modelId))}
                                 aria-label={
                                     isHidden ? t('show', { model: model.name }) : t('hide', { model: model.name })

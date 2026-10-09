@@ -22,7 +22,7 @@ export function ErrorNotice({ error, onRetry, className }: IProps) {
         >
             <p>{t(getErrorKind(error))}</p>
             {onRetry && (
-                <Button variant="outline" size="sm" onClick={onRetry}>
+                <Button variant="outline" size="sm" onClick={onRetry} className="pointer-coarse:h-9">
                     <RefreshCw /> {t('retry')}
                 </Button>
             )}
