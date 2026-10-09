@@ -3,6 +3,7 @@ import { Locale } from '@fa/shared/api'
 import { getCityName } from '@fa/shared/format'
 import { formatDistanceKm } from '@fa/shared/geo'
 import { Place, toPlace } from '@fa/shared/places'
+import { onlineManager } from '@tanstack/react-query'
 import { LocateFixed } from 'lucide-react-native'
 import { ActivityIndicator, Pressable } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
@@ -25,7 +26,13 @@ export function LocateButton({ onLocated, onSearch }: IProps) {
 
     const locate = useLocateCity()
 
-    const handlePress = () =>
+    const handlePress = () => {
+        // Offline the request would wait, spinning, for the network; say so at once instead.
+        if (!onlineManager.isOnline()) {
+            showSnackbar(te('offline'))
+            return
+        }
+
         locate.mutate(locale, {
             onSuccess: (result) => {
                 if (result.kind === 'open') {
@@ -47,6 +54,7 @@ export function LocateButton({ onLocated, onSearch }: IProps) {
             onError: (error) =>
                 showSnackbar(error instanceof PositionError ? t('locateUnavailable') : te(getErrorKind(error))),
         })
+    }
 
     return (
         <Pressable
