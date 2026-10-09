@@ -1,3 +1,4 @@
+import { useAnimatedDomain } from '@fa/chart-core/hooks/useAnimatedDomain'
 import { clamp, getBarWidth, getNowX } from '@fa/chart-core/plot-geometry'
 import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
 import {
@@ -16,11 +17,15 @@ import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { ScaleTime } from 'd3-scale'
 import { useId, useMemo } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import Svg, { Circle, ClipPath, Defs, G, Line, Path, Rect, Text as SvgText } from 'react-native-svg'
 import { useTranslations } from 'use-intl'
 import { useLayoutWidth } from '../../hooks/useLayoutWidth'
+import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { useTheme } from '../../hooks/useTheme'
+import { getFontFamily } from '../../theme/fonts'
+import { LineSwatch } from '../ui/LineSwatch'
+import { Text } from '../ui/Text'
 import { DayGrid } from './DayGrid'
 import { ScrubSurface } from './ScrubSurface'
 import { WindArrows } from './WindArrows'
@@ -40,6 +45,10 @@ const MAX_TICK_WIDTH = 16
 const HOVER_LABEL_HALF_WIDTH = 34
 const PERIOD_LABEL_HALF_WIDTH = 50
 const UNIT_LABEL_WIDTH = 28
+const TOOLTIP_SWATCH_WIDTH = 12
+// Phones get a shorter plot so the model list under it stays in view while scrubbing, as on the web.
+const NARROW_WIDTH = 480
+const NARROW_HEIGHT = 280
 
 const styles = StyleSheet.create({
     tooltip: {
@@ -52,16 +61,18 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         gap: 2,
     },
-    row: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
+    row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+    model: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     small: { fontSize: 12 },
     strong: { fontSize: 12, fontWeight: '600' },
+    value: { fontWeight: '500' },
 })
 
 const getMargin = (compact: boolean, hasArrows: boolean): Margin => ({
     top: compact ? 14 : 24,
     right: 12,
     bottom: (compact ? 22 : 30) + (hasArrows ? ARROW_ROW : 0),
-    left: compact ? 34 : 40,
+    left: compact ? 34 : 44,
 })
 
 const getSeriesYDomain = (series: Series[], variable: Variable) =>
@@ -126,7 +137,7 @@ export function SpaghettiChart({
     onHoverIndex,
     now,
     directions,
-    height = 280,
+    height: heightProp = 340,
     compact = false,
     showTooltip = false,
     yDomain,
@@ -134,14 +145,18 @@ export function SpaghettiChart({
 }: IProps) {
     const t = useTranslations('chart')
     const { chart, colors } = useTheme()
+    const isReducedMotion = useReducedMotion()
     const { width, onLayout } = useLayoutWidth()
     const clipId = useId().replace(/[^\w-]/g, '')
 
+    const height = width < NARROW_WIDTH ? Math.min(heightProp, NARROW_HEIGHT) : heightProp
     const info = VARIABLE_BY_ID[variable]
     const isBars = variable === Variable.Precip
     const hasArrows = Boolean(directions)
     const margin = useMemo(() => getMargin(compact, hasArrows), [compact, hasArrows])
-    const domain = useMemo(() => yDomain ?? getSeriesYDomain(series, variable), [yDomain, series, variable])
+    const target = useMemo(() => yDomain ?? getSeriesYDomain(series, variable), [yDomain, series, variable])
+    // A refresh of the same variable eases the axis to its new range; another variable jumps.
+    const domain = useAnimatedDomain(target, variable, isReducedMotion)
     const geometry = useMemo(
         () => buildSpaghettiGeometry({ steps, series, stats, width: Math.max(width, 1), height, domain, margin }),
         [steps, series, stats, width, height, domain, margin],
@@ -171,6 +186,7 @@ export function SpaghettiChart({
     const spanLeft = hoverSpan ? Math.max(margin.left, x(hoverSpan[0])) : 0
     const spanRight = hoverSpan ? Math.min(plotRight, x(hoverSpan[1])) : 0
     const tooltipRows = hover !== null && showTooltip ? getTooltipRows(series, hover) : []
+    const area = { plot: { left: margin.left, top: margin.top, right: plotRight, bottom: plotBottom }, width, height }
 
     const handleScrub = (touchX: number) => {
         const at = x.invert(touchX)
@@ -183,7 +199,7 @@ export function SpaghettiChart({
         <View onLayout={onLayout} accessible accessibilityRole="image" accessibilityLabel={accessibilityLabel}>
             {width === 0 && <View style={{ height }} />}
             {width > 0 && (
-                <ScrubSurface onScrub={handleScrub}>
+                <ScrubSurface onScrub={handleScrub} area={area} onClear={() => onHoverIndex(null)}>
                     <Svg width={width} height={height}>
                         {nowX !== null && (
                             <Rect
@@ -203,6 +219,7 @@ export function SpaghettiChart({
                                     y={y(tick) + 3.5}
                                     textAnchor="end"
                                     fontSize={compact ? 10 : 11}
+                                    fontFamily={getFontFamily('400')}
                                     fill={chart.muted}
                                 >
                                     {formatYTick(tick, info.decimals === 0)}
@@ -222,7 +239,13 @@ export function SpaghettiChart({
                             fontSize={compact ? 10 : 11}
                         />
                         {!compact && (
-                            <SvgText x={margin.left} y={margin.top - 8} fontSize={10} fill={chart.muted}>
+                            <SvgText
+                                x={margin.left}
+                                y={margin.top - 8}
+                                fontSize={10}
+                                fontFamily={getFontFamily('400')}
+                                fill={chart.muted}
+                            >
                                 {info.unit}
                             </SvgText>
                         )}
@@ -332,7 +355,7 @@ export function SpaghettiChart({
                                         x={nowX + 4}
                                         y={margin.top + 10}
                                         fontSize={10}
-                                        fontWeight="600"
+                                        fontFamily={getFontFamily('600')}
                                         fill={chart.foreground}
                                     >
                                         {t('now')}
@@ -367,7 +390,7 @@ export function SpaghettiChart({
                                         y={margin.top - 8}
                                         textAnchor="middle"
                                         fontSize={11}
-                                        fontWeight="600"
+                                        fontFamily={getFontFamily('600')}
                                         fill={chart.foreground}
                                     >
                                         {hoverLabel}
@@ -418,16 +441,24 @@ export function SpaghettiChart({
                     <Text style={[styles.small, { color: colors['muted-foreground'] }]}>{hoverLabel}</Text>
                     <View style={styles.row}>
                         <Text style={[styles.strong, { color: colors.foreground }]}>{t('median')}</Text>
-                        <Text style={[styles.strong, { color: colors.foreground }]}>
+                        <Text isTabular style={[styles.strong, { color: colors.foreground }]}>
                             {formatNumber(stats.median[hover], info.decimals)}
                         </Text>
                     </View>
+                    {/* A dashed swatch and a muted name, as on the web: colour alone would not tell the models apart. */}
                     {tooltipRows.map((r) => (
                         <View key={r.modelId} style={styles.row}>
-                            <Text style={[styles.small, { color: MODEL_BY_ID[r.modelId].color }]}>
-                                {MODEL_BY_ID[r.modelId].name}
-                            </Text>
-                            <Text style={[styles.small, { color: colors.foreground }]}>
+                            <View style={styles.model}>
+                                <LineSwatch
+                                    color={MODEL_BY_ID[r.modelId].color}
+                                    dash={MODEL_BY_ID[r.modelId].dash}
+                                    width={TOOLTIP_SWATCH_WIDTH}
+                                />
+                                <Text style={[styles.small, { color: colors['muted-foreground'] }]}>
+                                    {MODEL_BY_ID[r.modelId].name}
+                                </Text>
+                            </View>
+                            <Text isTabular style={[styles.small, styles.value, { color: colors.foreground }]}>
                                 {formatNumber(r.value, info.decimals)}
                             </Text>
                         </View>
