@@ -1,8 +1,9 @@
 import { CompareResponse } from '@fa/shared/api'
 import { Variable } from '@fa/shared/variables'
-import { keepPreviousData, useQuery, UseQueryResult } from '@tanstack/react-query'
+import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { apiGet } from '../api'
 import { MINUTE } from '../latest-query'
+import { keepCompareCities } from '../placeholder'
 
 export function useCompare(slugs: string[], variable: Variable): UseQueryResult<CompareResponse, Error> {
     return useQuery({
@@ -10,6 +11,6 @@ export function useCompare(slugs: string[], variable: Variable): UseQueryResult<
         queryFn: () => apiGet<CompareResponse>('/compare', { cities: slugs.join(','), variable }),
         enabled: slugs.length > 0,
         staleTime: 5 * MINUTE,
-        placeholderData: keepPreviousData,
+        placeholderData: keepCompareCities(slugs, variable),
     })
 }
