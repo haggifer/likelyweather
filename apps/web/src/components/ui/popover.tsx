@@ -8,8 +8,8 @@ function Popover({ ...props }: React.ComponentProps<typeof PopoverPrimitive.Root
     return <PopoverPrimitive.Root data-slot="popover" {...props} />
 }
 
-function PopoverTrigger({ ...props }: React.ComponentProps<typeof PopoverPrimitive.Trigger>) {
-    return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />
+function PopoverAnchor({ ...props }: React.ComponentProps<typeof PopoverPrimitive.Anchor>) {
+    return <PopoverPrimitive.Anchor data-slot="popover-anchor" {...props} />
 }
 
 // Styled like the tooltip: on touch screens it carries the same hints a tooltip shows on hover.
@@ -38,4 +38,4 @@ function PopoverContent({
     )
 }
 
-export { Popover, PopoverContent, PopoverTrigger }
+export { Popover, PopoverAnchor, PopoverContent }
