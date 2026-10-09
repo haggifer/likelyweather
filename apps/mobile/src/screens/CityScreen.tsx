@@ -1,7 +1,6 @@
 import { isNotFound } from '@fa/api-client/api'
 import { useCity } from '@fa/api-client/hooks/useCity'
 import { useLatest } from '@fa/api-client/hooks/useLatest'
-import { isRefreshOffered } from '@fa/api-client/refresh-due'
 import {
     countRainySteps,
     formatSpread,
@@ -11,53 +10,57 @@ import {
     getReadoutIndex,
     getSlotEnd,
     PRECIP_WINDOW_HOURS,
+    PrecipTotals,
     sumValues,
 } from '@fa/chart-core/dashboard-stats'
 import { City } from '@fa/shared/api'
-import { getCityRegion } from '@fa/shared/city-region'
 import { formatDateKey, formatNumber, formatPeriodLabel, formatStepLabel, getCityName } from '@fa/shared/format'
 import { ModelId } from '@fa/shared/models'
 import { buildSlots, DASHBOARD_HOURS, getChartStart, toSlotLatest } from '@fa/shared/slots'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
-import { useQueryClient } from '@tanstack/react-query'
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
-import { BarChart3, Search, Table2, X } from 'lucide-react-native'
-import { useMemo, useState } from 'react'
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native'
+import { useLocalSearchParams, useRouter } from 'expo-router'
+import { ReactNode, useEffect, useMemo, useState } from 'react'
+import { StyleSheet, View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
+import { ChartFrame } from '../components/charts/ChartFrame'
 import { PrecipPanel } from '../components/charts/PrecipPanel'
 import { SpaghettiChart } from '../components/charts/SpaghettiChart'
+import { CityHeader, HEADER_BUTTON_SIZE } from '../components/city/CityHeader'
+import { CityTitle } from '../components/city/CityTitle'
+import { DashboardSkeleton } from '../components/city/DashboardSkeleton'
 import { DisagreementTiles } from '../components/city/DisagreementTiles'
-import { FavoriteToggle } from '../components/city/FavoriteToggle'
 import { ModelLegend } from '../components/city/ModelLegend'
-import { RefreshButton } from '../components/city/RefreshButton'
 import { SeriesTable } from '../components/city/SeriesTable'
-import { UpdatedChip } from '../components/city/UpdatedChip'
 import { VariableSwitch } from '../components/city/VariableSwitch'
 import { SearchBox } from '../components/home/SearchBox'
-import { Button } from '../components/ui/Button'
-import { Card } from '../components/ui/Card'
 import { ErrorNotice } from '../components/ui/ErrorNotice'
+import { LoadingStatus } from '../components/ui/LoadingStatus'
 import { ScreenScroll } from '../components/ui/ScreenScroll'
 import { Skeleton } from '../components/ui/Skeleton'
+import { Text } from '../components/ui/Text'
 import { useNow } from '../hooks/useNow'
 import { useSelectedVariable } from '../hooks/useSelectedVariable'
 import { useTheme } from '../hooks/useTheme'
-import { getFlagEmoji } from '../lib/flag'
+import { getSlugTitle } from '../lib/city-slug'
+import { setSelectedCity } from '../lib/selected-city-store'
+
+const GAP = 12
+// The switch sticks under the native header; its bar keeps 8 px of page colour around it while content scrolls under.
+const BAR_PADDING = 8
+const REFRESH_PLACEHOLDER_WIDTH = 104
+// The header is the scroll's first child and the variable bar its second, the one that sticks.
+const STICKY_INDICES = [1]
 
 const styles = StyleSheet.create({
-    content: { padding: 16, gap: 16, paddingTop: 12 },
-    bar: { paddingHorizontal: 16, paddingVertical: 8 },
-    titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    name: { flex: 1, fontSize: 20, fontWeight: '700' },
-    region: { fontSize: 13 },
-    actions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    grow: { flex: 1 },
-    status: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    text: { fontSize: 14 },
-    summary: { fontSize: 12, lineHeight: 17 },
-    centered: { padding: 24, gap: 12, alignItems: 'stretch' },
-    heading: { fontSize: 18, fontWeight: '600', textAlign: 'center' },
+    content: { padding: 16, paddingTop: 8, gap: GAP },
+    bar: { marginHorizontal: -16, marginVertical: -BAR_PADDING, paddingHorizontal: 16, paddingVertical: BAR_PADDING },
+    header: { gap: 8 },
+    note: { fontSize: 12, lineHeight: 17 },
+    legend: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 12 },
+    notFound: { alignItems: 'center', gap: 12, paddingVertical: 32 },
+    notFoundTitle: { fontSize: 18, fontWeight: '600', textAlign: 'center' },
+    notFoundBody: { fontSize: 14, textAlign: 'center' },
+    search: { alignSelf: 'stretch' },
 })
 
 const toggle = (list: ModelId[], id: ModelId) => (list.includes(id) ? list.filter((m) => m !== id) : [...list, id])
@@ -67,30 +70,74 @@ const getReadoutLabel = (step: string, variable: Variable, timeZone: string, loc
         ? formatPeriodLabel(step, getSlotEnd(step), timeZone, locale)
         : formatStepLabel(step, timeZone, locale)
 
+// The panel does not depend on the selected variable or the scrub, so the dashboard keeps one element for it and a
+// variable switch or a scrub leaves its drawing alone, as the web's.
+const renderPrecipChart = (
+    precip: PrecipTotals | null,
+    error: unknown,
+    onRetry: () => void,
+    timeZone: string,
+    locale: string,
+) => {
+    if (precip) {
+        return (
+            <PrecipPanel
+                steps={precip.steps}
+                series={precip.series}
+                median={precip.median}
+                chance={precip.chance}
+                timeZone={timeZone}
+                locale={locale}
+                windowHours={PRECIP_WINDOW_HOURS}
+            />
+        )
+    }
+
+    return error ? <ErrorNotice error={error} onRetry={onRetry} /> : <Skeleton height={230} />
+}
+
+// The slug names the place while the city itself is loading, missing or failing, so the screen always has its heading.
+const SlugHeading = ({ slug, children }: { slug: string; children?: ReactNode }) => {
+    const locale = useLocale()
+
+    const { name, region, countryCode } = getSlugTitle(slug, locale)
+
+    return (
+        <CityTitle name={name} region={region} countryCode={countryCode}>
+            {children}
+        </CityTitle>
+    )
+}
+
+const VariableBar = ({ value, onChange }: { value: Variable; onChange: (variable: Variable) => void }) => {
+    const { colors } = useTheme()
+
+    return (
+        <View style={[styles.bar, { backgroundColor: colors.background }]}>
+            <VariableSwitch value={value} onChange={onChange} />
+        </View>
+    )
+}
+
 interface DashboardProps {
     city: City
 }
 
-// The web dashboard in one column: the chart with its model list, the disagreement tiles and the precipitation
-// panel, with the variable switch pinned above the scroll.
+// The web dashboard's phone layout: the header, the variable switch pinned under the native header, the chart card
+// with its model list, the disagreement tiles and the precipitation panel.
 const Dashboard = ({ city }: DashboardProps) => {
     const t = useTranslations('dashboard')
-    const tc = useTranslations('chart')
     const tv = useTranslations('variables')
     const tInline = useTranslations('variablesInline')
-    const tCity = useTranslations('city')
     const locale = useLocale()
     const now = useNow()
     const router = useRouter()
-    const queryClient = useQueryClient()
     const { colors } = useTheme()
     const { variable, setVariable } = useSelectedVariable()
 
     const [hoverStep, setHoverStep] = useState<string | null>(null)
     const [hidden, setHidden] = useState<ModelId[]>([])
     const [isMedianHidden, setIsMedianHidden] = useState(false)
-    const [isTable, setIsTable] = useState(false)
-    const [isSwitching, setIsSwitching] = useState(false)
 
     const latestQuery = useLatest(city.slug, variable)
     const precipQuery = useLatest(city.slug, Variable.Precip)
@@ -113,90 +160,45 @@ const Dashboard = ({ city }: DashboardProps) => {
         () => (precipQuery.data && anchor ? getPrecipTotals(precipQuery.data, anchor) : null),
         [precipQuery.data, anchor],
     )
-    const isFetching = latestQuery.isFetching || precipQuery.isFetching
+    const { error: precipError, refetch: refetchPrecip } = precipQuery
+    const precipChart = useMemo(
+        () => renderPrecipChart(precip, precipError, () => void refetchPrecip(), timeZone, locale),
+        [precip, precipError, refetchPrecip, timeZone, locale],
+    )
 
+    const handleSwitchCity = (slug: string) => {
+        setSelectedCity(slug)
+        router.replace(`/city/${slug}`)
+    }
     const handleVariable = (next: Variable) => {
         setVariable(next)
         setHoverStep(null)
     }
-    const handleRefresh = () => void queryClient.refetchQueries({ queryKey: ['latest', city.slug], type: 'active' })
     const handleRetry = () => {
         void latestQuery.refetch()
         void precipQuery.refetch()
     }
-    const handleSwitchCity = (slug: string) => router.replace(`/city/${slug}`)
     const handleReset = () => {
         setHidden([])
         setIsMedianHidden(false)
     }
 
-    const renderHeader = () => (
-        <View style={{ gap: 8 }}>
-            {isSwitching ? (
-                <SearchBox onSelectCity={handleSwitchCity} autoFocus />
-            ) : (
-                <View style={styles.titleRow}>
-                    <View style={styles.grow}>
-                        <Text style={[styles.name, { color: colors.foreground }]} numberOfLines={1}>
-                            {getFlagEmoji(city.countryCode)} {getCityName(city, locale)}
-                        </Text>
-                        <Text style={[styles.region, { color: colors['muted-foreground'] }]} numberOfLines={1}>
-                            {getCityRegion(city, locale)}
-                        </Text>
-                    </View>
-                    <FavoriteToggle place={city} />
-                </View>
-            )}
-            <View style={styles.actions}>
-                {precipQuery.data && <UpdatedChip fetchedAt={precipQuery.data.fetchedAt} now={now} />}
-                <View style={styles.grow} />
-                <RefreshButton
-                    // The precipitation query dates the run shown. When it failed before any run arrived there is no
-                    // date, but Refresh must stay available: it is the only way to ask again.
-                    isAvailable={
-                        (precipQuery.isError && !precipQuery.data) || isRefreshOffered(precipQuery.data?.fetchedAt, now)
-                    }
-                    isFetching={isFetching}
-                    onRefresh={handleRefresh}
-                />
-            </View>
-        </View>
-    )
-
-    const switchButton = (
-        <Pressable
-            onPress={() => setIsSwitching((v) => !v)}
-            hitSlop={8}
-            accessibilityRole="button"
-            accessibilityLabel={tCity('change')}
-        >
-            {isSwitching ? <X size={22} color={colors.foreground} /> : <Search size={22} color={colors.foreground} />}
-        </Pressable>
-    )
-
     if (!latest || !derived) {
         return (
-            <View style={{ flex: 1 }}>
-                <Stack.Screen options={{ title: getCityName(city, locale), headerRight: () => switchButton }} />
-                <View style={styles.bar}>
-                    <VariableSwitch value={variable} onChange={handleVariable} />
-                </View>
-                <ScreenScroll contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-                    {renderHeader()}
-                    {latestQuery.isError || precipQuery.isError ? (
-                        <ErrorNotice error={latestQuery.error ?? precipQuery.error} onRetry={handleRetry} />
-                    ) : (
-                        <View style={styles.status} accessibilityRole="progressbar">
-                            <ActivityIndicator size="small" color={colors['muted-foreground']} />
-                            <Text style={[styles.text, { color: colors['muted-foreground'] }]}>
-                                {t('fetching', { name: getCityName(city, locale) })}
-                            </Text>
-                        </View>
-                    )}
-                    <Skeleton height={360} />
-                    <Skeleton height={200} />
-                </ScreenScroll>
-            </View>
+            <ScreenScroll
+                contentContainerStyle={styles.content}
+                stickyHeaderIndices={STICKY_INDICES}
+                keyboardShouldPersistTaps="handled"
+            >
+                <CityHeader city={city} onSelectCity={handleSwitchCity} />
+                <VariableBar value={variable} onChange={handleVariable} />
+                {latestQuery.isError || precipQuery.isError ? (
+                    <ErrorNotice error={latestQuery.error ?? precipQuery.error} onRetry={handleRetry} />
+                ) : (
+                    <LoadingStatus label={t('fetching', { name: getCityName(city, locale) })} />
+                )}
+                <DashboardSkeleton gap={GAP} />
+            </ScreenScroll>
         )
     }
 
@@ -220,105 +222,71 @@ const Dashboard = ({ city }: DashboardProps) => {
               total: formatNumber(sumValues(precip.median), 1),
           })
         : null
-    const tableToggle = (
-        <Button
-            variant="ghost"
-            icon={isTable ? BarChart3 : Table2}
-            label={isTable ? tc('chart') : tc('table')}
-            onPress={() => setIsTable((v) => !v)}
-            accessibilityLabel={isTable ? tc('showChart') : tc('showTable')}
-        />
-    )
+    const noteStyle = [styles.note, { color: colors['muted-foreground'] }]
 
     return (
-        <View style={{ flex: 1 }}>
-            <Stack.Screen options={{ title: getCityName(city, locale), headerRight: () => switchButton }} />
-            <View style={[styles.bar, { backgroundColor: colors.background }]}>
-                <VariableSwitch value={variable} onChange={handleVariable} />
-            </View>
-            <ScreenScroll contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-                {renderHeader()}
-                <Card
-                    title={tv(variable)}
-                    action={tableToggle}
-                    style={latestQuery.isPlaceholderData && { opacity: 0.6 }}
-                >
-                    {isTable ? (
-                        <SeriesTable
-                            steps={latest.steps}
-                            series={latest.series}
-                            stats={derived.stats}
-                            decimals={info.decimals}
-                            timeZone={timeZone}
-                            locale={locale}
-                        />
-                    ) : (
-                        <SpaghettiChart
-                            steps={latest.steps}
-                            series={visibleSeries}
-                            stats={derived.stats}
-                            variable={variable}
-                            timeZone={timeZone}
-                            locale={locale}
-                            accessibilityLabel={summary}
-                            hoverIndex={hoverIndex >= 0 ? hoverIndex : null}
-                            onHoverIndex={(i) => setHoverStep(i === null ? null : latest.steps[i])}
-                            directions={variable === Variable.Wind ? derived.directions : null}
-                            now={now}
-                            isMedianHidden={isMedianHidden}
-                        />
-                    )}
-                    {variable === Variable.Wind && !isTable && (
-                        <Text style={[styles.summary, { color: colors['muted-foreground'] }]}>{t('windArrows')}</Text>
-                    )}
-                    <Text style={[styles.summary, { color: colors['muted-foreground'] }]}>{summary}</Text>
-                    <View
-                        style={{
-                            borderTopWidth: StyleSheet.hairlineWidth,
-                            borderTopColor: colors.border,
-                            paddingTop: 8,
-                        }}
-                    >
-                        <ModelLegend
-                            series={latest.series}
-                            median={derived.stats.median[readoutIndex]}
-                            readoutIndex={readoutIndex}
-                            readoutLabel={getReadoutLabel(latest.steps[readoutIndex], variable, timeZone, locale)}
-                            variable={variable}
-                            hidden={hidden}
-                            isMedianHidden={isMedianHidden}
-                            onToggleHidden={(id) => setHidden((list) => toggle(list, id))}
-                            onToggleMedian={() => setIsMedianHidden((v) => !v)}
-                            onReset={handleReset}
-                        />
-                    </View>
-                </Card>
-                <DisagreementTiles days={derived.disagreement} variable={variable} />
-                <Card title={t('precipTitle')} description={t('precipDescription')}>
-                    {precip ? (
-                        <PrecipPanel
-                            steps={precip.steps}
-                            series={precip.series}
-                            median={precip.median}
-                            chance={precip.chance}
-                            timeZone={timeZone}
-                            locale={locale}
-                            windowHours={PRECIP_WINDOW_HOURS}
-                        />
-                    ) : precipQuery.isError ? (
-                        <ErrorNotice error={precipQuery.error} onRetry={() => void precipQuery.refetch()} />
-                    ) : (
-                        <Skeleton height={230} />
-                    )}
-                    {precipSummary && (
-                        <Text style={[styles.summary, { color: colors['muted-foreground'] }]}>{precipSummary}</Text>
-                    )}
-                </Card>
-            </ScreenScroll>
-        </View>
+        <ScreenScroll
+            contentContainerStyle={styles.content}
+            stickyHeaderIndices={STICKY_INDICES}
+            keyboardShouldPersistTaps="handled"
+        >
+            <CityHeader city={city} onSelectCity={handleSwitchCity} />
+            <VariableBar value={variable} onChange={handleVariable} />
+            <ChartFrame
+                title={tv(variable)}
+                summary={summary}
+                isFetching={latestQuery.isFetching && latestQuery.isPlaceholderData}
+                table={
+                    <SeriesTable
+                        steps={latest.steps}
+                        series={latest.series}
+                        stats={derived.stats}
+                        decimals={info.decimals}
+                        timeZone={timeZone}
+                        locale={locale}
+                    />
+                }
+            >
+                <SpaghettiChart
+                    steps={latest.steps}
+                    series={visibleSeries}
+                    stats={derived.stats}
+                    variable={variable}
+                    timeZone={timeZone}
+                    locale={locale}
+                    accessibilityLabel={summary}
+                    hoverIndex={hoverIndex >= 0 ? hoverIndex : null}
+                    onHoverIndex={(i) => setHoverStep(i === null ? null : latest.steps[i])}
+                    directions={variable === Variable.Wind ? derived.directions : null}
+                    now={now}
+                    isMedianHidden={isMedianHidden}
+                />
+                {variable === Variable.Wind && <Text style={noteStyle}>{t('windArrows')}</Text>}
+                <View style={[styles.legend, { borderTopColor: colors.border }]}>
+                    <ModelLegend
+                        series={latest.series}
+                        median={derived.stats.median[readoutIndex]}
+                        readoutIndex={readoutIndex}
+                        readoutLabel={getReadoutLabel(latest.steps[readoutIndex], variable, timeZone, locale)}
+                        direction={variable === Variable.Wind ? (derived.directions?.[readoutIndex] ?? null) : null}
+                        variable={variable}
+                        hidden={hidden}
+                        isMedianHidden={isMedianHidden}
+                        onToggleHidden={(id) => setHidden((list) => toggle(list, id))}
+                        onToggleMedian={() => setIsMedianHidden((v) => !v)}
+                        onReset={handleReset}
+                    />
+                </View>
+            </ChartFrame>
+            <DisagreementTiles days={derived.disagreement} variable={variable} />
+            <ChartFrame title={t('precipTitle')} description={t('precipDescription')} summary={precipSummary}>
+                {precipChart}
+            </ChartFrame>
+        </ScreenScroll>
     )
 }
 
+// The native header names nothing: the body's heading names the place, as on the web, where the top bar has no title.
 export function CityScreen() {
     const tCity = useTranslations('city')
     const router = useRouter()
@@ -327,26 +295,54 @@ export function CityScreen() {
 
     const { data: city, error, refetch } = useCity(slug)
 
+    // Home opens on the city viewed last, like the web's "Back to overview" link.
+    useEffect(() => {
+        if (city) setSelectedCity(city.slug)
+    }, [city])
+
     if (error && isNotFound(error)) {
         return (
-            <View style={[styles.centered, { flex: 1, backgroundColor: colors.background }]}>
-                <Text style={[styles.heading, { color: colors.foreground }]}>{tCity('notFound')}</Text>
-                <Text style={[styles.text, { color: colors['muted-foreground'], textAlign: 'center' }]}>
-                    {tCity('notFoundBody')}
-                </Text>
-                <SearchBox onSelectCity={(next) => router.replace(`/city/${next}`)} />
-            </View>
+            <ScreenScroll contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+                <SlugHeading slug={slug} />
+                <View style={styles.notFound}>
+                    <Text style={[styles.notFoundTitle, { color: colors.foreground }]}>{tCity('notFound')}</Text>
+                    <Text style={[styles.notFoundBody, { color: colors['muted-foreground'] }]}>
+                        {tCity('notFoundBody')}
+                    </Text>
+                    <View style={styles.search}>
+                        <SearchBox onSelectCity={(next) => router.replace(`/city/${next}`)} />
+                    </View>
+                </View>
+            </ScreenScroll>
         )
     }
 
-    if (error) return <ErrorNotice error={error} onRetry={() => void refetch()} />
+    if (error) {
+        return (
+            <ScreenScroll contentContainerStyle={styles.content}>
+                <SlugHeading slug={slug} />
+                <ErrorNotice error={error} onRetry={() => void refetch()} />
+            </ScreenScroll>
+        )
+    }
 
     if (!city) {
         return (
-            <View style={styles.content}>
-                <Skeleton height={28} width="60%" />
-                <Skeleton height={360} />
-            </View>
+            <ScreenScroll contentContainerStyle={styles.content} scrollEnabled={false}>
+                <View style={styles.header}>
+                    <SlugHeading slug={slug}>
+                        <Skeleton width={HEADER_BUTTON_SIZE} height={HEADER_BUTTON_SIZE} />
+                        <Skeleton width={HEADER_BUTTON_SIZE} height={HEADER_BUTTON_SIZE} />
+                    </SlugHeading>
+                    <Skeleton
+                        width={REFRESH_PLACEHOLDER_WIDTH}
+                        height={HEADER_BUTTON_SIZE}
+                        style={{ alignSelf: 'flex-end' }}
+                    />
+                </View>
+                <Skeleton height={HEADER_BUTTON_SIZE} />
+                <DashboardSkeleton gap={GAP} />
+            </ScreenScroll>
         )
     }
 

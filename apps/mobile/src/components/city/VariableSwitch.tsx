@@ -1,8 +1,9 @@
 import { Variable, VARIABLES } from '@fa/shared/variables'
 import { CloudRain, Gauge, LucideIcon, Thermometer, Wind } from 'lucide-react-native'
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, View } from 'react-native'
 import { useTranslations } from 'use-intl'
 import { useTheme } from '../../hooks/useTheme'
+import { Text } from '../ui/Text'
 
 const ICONS: Record<Variable, LucideIcon> = {
     [Variable.Temp]: Thermometer,
@@ -16,7 +17,7 @@ const SELECTED_FLEX = 2.6
 
 const styles = StyleSheet.create({
     group: { flexDirection: 'row', borderWidth: 1, overflow: 'hidden' },
-    item: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 40 },
+    item: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 36 },
     label: { fontSize: 13, fontWeight: '500' },
 })
 
@@ -50,7 +51,8 @@ export function VariableSwitch({ value, onChange }: IProps) {
                         onPress={() => onChange(id)}
                         accessibilityRole="radio"
                         accessibilityLabel={t(id)}
-                        accessibilityState={{ selected: isSelected }}
+                        // A radio's state is `checked`, read as checked or not checked, like the web's radio group.
+                        accessibilityState={{ checked: isSelected }}
                         style={[
                             styles.item,
                             i > 0 && { borderLeftWidth: 1, borderLeftColor: colors.border },
