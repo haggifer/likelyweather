@@ -2,6 +2,7 @@
 
 import { useChartTheme } from '@/hooks/useChartTheme'
 import { useElementWidth } from '@/hooks/useElementWidth'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
 import { Series } from '@fa/shared/api'
 import { formatNumber, formatPercent, formatPeriodLabel, formatTime } from '@fa/shared/format'
@@ -9,10 +10,13 @@ import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { addHours, getLocalDateKey, toIsoMinute } from '@fa/shared/time'
 import { Variable } from '@fa/shared/variables'
 import { useTranslations } from 'next-intl'
+import { useState } from 'react'
 import {
     Bar,
     CartesianGrid,
+    Cell,
     ComposedChart,
+    MouseHandlerDataParam,
     ReferenceLine,
     ResponsiveContainer,
     Scatter,
@@ -51,6 +55,7 @@ const MIN_WIDTH_PER_LABEL = 28
 const Y_AXIS_WIDTH = 36
 const MARGIN = { top: 8, right: 8, bottom: 16, left: 0 }
 const HOUR_FORMAT: Intl.DateTimeFormatOptions = { hour: '2-digit', hourCycle: 'h23' }
+const PHONE_QUERY = '(width < 40rem)'
 
 const toRows = (steps: string[], series: Series[], median: (number | null)[], chance: (number | null)[]): Row[] =>
     steps.map((step, i) => ({
@@ -69,6 +74,13 @@ const getDayStarts = (steps: string[], timeZone: string) => {
 
 const formatWindowLabel = (step: string, windowHours: number, timeZone: string, locale: string) =>
     formatPeriodLabel(toIsoMinute(addHours(new Date(step), -windowHours)), step, timeZone, locale)
+
+const toIndex = (state: MouseHandlerDataParam) =>
+    state.activeTooltipIndex === undefined || state.activeTooltipIndex === null
+        ? null
+        : Number(state.activeTooltipIndex)
+
+const renderNothing = () => null
 
 // Dashed models keep their pattern here too (the palette's second encoding); round caps would close the gaps.
 const ModelTick = ({ cx, cy, color, dash }: ModelTickProps) =>
@@ -96,6 +108,8 @@ interface IProps {
     height?: number
 }
 
+// On a phone a floating tooltip covers the bars and has nowhere to go, so a tapped window's numbers are listed under the
+// panel instead, as in the app, and stay until another window is tapped.
 export function PrecipPanel({
     steps,
     series,
@@ -108,14 +122,17 @@ export function PrecipPanel({
 }: IProps) {
     const t = useTranslations('city')
     const theme = useChartTheme()
+    const isPhone = useMediaQuery(PHONE_QUERY)
 
     const { ref, width } = useElementWidth<HTMLDivElement>()
+    const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
 
     const rows = toRows(steps, series, median, chance)
     // The axis covers every model's tick, not only the median bars, and uses the shared 0.5 / 1 / 2 / 5 mm steps.
     const yDomain = getYDomain([...median, ...series.flatMap((s) => s.values)], Variable.Precip)
     const yTicks = getYTicks(yDomain, Variable.Precip, 3)
     const dayStarts = getDayStarts(steps, timeZone)
+    const selectedRow = isPhone && selectedIndex !== null ? rows[selectedIndex] : undefined
 
     const TimeAndChanceTick = ({ x = 0, y = 0, index = 0 }: TickProps) => (
         <g transform={`translate(${x},${y})`}>
@@ -128,24 +145,20 @@ export function PrecipPanel({
         </g>
     )
 
-    const renderTooltip = ({ active, payload }: TooltipContentProps) => {
-        const row = active ? payload?.[0]?.payload : undefined
-
-        if (!row) return null
-
-        return (
-            <div className="rounded-md border bg-popover px-2.5 py-2 text-xs shadow-md">
-                <div className="mb-1 text-muted-foreground">
-                    {formatWindowLabel(row.step, windowHours, timeZone, locale)}
-                </div>
-                <div className="flex justify-between gap-4 font-semibold">
-                    <span>{t('medianTotal')}</span>
-                    <span>{formatNumber(row.median)} mm</span>
-                </div>
-                <div className="mb-1 flex justify-between gap-4">
-                    <span>{t('chanceOfRain')}</span>
-                    <span>{formatPercent(row.chance)}</span>
-                </div>
+    const renderWindow = (row: Row, modelsClassName?: string) => (
+        <>
+            <div className="mb-1 text-muted-foreground">
+                {formatWindowLabel(row.step, windowHours, timeZone, locale)}
+            </div>
+            <div className="flex justify-between gap-4 font-semibold">
+                <span>{t('medianTotal')}</span>
+                <span>{formatNumber(row.median)} mm</span>
+            </div>
+            <div className="mb-1 flex justify-between gap-4">
+                <span>{t('chanceOfRain')}</span>
+                <span>{formatPercent(row.chance)}</span>
+            </div>
+            <div className={modelsClassName}>
                 {series.map((s) => (
                     <div key={s.modelId} className="flex justify-between gap-4 text-muted-foreground">
                         <span>{MODEL_BY_ID[s.modelId].name}</span>
@@ -153,13 +166,24 @@ export function PrecipPanel({
                     </div>
                 ))}
             </div>
-        )
+        </>
+    )
+    const renderTooltip = ({ active, payload }: TooltipContentProps) => {
+        const row = active ? payload?.[0]?.payload : undefined
+
+        if (!row) return null
+
+        return <div className="rounded-md border bg-popover px-2.5 py-2 text-xs shadow-md">{renderWindow(row)}</div>
     }
 
     return (
-        <div ref={ref}>
+        <div ref={ref} className="[&_.recharts-surface:focus:not(:focus-visible)]:outline-none">
             <ResponsiveContainer width="100%" height={height}>
-                <ComposedChart data={rows} margin={MARGIN}>
+                <ComposedChart
+                    data={rows}
+                    margin={MARGIN}
+                    onClick={isPhone ? (state) => setSelectedIndex(toIndex(state)) : undefined}
+                >
                     <CartesianGrid vertical={false} stroke={theme.grid} />
                     <XAxis
                         dataKey="step"
@@ -188,15 +212,21 @@ export function PrecipPanel({
                             ifOverflow="extendDomain"
                         />
                     ))}
-                    <Tooltip content={renderTooltip} cursor={{ fill: theme.grid, opacity: 0.6 }} />
+                    <Tooltip
+                        content={isPhone ? renderNothing : renderTooltip}
+                        cursor={{ fill: theme.grid, opacity: 0.6 }}
+                    />
                     <Bar
                         dataKey="median"
                         fill={theme.band}
-                        fillOpacity={0.55}
                         radius={[4, 4, 0, 0]}
                         maxBarSize={28}
                         isAnimationActive={false}
-                    />
+                    >
+                        {rows.map((row, i) => (
+                            <Cell key={row.step} fillOpacity={selectedRow && i === selectedIndex ? 0.9 : 0.55} />
+                        ))}
+                    </Bar>
                     {series.map((s) => (
                         <Scatter
                             key={s.modelId}
@@ -214,6 +244,11 @@ export function PrecipPanel({
                     ))}
                 </ComposedChart>
             </ResponsiveContainer>
+            {selectedRow && (
+                <div className="mt-2 border-t pt-2 text-xs">
+                    {renderWindow(selectedRow, 'grid grid-cols-2 gap-x-4')}
+                </div>
+            )}
         </div>
     )
 }
