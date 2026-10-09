@@ -170,6 +170,8 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
     const times = axisSteps.map((s) => new Date(s))
     const plotRight = width - MARGIN.right
     const x = getTimeScale(times, [MARGIN.left, Math.max(MARGIN.left + 1, plotRight)])
+    // One crosshair for every panel: each reads the slot nearest the pointer (or now), so a precipitation readout is
+    // the 3 hours from that slot, which can be the bar after the one under the line (author, 2026-10-09).
     const readoutIndex = hoverIndex ?? (now ? getNearestIndex(times, now) : 0)
     const readoutTime = axisSteps[readoutIndex]
     const nowX = getNowX(x, now, MARGIN.left, plotRight)
