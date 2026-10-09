@@ -2,12 +2,13 @@ import { DEFAULT_PLACES, getPlaceChips, getStarterPlaces, MAX_PLACES } from '@fa
 import { Href, useLocalSearchParams, useRouter } from 'expo-router'
 import { BookOpen, ChevronRight, Columns3, LucideIcon, Split } from 'lucide-react-native'
 import { useEffect } from 'react'
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { useTranslations } from 'use-intl'
 import { CityOverview } from '../components/home/CityOverview'
 import { PlaceChip } from '../components/home/PlaceChip'
 import { SearchBox } from '../components/home/SearchBox'
 import { Card } from '../components/ui/Card'
+import { ScreenScroll } from '../components/ui/ScreenScroll'
 import { Skeleton } from '../components/ui/Skeleton'
 import { usePlaces } from '../hooks/usePlaces'
 import { useStarters } from '../hooks/useStarters'
@@ -61,7 +62,7 @@ export function HomeScreen() {
     }, [isFirstVisit, starters.data])
 
     return (
-        <ScrollView
+        <ScreenScroll
             contentContainerStyle={styles.content}
             keyboardShouldPersistTaps="handled"
             style={{ backgroundColor: colors.background }}
@@ -97,6 +98,6 @@ export function HomeScreen() {
                     </Card>
                 </Pressable>
             ))}
-        </ScrollView>
+        </ScreenScroll>
     )
 }

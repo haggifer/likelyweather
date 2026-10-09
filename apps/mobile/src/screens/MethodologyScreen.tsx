@@ -1,9 +1,10 @@
 import { RAIN_THRESHOLD_MM } from '@fa/shared/constants'
 import { MODELS } from '@fa/shared/models'
 import { VARIABLES } from '@fa/shared/variables'
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { useTranslations } from 'use-intl'
 import { Card } from '../components/ui/Card'
+import { ScreenScroll } from '../components/ui/ScreenScroll'
 import { useTheme } from '../hooks/useTheme'
 
 const SECTIONS = ['sources', 'median', 'disagreement', 'limits'] as const
@@ -28,7 +29,7 @@ export function MethodologyScreen() {
     const muted = { color: colors['muted-foreground'] }
 
     return (
-        <ScrollView contentContainerStyle={styles.content} style={{ backgroundColor: colors.background }}>
+        <ScreenScroll contentContainerStyle={styles.content} style={{ backgroundColor: colors.background }}>
             <Text style={[styles.title, text]} accessibilityRole="header">
                 {t('title')}
             </Text>
@@ -69,6 +70,6 @@ export function MethodologyScreen() {
                 </Card>
             ))}
             <Text style={[styles.small, muted]}>{t('attribution')}</Text>
-        </ScrollView>
+        </ScreenScroll>
     )
 }

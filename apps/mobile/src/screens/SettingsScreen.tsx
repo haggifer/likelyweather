@@ -5,9 +5,10 @@ import Constants from 'expo-constants'
 import { useRouter } from 'expo-router'
 import { Check, ChevronRight, ExternalLink } from 'lucide-react-native'
 import { ReactNode, useSyncExternalStore } from 'react'
-import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Linking, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { Card } from '../components/ui/Card'
+import { ScreenScroll } from '../components/ui/ScreenScroll'
 import { useSettings } from '../hooks/useSettings'
 import { useTheme } from '../hooks/useTheme'
 import { LanguageSetting, settingsStore, ThemeSetting } from '../lib/settings'
@@ -103,7 +104,7 @@ export function SettingsScreen() {
     const setTheme = (theme: ThemeSetting) => settingsStore.set((current) => ({ ...current, theme }))
 
     return (
-        <ScrollView contentContainerStyle={styles.content} style={{ backgroundColor: colors.background }}>
+        <ScreenScroll contentContainerStyle={styles.content} style={{ backgroundColor: colors.background }}>
             <Section title={t('language')}>
                 <Option
                     label={t('languageSystem')}
@@ -174,6 +175,6 @@ export function SettingsScreen() {
                 <Text style={[styles.small, { color: colors['muted-foreground'] }]}>{tm('attribution')}</Text>
                 <Text style={[styles.small, { color: colors['muted-foreground'] }]}>{t('version', { version })}</Text>
             </Section>
-        </ScrollView>
+        </ScreenScroll>
     )
 }

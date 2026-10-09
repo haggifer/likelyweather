@@ -3,9 +3,11 @@ import { City } from '@fa/shared/api'
 import { getCityLabel } from '@fa/shared/format'
 import { getPlaceList, Place } from '@fa/shared/places'
 import { useState } from 'react'
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native'
 import { WidgetConfigurationScreenProps } from 'react-native-android-widget'
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import { IntlProvider, useLocale, useTranslations } from 'use-intl'
+import { ScreenScroll } from '../components/ui/ScreenScroll'
 import { usePlaces } from '../hooks/usePlaces'
 import { useTheme } from '../hooks/useTheme'
 import { CATALOGS } from '../lib/catalogs'
@@ -57,8 +59,8 @@ const PlacePicker = ({ widgetInfo, renderWidget, setResult }: WidgetConfiguratio
     }
 
     return (
-        <View style={[styles.screen, { backgroundColor: colors.background }]}>
-            <ScrollView contentContainerStyle={styles.content}>
+        <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
+            <ScreenScroll contentContainerStyle={styles.content}>
                 <Text style={[styles.title, { color: colors.foreground }]}>{t('configureTitle')}</Text>
                 {!list.length && (
                     <Text style={[styles.text, { color: colors['muted-foreground'] }]}>{t('configureEmpty')}</Text>
@@ -83,18 +85,21 @@ const PlacePicker = ({ widgetInfo, renderWidget, setResult }: WidgetConfiguratio
                 <Pressable onPress={() => setResult('cancel')} style={styles.cancel} accessibilityRole="button">
                     <Text style={[styles.rowText, { color: colors.primary }]}>{t('cancel')}</Text>
                 </Pressable>
-            </ScrollView>
-        </View>
+            </ScreenScroll>
+        </SafeAreaView>
     )
 }
 
-// Android opens this as its own activity when a widget is placed or reconfigured, outside the app's navigation.
+// Android opens this as its own activity when a widget is placed or reconfigured, outside the app's navigation and
+// its safe-area provider; with no header above it, the screen keeps clear of the status bar itself.
 export function WidgetConfigurationScreen(props: WidgetConfigurationScreenProps) {
     const locale = getAppLocale()
 
     return (
-        <IntlProvider locale={locale} messages={CATALOGS[locale]}>
-            <PlacePicker {...props} />
-        </IntlProvider>
+        <SafeAreaProvider>
+            <IntlProvider locale={locale} messages={CATALOGS[locale]}>
+                <PlacePicker {...props} />
+            </IntlProvider>
+        </SafeAreaProvider>
     )
 }

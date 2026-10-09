@@ -23,7 +23,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
 import { BarChart3, Search, Table2, X } from 'lucide-react-native'
 import { useMemo, useState } from 'react'
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { PrecipPanel } from '../components/charts/PrecipPanel'
 import { SpaghettiChart } from '../components/charts/SpaghettiChart'
@@ -38,6 +38,7 @@ import { SearchBox } from '../components/home/SearchBox'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { ErrorNotice } from '../components/ui/ErrorNotice'
+import { ScreenScroll } from '../components/ui/ScreenScroll'
 import { Skeleton } from '../components/ui/Skeleton'
 import { useNow } from '../hooks/useNow'
 import { useTheme } from '../hooks/useTheme'
@@ -179,7 +180,7 @@ const Dashboard = ({ city }: DashboardProps) => {
                 <View style={styles.bar}>
                     <VariableSwitch value={variable} onChange={handleVariable} />
                 </View>
-                <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+                <ScreenScroll contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
                     {renderHeader()}
                     {latestQuery.isError || precipQuery.isError ? (
                         <ErrorNotice error={latestQuery.error ?? precipQuery.error} onRetry={handleRetry} />
@@ -193,7 +194,7 @@ const Dashboard = ({ city }: DashboardProps) => {
                     )}
                     <Skeleton height={360} />
                     <Skeleton height={200} />
-                </ScrollView>
+                </ScreenScroll>
             </View>
         )
     }
@@ -234,7 +235,7 @@ const Dashboard = ({ city }: DashboardProps) => {
             <View style={[styles.bar, { backgroundColor: colors.background }]}>
                 <VariableSwitch value={variable} onChange={handleVariable} />
             </View>
-            <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+            <ScreenScroll contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
                 {renderHeader()}
                 <Card
                     title={tv(variable)}
@@ -312,7 +313,7 @@ const Dashboard = ({ city }: DashboardProps) => {
                         <Text style={[styles.summary, { color: colors['muted-foreground'] }]}>{precipSummary}</Text>
                     )}
                 </Card>
-            </ScrollView>
+            </ScreenScroll>
         </View>
     )
 }

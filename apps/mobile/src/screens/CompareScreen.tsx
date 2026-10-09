@@ -10,7 +10,7 @@ import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { X } from 'lucide-react-native'
 import { useMemo, useState } from 'react'
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { SpaghettiChart } from '../components/charts/SpaghettiChart'
 import { VariableSwitch } from '../components/city/VariableSwitch'
@@ -18,6 +18,7 @@ import { SearchBox } from '../components/home/SearchBox'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { ErrorNotice } from '../components/ui/ErrorNotice'
+import { ScreenScroll } from '../components/ui/ScreenScroll'
 import { Skeleton } from '../components/ui/Skeleton'
 import { useNow } from '../hooks/useNow'
 import { useTheme } from '../hooks/useTheme'
@@ -135,7 +136,7 @@ export function CompareScreen() {
     }
 
     return (
-        <ScrollView
+        <ScreenScroll
             contentContainerStyle={styles.content}
             keyboardShouldPersistTaps="handled"
             style={{ backgroundColor: colors.background }}
@@ -193,6 +194,6 @@ export function CompareScreen() {
             {shown.length > 1 && (
                 <Text style={[styles.small, { color: colors['muted-foreground'] }]}>{t('sharedAxis')}</Text>
             )}
-        </ScrollView>
+        </ScreenScroll>
     )
 }
