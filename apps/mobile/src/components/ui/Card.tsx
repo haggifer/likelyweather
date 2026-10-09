@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
-import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native'
+import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
 import { useTheme } from '../../hooks/useTheme'
+import { Text } from './Text'
 
 const styles = StyleSheet.create({
     card: { borderWidth: StyleSheet.hairlineWidth, padding: 14, gap: 12 },

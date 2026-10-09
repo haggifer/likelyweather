@@ -1,10 +1,11 @@
 import { RAIN_THRESHOLD_MM } from '@fa/shared/constants'
 import { MODELS } from '@fa/shared/models'
 import { VARIABLES } from '@fa/shared/variables'
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import { useTranslations } from 'use-intl'
 import { Card } from '../components/ui/Card'
 import { ScreenScroll } from '../components/ui/ScreenScroll'
+import { Text } from '../components/ui/Text'
 import { useTheme } from '../hooks/useTheme'
 
 const SECTIONS = ['sources', 'median', 'disagreement', 'limits'] as const

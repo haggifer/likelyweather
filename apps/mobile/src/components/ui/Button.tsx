@@ -1,6 +1,7 @@
 import { LucideIcon } from 'lucide-react-native'
-import { ActivityIndicator, Pressable, StyleProp, StyleSheet, Text, ViewStyle } from 'react-native'
+import { ActivityIndicator, Pressable, StyleProp, StyleSheet, ViewStyle } from 'react-native'
 import { useTheme } from '../../hooks/useTheme'
+import { Text } from './Text'
 
 type Variant = 'default' | 'outline' | 'ghost'
 

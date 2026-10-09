@@ -3,15 +3,17 @@ import { City } from '@fa/shared/api'
 import { getCityLabel } from '@fa/shared/format'
 import { getPlaceList, Place } from '@fa/shared/places'
 import { useState } from 'react'
-import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native'
+import { ActivityIndicator, Pressable, StyleSheet } from 'react-native'
 import { WidgetConfigurationScreenProps } from 'react-native-android-widget'
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import { IntlProvider, useLocale, useTranslations } from 'use-intl'
+import { FlagIcon } from '../components/ui/FlagIcon'
 import { ScreenScroll } from '../components/ui/ScreenScroll'
+import { Text } from '../components/ui/Text'
+import { useAppFonts } from '../hooks/useAppFonts'
 import { usePlaces } from '../hooks/usePlaces'
 import { useTheme } from '../hooks/useTheme'
 import { CATALOGS } from '../lib/catalogs'
-import { getFlagEmoji } from '../lib/flag'
 import { WidgetCity } from './widget-model'
 import { refreshWidget, toWidgetCity } from './widget-render'
 import { widgetBindings } from './widget-store'
@@ -21,8 +23,17 @@ const styles = StyleSheet.create({
     screen: { flex: 1 },
     content: { padding: 20, gap: 8 },
     title: { fontSize: 20, fontWeight: '700', marginBottom: 8 },
-    row: { minHeight: 48, justifyContent: 'center', paddingHorizontal: 12, borderRadius: 8, borderWidth: 1 },
-    rowText: { fontSize: 15 },
+    row: {
+        minHeight: 48,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        borderWidth: 1,
+    },
+    rowText: { flex: 1, fontSize: 15 },
+    cancelText: { fontSize: 15 },
     text: { fontSize: 14, lineHeight: 20 },
     cancel: { alignSelf: 'flex-end', padding: 12 },
 })
@@ -73,17 +84,15 @@ const PlacePicker = ({ widgetInfo, renderWidget, setResult }: WidgetConfiguratio
                         accessibilityRole="button"
                         style={[styles.row, { borderColor: colors.border, backgroundColor: colors.card }]}
                     >
-                        {pending === place.id ? (
-                            <ActivityIndicator color={colors.primary} />
-                        ) : (
-                            <Text style={[styles.rowText, { color: colors.foreground }]} numberOfLines={1}>
-                                {getFlagEmoji(place.countryCode)} {getCityLabel(place, locale)}
-                            </Text>
-                        )}
+                        <FlagIcon countryCode={place.countryCode} />
+                        <Text style={[styles.rowText, { color: colors.foreground }]} numberOfLines={1}>
+                            {getCityLabel(place, locale)}
+                        </Text>
+                        {pending === place.id && <ActivityIndicator color={colors.primary} />}
                     </Pressable>
                 ))}
                 <Pressable onPress={() => setResult('cancel')} style={styles.cancel} accessibilityRole="button">
-                    <Text style={[styles.rowText, { color: colors.primary }]}>{t('cancel')}</Text>
+                    <Text style={[styles.cancelText, { color: colors.primary }]}>{t('cancel')}</Text>
                 </Pressable>
             </ScreenScroll>
         </SafeAreaView>
@@ -93,7 +102,12 @@ const PlacePicker = ({ widgetInfo, renderWidget, setResult }: WidgetConfiguratio
 // Android opens this as its own activity when a widget is placed or reconfigured, outside the app's navigation and
 // its safe-area provider; with no header above it, the screen keeps clear of the status bar itself.
 export function WidgetConfigurationScreen(props: WidgetConfigurationScreenProps) {
+    const isFontReady = useAppFonts()
+
     const locale = getAppLocale()
+
+    // Android wants an element back from a configuration screen, even an empty one.
+    if (!isFontReady) return <></>
 
     return (
         <SafeAreaProvider>

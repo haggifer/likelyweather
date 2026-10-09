@@ -7,11 +7,13 @@ import { useEffect } from 'react'
 import { Appearance, Pressable, StatusBar, View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { IntlProvider, useTranslations } from 'use-intl'
+import { useAppFonts } from '../hooks/useAppFonts'
 import { useSettings } from '../hooks/useSettings'
 import { useTheme } from '../hooks/useTheme'
 import { CATALOGS } from '../lib/catalogs'
 import { CACHE_BUSTER, CACHE_MAX_AGE_MS, queryClient, queryPersister } from '../lib/query-cache'
 import { resolveLocale } from '../lib/settings'
+import { getFontFamily } from '../theme/fonts'
 
 const HomeActions = () => {
     const t = useTranslations('nav')
@@ -44,6 +46,7 @@ const AppStack = () => {
                 screenOptions={{
                     headerStyle: { backgroundColor: colors.card },
                     headerTintColor: colors.foreground,
+                    headerTitleStyle: { fontFamily: getFontFamily('600') },
                     headerShadowVisible: false,
                     contentStyle: { backgroundColor: colors.background },
                 }}
@@ -60,6 +63,7 @@ const AppStack = () => {
 
 export default function RootLayout() {
     const settings = useSettings()
+    const isFontReady = useAppFonts()
 
     const locale = resolveLocale(settings.language, getLocales()[0]?.languageCode)
 
@@ -67,6 +71,9 @@ export default function RootLayout() {
     useEffect(() => {
         Appearance.setColorScheme(settings.theme === 'system' ? 'unspecified' : settings.theme)
     }, [settings.theme])
+
+    // Inter loads from the bundle in a moment; drawing before it would show every screen in the system font first.
+    if (!isFontReady) return null
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>

@@ -1,5 +1,6 @@
-import { StyleSheet, Text } from 'react-native'
+import { StyleSheet } from 'react-native'
 import { useTheme } from '../../hooks/useTheme'
+import { Text } from './Text'
 
 export type ChipTone = 'ok' | 'warn' | 'fail'
 

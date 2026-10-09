@@ -1,10 +1,11 @@
 import { getCityName } from '@fa/shared/format'
 import { Place } from '@fa/shared/places'
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, View } from 'react-native'
 import { useLocale } from 'use-intl'
 import { useTheme } from '../../hooks/useTheme'
-import { getFlagEmoji } from '../../lib/flag'
 import { FavoriteToggle } from '../city/FavoriteToggle'
+import { FlagIcon } from '../ui/FlagIcon'
+import { Text } from '../ui/Text'
 
 const styles = StyleSheet.create({
     chip: {
@@ -17,6 +18,7 @@ const styles = StyleSheet.create({
         paddingRight: 10,
         minHeight: 36,
     },
+    city: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     name: { fontSize: 13, fontWeight: '500', flexShrink: 0 },
 })
 
@@ -48,12 +50,14 @@ export function PlaceChip({ place, isSelected, onSelect }: IProps) {
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
                 hitSlop={{ top: 6, bottom: 6 }}
+                style={styles.city}
             >
+                <FlagIcon countryCode={place.countryCode} />
                 <Text
                     numberOfLines={1}
                     style={[styles.name, { color: isSelected ? colors['primary-foreground'] : colors.foreground }]}
                 >
-                    {getFlagEmoji(place.countryCode)} {name}
+                    {name}
                 </Text>
             </Pressable>
             <FavoriteToggle place={place} size={16} tone={isSelected ? 'inverse' : 'default'} />

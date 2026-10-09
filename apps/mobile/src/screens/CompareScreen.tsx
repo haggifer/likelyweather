@@ -10,7 +10,7 @@ import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { X } from 'lucide-react-native'
 import { useMemo, useState } from 'react'
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { SpaghettiChart } from '../components/charts/SpaghettiChart'
 import { VariableSwitch } from '../components/city/VariableSwitch'
@@ -18,11 +18,12 @@ import { SearchBox } from '../components/home/SearchBox'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { ErrorNotice } from '../components/ui/ErrorNotice'
+import { FlagIcon } from '../components/ui/FlagIcon'
 import { ScreenScroll } from '../components/ui/ScreenScroll'
 import { Skeleton } from '../components/ui/Skeleton'
+import { Text } from '../components/ui/Text'
 import { useNow } from '../hooks/useNow'
 import { useTheme } from '../hooks/useTheme'
-import { getFlagEmoji } from '../lib/flag'
 
 type CompareItem = CompareResponse['items'][number]
 
@@ -34,6 +35,7 @@ const styles = StyleSheet.create({
     text: { fontSize: 14 },
     small: { fontSize: 12 },
     row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+    cityLink: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 },
     cardTitle: { fontSize: 16, fontWeight: '600', flexShrink: 1 },
     empty: { height: CHART_HEIGHT, alignItems: 'center', justifyContent: 'center' },
 })
@@ -170,12 +172,11 @@ export function CompareScreen() {
                             <Pressable
                                 onPress={() => item && router.push(`/city/${slug}`)}
                                 accessibilityRole="link"
-                                style={{ flexShrink: 1 }}
+                                style={styles.cityLink}
                             >
+                                {item && <FlagIcon countryCode={item.city.countryCode} />}
                                 <Text style={[styles.cardTitle, { color: colors.foreground }]} numberOfLines={1}>
-                                    {item
-                                        ? `${getFlagEmoji(item.city.countryCode)} ${getCityName(item.city, locale)}`
-                                        : slug}
+                                    {item ? getCityName(item.city, locale) : slug}
                                 </Text>
                             </Pressable>
                             <Pressable

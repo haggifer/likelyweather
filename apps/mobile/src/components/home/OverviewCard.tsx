@@ -8,16 +8,17 @@ import { Variable, VARIABLES } from '@fa/shared/variables'
 import { useRouter } from 'expo-router'
 import { ArrowRight } from 'lucide-react-native'
 import { useMemo } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { useTheme } from '../../hooks/useTheme'
-import { getFlagEmoji } from '../../lib/flag'
 import { MedianOverview, MedianSeries } from '../charts/MedianOverview'
 import { FavoriteToggle } from '../city/FavoriteToggle'
 import { RefreshButton } from '../city/RefreshButton'
 import { UpdatedChip } from '../city/UpdatedChip'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
+import { FlagIcon } from '../ui/FlagIcon'
+import { Text } from '../ui/Text'
 
 const styles = StyleSheet.create({
     titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
@@ -74,8 +75,9 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
     return (
         <Card style={isFetching && { opacity: 0.7 }}>
             <View style={styles.titleRow}>
+                <FlagIcon countryCode={city.countryCode} width={24} />
                 <Text style={[styles.title, { color: colors.foreground }]}>
-                    {getFlagEmoji(city.countryCode)} {name}
+                    {name}
                     {region ? (
                         <Text style={[styles.region, { color: colors['muted-foreground'] }]}>, {region}</Text>
                     ) : null}

@@ -6,13 +6,15 @@ import { getCityLabel } from '@fa/shared/format'
 import { addRecent, getPlaceList, isFavorite, Place, rankByFavorite, toPlace } from '@fa/shared/places'
 import { Search, Star } from 'lucide-react-native'
 import { useRef, useState } from 'react'
-import { ActivityIndicator, Alert, Keyboard, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { ActivityIndicator, Alert, Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { usePlaces } from '../../hooks/usePlaces'
 import { useTheme } from '../../hooks/useTheme'
-import { getFlagEmoji } from '../../lib/flag'
 import { placesStore } from '../../lib/places-store'
+import { getFontFamily } from '../../theme/fonts'
+import { FlagIcon } from '../ui/FlagIcon'
+import { Text } from '../ui/Text'
 import { LocateButton } from './LocateButton'
 
 const MIN_QUERY = 3
@@ -22,7 +24,7 @@ const MAX_LISTED_PLACES = 12
 
 const styles = StyleSheet.create({
     field: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, paddingLeft: 12, minHeight: 48 },
-    input: { flex: 1, fontSize: 16, paddingVertical: 10 },
+    input: { flex: 1, fontSize: 16, fontFamily: getFontFamily('400'), paddingVertical: 10 },
     list: { borderWidth: 1, marginTop: 6, overflow: 'hidden' },
     heading: { fontSize: 12, fontWeight: '600', paddingHorizontal: 12, paddingTop: 10, paddingBottom: 4 },
     row: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, minHeight: 44 },
@@ -115,8 +117,8 @@ export function SearchBox({ onSelectCity, isLocateShown = false, autoFocus = fal
                         style={({ pressed }) => [styles.row, pressed && { backgroundColor: colors.muted }]}
                         accessibilityRole="button"
                     >
+                        <FlagIcon countryCode={result.countryCode} />
                         <Text style={[styles.rowText, { color: colors.foreground }]} numberOfLines={1}>
-                            {getFlagEmoji(result.countryCode)}{' '}
                             {[result.name, result.admin1, result.country].filter(Boolean).join(', ')}
                         </Text>
                         {renderStar(result.id)}
@@ -173,8 +175,9 @@ export function SearchBox({ onSelectCity, isLocateShown = false, autoFocus = fal
                                     style={({ pressed }) => [styles.row, pressed && { backgroundColor: colors.muted }]}
                                     accessibilityRole="button"
                                 >
+                                    <FlagIcon countryCode={place.countryCode} />
                                     <Text style={[styles.rowText, { color: colors.foreground }]} numberOfLines={1}>
-                                        {getFlagEmoji(place.countryCode)} {getCityLabel(place, locale)}
+                                        {getCityLabel(place, locale)}
                                     </Text>
                                     {renderStar(place.id)}
                                 </Pressable>
