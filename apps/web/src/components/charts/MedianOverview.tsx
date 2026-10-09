@@ -262,6 +262,12 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
 
     const handlePointerMove = (e: PointerEvent<SVGRectElement>) =>
         setHoverIndex(getNearestIndex(times, getPointerTime(e, x, geometry.marginLeft)))
+    // On a touch screen a selection stays after the finger lifts, so its readout can be read; a tap outside the plot
+    // clears it, and so does a tap elsewhere, which blurs the chart. A mouse clears it on leaving the plot.
+    const handlePlotPointerDown = (e: PointerEvent<SVGRectElement>) => {
+        e.stopPropagation()
+        handlePointerMove(e)
+    }
 
     const handleKeyDown = (e: KeyboardEvent<SVGSVGElement>) => {
         const step = getArrowStep(e.key)
@@ -312,6 +318,7 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                     tabIndex={0}
                     onKeyDown={handleKeyDown}
                     onBlur={() => setHoverIndex(null)}
+                    onPointerDown={() => setHoverIndex(null)}
                     className="block overflow-visible outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                     <defs>
@@ -532,9 +539,9 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                         height={geometry.plotBottom - geometry.plotTop}
                         fill="transparent"
                         style={{ touchAction: 'pan-y' }}
-                        onPointerDown={handlePointerMove}
+                        onPointerDown={handlePlotPointerDown}
                         onPointerMove={handlePointerMove}
-                        onPointerLeave={() => setHoverIndex(null)}
+                        onPointerLeave={(e) => e.pointerType !== 'touch' && setHoverIndex(null)}
                     />
                 </svg>
             </div>

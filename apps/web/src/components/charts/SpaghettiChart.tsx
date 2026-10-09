@@ -179,6 +179,12 @@ export function SpaghettiChart({
 
         onHoverIndex?.(clamp(index, minIndex, maxIndex))
     }
+    // On a touch screen a selection stays after the finger lifts, so its readout can be read; a tap outside the plot
+    // clears it, and so does a tap elsewhere, which blurs the chart. A mouse clears it on leaving the plot.
+    const handlePlotPointerDown = (e: PointerEvent<SVGRectElement>) => {
+        e.stopPropagation()
+        handlePointerMove(e)
+    }
 
     const handleKeyDown = (e: KeyboardEvent<SVGSVGElement>) => {
         const step = getArrowStep(e.key)
@@ -202,6 +208,7 @@ export function SpaghettiChart({
                 tabIndex={onHoverIndex ? 0 : -1}
                 onKeyDown={handleKeyDown}
                 onBlur={() => onHoverIndex?.(null)}
+                onPointerDown={() => onHoverIndex?.(null)}
                 className="block overflow-visible outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
                 {nowX !== null && (
@@ -415,9 +422,9 @@ export function SpaghettiChart({
                         height={Math.max(0, plotBottom - margin.top)}
                         fill="transparent"
                         style={{ touchAction: 'pan-y' }}
-                        onPointerDown={handlePointerMove}
+                        onPointerDown={handlePlotPointerDown}
                         onPointerMove={handlePointerMove}
-                        onPointerLeave={() => onHoverIndex(null)}
+                        onPointerLeave={(e) => e.pointerType !== 'touch' && onHoverIndex(null)}
                     />
                 )}
             </svg>
