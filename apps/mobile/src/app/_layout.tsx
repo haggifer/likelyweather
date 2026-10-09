@@ -15,6 +15,7 @@ import { useSettings } from '../hooks/useSettings'
 import { useTheme } from '../hooks/useTheme'
 import { CATALOGS } from '../lib/catalogs'
 import { CACHE_BUSTER, CACHE_MAX_AGE_MS, queryClient, queryPersister } from '../lib/query-cache'
+import { dropExpiredQuota } from '../lib/quota-reset'
 import { resolveLocale } from '../lib/settings'
 import { getFontFamily } from '../theme/fonts'
 
@@ -67,6 +68,7 @@ export default function RootLayout() {
             <PersistQueryClientProvider
                 client={queryClient}
                 persistOptions={{ persister: queryPersister, maxAge: CACHE_MAX_AGE_MS, buster: CACHE_BUSTER }}
+                onSuccess={() => dropExpiredQuota(queryClient, new Date())}
             >
                 <IntlProvider locale={locale} messages={CATALOGS[locale]} timeZone={getViewerTimeZone()}>
                     <AppStack />
