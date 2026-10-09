@@ -253,6 +253,7 @@ export function Dashboard({ slug }: IProps) {
             median={derived.stats.median[readoutIndex]}
             readoutIndex={readoutIndex}
             readoutLabel={getReadoutLabel(latest.steps[readoutIndex], variable, timeZone, locale)}
+            direction={variable === Variable.Wind ? (derived.directions?.[readoutIndex] ?? null) : null}
             variable={variable}
         />
     )

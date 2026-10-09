@@ -1,9 +1,7 @@
+import { formatWindDirection } from '@fa/shared/format'
 import { ScaleTime } from 'd3-scale'
 
 const ARROW = 'M0,-7 L4,3 L0,1 L-4,3 Z'
-
-const getCompassLabel = (degrees: number, labels: string[]) =>
-    labels[Math.round((((degrees % 360) + 360) % 360) / (360 / labels.length)) % labels.length]
 
 interface IProps {
     x: ScaleTime<number, number>
@@ -28,7 +26,7 @@ export function WindArrows({ x, times, directions, y, color, mutedColor, compass
 
                 return (
                     <g key={times[i].toISOString()} transform={`translate(${cx},${y}) rotate(${deg + 180})`}>
-                        <title>{`${getCompassLabel(deg, compassLabels)} ${Math.round(deg)}°`}</title>
+                        <title>{formatWindDirection(deg, compassLabels)}</title>
                         <path d={ARROW} fill={color} />
                     </g>
                 )

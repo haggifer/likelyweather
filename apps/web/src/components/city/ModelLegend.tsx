@@ -6,7 +6,7 @@ import { cn } from '@/lib/cn'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { setHighlightedModel, showAllModels, toggleHiddenModel, toggleMedian } from '@/store/dashboard-slice'
 import { Series } from '@fa/shared/api'
-import { formatNumber } from '@fa/shared/format'
+import { formatNumber, formatWindDirection } from '@fa/shared/format'
 import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Eye, EyeOff } from 'lucide-react'
@@ -27,10 +27,14 @@ interface IProps {
     readoutIndex: number
     readoutLabel: string
     variable: Variable
+    direction?: number | null
 }
 
-export function ModelLegend({ series, median, readoutIndex, readoutLabel, variable }: IProps) {
+// `direction` is the median wind direction at the readout time: on a touch screen the arrows' hover titles can't be
+// read, so the readout names it.
+export function ModelLegend({ series, median, readoutIndex, readoutLabel, variable, direction = null }: IProps) {
     const t = useTranslations('legend')
+    const tc = useTranslations('chart')
     const dispatch = useAppDispatch()
     const hidden = useAppSelector((s) => s.dashboard.hiddenModels)
     const isMedianHidden = useAppSelector((s) => s.dashboard.isMedianHidden)
@@ -41,7 +45,14 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
     return (
         <div className="flex flex-col gap-2">
             <div className="flex min-h-4.5 items-center justify-between gap-2 text-xs">
-                <span className="font-medium">{readoutLabel}</span>
+                <span className="font-medium">
+                    {readoutLabel}
+                    {direction !== null && (
+                        <span className="ml-2 font-normal text-muted-foreground">
+                            {tc('windFrom', { direction: formatWindDirection(direction, tc('compass').split(',')) })}
+                        </span>
+                    )}
+                </span>
                 {(hidden.length > 0 || isMedianHidden) && (
                     <Button
                         variant="link"
