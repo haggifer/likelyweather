@@ -165,7 +165,8 @@ export function SearchBox({
                     !isListShown && 'hidden',
                 )}
             >
-                <CommandList>
+                {/* Phones show five rows (heading, 5 × 2 rem, padding), so the keyboard never covers an option. */}
+                <CommandList className="max-sm:max-h-[12.25rem]">
                     {isPlacesView && places && (
                         <CommandGroup heading={t('places')}>
                             {getPlaceList(places).map((place) => (
