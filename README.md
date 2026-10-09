@@ -36,6 +36,7 @@ Development builds call the live API unless `apps/mobile/.env.local` sets `EXPO_
 pnpm --filter @fa/mobile android   # build, install and start the development build
 pnpm mobile                        # Metro for an installed development build
 pnpm --filter @fa/mobile tokens    # regenerate src/theme/tokens.ts after editing apps/web/src/app/globals.css
+pnpm --filter @fa/mobile icons     # regenerate the app icons and splash from the web's cloud-sun logo
 ```
 
 iOS builds run only in the cloud (`eas build --profile simulator --platform ios`): without a Mac the app is checked in a simulator, never on an iPhone.

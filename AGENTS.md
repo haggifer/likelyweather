@@ -24,6 +24,7 @@ pnpm cdk:synth               # also cdk:diff, cdk:deploy, cdk:bootstrap; needs p
 pnpm mobile                        # Expo dev server (Metro) for the mobile development build (apps/mobile)
 pnpm --filter @fa/mobile android   # build and run the development build on a device or emulator (JDK 17 or 21)
 pnpm --filter @fa/mobile tokens    # regenerate the app's design tokens after editing globals.css (a test fails until you do)
+pnpm --filter @fa/mobile icons     # regenerate the app icons and splash from the cloud-sun logo (scripts/generate-icons.ts)
 ```
 
 ## Rules that must not break
