@@ -11,13 +11,15 @@ import { useMemo } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { useTheme } from '../../hooks/useTheme'
-import { MedianOverview, MedianSeries } from '../charts/MedianOverview'
+import { MedianOverview, MedianOverviewSkeleton, MedianSeries } from '../charts/MedianOverview'
 import { FavoriteToggle } from '../city/FavoriteToggle'
 import { RefreshButton } from '../city/RefreshButton'
 import { UpdatedChip } from '../city/UpdatedChip'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { FlagIcon } from '../ui/FlagIcon'
+import { LoadingStatus } from '../ui/LoadingStatus'
+import { Skeleton } from '../ui/Skeleton'
 import { Text } from '../ui/Text'
 
 const styles = StyleSheet.create({
@@ -26,7 +28,14 @@ const styles = StyleSheet.create({
     region: { fontSize: 15, fontWeight: '500' },
     actions: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8 },
     grow: { flex: 1 },
+    // A zero-width line of title text keeps the skeleton's status row at the title's height.
+    titleStrut: { width: 0, marginRight: -8, fontSize: 19, fontWeight: '700' },
 })
+
+// The English buttons' widths; other languages differ by a few pixels at most.
+const REFRESH_WIDTH = 104
+const DETAILS_WIDTH = 134
+const NO_BREAK_SPACE = ' '
 
 const getVariableMedians = (hourly: Record<Variable, LatestResponse>, slots: string[]) =>
     Object.fromEntries(
@@ -48,6 +57,29 @@ const getWindDirections = (wind: LatestResponse, slots: string[]) =>
               slots.length,
           )
         : null
+
+interface SkeletonProps {
+    status: string
+}
+
+// The loaded card's rows, the web's OverviewCardSkeleton: the status in the title's place, the two buttons, then the
+// readouts and panels, so nothing moves when the data arrives.
+export function OverviewCardSkeleton({ status }: SkeletonProps) {
+    return (
+        <Card>
+            <View style={styles.titleRow}>
+                <Text style={styles.titleStrut}>{NO_BREAK_SPACE}</Text>
+                <LoadingStatus label={status} />
+            </View>
+            <View style={styles.actions}>
+                <View style={styles.grow} />
+                <Skeleton height={36} width={REFRESH_WIDTH} />
+                <Skeleton height={36} width={DETAILS_WIDTH} />
+            </View>
+            <MedianOverviewSkeleton />
+        </Card>
+    )
+}
 
 interface IProps {
     city: City
@@ -73,7 +105,7 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
     const directions = useMemo(() => getWindDirections(hourly[Variable.Wind], slots), [hourly, slots])
 
     return (
-        <Card style={isFetching && { opacity: 0.7 }}>
+        <Card isDimmed={isFetching}>
             <View style={styles.titleRow}>
                 <FlagIcon countryCode={city.countryCode} width={24} />
                 <Text style={[styles.title, { color: colors.foreground }]}>
@@ -92,7 +124,7 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
                     isFetching={isFetching}
                     onRefresh={onRefresh}
                 />
-                <Button icon={ArrowRight} label={t('details')} onPress={() => router.push(`/city/${city.slug}`)} />
+                <Button endIcon={ArrowRight} label={t('details')} onPress={() => router.push(`/city/${city.slug}`)} />
             </View>
             <MedianOverview
                 series={medians}

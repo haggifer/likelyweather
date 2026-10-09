@@ -8,11 +8,12 @@ import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { ScaleLinear, ScaleTime } from 'd3-scale'
 import { area, curveMonotoneX, line } from 'd3-shape'
 import { useId, useState } from 'react'
-import { StyleSheet, View } from 'react-native'
+import { StyleProp, StyleSheet, TextStyle, View } from 'react-native'
 import Svg, { Circle, ClipPath, Defs, G, Line, Path, Rect, Text as SvgText } from 'react-native-svg'
 import { useTranslations } from 'use-intl'
 import { useLayoutWidth } from '../../hooks/useLayoutWidth'
 import { useTheme } from '../../hooks/useTheme'
+import { Skeleton } from '../ui/Skeleton'
 import { Text } from '../ui/Text'
 import { DayGrid } from './DayGrid'
 import { ScrubSurface } from './ScrubSurface'
@@ -49,6 +50,7 @@ const PANEL_RADIUS = 4
 const HOVER_LABEL_HALF_WIDTH = 34
 const SLOT_MS = SLOT_HOURS * HOUR_MS
 const SUMMARY_HOURS = 24
+const NO_BREAK_SPACE = ' '
 
 const LAYOUT: RowLayout[] = ROWS.reduce<RowLayout[]>((rows, row) => {
     const previous = rows[rows.length - 1]
@@ -63,11 +65,13 @@ const TOTAL_HEIGHT = PLOT_BOTTOM + AXIS_HEIGHT
 const SPANS = LAYOUT.map(({ top, height }) => ({ top, bottom: top + height }))
 
 const styles = StyleSheet.create({
-    readouts: { flexDirection: 'row', flexWrap: 'wrap', rowGap: 8, marginBottom: 8 },
-    readout: { width: '50%', borderLeftWidth: 2, paddingLeft: 10, paddingRight: 4 },
+    readouts: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 8, rowGap: 8, marginBottom: 8 },
+    // Two equal columns with the gap between them.
+    readout: { flexBasis: '40%', flexGrow: 1, borderLeftWidth: 2, paddingLeft: 10, paddingRight: 4 },
+    skeletonLine: { position: 'absolute', top: 2, bottom: 2 },
     label: { fontSize: 12, fontWeight: '500' },
     value: { fontSize: 20, fontWeight: '600' },
-    unit: { fontSize: 13, fontWeight: '400' },
+    unit: { fontSize: 14, fontWeight: '400' },
     summary: { fontSize: 11 },
 })
 
@@ -119,6 +123,39 @@ const getLinePath = (points: Point[], x: ScaleTime<number, number>, y: ScaleLine
         .x((p) => x(p[0]))
         .y((p) => y(p[1] as number))
         .curve(curveMonotoneX)(points) ?? ''
+
+interface SkeletonLineProps {
+    textStyle: StyleProp<TextStyle>
+    width: `${number}%`
+}
+
+// One line of invisible text gives the line its loaded height; the pulsing bar sits inside it.
+const SkeletonLine = ({ textStyle, width }: SkeletonLineProps) => (
+    <View>
+        <Text style={textStyle}>{NO_BREAK_SPACE}</Text>
+        <Skeleton width={width} style={styles.skeletonLine} />
+    </View>
+)
+
+// The loaded overview's shape, line for line: the four readouts, then the panels at their full height.
+export function MedianOverviewSkeleton() {
+    const { colors } = useTheme()
+
+    return (
+        <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+            <View style={styles.readouts}>
+                {LAYOUT.map(({ variable }) => (
+                    <View key={variable} style={[styles.readout, { borderLeftColor: colors.border }]}>
+                        <SkeletonLine textStyle={styles.label} width="55%" />
+                        <SkeletonLine textStyle={styles.value} width="40%" />
+                        <SkeletonLine textStyle={styles.summary} width="85%" />
+                    </View>
+                ))}
+            </View>
+            <Skeleton height={TOTAL_HEIGHT} />
+        </View>
+    )
+}
 
 interface IProps {
     series: Record<Variable, MedianSeries>
@@ -326,15 +363,6 @@ export function MedianOverview({
                                                     strokeWidth={2}
                                                 />
                                             )}
-                                        <SvgText
-                                            x={MARGIN.left + 6}
-                                            y={top + 12}
-                                            fontSize={10}
-                                            fontWeight="600"
-                                            fill={chart.muted}
-                                        >
-                                            {`${tv(variable)}, ${VARIABLE_BY_ID[variable].unit}`}
-                                        </SvgText>
                                     </G>
                                 )
                             })}
@@ -396,6 +424,25 @@ export function MedianOverview({
                                         />
                                     ))}
                                 </G>
+                            )}
+                            {/* Last, so lines, the now line and the crosshair pass under the names. Android's SVG has no
+                                paint-order, so a card-coloured outline is drawn first as the halo. */}
+                            {LAYOUT.map(({ variable, top }) =>
+                                [chart.card, chart.muted].map((color, i) => (
+                                    <SvgText
+                                        key={`${variable}-${i}`}
+                                        x={MARGIN.left + 6}
+                                        y={top + 12}
+                                        fontSize={10}
+                                        fontWeight="600"
+                                        fill={color}
+                                        stroke={i === 0 ? chart.card : undefined}
+                                        strokeWidth={i === 0 ? 3 : undefined}
+                                        strokeLinejoin="round"
+                                    >
+                                        {`${tv(variable)}, ${VARIABLE_BY_ID[variable].unit}`}
+                                    </SvgText>
+                                )),
                             )}
                         </Svg>
                     </ScrubSurface>

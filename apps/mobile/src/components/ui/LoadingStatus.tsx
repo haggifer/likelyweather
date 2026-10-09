@@ -3,7 +3,7 @@ import { useTheme } from '../../hooks/useTheme'
 import { Text } from './Text'
 
 const styles = StyleSheet.create({
-    status: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 26 },
+    status: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     text: { fontSize: 14 },
 })
 

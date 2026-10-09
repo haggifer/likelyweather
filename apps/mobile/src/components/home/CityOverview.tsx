@@ -7,7 +7,7 @@ import { getChartStart } from '@fa/shared/slots'
 import { Variable, VARIABLES } from '@fa/shared/variables'
 import { UseQueryResult } from '@tanstack/react-query'
 import { useEffect, useMemo } from 'react'
-import { ActivityIndicator, StyleSheet, View } from 'react-native'
+import { StyleSheet } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { useNow } from '../../hooks/useNow'
 import { useTheme } from '../../hooks/useTheme'
@@ -15,13 +15,11 @@ import { showSnackbar } from '../../lib/snackbar-store'
 import { updateWidgetsForCity } from '../../widget/widget-updates'
 import { Card } from '../ui/Card'
 import { ErrorNotice } from '../ui/ErrorNotice'
-import { Skeleton } from '../ui/Skeleton'
 import { Text } from '../ui/Text'
-import { OverviewCard } from './OverviewCard'
+import { OverviewCard, OverviewCardSkeleton } from './OverviewCard'
 
 const styles = StyleSheet.create({
-    status: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    text: { fontSize: 14 },
+    notice: { fontSize: 14, lineHeight: 21, textAlign: 'center', paddingVertical: 40 },
 })
 
 const getHourlyByVariable = (results: UseQueryResult<LatestResponse, Error>[]) =>
@@ -38,13 +36,16 @@ export function CityOverview({ slug }: IProps) {
     const now = useNow()
     const { colors } = useTheme()
 
-    const { data: city, error, refetch: refetchCity } = useCity(slug)
+    const { data: city, error, refetch: refetchCity, fetchStatus: cityFetchStatus } = useCity(slug)
     const results = useHourlyAll(slug, Boolean(city))
 
     // An error with data still in place is a failed Refresh: the chart stays and the handler reports the failure.
     const failed = results.find((r) => r.isError && !r.data)
     const isReady = results.every((r) => r.data)
     const isEmpty = results.some((r) => r.data && !r.data.steps.length)
+    // Offline, a query without stored data pauses instead of failing, and would spin until the network returns.
+    const isOffline =
+        (!city && cityFetchStatus === 'paused') || results.some((r) => !r.data && r.fetchStatus === 'paused')
     const anchorRun = results[0].data
     const timeZone = city?.timezone
     const anchor = useMemo(
@@ -72,11 +73,16 @@ export function CityOverview({ slug }: IProps) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [city, fetchedAts, isSettled])
 
-    if (error || failed || isEmpty) {
+    if (error || failed || isEmpty || isOffline) {
         return (
             <Card>
-                {isEmpty ? (
-                    <Text style={[styles.text, { color: colors['muted-foreground'] }]}>{t('unavailable')}</Text>
+                {isEmpty || isOffline ? (
+                    <Text
+                        style={[styles.notice, { color: colors['muted-foreground'] }]}
+                        accessibilityLiveRegion="polite"
+                    >
+                        {isOffline ? te('offline') : t('unavailable')}
+                    </Text>
                 ) : (
                     <ErrorNotice error={error ?? failed?.error} onRetry={handleRetry} />
                 )}
@@ -86,16 +92,7 @@ export function CityOverview({ slug }: IProps) {
 
     if (!city || !hourly || !anchor) {
         return (
-            <Card>
-                <View style={styles.status} accessibilityRole="progressbar">
-                    <ActivityIndicator size="small" color={colors['muted-foreground']} />
-                    <Text style={[styles.text, { color: colors['muted-foreground'] }]}>
-                        {city ? t('fetching', { name: getCityName(city, locale) }) : t('loading')}
-                    </Text>
-                </View>
-                <Skeleton height={72} />
-                <Skeleton height={420} />
-            </Card>
+            <OverviewCardSkeleton status={city ? t('fetching', { name: getCityName(city, locale) }) : t('loading')} />
         )
     }
 

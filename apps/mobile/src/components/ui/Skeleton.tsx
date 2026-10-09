@@ -22,7 +22,8 @@ const getPulse = (opacity: Animated.Value) =>
     )
 
 interface IProps {
-    height: number
+    // Optional for a block sized by its style, such as one stretched over a line of text.
+    height?: number
     width?: number | `${number}%`
     radius?: number
     style?: StyleProp<ViewStyle>
