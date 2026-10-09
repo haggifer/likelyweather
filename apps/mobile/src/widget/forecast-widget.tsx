@@ -46,6 +46,12 @@ const WidgetView = ({ widgetName, model, city, colors, t, locale, now }: ViewPro
     const age = model ? getAgeHours(model.fetchedAt, now) : 0
     const muted = hex(colors['muted-foreground'])
     const text = hex(colors.foreground)
+    const ageLine = model && age >= REFRESH_AFTER_HOURS && (
+        <TextWidget
+            text={t('city.forecastAge', { hours: age })}
+            style={{ fontSize: 11, color: age > STALE_AFTER_HOURS ? hex(colors.warning) : muted }}
+        />
+    )
 
     return (
         <FlexWidget
@@ -108,14 +114,10 @@ const WidgetView = ({ widgetName, model, city, colors, t, locale, now }: ViewPro
                         text={`${t('widget.wind')} ${formatNumber(model.wind, 1)} ${VARIABLE_BY_ID[Variable.Wind].unit} · ${t('widget.rain')} ${formatNumber(model.precipTotal, 1)} ${VARIABLE_BY_ID[Variable.Precip].unit}`}
                         style={{ fontSize: 12, color: text }}
                     />
-                    {age >= REFRESH_AFTER_HOURS && (
-                        <TextWidget
-                            text={t('city.forecastAge', { hours: age })}
-                            style={{ fontSize: 11, color: age > STALE_AFTER_HOURS ? hex(colors.warning) : muted }}
-                        />
-                    )}
+                    {ageLine}
                 </FlexWidget>
             )}
+            {!isMedium && ageLine}
         </FlexWidget>
     )
 }
@@ -131,7 +133,8 @@ interface IProps {
 }
 
 // Small (2 × 1): the city, the current median temperature and today's agreement. Medium (4 × 2) adds the next 24
-// hours' range, the median wind, the 24-hour rain total and the run's age. A tap opens the city in the app.
+// hours' range, the median wind and the 24-hour rain total. Both show the run's age once it is 3 hours old, so numbers
+// kept through a failed refresh never pass for current ones. A tap opens the city in the app.
 export const renderForecastWidget = ({ theme, ...props }: IProps): WidgetRepresentation => {
     const light = <WidgetView {...props} colors={LIGHT} />
     const dark = <WidgetView {...props} colors={DARK} />
