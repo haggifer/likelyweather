@@ -59,7 +59,7 @@ Forecast Arena has no accounts, sign-up, forms or uploads. You can use every par
 
 **Your location.** Only when you press "Use my location", and only if your browser allows it, the website reads your position once and sends it to our server rounded to two decimals (about one kilometre) to find the nearest stored city. The position is not stored or logged, and the website never asks for it on its own; you can withdraw the permission in your browser at any time.
 
-**The Android app.** The app sends our server the same requests as the website, and everything above applies to it. "Use my location" works as described for the website, except that Android asks for the permission (location while the app is in use, never in the background), and that when no stored city is within 50 km the app asks Android's own geocoder on your phone for the name of your town and then searches for that name with our server, as a typed search would. The home-screen widget asks our server for the forecast of the one city you chose for it, about once every three hours; each such request is the same as opening that city in the app.
+**The Android app.** The app sends our server the same requests as the website, and everything above applies to it. "Use my location" works as described for the website, except that Android asks for the permission (location while the app is in use, never in the background), and that when no stored city is within 50 km the app asks your phone's geocoder for the name of your town and then searches for that name with our server, as a typed search would. On phones with Google Play services that geocoder is Google's: Android sends it the rounded position (see the next section). The home-screen widget asks our server for the forecast of the one city you chose for it, about once every three hours; each such request is the same as opening that city in the app.
 
 **Sensitive Information.** We do not process sensitive information.
 
@@ -103,11 +103,12 @@ We may process your information if you have given us specific permission (i.e., 
 
 - **Service Providers.** We share your information with the service providers that run the Services for us, only as far as they need it to do that work:
     - Amazon Web Services (Frankfurt, Germany): hosting of our website and servers. Its content delivery network, CloudFront, delivers the pages from the location nearest to you, which may be outside your country.
-    - Upstash (Frankfurt, Germany): storage of the request counters described above.
+    - Upstash (Frankfurt, Germany): storage of the request counters described above, and of short-lived copies of forecasts and of search results (kept up to 24 hours) so repeated requests are answered faster.
     - Neon (Frankfurt, Germany): our database, which holds forecasts and the list of tracked cities but no personal information.
 
     Some of these providers may process your information outside your country, including in the United States.
 
+- **Your phone's geocoder (Android app).** When the app looks up the name of your town as described above, Android passes the rounded position to the phone's geocoding service. On phones with Google Play services that service is run by Google, which handles the request under [Google's Privacy Policy](https://policies.google.com/privacy). The app does this only after you press "Use my location"; we do not receive anything from Google other than the town's name on your phone.
 - **Weather services.** Our server fetches forecasts from [Open-Meteo](https://open-meteo.com/) and [MET Norway](https://api.met.no/) and sends search text to Open-Meteo's geocoding service. These requests come from our server, never from your browser, and do not include your IP address or any other information about you.
 - **Business Transfers.** We may share or transfer your information in connection with, or during negotiations of, any merger, sale of company assets, financing, or acquisition of all or a portion of our business to another company.
 

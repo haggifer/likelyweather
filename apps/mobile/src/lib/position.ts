@@ -24,7 +24,8 @@ export const getRoundedPosition = async (): Promise<Coordinates> => {
     }
 }
 
-// The platform's own geocoder names the place on the device; the name then goes through the app's search.
+// The platform's geocoder names the place (on phones with Google Play services, Google's network geocoder receives the
+// rounded position, as the privacy policy says); the name then goes through the app's search.
 export const getPlaceName = async ({ lat, lon }: Coordinates) => {
     try {
         const [address] = await reverseGeocodeAsync({ latitude: lat, longitude: lon })
