@@ -75,6 +75,7 @@ const Dashboard = ({ city }: DashboardProps) => {
     const t = useTranslations('dashboard')
     const tc = useTranslations('chart')
     const tv = useTranslations('variables')
+    const tInline = useTranslations('variablesInline')
     const tCity = useTranslations('city')
     const locale = useLocale()
     const now = useNow()
@@ -203,7 +204,7 @@ const Dashboard = ({ city }: DashboardProps) => {
     const futureRange = getFutureRange(derived.stats.median, latest.steps, now)
     const mostSplit = [...derived.disagreement].sort((a, b) => b.spread - a.spread)[0]
     const summary = t('summary', {
-        variable: tv(variable).toLowerCase(),
+        variable: tInline(variable),
         count: latest.series.length,
         min: formatNumber(futureRange.min, info.decimals),
         max: formatNumber(futureRange.max, info.decimals),

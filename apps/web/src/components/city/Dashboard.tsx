@@ -147,6 +147,7 @@ interface IProps {
 export function Dashboard({ slug }: IProps) {
     const t = useTranslations('dashboard')
     const tv = useTranslations('variables')
+    const tInline = useTranslations('variablesInline')
     const locale = useLocale()
     const dispatch = useAppDispatch()
     const now = useNow()
@@ -232,7 +233,7 @@ export function Dashboard({ slug }: IProps) {
     const futureRange = getFutureRange(derived.stats.median, latest.steps, now)
     const mostSplit = [...derived.disagreement].sort((a, b) => b.spread - a.spread)[0]
     const summary = t('summary', {
-        variable: tv(variable).toLowerCase(),
+        variable: tInline(variable),
         count: latest.series.length,
         min: formatNumber(futureRange.min, info.decimals),
         max: formatNumber(futureRange.max, info.decimals),

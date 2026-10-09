@@ -56,6 +56,12 @@
         "pressure": "Тиск",
         "precip": "Опади"
     },
+    "variablesInline": {
+        "temp": "температура",
+        "wind": "швидкість вітру",
+        "pressure": "тиск",
+        "precip": "опади"
+    },
     "city": {
         "forecastAge": "Прогнозу {hours, plural, one {# година} few {# години} many {# годин} other {# години}}",
         "forecastTitle": "Моделі почали цей запуск: {time} за часом міста ({utc}). Отримано: {fetched}. Новий запуск стартує кожні 6 годин.",

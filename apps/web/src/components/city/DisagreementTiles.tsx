@@ -18,7 +18,7 @@ interface IProps {
 
 export function DisagreementTiles({ days, variable }: IProps) {
     const t = useTranslations('disagreement')
-    const tv = useTranslations('variables')
+    const tInline = useTranslations('variablesInline')
     const locale = useLocale()
     const { unit, decimals, disagreement } = VARIABLE_BY_ID[variable]
 
@@ -28,7 +28,7 @@ export function DisagreementTiles({ days, variable }: IProps) {
                 <CardTitle className="font-semibold">{t('title')}</CardTitle>
                 <CardDescription>
                     {t(variable === Variable.Precip ? 'descriptionPrecip' : 'description', {
-                        variable: tv(variable).toLowerCase(),
+                        variable: tInline(variable),
                         agree: formatNumber(disagreement.agree, 1),
                         split: formatNumber(disagreement.split, 1),
                         unit,

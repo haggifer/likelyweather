@@ -56,6 +56,12 @@
         "pressure": "Luftdruck",
         "precip": "Niederschlag"
     },
+    "variablesInline": {
+        "temp": "Temperatur",
+        "wind": "Windgeschwindigkeit",
+        "pressure": "Luftdruck",
+        "precip": "Niederschlag"
+    },
     "city": {
         "forecastAge": "{hours, plural, one {# Stunde alt} other {# Stunden alt}}",
         "forecastTitle": "Die Modelle haben diesen Lauf am {time} Ortszeit der Stadt gestartet ({utc}), abgerufen am {fetched}. Alle 6 Stunden startet ein neuer Lauf.",

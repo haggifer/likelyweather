@@ -27,13 +27,13 @@ interface IProps {
 // One tile per local day with the spread between the highest and the lowest model; the row scrolls sideways.
 export function DisagreementTiles({ days, variable }: IProps) {
     const t = useTranslations('disagreement')
-    const tv = useTranslations('variables')
+    const tInline = useTranslations('variablesInline')
     const locale = useLocale()
     const { colors } = useTheme()
 
     const { unit, decimals, disagreement } = VARIABLE_BY_ID[variable]
     const description = t(variable === Variable.Precip ? 'descriptionPrecip' : 'description', {
-        variable: tv(variable).toLowerCase(),
+        variable: tInline(variable),
         agree: formatNumber(disagreement.agree, 1),
         split: formatNumber(disagreement.split, 1),
         unit,

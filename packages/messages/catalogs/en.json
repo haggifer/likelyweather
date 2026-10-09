@@ -56,6 +56,12 @@
         "pressure": "Pressure",
         "precip": "Precipitation"
     },
+    "variablesInline": {
+        "temp": "temperature",
+        "wind": "wind speed",
+        "pressure": "pressure",
+        "precip": "precipitation"
+    },
     "city": {
         "forecastAge": "{hours, plural, one {# hour old} other {# hours old}}",
         "forecastTitle": "The models started this run at {time} city time ({utc}), and it was collected at {fetched}. A new run starts every 6 hours.",
