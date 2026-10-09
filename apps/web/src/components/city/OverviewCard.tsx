@@ -113,7 +113,6 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
                         fetchedAt={hourly[Variable.Temp].fetchedAt}
                         timeZone={city.timezone}
                         now={now}
-                        className="hidden lg:inline-flex"
                     />
                     <RefreshButton
                         isAvailable={isOutdated}
