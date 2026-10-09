@@ -5,7 +5,7 @@ import { Variable } from '@fa/shared/variables'
 import { WidgetRepresentation } from 'react-native-android-widget'
 import { settingsStore } from '../lib/settings'
 import { renderForecastWidget } from './forecast-widget'
-import { buildWidgetModel, WidgetCity, WidgetData, WidgetModel } from './widget-model'
+import { buildWidgetModel, getShownModel, WidgetCity, WidgetData, WidgetModel } from './widget-model'
 import { MEDIUM_WIDGET } from './widget-names'
 import { widgetBindings, widgetModels } from './widget-store'
 import { getAppLocale, getTranslator } from './widget-translator'
@@ -40,7 +40,7 @@ export const drawWidget = (
     return renderForecastWidget({
         widgetName,
         city,
-        model,
+        model: getShownModel(city, model),
         theme: settingsStore.get().theme,
         t: getTranslator(locale),
         locale,

@@ -1,6 +1,6 @@
 import { LatestResponse } from '@fa/shared/api'
 import { ModelId } from '@fa/shared/models'
-import { buildWidgetModel, isNewerRun, WidgetCity } from './widget-model'
+import { buildWidgetModel, getShownModel, isNewerRun, WidgetCity } from './widget-model'
 
 const HOUR_MS = 3_600_000
 const FETCHED_AT = '2026-10-06T09:05:00.000Z'
@@ -84,5 +84,23 @@ describe('isNewerRun', () => {
         const other = { ...CITY, slug: 'kyiv-ua-703448', name: 'Kyiv' }
 
         expect(isNewerRun(saved('2026-10-06T12:05:00.000Z', other), CITY.slug, FETCHED_AT)).toBe(true)
+    })
+})
+
+describe('getShownModel', () => {
+    const KYIV: WidgetCity = { ...CITY, id: 703448, slug: 'kyiv-ua-703448', name: 'Kyiv' }
+    const model = buildWidgetModel(CITY, { temp: makeLatest([10, 12, 14]) }, NOW)
+
+    it('shows the model saved for the bound city', () => {
+        expect(getShownModel(CITY, model)).toBe(model)
+    })
+
+    it('never shows numbers saved for another city under the bound city’s name', () => {
+        expect(getShownModel(KYIV, model)).toBeNull()
+    })
+
+    it('shows nothing without a bound city or a saved model', () => {
+        expect(getShownModel(null, model)).toBeNull()
+        expect(getShownModel(CITY, null)).toBeNull()
     })
 })

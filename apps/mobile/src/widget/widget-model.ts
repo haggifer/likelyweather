@@ -96,3 +96,8 @@ export const buildWidgetModel = (city: WidgetCity, data: WidgetData, now: Date):
 // always replaced.
 export const isNewerRun = (saved: Pick<WidgetModel, 'city' | 'fetchedAt'> | null, slug: string, fetchedAt: string) =>
     !saved || saved.city.slug !== slug || new Date(fetchedAt) > new Date(saved.fetchedAt)
+
+// A widget keeps the model of its last successful refresh; once it is bound to another city, that model belongs to
+// the old one and must not be drawn under the new name.
+export const getShownModel = (city: WidgetCity | null, model: WidgetModel | null) =>
+    city && model?.city.slug === city.slug ? model : null
