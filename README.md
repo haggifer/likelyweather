@@ -13,7 +13,7 @@ pnpm install
 cp .env.example .env      # then put a real contact in METNO_USER_AGENT
 pnpm db:up                # Postgres 16 and Redis 7 in Docker
 pnpm db:deploy            # apply the Prisma migrations
-pnpm db:seed              # models and the eleven seed cities
+pnpm db:seed              # the eleven seed cities
 pnpm api                  # Docker services, then the API on http://localhost:4000
 pnpm web                  # in a second terminal: the web app on http://localhost:3000
 ```
@@ -65,7 +65,7 @@ Ukrainian, English, Spanish, German and French (language menu in the top bar; th
 | Command                                                        | What it does                                                                                    |
 | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | `pnpm api` / `web` / `mobile`                                  | One terminal each: Docker services then the API (`tsx watch`); the web app (Turbopack); Metro   |
-| `pnpm db:up` / `db:deploy` / `db:migrate` / `db:seed`          | Docker services; apply migrations; create a new migration; seed models and cities               |
+| `pnpm db:up` / `db:deploy` / `db:migrate` / `db:seed`          | Docker services; apply migrations; create a new migration; seed the cities                      |
 | `pnpm build`                                                   | Next.js build, the API's Lambda bundle (esbuild), Prisma client                                 |
 | `pnpm test`                                                    | Vitest in every package but `apps/mobile` (Jest); database tests run when `DATABASE_URL` is set |
 | `pnpm lint` / `typecheck` / `format` / `format:check`          | ESLint, TypeScript, Prettier with organize-imports                                              |

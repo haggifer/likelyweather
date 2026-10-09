@@ -40,16 +40,6 @@ model City {
   snapshots      Snapshot[]
 }
 
-model Model {
-  id        String     @id
-  source    String
-  name      String
-  color     String
-  regional  Boolean    @default(false) // icon_eu, arpege_europe
-  active    Boolean    @default(true)
-  forecasts Forecast[]
-}
-
 model CollectionRun {
   id          String     @id // "preview-<cityId>-<issue>"; older rows also "scheduled-<issue>"
   issueTime   DateTime
@@ -86,8 +76,7 @@ model Snapshot {
 model Forecast {
   cityId      Int
   city        City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  modelId     String
-  model       Model    @relation(fields: [modelId], references: [id])
+  modelId     String // a ModelId of @fa/shared/models
   issueTime   DateTime
   validTime   DateTime
   leadHours   Int
