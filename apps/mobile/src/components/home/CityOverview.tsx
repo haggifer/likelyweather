@@ -7,10 +7,11 @@ import { getChartStart } from '@fa/shared/slots'
 import { Variable, VARIABLES } from '@fa/shared/variables'
 import { UseQueryResult } from '@tanstack/react-query'
 import { useEffect, useMemo } from 'react'
-import { ActivityIndicator, Alert, StyleSheet, View } from 'react-native'
+import { ActivityIndicator, StyleSheet, View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { useNow } from '../../hooks/useNow'
 import { useTheme } from '../../hooks/useTheme'
+import { showSnackbar } from '../../lib/snackbar-store'
 import { updateWidgetsForCity } from '../../widget/widget-updates'
 import { Card } from '../ui/Card'
 import { ErrorNotice } from '../ui/ErrorNotice'
@@ -61,7 +62,7 @@ export function CityOverview({ slug }: IProps) {
         const refreshed = await refetchAll()
         const failure = refreshed.find((r) => r.isError)
 
-        if (failure) Alert.alert(te(getErrorKind(failure.error)))
+        if (failure) showSnackbar(te(getErrorKind(failure.error)))
     }
     const handleRetry = () => (error ? void refetchCity() : void refetchAll())
 

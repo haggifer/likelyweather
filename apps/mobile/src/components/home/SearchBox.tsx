@@ -6,12 +6,13 @@ import { getCityLabel } from '@fa/shared/format'
 import { addRecent, getPlaceList, isFavorite, Place, rankByFavorite, toPlace } from '@fa/shared/places'
 import { Search, Star } from 'lucide-react-native'
 import { useRef, useState } from 'react'
-import { ActivityIndicator, Alert, Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native'
+import { ActivityIndicator, Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { usePlaces } from '../../hooks/usePlaces'
 import { useTheme } from '../../hooks/useTheme'
 import { placesStore } from '../../lib/places-store'
+import { showSnackbar } from '../../lib/snackbar-store'
 import { getFontFamily } from '../../theme/fonts'
 import { FlagIcon } from '../ui/FlagIcon'
 import { Text } from '../ui/Text'
@@ -81,7 +82,7 @@ export function SearchBox({ onSelectCity, isLocateShown = false, autoFocus = fal
                 close()
                 onSelectCity(slug)
             },
-            onError: (trackError) => Alert.alert(te(getErrorKind(trackError))),
+            onError: (trackError) => showSnackbar(te(getErrorKind(trackError))),
         })
 
     const handleLocated = (place: Place) => {

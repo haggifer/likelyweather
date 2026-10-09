@@ -4,11 +4,12 @@ import { getCityName } from '@fa/shared/format'
 import { formatDistanceKm } from '@fa/shared/geo'
 import { Place, toPlace } from '@fa/shared/places'
 import { LocateFixed } from 'lucide-react-native'
-import { ActivityIndicator, Alert, Pressable } from 'react-native'
+import { ActivityIndicator, Pressable } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { useLocateCity } from '../../hooks/useLocateCity'
 import { useTheme } from '../../hooks/useTheme'
 import { PositionError } from '../../lib/position'
+import { showSnackbar } from '../../lib/snackbar-store'
 
 interface IProps {
     onLocated: (place: Place) => void
@@ -32,23 +33,19 @@ export function LocateButton({ onLocated, onSearch }: IProps) {
                     return
                 }
 
-                Alert.alert(
-                    t('locate'),
+                showSnackbar(
                     t('locateFar', {
                         name: getCityName(result.city, locale),
                         km: formatDistanceKm(result.distanceKm, locale),
                     }),
                     [
-                        { text: t('locateSearch'), onPress: onSearch, style: 'cancel' },
-                        { text: t('locateUse'), onPress: () => onLocated(toPlace(result.city)) },
+                        { label: t('locateSearch'), onPress: onSearch },
+                        { label: t('locateUse'), onPress: () => onLocated(toPlace(result.city)) },
                     ],
                 )
             },
             onError: (error) =>
-                Alert.alert(
-                    t('locate'),
-                    error instanceof PositionError ? t('locateUnavailable') : te(getErrorKind(error)),
-                ),
+                showSnackbar(error instanceof PositionError ? t('locateUnavailable') : te(getErrorKind(error))),
         })
 
     return (

@@ -7,6 +7,7 @@ import { useEffect } from 'react'
 import { Appearance, Pressable, StatusBar, View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { IntlProvider, useTranslations } from 'use-intl'
+import { SnackbarHost } from '../components/ui/SnackbarHost'
 import { useAppFonts } from '../hooks/useAppFonts'
 import { useSettings } from '../hooks/useSettings'
 import { useTheme } from '../hooks/useTheme'
@@ -57,6 +58,7 @@ const AppStack = () => {
                 <Stack.Screen name="methodology" options={{ title: t('methodology') }} />
                 <Stack.Screen name="settings" options={{ title: tm('settings') }} />
             </Stack>
+            <SnackbarHost />
         </>
     )
 }
