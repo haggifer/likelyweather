@@ -4,6 +4,7 @@ import {
     formatDayLabel,
     formatNumber,
     formatPeriodLabel,
+    formatWindDirection,
     getLocalMidnights,
     getTimeZoneOffsetMinutes,
 } from './format'
@@ -90,5 +91,19 @@ describe('formatNumber', () => {
         expect(formatNumber(-0.4, 0)).toBe('0')
         expect(formatNumber(-0.06, 1)).toBe('-0.1')
         expect(formatNumber(null)).toBe('–')
+    })
+})
+
+describe('formatWindDirection', () => {
+    const points = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+
+    it('names the nearest compass point and rounds the degrees', () => {
+        expect(formatWindDirection(224.6, points)).toBe('SW 225°')
+        expect(formatWindDirection(350, points)).toBe('N 350°')
+    })
+
+    it('wraps directions outside 0–360', () => {
+        expect(formatWindDirection(-45, points)).toBe('NW 315°')
+        expect(formatWindDirection(359.7, points)).toBe('N 0°')
     })
 })

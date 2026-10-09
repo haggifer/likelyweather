@@ -153,3 +153,12 @@ export const formatClockTime = (iso: string | Date, timeZone: string, locale: st
                 minute: '2-digit',
             }),
     ).format(new Date(iso))
+
+// A meteorological direction, where the wind comes from, as a compass point and degrees ("SW 225°"); `points` are the
+// catalog's compass labels, clockwise from north.
+export const formatWindDirection = (degrees: number, points: string[]) => {
+    const bearing = ((degrees % 360) + 360) % 360
+    const point = points[Math.round(bearing / (360 / points.length)) % points.length]
+
+    return `${point} ${Math.round(bearing) % 360}°`
+}
