@@ -150,8 +150,8 @@ The ones a newcomer is most likely to undo by accident:
 
 ## Data and attribution
 
-Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0) and [MET Norway](https://api.met.no/) (CC BY 4.0). Geocoding by Open-Meteo (GeoNames). Open-Meteo's free API is for non-commercial use; running this code commercially needs its paid plan. Flags from `country-flag-icons` (MIT).
+Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0) and [MET Norway](https://api.met.no/) (CC BY 4.0). Geocoding by Open-Meteo (GeoNames). Open-Meteo's free API is for non-commercial use, like the code itself. Flags from `country-flag-icons` (MIT).
 
 ## License
 
-The code is under the [MIT License](LICENSE). The weather data stays under its providers' CC BY 4.0 terms.
+The code is source-available under the [PolyForm Noncommercial License 1.0.0](LICENSE): anyone may read, run, change and share it for any noncommercial purpose (personal study, hobby projects, research, education, charities, public bodies), and nobody may use it commercially, including selling it or anything built on it. It is not an open-source license in the OSI sense. The weather data stays under its providers' CC BY 4.0 terms.

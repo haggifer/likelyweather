@@ -1,7 +1,7 @@
 {
     "name": "forecast-arena",
     "private": true,
-    "license": "MIT",
+    "license": "PolyForm-Noncommercial-1.0.0",
     "scripts": {
         "api": "pnpm db:up && pnpm --filter @fa/api run dev",
         "web": "pnpm --filter @fa/web run dev",
