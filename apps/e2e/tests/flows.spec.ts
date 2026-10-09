@@ -255,17 +255,20 @@ test('the star on a chip pins the city to the front and unpins it again', async 
     await page.goto('/')
     await expect.poll(() => getChipNames(page)).toEqual(['New York', 'London', 'Paris', 'Kyiv'])
 
-    await page.getByRole('button', { name: 'Add Paris to favorites' }).click()
+    // The overview card's star names its city too, so the chip's star is found inside the chips.
+    const chips = page.getByRole('group', { name: 'Start with' })
+
+    await chips.getByRole('button', { name: 'Add Paris to favorites' }).click()
 
     await expect.poll(() => getChipNames(page)).toEqual(['Paris', 'New York', 'London', 'Kyiv'])
-    await expect(page.getByRole('button', { name: 'Remove Paris from favorites' })).toHaveAttribute(
+    await expect(chips.getByRole('button', { name: 'Remove Paris from favorites' })).toHaveAttribute(
         'aria-pressed',
         'true',
     )
 
-    await page.getByRole('button', { name: 'Remove Paris from favorites' }).click()
+    await chips.getByRole('button', { name: 'Remove Paris from favorites' }).click()
 
-    await expect(page.getByRole('button', { name: 'Add Paris to favorites' })).toHaveAttribute('aria-pressed', 'false')
+    await expect(chips.getByRole('button', { name: 'Add Paris to favorites' })).toHaveAttribute('aria-pressed', 'false')
 })
 
 test('the empty search box lists more searched places than the chips show', async ({ page }) => {
