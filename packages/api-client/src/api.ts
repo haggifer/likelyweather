@@ -44,7 +44,7 @@ const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
     if (!res.ok) {
         const body: ApiError | null = await res.json().catch(() => null)
 
-        throw new ApiRequestError(res.status, body?.error.code ?? 'http_error', body?.error.message ?? res.statusText)
+        throw new ApiRequestError(res.status, body?.error?.code ?? 'http_error', body?.error?.message ?? res.statusText)
     }
 
     const body: T = await res.json()

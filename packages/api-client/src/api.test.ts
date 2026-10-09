@@ -35,6 +35,15 @@ describe('apiGet', () => {
         expect(error).toMatchObject({ status: 404, code: 'city_not_found', message: 'No city' })
         expect(isNotFound(error)).toBe(true)
     })
+
+    it('keeps the status of an error body that is not the API’s shape', async () => {
+        vi.stubGlobal('fetch', respond(403, { Message: 'Forbidden' }))
+
+        const error = await apiGet('/cities/x').catch((e: unknown) => e)
+
+        expect(error).toBeInstanceOf(ApiRequestError)
+        expect(error).toMatchObject({ status: 403, code: 'http_error' })
+    })
 })
 
 describe('apiPost', () => {
