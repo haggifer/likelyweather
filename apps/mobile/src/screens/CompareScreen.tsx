@@ -23,6 +23,7 @@ import { ScreenScroll } from '../components/ui/ScreenScroll'
 import { Skeleton } from '../components/ui/Skeleton'
 import { Text } from '../components/ui/Text'
 import { useNow } from '../hooks/useNow'
+import { useSelectedVariable } from '../hooks/useSelectedVariable'
 import { useTheme } from '../hooks/useTheme'
 
 type CompareItem = CompareResponse['items'][number]
@@ -101,7 +102,8 @@ const CityPreview = ({ item, variable, yDomain }: PreviewProps) => {
     )
 }
 
-// Up to four cities on one shared vertical axis; the list lives in the route (`?cities=`), like the web's URL.
+// Up to four cities on one shared vertical axis; the list lives in the route (`?cities=`), like the web's URL, and the
+// variable is the one the City screen shows.
 export function CompareScreen() {
     const t = useTranslations('compare')
     const te = useTranslations('errors')
@@ -109,8 +111,7 @@ export function CompareScreen() {
     const router = useRouter()
     const { colors } = useTheme()
     const params = useLocalSearchParams<{ cities?: string }>()
-
-    const [variable, setVariable] = useState(Variable.Temp)
+    const { variable, setVariable } = useSelectedVariable()
 
     const shown = parseSlugs(params.cities).slice(0, MAX_COMPARE_CITIES)
     const { data, error, isFetching, refetch } = useCompare(shown, variable)

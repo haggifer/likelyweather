@@ -41,6 +41,7 @@ import { ErrorNotice } from '../components/ui/ErrorNotice'
 import { ScreenScroll } from '../components/ui/ScreenScroll'
 import { Skeleton } from '../components/ui/Skeleton'
 import { useNow } from '../hooks/useNow'
+import { useSelectedVariable } from '../hooks/useSelectedVariable'
 import { useTheme } from '../hooks/useTheme'
 import { getFlagEmoji } from '../lib/flag'
 
@@ -83,8 +84,8 @@ const Dashboard = ({ city }: DashboardProps) => {
     const router = useRouter()
     const queryClient = useQueryClient()
     const { colors } = useTheme()
+    const { variable, setVariable } = useSelectedVariable()
 
-    const [variable, setVariable] = useState(Variable.Temp)
     const [hoverStep, setHoverStep] = useState<string | null>(null)
     const [hidden, setHidden] = useState<ModelId[]>([])
     const [isMedianHidden, setIsMedianHidden] = useState(false)
