@@ -6,17 +6,37 @@ import {
     reverseGeocodeAsync,
 } from 'expo-location'
 
-// Thrown when the device could not say where the viewer is: no permission, location off, or no fix.
+// Thrown when the device could not say where the viewer is: no permission, location off, no fix, or no fix in time.
 export class PositionError extends Error {}
 
-// Foreground only and at balanced accuracy; the position is rounded to about a kilometre before anything uses it.
+// The web's limit: a fix that takes longer is treated like no fix, so the button never spins on.
+const POSITION_TIMEOUT_MS = 10_000
+
+const withTimeout = <T>(promise: Promise<T>, ms: number) =>
+    new Promise<T>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new PositionError(`No position within ${ms} ms`)), ms)
+
+        promise.then(
+            (value) => {
+                clearTimeout(timer)
+                resolve(value)
+            },
+            (error: unknown) => {
+                clearTimeout(timer)
+                reject(error)
+            },
+        )
+    })
+
+// Foreground only and at low accuracy, which a city needs and the network gives quickly; the position is rounded to
+// about a kilometre before anything uses it.
 export const getRoundedPosition = async (): Promise<Coordinates> => {
     const { status } = await requestForegroundPermissionsAsync()
 
     if (status !== 'granted') throw new PositionError('Location permission was not granted')
 
     try {
-        const { coords } = await getCurrentPositionAsync({ accuracy: Accuracy.Balanced })
+        const { coords } = await withTimeout(getCurrentPositionAsync({ accuracy: Accuracy.Low }), POSITION_TIMEOUT_MS)
 
         return roundCoordinates({ lat: coords.latitude, lon: coords.longitude })
     } catch (error) {
