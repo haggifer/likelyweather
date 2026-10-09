@@ -17,6 +17,9 @@
         "setupFilesAfterEnv": [
             "<rootDir>/jest.setup.ts"
         ],
+        "moduleNameMapper": {
+            "^lucide-react-native$": "<rootDir>/node_modules/lucide-react-native/dist/cjs/lucide-react-native.js"
+        },
         "transformIgnorePatterns": [
             "node_modules/(?!(?:\\.pnpm/[^/]+/node_modules/)?((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|expo-router|react-navigation|@react-navigation/.*|@formatjs/.*|intl-messageformat|use-intl|d3-.*|internmap|lucide-react-native))"
         ]

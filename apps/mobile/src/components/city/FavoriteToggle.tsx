@@ -25,6 +25,8 @@ export function FavoriteToggle({ place, size = 22, tone = 'default' }: IProps) {
     const isPinned = isFavorite(places, place.id)
     const label = t(isPinned ? 'unpinCity' : 'pinCity', { name: getCityName(place, locale) })
     const idleColor = tone === 'inverse' ? colors['primary-foreground'] : colors['favorite-idle']
+    // On the selected chip's blue an idle star at full strength reads as pinned; the web mutes it to 70 %.
+    const idleOpacity = tone === 'inverse' ? 0.7 : 1
 
     const handlePress = () => {
         if (!isPinnable(places, place.id)) {
@@ -42,6 +44,7 @@ export function FavoriteToggle({ place, size = 22, tone = 'default' }: IProps) {
             accessibilityRole="button"
             accessibilityLabel={label}
             accessibilityState={{ selected: isPinned }}
+            style={{ opacity: isPinned ? 1 : idleOpacity }}
         >
             <Star
                 size={size}

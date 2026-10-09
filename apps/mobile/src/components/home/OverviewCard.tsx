@@ -85,7 +85,7 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
                 <FavoriteToggle place={city} />
             </View>
             <View style={styles.actions}>
-                <UpdatedChip fetchedAt={temp.fetchedAt} now={now} />
+                <UpdatedChip fetchedAt={temp.fetchedAt} issueTime={temp.issueTime} timeZone={city.timezone} now={now} />
                 <View style={styles.grow} />
                 <RefreshButton
                     isAvailable={isRefreshOffered(temp.fetchedAt, now)}

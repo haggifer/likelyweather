@@ -1,6 +1,7 @@
 import { REFRESH_AFTER_HOURS } from '@fa/shared/constants'
 import { RefreshCw } from 'lucide-react-native'
 import { useTranslations } from 'use-intl'
+import { showSnackbar } from '../../lib/snackbar-store'
 import { Button } from '../ui/Button'
 
 interface IProps {
@@ -9,9 +10,12 @@ interface IProps {
     onRefresh: () => void
 }
 
-// Offered once the data is REFRESH_AFTER_HOURS old, the same rule the server uses to fetch again.
+// Offered once the data is REFRESH_AFTER_HOURS old, the same rule the server uses to fetch again. The web explains a
+// disabled Refresh in a tooltip; a phone has no hover, so a tap on it says why in the snackbar.
 export function RefreshButton({ isAvailable, isFetching, onRefresh }: IProps) {
     const t = useTranslations('city')
+
+    const explanation = isAvailable ? t('refreshTitle') : t('upToDate', { hours: REFRESH_AFTER_HOURS })
 
     return (
         <Button
@@ -20,8 +24,9 @@ export function RefreshButton({ isAvailable, isFetching, onRefresh }: IProps) {
             label={t('refresh')}
             onPress={onRefresh}
             isDisabled={!isAvailable}
+            onDisabledPress={() => showSnackbar(explanation)}
             isBusy={isFetching}
-            accessibilityLabel={isAvailable ? t('refreshTitle') : t('upToDate', { hours: REFRESH_AFTER_HOURS })}
+            accessibilityHint={explanation}
         />
     )
 }
