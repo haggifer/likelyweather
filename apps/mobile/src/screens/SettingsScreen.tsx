@@ -9,11 +9,12 @@ import { Linking, Pressable, StyleSheet, View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { Card } from '../components/ui/Card'
 import { ScreenScroll } from '../components/ui/ScreenScroll'
+import { Skeleton } from '../components/ui/Skeleton'
 import { Text } from '../components/ui/Text'
 import { useSettings } from '../hooks/useSettings'
 import { useTheme } from '../hooks/useTheme'
 import { LanguageSetting, settingsStore, ThemeSetting } from '../lib/settings'
-import { PRIVACY_URL, REPO_URL, TERMS_URL } from '../lib/web-links'
+import { getLegalUrl, METNO_URL, OPEN_METEO_URL, REPO_URL } from '../lib/web-links'
 import { widgetBindings } from '../widget/widget-store'
 
 // Each language by its own name, as in the web's language menu.
@@ -31,10 +32,12 @@ const LOW_SHARE = 0.2
 const styles = StyleSheet.create({
     content: { padding: 16, gap: 16 },
     row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 44 },
-    rowText: { flex: 1, fontSize: 15 },
+    rowText: { flex: 1, fontSize: 14 },
     text: { fontSize: 14, lineHeight: 20 },
     small: { fontSize: 12, lineHeight: 17 },
+    quota: { gap: 8 },
     meter: { height: 6, borderRadius: 3, overflow: 'hidden' },
+    link: { textDecorationLine: 'underline' },
 })
 
 interface OptionProps {
@@ -77,6 +80,12 @@ const LinkRow = ({ label, onPress, isExternal = false }: LinkProps) => {
     )
 }
 
+const renderLink = (url: string) => (chunks: ReactNode) => (
+    <Text style={styles.link} onPress={() => void Linking.openURL(url)} accessibilityRole="link">
+        {chunks}
+    </Text>
+)
+
 const Section = ({ title, children }: { title: string; children: ReactNode }) => <Card title={title}>{children}</Card>
 
 // Language and theme (kept on the device), the day's request quota, the widgets' cities and the legal links.
@@ -86,7 +95,6 @@ export function SettingsScreen() {
     const tl = useTranslations('legal')
     const tn = useTranslations('nav')
     const tf = useTranslations('footer')
-    const tm = useTranslations('methodology')
     const locale = useLocale()
     const router = useRouter()
     const settings = useSettings()
@@ -133,8 +141,14 @@ export function SettingsScreen() {
             </Section>
             <Section title={t('quota')}>
                 {quota && left !== null ? (
-                    <View style={{ gap: 8 }} accessibilityLabel={tq('value', { left, limit: quota.limit })}>
-                        <Text style={[styles.text, { color: colors.foreground }]}>
+                    <View
+                        style={styles.quota}
+                        accessible
+                        accessibilityRole="progressbar"
+                        accessibilityLabel={tq('value', { left, limit: quota.limit })}
+                        accessibilityValue={{ min: 0, max: quota.limit, now: left }}
+                    >
+                        <Text isTabular style={[styles.text, { color: colors.foreground }]}>
                             {tq('value', { left, limit: quota.limit })}
                         </Text>
                         <View style={[styles.meter, { backgroundColor: colors.muted }]}>
@@ -146,14 +160,19 @@ export function SettingsScreen() {
                                 }}
                             />
                         </View>
-                        <Text style={[styles.small, { color: colors['muted-foreground'] }]}>
+                        <Text isTabular style={[styles.small, { color: colors['muted-foreground'] }]}>
                             {tq('resets', {
                                 time: formatClockTime(quota.resetsAt, getViewerTimeZone(), locale),
                             })}
                         </Text>
                     </View>
                 ) : (
-                    <Text style={[styles.small, { color: colors['muted-foreground'] }]}>{tq('label')}</Text>
+                    // The same three lines as the answer, so nothing moves when it arrives.
+                    <View style={styles.quota}>
+                        <Skeleton height={20} width="70%" />
+                        <Skeleton height={6} radius={3} />
+                        <Skeleton height={17} width="40%" />
+                    </View>
                 )}
             </Section>
             <Section title={t('widgets')}>
@@ -170,10 +189,20 @@ export function SettingsScreen() {
             </Section>
             <Section title={t('about')}>
                 <LinkRow label={tn('methodology')} onPress={() => router.push('/methodology')} />
-                <LinkRow label={tl('privacy')} onPress={() => void Linking.openURL(PRIVACY_URL)} isExternal />
-                <LinkRow label={tl('terms')} onPress={() => void Linking.openURL(TERMS_URL)} isExternal />
+                <LinkRow
+                    label={tl('privacy')}
+                    onPress={() => void Linking.openURL(getLegalUrl('privacy', locale))}
+                    isExternal
+                />
+                <LinkRow
+                    label={tl('terms')}
+                    onPress={() => void Linking.openURL(getLegalUrl('terms', locale))}
+                    isExternal
+                />
                 {repoUrl && <LinkRow label={tf('repo')} onPress={() => void Linking.openURL(repoUrl)} isExternal />}
-                <Text style={[styles.small, { color: colors['muted-foreground'] }]}>{tm('attribution')}</Text>
+                <Text style={[styles.small, { color: colors['muted-foreground'] }]}>
+                    {tf.rich('attribution', { openMeteo: renderLink(OPEN_METEO_URL), metno: renderLink(METNO_URL) })}
+                </Text>
                 <Text style={[styles.small, { color: colors['muted-foreground'] }]}>{t('version', { version })}</Text>
             </Section>
         </ScreenScroll>
