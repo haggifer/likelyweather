@@ -3,9 +3,9 @@ import { fireEvent, render, screen } from '@testing-library/react-native'
 import { IntlProvider } from 'use-intl'
 import { NotFoundScreen } from './NotFoundScreen'
 
-const mockReplace = jest.fn()
+const mockDismissTo = jest.fn()
 
-jest.mock('expo-router', () => ({ useRouter: () => ({ replace: mockReplace }) }))
+jest.mock('expo-router', () => ({ useRouter: () => ({ dismissTo: mockDismissTo }) }))
 
 describe('NotFoundScreen', () => {
     it('explains the missing page in the app language and leads back to the start', async () => {
@@ -19,6 +19,6 @@ describe('NotFoundScreen', () => {
 
         await fireEvent.press(screen.getByRole('button', { name: en.notFound.home }))
 
-        expect(mockReplace).toHaveBeenCalledWith('/')
+        expect(mockDismissTo).toHaveBeenCalledWith('/')
     })
 })

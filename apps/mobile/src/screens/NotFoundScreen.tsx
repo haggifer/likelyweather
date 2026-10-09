@@ -11,7 +11,8 @@ const styles = StyleSheet.create({
     body: { fontSize: 14, lineHeight: 21, textAlign: 'center' },
 })
 
-// The web's not-found page, for a link into the app that names no screen.
+// The web's not-found page, for a link into the app that names no screen. The way back pops to the start screen when
+// it is in the stack, so Back never returns here.
 export function NotFoundScreen() {
     const t = useTranslations('notFound')
     const router = useRouter()
@@ -23,7 +24,7 @@ export function NotFoundScreen() {
                 {t('title')}
             </Text>
             <Text style={[styles.body, { color: colors['muted-foreground'] }]}>{t('body')}</Text>
-            <Button label={t('home')} onPress={() => router.replace('/')} />
+            <Button label={t('home')} onPress={() => router.dismissTo('/')} />
         </View>
     )
 }
