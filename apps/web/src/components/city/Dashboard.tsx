@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useNow } from '@/hooks/useNow'
 import { useUrlSync } from '@/hooks/useUrlSync'
 import { useAppDispatch, useAppSelector } from '@/store'
-import { setHoverStep, toggleHiddenModel } from '@/store/dashboard-slice'
+import { setHoverStep } from '@/store/dashboard-slice'
 import { useCity } from '@fa/api-client/hooks/useCity'
 import { useLatest } from '@fa/api-client/hooks/useLatest'
 import {
@@ -29,13 +29,13 @@ import {
 import { Series } from '@fa/shared/api'
 import { EnsembleStats } from '@fa/shared/ensemble'
 import { formatDateKey, formatNumber, formatPeriodLabel, formatStepLabel, getCityName } from '@fa/shared/format'
-import { MODEL_BY_ID, ModelId, MODELS } from '@fa/shared/models'
+import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { buildSlots, DASHBOARD_HOURS, getChartStart, toSlotLatest } from '@fa/shared/slots'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Loader2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import dynamic from 'next/dynamic'
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 
 interface SeriesTableProps {
     steps: string[]
@@ -68,10 +68,6 @@ const VARIABLE_BAR = (
         <VariableSwitch className="max-sm:w-full" />
     </div>
 )
-
-const isTypingTarget = (target: EventTarget | null) =>
-    target instanceof HTMLElement &&
-    (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
 
 const getReadoutLabel = (step: string, variable: Variable, timeZone: string, locale: string) =>
     variable === Variable.Precip
@@ -158,7 +154,6 @@ export function Dashboard({ slug }: IProps) {
     const variable = useAppSelector((s) => s.dashboard.variable)
     const hoverStep = useAppSelector((s) => s.dashboard.hoverStep)
     const highlighted = useAppSelector((s) => s.dashboard.highlightedModel)
-    const pinned = useAppSelector((s) => s.dashboard.pinnedModels)
     const hidden = useAppSelector((s) => s.dashboard.hiddenModels)
     const isMedianHidden = useAppSelector((s) => s.dashboard.isMedianHidden)
 
@@ -196,20 +191,6 @@ export function Dashboard({ slug }: IProps) {
     )
     const chartNow = anchor ? now : null
 
-    useEffect(() => {
-        const available = new Set(latest?.series.map((s) => s.modelId))
-        const handleKey = (e: KeyboardEvent) => {
-            if (e.ctrlKey || e.metaKey || e.altKey || isTypingTarget(e.target)) return
-
-            const model = MODELS.find((m) => m.hotkey === e.key && available.has(m.id))
-
-            if (model) dispatch(toggleHiddenModel(model.id))
-        }
-
-        window.addEventListener('keydown', handleKey)
-        return () => window.removeEventListener('keydown', handleKey)
-    }, [latest, dispatch])
-
     if (!city) return null
 
     const cityName = getCityName(city, locale)
@@ -245,7 +226,7 @@ export function Dashboard({ slug }: IProps) {
     }
 
     const visibleSeries = latest.series.filter((s) => !hidden.includes(s.modelId))
-    const emphasized: ModelId[] = [...pinned, ...(highlighted ? [highlighted] : [])]
+    const emphasized: ModelId[] = highlighted ? [highlighted] : []
     const hoverIndex = hoverStep ? latest.steps.indexOf(hoverStep) : -1
     const readoutIndex = getReadoutIndex(latest.steps, hoverIndex, chartNow, info.aggregation === 'sum')
     const futureRange = getFutureRange(derived.stats.median, latest.steps, now)

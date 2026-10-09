@@ -88,12 +88,10 @@
     "legend": {
         "median": "Median",
         "reset": "Show all",
-        "pin": "Pin: keep this model highlighted",
-        "unpin": "Unpin",
         "show": "Show {model}",
         "hide": "Hide {model}",
-        "hint": "Hover a model to highlight it, click to pin. Keys 1–9 and 0 toggle models.",
-        "hintTouch": "Tap a model to pin it; the eye hides it.",
+        "hint": "Hover a model to highlight it.",
+        "hintTouch": "The eye hides a model.",
         "showMedian": "Show the median",
         "hideMedian": "Hide the median"
     },

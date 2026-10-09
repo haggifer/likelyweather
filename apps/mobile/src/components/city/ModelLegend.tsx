@@ -2,7 +2,7 @@ import { Series } from '@fa/shared/api'
 import { formatNumber } from '@fa/shared/format'
 import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
-import { Eye, EyeOff, Pin } from 'lucide-react-native'
+import { Eye, EyeOff } from 'lucide-react-native'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import Svg, { Line } from 'react-native-svg'
 import { useTranslations } from 'use-intl'
@@ -47,26 +47,22 @@ interface IProps {
     readoutIndex: number
     readoutLabel: string
     variable: Variable
-    pinned: ModelId[]
     hidden: ModelId[]
     isMedianHidden: boolean
-    onTogglePin: (id: ModelId) => void
     onToggleHidden: (id: ModelId) => void
     onToggleMedian: () => void
     onReset: () => void
 }
 
-// The models at the chart's readout time, highest first; a tap pins a model, the eye hides it, the median too.
+// The models at the chart's readout time, highest first; the eye hides a model, the median too.
 export function ModelLegend({
     series,
     median,
     readoutIndex,
     readoutLabel,
     variable,
-    pinned,
     hidden,
     isMedianHidden,
-    onTogglePin,
     onToggleHidden,
     onToggleMedian,
     onReset,
@@ -76,7 +72,7 @@ export function ModelLegend({
 
     const { decimals, unit } = VARIABLE_BY_ID[variable]
     const rows = getLegendRows(series, readoutIndex, hidden)
-    const isChanged = hidden.length > 0 || pinned.length > 0 || isMedianHidden
+    const isChanged = hidden.length > 0 || isMedianHidden
     const eyeColor = colors['muted-foreground']
 
     return (
@@ -116,24 +112,10 @@ export function ModelLegend({
             </View>
             {rows.map(({ modelId, value, isHidden }) => {
                 const model = MODEL_BY_ID[modelId]
-                const isPinned = pinned.includes(modelId)
 
                 return (
-                    <View
-                        key={modelId}
-                        style={[
-                            styles.row,
-                            isPinned && { backgroundColor: colors.accent },
-                            isHidden && { opacity: 0.45 },
-                        ]}
-                    >
-                        <Pressable
-                            onPress={() => onTogglePin(modelId)}
-                            style={styles.name}
-                            accessibilityRole="button"
-                            accessibilityState={{ selected: isPinned }}
-                            accessibilityHint={isPinned ? t('unpin') : t('pin')}
-                        >
+                    <View key={modelId} style={[styles.row, isHidden && { opacity: 0.45 }]}>
+                        <View style={styles.name}>
                             <Swatch color={model.color} dash={model.dash} />
                             <Text
                                 style={[
@@ -144,8 +126,7 @@ export function ModelLegend({
                             >
                                 {model.name}
                             </Text>
-                            {isPinned && <Pin size={12} color={eyeColor} />}
-                        </Pressable>
+                        </View>
                         <Text style={[styles.value, { color: colors.foreground }]}>
                             {isHidden ? '' : formatNumber(value, decimals)}
                         </Text>

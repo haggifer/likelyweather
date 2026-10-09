@@ -84,7 +84,6 @@ const Dashboard = ({ city }: DashboardProps) => {
 
     const [variable, setVariable] = useState(Variable.Temp)
     const [hoverStep, setHoverStep] = useState<string | null>(null)
-    const [pinned, setPinned] = useState<ModelId[]>([])
     const [hidden, setHidden] = useState<ModelId[]>([])
     const [isMedianHidden, setIsMedianHidden] = useState(false)
     const [isTable, setIsTable] = useState(false)
@@ -124,7 +123,6 @@ const Dashboard = ({ city }: DashboardProps) => {
     }
     const handleSwitchCity = (slug: string) => router.replace(`/city/${slug}`)
     const handleReset = () => {
-        setPinned([])
         setHidden([])
         setIsMedianHidden(false)
     }
@@ -262,7 +260,6 @@ const Dashboard = ({ city }: DashboardProps) => {
                             accessibilityLabel={summary}
                             hoverIndex={hoverIndex >= 0 ? hoverIndex : null}
                             onHoverIndex={(i) => setHoverStep(i === null ? null : latest.steps[i])}
-                            emphasized={pinned}
                             directions={variable === Variable.Wind ? derived.directions : null}
                             now={now}
                             isMedianHidden={isMedianHidden}
@@ -285,10 +282,8 @@ const Dashboard = ({ city }: DashboardProps) => {
                             readoutIndex={readoutIndex}
                             readoutLabel={getReadoutLabel(latest.steps[readoutIndex], variable, timeZone, locale)}
                             variable={variable}
-                            pinned={pinned}
                             hidden={hidden}
                             isMedianHidden={isMedianHidden}
-                            onTogglePin={(id) => setPinned((list) => toggle(list, id))}
                             onToggleHidden={(id) => setHidden((list) => toggle(list, id))}
                             onToggleMedian={() => setIsMedianHidden((v) => !v)}
                             onReset={handleReset}

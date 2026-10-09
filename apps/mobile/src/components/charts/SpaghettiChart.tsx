@@ -104,7 +104,6 @@ interface IProps {
     hoverIndex: number | null
     onHoverIndex: (index: number | null) => void
     now: Date | null
-    emphasized?: ModelId[]
     directions?: (number | null)[] | null
     height?: number
     compact?: boolean
@@ -126,7 +125,6 @@ export function SpaghettiChart({
     hoverIndex,
     onHoverIndex,
     now,
-    emphasized = [],
     directions,
     height = 280,
     compact = false,
@@ -173,7 +171,6 @@ export function SpaghettiChart({
     const spanLeft = hoverSpan ? Math.max(margin.left, x(hoverSpan[0])) : 0
     const spanRight = hoverSpan ? Math.min(plotRight, x(hoverSpan[1])) : 0
     const tooltipRows = hover !== null && showTooltip ? getTooltipRows(series, hover) : []
-    const isDimmed = (id: ModelId) => emphasized.length > 0 && !emphasized.includes(id)
 
     const handleScrub = (touchX: number) => {
         const at = x.invert(touchX)
@@ -287,10 +284,10 @@ export function SpaghettiChart({
                                                     y1={y(v)}
                                                     y2={y(v)}
                                                     stroke={model.color}
-                                                    strokeWidth={emphasized.includes(s.modelId) ? 3 : 2}
+                                                    strokeWidth={2}
                                                     strokeDasharray={model.dash}
                                                     strokeLinecap={model.dash ? 'butt' : 'round'}
-                                                    opacity={isDimmed(s.modelId) ? 0.15 : 0.9}
+                                                    opacity={0.9}
                                                 />
                                             )
                                         })}
@@ -304,10 +301,10 @@ export function SpaghettiChart({
                                         d={d}
                                         fill="none"
                                         stroke={MODEL_BY_ID[modelId].color}
-                                        strokeWidth={emphasized.includes(modelId) ? 2.5 : 1.5}
+                                        strokeWidth={1.5}
                                         strokeDasharray={MODEL_BY_ID[modelId].dash}
                                         strokeLinecap={MODEL_BY_ID[modelId].dash ? 'butt' : 'round'}
-                                        opacity={isDimmed(modelId) ? 0.15 : 0.9}
+                                        opacity={0.9}
                                     />
                                 ))}
                             {!isBars && !isMedianHidden && (
@@ -380,7 +377,7 @@ export function SpaghettiChart({
                                     series.map((s) => {
                                         const v = s.values[hover]
 
-                                        if (v === null || isDimmed(s.modelId)) return null
+                                        if (v === null) return null
 
                                         return (
                                             <Circle

@@ -88,12 +88,10 @@
     "legend": {
         "median": "Mediana",
         "reset": "Mostrar todos",
-        "pin": "Fijar: mantener este modelo resaltado",
-        "unpin": "Soltar",
         "show": "Mostrar {model}",
         "hide": "Ocultar {model}",
-        "hint": "Pasa el cursor por un modelo para resaltarlo y haz clic para fijarlo. Las teclas 1–9 y 0 muestran u ocultan modelos.",
-        "hintTouch": "Toca un modelo para fijarlo; el ojo lo oculta.",
+        "hint": "Pasa el cursor por un modelo para resaltarlo.",
+        "hintTouch": "El ojo oculta un modelo.",
         "showMedian": "Mostrar la mediana",
         "hideMedian": "Ocultar la mediana"
     },

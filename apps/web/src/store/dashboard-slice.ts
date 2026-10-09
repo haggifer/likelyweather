@@ -6,7 +6,6 @@ interface DashboardState {
     variable: Variable
     hoverStep: string | null
     highlightedModel: ModelId | null
-    pinnedModels: ModelId[]
     hiddenModels: ModelId[]
     isMedianHidden: boolean
 }
@@ -15,7 +14,6 @@ const initialState: DashboardState = {
     variable: Variable.Temp,
     hoverStep: null,
     highlightedModel: null,
-    pinnedModels: [],
     hiddenModels: [],
     isMedianHidden: false,
 }
@@ -36,9 +34,6 @@ const dashboardSlice = createSlice({
         setHighlightedModel: (state, action: PayloadAction<ModelId | null>) => {
             state.highlightedModel = action.payload
         },
-        togglePinnedModel: (state, action: PayloadAction<ModelId>) => {
-            state.pinnedModels = toggle(state.pinnedModels, action.payload)
-        },
         toggleHiddenModel: (state, action: PayloadAction<ModelId>) => {
             state.hiddenModels = toggle(state.hiddenModels, action.payload)
         },
@@ -47,20 +42,12 @@ const dashboardSlice = createSlice({
         },
         showAllModels: (state) => {
             state.hiddenModels = []
-            state.pinnedModels = []
             state.isMedianHidden = false
         },
     },
 })
 
-export const {
-    setVariable,
-    setHoverStep,
-    setHighlightedModel,
-    togglePinnedModel,
-    toggleHiddenModel,
-    toggleMedian,
-    showAllModels,
-} = dashboardSlice.actions
+export const { setVariable, setHoverStep, setHighlightedModel, toggleHiddenModel, toggleMedian, showAllModels } =
+    dashboardSlice.actions
 
 export const dashboardReducer = dashboardSlice.reducer

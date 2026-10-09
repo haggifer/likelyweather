@@ -20,7 +20,6 @@ export interface ModelInfo {
     source: ModelSource
     color: string
     isRegional: boolean
-    hotkey: string
     dash?: string
 }
 
@@ -34,7 +33,6 @@ export const MODELS: ModelInfo[] = [
         source: 'open-meteo',
         color: '#1D4ED8',
         isRegional: false,
-        hotkey: '1',
     },
     {
         id: ModelId.EcmwfAifs,
@@ -43,7 +41,6 @@ export const MODELS: ModelInfo[] = [
         source: 'open-meteo',
         color: '#7C3AED',
         isRegional: false,
-        hotkey: '2',
         dash: '6 3',
     },
     {
@@ -53,7 +50,6 @@ export const MODELS: ModelInfo[] = [
         source: 'open-meteo',
         color: '#DC2626',
         isRegional: false,
-        hotkey: '3',
     },
     {
         id: ModelId.IconEu,
@@ -62,7 +58,6 @@ export const MODELS: ModelInfo[] = [
         source: 'open-meteo',
         color: '#059669',
         isRegional: true,
-        hotkey: '4',
     },
     {
         id: ModelId.Gem,
@@ -71,7 +66,6 @@ export const MODELS: ModelInfo[] = [
         source: 'open-meteo',
         color: '#D97706',
         isRegional: false,
-        hotkey: '5',
     },
     {
         id: ModelId.Ukmo,
@@ -80,7 +74,6 @@ export const MODELS: ModelInfo[] = [
         source: 'open-meteo',
         color: '#0891B2',
         isRegional: false,
-        hotkey: '6',
     },
     {
         id: ModelId.ArpegeEurope,
@@ -89,7 +82,6 @@ export const MODELS: ModelInfo[] = [
         source: 'open-meteo',
         color: '#DB2777',
         isRegional: true,
-        hotkey: '7',
     },
     {
         id: ModelId.Jma,
@@ -98,7 +90,6 @@ export const MODELS: ModelInfo[] = [
         source: 'open-meteo',
         color: '#65A30D',
         isRegional: false,
-        hotkey: '8',
     },
     {
         id: ModelId.Cma,
@@ -107,7 +98,6 @@ export const MODELS: ModelInfo[] = [
         source: 'open-meteo',
         color: '#92400E',
         isRegional: false,
-        hotkey: '9',
     },
     {
         id: ModelId.Metno,
@@ -116,7 +106,6 @@ export const MODELS: ModelInfo[] = [
         source: 'met.no',
         color: '#475569',
         isRegional: false,
-        hotkey: '0',
         dash: '2 3',
     },
 ]

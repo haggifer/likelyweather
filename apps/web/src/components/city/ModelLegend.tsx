@@ -4,18 +4,12 @@ import { LineSwatch } from '@/components/shell/LineSwatch'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/cn'
 import { useAppDispatch, useAppSelector } from '@/store'
-import {
-    setHighlightedModel,
-    showAllModels,
-    toggleHiddenModel,
-    toggleMedian,
-    togglePinnedModel,
-} from '@/store/dashboard-slice'
+import { setHighlightedModel, showAllModels, toggleHiddenModel, toggleMedian } from '@/store/dashboard-slice'
 import { Series } from '@fa/shared/api'
 import { formatNumber } from '@fa/shared/format'
 import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
-import { Eye, EyeOff, Pin } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
 const getLegendRows = (series: Series[], readoutIndex: number, hidden: ModelId[]) =>
@@ -39,7 +33,6 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
     const t = useTranslations('legend')
     const dispatch = useAppDispatch()
     const hidden = useAppSelector((s) => s.dashboard.hiddenModels)
-    const pinned = useAppSelector((s) => s.dashboard.pinnedModels)
     const isMedianHidden = useAppSelector((s) => s.dashboard.isMedianHidden)
 
     const { decimals, unit } = VARIABLE_BY_ID[variable]
@@ -49,7 +42,7 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
         <div className="flex flex-col gap-2">
             <div className="flex min-h-4.5 items-center justify-between gap-2 text-xs">
                 <span className="font-medium">{readoutLabel}</span>
-                {(hidden.length > 0 || pinned.length > 0 || isMedianHidden) && (
+                {(hidden.length > 0 || isMedianHidden) && (
                     <Button
                         variant="link"
                         size="xs"
@@ -97,28 +90,20 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
             <ul className="grid grid-cols-2 gap-x-3 gap-y-0.5 lg:grid-cols-1">
                 {rows.map(({ modelId, value, isHidden }) => {
                     const model = MODEL_BY_ID[modelId]
-                    const isPinned = pinned.includes(modelId)
 
                     return (
                         <li
                             key={modelId}
                             className={cn(
-                                'group flex h-(--row-height) items-center gap-1.5 rounded-md px-1.5 text-[0.8125rem] max-sm:h-auto max-sm:min-h-9 max-sm:py-1 max-sm:text-xs sm:gap-2 hover:bg-muted',
-                                isPinned && 'bg-accent',
+                                'flex h-(--row-height) items-center gap-1.5 rounded-md px-1.5 text-[0.8125rem] max-sm:h-auto max-sm:min-h-9 max-sm:py-1 max-sm:text-xs sm:gap-2 hover:bg-muted',
                                 isHidden && 'opacity-45',
                             )}
                             onMouseEnter={() => dispatch(setHighlightedModel(modelId))}
                             onMouseLeave={() => dispatch(setHighlightedModel(null))}
+                            onFocus={() => dispatch(setHighlightedModel(modelId))}
+                            onBlur={() => dispatch(setHighlightedModel(null))}
                         >
-                            <button
-                                type="button"
-                                className="flex min-w-0 flex-1 items-center gap-2 text-left max-sm:gap-1"
-                                onClick={() => dispatch(togglePinnedModel(modelId))}
-                                onFocus={() => dispatch(setHighlightedModel(modelId))}
-                                onBlur={() => dispatch(setHighlightedModel(null))}
-                                aria-pressed={isPinned}
-                                title={isPinned ? t('unpin') : t('pin')}
-                            >
+                            <div className="flex min-w-0 flex-1 items-center gap-2 max-sm:gap-1">
                                 <LineSwatch color={model.color} dash={model.dash} />
                                 <span
                                     className={cn(
@@ -128,11 +113,7 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
                                 >
                                     {model.name}
                                 </span>
-                                {isPinned && <Pin className="size-3 shrink-0 text-muted-foreground" />}
-                                <kbd className="ml-auto hidden rounded border px-1 font-mono text-[0.625rem] text-muted-foreground pointer-fine:group-hover:inline">
-                                    {model.hotkey}
-                                </kbd>
-                            </button>
+                            </div>
                             <span className="text-right font-medium max-sm:w-8 sm:w-14">
                                 {isHidden ? '' : formatNumber(value, decimals)}
                             </span>
