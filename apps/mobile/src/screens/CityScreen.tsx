@@ -118,6 +118,10 @@ const Dashboard = ({ city }: DashboardProps) => {
         setHoverStep(null)
     }
     const handleRefresh = () => void queryClient.refetchQueries({ queryKey: ['latest', city.slug], type: 'active' })
+    const handleRetry = () => {
+        void latestQuery.refetch()
+        void precipQuery.refetch()
+    }
     const handleSwitchCity = (slug: string) => router.replace(`/city/${slug}`)
     const handleReset = () => {
         setPinned([])
@@ -146,7 +150,11 @@ const Dashboard = ({ city }: DashboardProps) => {
                 {precipQuery.data && <UpdatedChip fetchedAt={precipQuery.data.fetchedAt} now={now} />}
                 <View style={styles.grow} />
                 <RefreshButton
-                    isAvailable={isRefreshOffered(precipQuery.data?.fetchedAt, now)}
+                    // The precipitation query dates the run shown. When it failed before any run arrived there is no
+                    // date, but Refresh must stay available: it is the only way to ask again.
+                    isAvailable={
+                        (precipQuery.isError && !precipQuery.data) || isRefreshOffered(precipQuery.data?.fetchedAt, now)
+                    }
                     isFetching={isFetching}
                     onRefresh={handleRefresh}
                 />
@@ -174,8 +182,8 @@ const Dashboard = ({ city }: DashboardProps) => {
                 </View>
                 <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
                     {renderHeader()}
-                    {latestQuery.isError ? (
-                        <ErrorNotice error={latestQuery.error} onRetry={() => void latestQuery.refetch()} />
+                    {latestQuery.isError || precipQuery.isError ? (
+                        <ErrorNotice error={latestQuery.error ?? precipQuery.error} onRetry={handleRetry} />
                     ) : (
                         <View style={styles.status} accessibilityRole="progressbar">
                             <ActivityIndicator size="small" color={colors['muted-foreground']} />
@@ -299,6 +307,8 @@ const Dashboard = ({ city }: DashboardProps) => {
                             locale={locale}
                             windowHours={PRECIP_WINDOW_HOURS}
                         />
+                    ) : precipQuery.isError ? (
+                        <ErrorNotice error={precipQuery.error} onRetry={() => void precipQuery.refetch()} />
                     ) : (
                         <Skeleton height={230} />
                     )}
