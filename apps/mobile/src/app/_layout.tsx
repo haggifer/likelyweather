@@ -1,12 +1,14 @@
 import { getViewerTimeZone } from '@fa/shared/format'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { getLocales } from 'expo-localization'
-import { Stack, useRouter } from 'expo-router'
-import { Columns3, Settings } from 'lucide-react-native'
+import { Stack } from 'expo-router'
 import { useEffect } from 'react'
-import { Appearance, Pressable, StatusBar, View } from 'react-native'
+import { Appearance, StatusBar } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { IntlProvider, useTranslations } from 'use-intl'
+import { HeaderBackground } from '../components/shell/HeaderBackground'
+import { MoreMenu } from '../components/shell/MoreMenu'
+import { Wordmark } from '../components/shell/Wordmark'
 import { SnackbarHost } from '../components/ui/SnackbarHost'
 import { useAppFonts } from '../hooks/useAppFonts'
 import { useSettings } from '../hooks/useSettings'
@@ -16,27 +18,8 @@ import { CACHE_BUSTER, CACHE_MAX_AGE_MS, queryClient, queryPersister } from '../
 import { resolveLocale } from '../lib/settings'
 import { getFontFamily } from '../theme/fonts'
 
-const HomeActions = () => {
-    const t = useTranslations('nav')
-    const tm = useTranslations('mobile')
-    const router = useRouter()
-    const { colors } = useTheme()
-
-    return (
-        <View style={{ flexDirection: 'row', gap: 20 }}>
-            <Pressable onPress={() => router.push('/compare')} hitSlop={8} accessibilityLabel={t('compare')}>
-                <Columns3 size={22} color={colors.foreground} />
-            </Pressable>
-            <Pressable onPress={() => router.push('/settings')} hitSlop={8} accessibilityLabel={tm('settings')}>
-                <Settings size={22} color={colors.foreground} />
-            </Pressable>
-        </View>
-    )
-}
-
 // The stack lives inside the IntlProvider so screen titles come from the catalogs too.
 const AppStack = () => {
-    const t = useTranslations('nav')
     const tm = useTranslations('mobile')
     const { colors, isDark } = useTheme()
 
@@ -45,17 +28,19 @@ const AppStack = () => {
             <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
             <Stack
                 screenOptions={{
-                    headerStyle: { backgroundColor: colors.card },
+                    headerBackground: () => <HeaderBackground />,
                     headerTintColor: colors.foreground,
                     headerTitleStyle: { fontFamily: getFontFamily('600') },
                     headerShadowVisible: false,
                     contentStyle: { backgroundColor: colors.background },
+                    headerRight: () => <MoreMenu />,
                 }}
             >
-                <Stack.Screen name="index" options={{ title: 'Forecast Arena', headerRight: () => <HomeActions /> }} />
+                <Stack.Screen name="index" options={{ title: 'Forecast Arena', headerTitle: () => <Wordmark /> }} />
                 <Stack.Screen name="city/[slug]" options={{ title: '' }} />
-                <Stack.Screen name="compare" options={{ title: t('compare') }} />
-                <Stack.Screen name="methodology" options={{ title: t('methodology') }} />
+                {/* Compare and Methodology open with their own heading, as on the web, so the header names nothing. */}
+                <Stack.Screen name="compare" options={{ title: '' }} />
+                <Stack.Screen name="methodology" options={{ title: '' }} />
                 <Stack.Screen name="settings" options={{ title: tm('settings') }} />
             </Stack>
             <SnackbarHost />
