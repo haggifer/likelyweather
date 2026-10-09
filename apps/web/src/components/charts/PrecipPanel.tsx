@@ -46,8 +46,10 @@ interface TooltipContentProps {
     payload?: readonly { payload?: Row }[]
 }
 
-// Below this width per window the hour and chance labels touch, so every other one is shown.
+// Below this much of the plot per window the hour and chance labels touch, so every other one is shown.
 const MIN_WIDTH_PER_LABEL = 28
+const Y_AXIS_WIDTH = 36
+const MARGIN = { top: 8, right: 8, bottom: 16, left: 0 }
 const HOUR_FORMAT: Intl.DateTimeFormatOptions = { hour: '2-digit', hourCycle: 'h23' }
 
 const toRows = (steps: string[], series: Series[], median: (number | null)[], chance: (number | null)[]): Row[] =>
@@ -157,18 +159,18 @@ export function PrecipPanel({
     return (
         <div ref={ref}>
             <ResponsiveContainer width="100%" height={height}>
-                <ComposedChart data={rows} margin={{ top: 8, right: 8, bottom: 16, left: 0 }}>
+                <ComposedChart data={rows} margin={MARGIN}>
                     <CartesianGrid vertical={false} stroke={theme.grid} />
                     <XAxis
                         dataKey="step"
                         tick={TimeAndChanceTick}
                         tickLine={false}
                         axisLine={{ stroke: theme.border }}
-                        interval={width < MIN_WIDTH_PER_LABEL * steps.length ? 1 : 0}
+                        interval={width - Y_AXIS_WIDTH - MARGIN.right < MIN_WIDTH_PER_LABEL * steps.length ? 1 : 0}
                         height={36}
                     />
                     <YAxis
-                        width={36}
+                        width={Y_AXIS_WIDTH}
                         domain={yDomain}
                         ticks={yTicks}
                         tickFormatter={(tick: number) => formatYTick(tick)}
