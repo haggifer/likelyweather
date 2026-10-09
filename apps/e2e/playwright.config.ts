@@ -67,13 +67,15 @@ export default defineConfig({
             },
         },
         {
-            // The production build (run `pnpm build` first): closer to what ships, and Next.js allows only one dev
-            // server per app, which local development already uses.
-            command: `pnpm --filter @fa/web exec next start --port ${WEB_PORT}`,
+            // The standalone server the Lambda runs, as `pnpm build` leaves it (with the static files and public copied
+            // in by build-lambda.mjs), so a file missing from Next.js's tracing fails here too. Next.js also allows only
+            // one dev server per app, which local development already uses.
+            command: 'node .next/standalone/apps/web/server.js',
+            cwd: '../web',
             url: `http://localhost:${WEB_PORT}`,
             reuseExistingServer: !IS_CI,
             timeout: 180_000,
-            env: { API_ORIGIN: `http://localhost:${API_PORT}` },
+            env: { PORT: String(WEB_PORT), HOSTNAME: 'localhost', API_ORIGIN: `http://localhost:${API_PORT}` },
         },
     ],
 })
