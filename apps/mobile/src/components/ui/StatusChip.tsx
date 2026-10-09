@@ -1,10 +1,20 @@
 import { StyleSheet } from 'react-native'
 import { useTheme } from '../../hooks/useTheme'
+import { mixColors, withAlpha } from '../../theme/color-mix'
 import { Text } from './Text'
 
-export type ChipTone = 'ok' | 'warn' | 'fail'
+// A union rather than an enum, so the tone maps elsewhere in the app keep their string values.
+export type ChipTone = 'ok' | 'info' | 'warn' | 'fail' | 'muted'
 
-const TONE_COLORS = { ok: 'success', warn: 'warning', fail: 'destructive' } as const
+const TONE_COLORS = {
+    ok: 'success',
+    info: 'info',
+    warn: 'warning',
+    fail: 'destructive',
+    muted: 'muted-foreground',
+} as const
+const FILL_SHARE = 0.14
+const TEXT_SHARE = 0.75
 
 const styles = StyleSheet.create({
     chip: {
@@ -23,11 +33,24 @@ interface IProps {
     label: string
 }
 
-// The web's .fa-chip: the tone's colour at 14 % as the fill, the tone itself as the text.
+// The web's .fa-chip: the tone at 14 % as the fill, and the tone mixed 75 % into the foreground as the text, which
+// keeps the text readable on the tinted fill in both themes.
 export function StatusChip({ tone, label }: IProps) {
     const { colors } = useTheme()
 
     const color = colors[TONE_COLORS[tone]]
 
-    return <Text style={[styles.chip, { color, backgroundColor: `${color}24` }]}>{label}</Text>
+    return (
+        <Text
+            style={[
+                styles.chip,
+                {
+                    color: mixColors(color, colors.foreground, TEXT_SHARE),
+                    backgroundColor: withAlpha(color, FILL_SHARE),
+                },
+            ]}
+        >
+            {label}
+        </Text>
+    )
 }
