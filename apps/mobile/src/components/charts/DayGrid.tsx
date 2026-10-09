@@ -3,6 +3,7 @@ import { getLocalMidnights } from '@fa/shared/format'
 import { ScaleTime } from 'd3-scale'
 import { useMemo } from 'react'
 import { G, Line, Text } from 'react-native-svg'
+import { getFontFamily } from '../../theme/fonts'
 
 interface Span {
     top: number
@@ -76,7 +77,15 @@ export function DayGrid({
                 )),
             )}
             {labels.map((d) => (
-                <Text key={d.key} x={d.x} y={labelY} textAnchor="middle" fontSize={fontSize} fill={labelColor}>
+                <Text
+                    key={d.key}
+                    x={d.x}
+                    y={labelY}
+                    textAnchor="middle"
+                    fontSize={fontSize}
+                    fontFamily={getFontFamily('400')}
+                    fill={labelColor}
+                >
                     {d.text}
                 </Text>
             ))}

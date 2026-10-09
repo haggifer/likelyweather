@@ -13,6 +13,7 @@ import Svg, { Circle, ClipPath, Defs, G, Line, Path, Rect, Text as SvgText } fro
 import { useTranslations } from 'use-intl'
 import { useLayoutWidth } from '../../hooks/useLayoutWidth'
 import { useTheme } from '../../hooks/useTheme'
+import { getFontFamily } from '../../theme/fonts'
 import { Skeleton } from '../ui/Skeleton'
 import { Text } from '../ui/Text'
 import { DayGrid } from './DayGrid'
@@ -299,6 +300,7 @@ export function MedianOverview({
                                                     y={y(tick) + 3.5}
                                                     textAnchor="end"
                                                     fontSize={10}
+                                                    fontFamily={getFontFamily('400')}
                                                     fill={chart.muted}
                                                 >
                                                     {formatYTick(tick)}
@@ -394,7 +396,7 @@ export function MedianOverview({
                                         x={nowX + 4}
                                         y={PLOT_TOP - 6}
                                         fontSize={10}
-                                        fontWeight="600"
+                                        fontFamily={getFontFamily('600')}
                                         fill={chart.foreground}
                                     >
                                         {hoverIndex === null ? tc('now') : ''}
@@ -408,7 +410,7 @@ export function MedianOverview({
                                         y={PLOT_TOP - 7}
                                         textAnchor="middle"
                                         fontSize={11}
-                                        fontWeight="600"
+                                        fontFamily={getFontFamily('600')}
                                         fill={chart.foreground}
                                     >
                                         {formatStepLabel(axisSteps[hoverIndex], timeZone, locale)}
@@ -434,7 +436,7 @@ export function MedianOverview({
                                         x={MARGIN.left + 6}
                                         y={top + 12}
                                         fontSize={10}
-                                        fontWeight="600"
+                                        fontFamily={getFontFamily('600')}
                                         fill={color}
                                         stroke={i === 0 ? chart.card : undefined}
                                         strokeWidth={i === 0 ? 3 : undefined}
