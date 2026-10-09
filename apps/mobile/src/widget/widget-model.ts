@@ -5,6 +5,7 @@ import { HOUR_MS } from '@fa/shared/constants'
 import { DisagreementLabel } from '@fa/shared/ensemble'
 import { Place } from '@fa/shared/places'
 import { buildSlots, getChartStart, getSlotStart, SLOT_HOURS, toSlotLatest } from '@fa/shared/slots'
+import { getLocalDateKey } from '@fa/shared/time'
 import { Variable } from '@fa/shared/variables'
 
 export interface WidgetCity extends Place {
@@ -27,6 +28,8 @@ export interface WidgetModel {
     tempMin: number | null
     tempMax: number | null
     label: DisagreementLabel | null
+    // The local day the label is about: the first day with slots still ahead when the model was built.
+    labelDay: string | null
     wind: number | null
     precipTotal: number | null
 }
@@ -86,6 +89,7 @@ export const buildWidgetModel = (city: WidgetCity, data: WidgetData, now: Date):
         tempMin: getMin(next24),
         tempMax: getMax(next24),
         label: today?.label ?? null,
+        labelDay: today?.day ?? null,
         wind: wind ? getMedianAt(wind, now) : null,
         precipTotal: precip ? getTotal(getNext24(precip, from)) : null,
     }
@@ -97,7 +101,14 @@ export const buildWidgetModel = (city: WidgetCity, data: WidgetData, now: Date):
 export const isNewerRun = (saved: Pick<WidgetModel, 'city' | 'fetchedAt'> | null, slug: string, fetchedAt: string) =>
     !saved || saved.city.slug !== slug || new Date(fetchedAt) > new Date(saved.fetchedAt)
 
+const isToday = (day: string | null | undefined, timeZone: string, now: Date) =>
+    day === getLocalDateKey(now.toISOString(), timeZone)
+
 // A widget keeps the model of its last successful refresh; once it is bound to another city, that model belongs to
-// the old one and must not be drawn under the new name.
-export const getShownModel = (city: WidgetCity | null, model: WidgetModel | null) =>
-    city && model?.city.slug === city.slug ? model : null
+// the old one and must not be drawn under the new name. Its agreement label speaks for today only: built after the
+// day's last slot it is about tomorrow, and drawn offline the next day it is about yesterday.
+export const getShownModel = (city: WidgetCity | null, model: WidgetModel | null, now: Date) => {
+    if (!city || model?.city.slug !== city.slug) return null
+
+    return isToday(model.labelDay, model.city.timezone ?? 'UTC', now) ? model : { ...model, label: null }
+}

@@ -92,15 +92,31 @@ describe('getShownModel', () => {
     const model = buildWidgetModel(CITY, { temp: makeLatest([10, 12, 14]) }, NOW)
 
     it('shows the model saved for the bound city', () => {
-        expect(getShownModel(CITY, model)).toBe(model)
+        expect(getShownModel(CITY, model, NOW)).toBe(model)
     })
 
     it('never shows numbers saved for another city under the bound city’s name', () => {
-        expect(getShownModel(KYIV, model)).toBeNull()
+        expect(getShownModel(KYIV, model, NOW)).toBeNull()
     })
 
     it('shows nothing without a bound city or a saved model', () => {
-        expect(getShownModel(null, model)).toBeNull()
-        expect(getShownModel(CITY, null)).toBeNull()
+        expect(getShownModel(null, model, NOW)).toBeNull()
+        expect(getShownModel(CITY, null, NOW)).toBeNull()
+    })
+
+    it('drops the agreement label once its day has passed in the city', () => {
+        const nextMorning = new Date('2026-10-07T06:00:00Z')
+
+        expect(model.labelDay).toBe('2026-10-06')
+        expect(getShownModel(CITY, model, nextMorning)).toMatchObject({ temp: 12, label: null })
+    })
+
+    it('holds back a label about tomorrow, built after the day’s last slot', () => {
+        const lateEvening = new Date('2026-10-06T19:30:00Z')
+        const late = buildWidgetModel(CITY, { temp: makeLatest([10, 12, 14]) }, lateEvening)
+
+        expect(late.labelDay).toBe('2026-10-07')
+        expect(getShownModel(CITY, late, lateEvening)?.label).toBeNull()
+        expect(getShownModel(CITY, late, new Date('2026-10-07T06:00:00Z'))?.label).toBe('mixed')
     })
 })

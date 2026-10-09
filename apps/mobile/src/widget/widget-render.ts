@@ -36,15 +36,16 @@ export const drawWidget = (
     model: WidgetModel | null,
 ): WidgetRepresentation => {
     const locale = getAppLocale()
+    const now = new Date()
 
     return renderForecastWidget({
         widgetName,
         city,
-        model: getShownModel(city, model),
+        model: getShownModel(city, model, now),
         theme: settingsStore.get().theme,
         t: getTranslator(locale),
         locale,
-        now: new Date(),
+        now,
     })
 }
 
