@@ -25,6 +25,13 @@ interface SkeletonProps {
     status: string
 }
 
+// On phones the card runs edge to edge (`data-bleed`, globals.css), so its charts get the screen's whole width.
+const CARD = 'gap-0 max-sm:pt-3'
+const ACTIONS =
+    'flex items-center gap-2 max-sm:col-span-2 max-sm:col-start-1 max-sm:row-start-2 max-sm:mt-2 max-sm:mb-3 max-sm:w-full max-sm:justify-self-stretch'
+const PHONE_BUTTON = 'max-sm:h-8 max-sm:flex-1 max-sm:text-sm'
+const TITLE = 'flex min-w-0 items-center gap-2.5 text-lg tracking-tight sm:text-xl'
+
 const getVariableMedians = (hourly: Record<Variable, LatestResponse>, slots: string[]) =>
     Object.fromEntries(
         VARIABLES.map(({ id, aggregation }) => {
@@ -48,16 +55,16 @@ const getWindDirections = (wind: LatestResponse, slots: string[]) =>
 
 // Same header and panel structure as the loaded card, so nothing moves when the data arrives.
 export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
-    <Card className="gap-0">
+    <Card data-bleed className={CARD}>
         <CardHeader>
             <CardTitle className="flex h-7 items-center gap-2 text-xl font-normal text-muted-foreground" role="status">
                 <Loader2 className="size-4 animate-spin" />
                 <span className="text-sm">{status}</span>
             </CardTitle>
-            <CardAction className="flex items-center gap-2 max-sm:col-span-2 max-sm:col-start-1 max-sm:row-start-2 max-sm:justify-self-start">
+            <CardAction className={ACTIONS}>
                 <Skeleton className="hidden h-7 w-28 rounded-full lg:block" />
-                <Skeleton className="h-7 w-22" />
-                <Skeleton className="h-7 w-30" />
+                <Skeleton className="h-7 w-22 max-sm:h-8 max-sm:flex-1" />
+                <Skeleton className="h-7 w-30 max-sm:h-8 max-sm:flex-1" />
             </CardAction>
         </CardHeader>
         <CardContent>
@@ -90,9 +97,9 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
     const directions = useMemo(() => getWindDirections(hourly[Variable.Wind], slots), [hourly, slots])
 
     return (
-        <Card className={cn('gap-0 transition-opacity', isFetching && 'opacity-70')}>
+        <Card data-bleed className={cn(CARD, 'transition-opacity', isFetching && 'opacity-70')}>
             <CardHeader>
-                <CardTitle className="flex min-w-0 items-center gap-2.5 text-xl tracking-tight">
+                <CardTitle className={TITLE}>
                     <FlagIcon countryCode={city.countryCode} className="h-4 w-6 shrink-0" />
                     <span className="min-w-0 sm:truncate">
                         <span className="font-bold">{name}</span>
@@ -100,7 +107,7 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
                     </span>
                     <FavoriteToggle place={city} className="-ml-1" />
                 </CardTitle>
-                <CardAction className="flex items-center gap-2 max-sm:col-span-2 max-sm:col-start-1 max-sm:row-start-2 max-sm:mt-2 max-sm:mb-3 max-sm:w-full max-sm:justify-self-stretch">
+                <CardAction className={ACTIONS}>
                     <UpdatedChip
                         issueTime={hourly[Variable.Temp].issueTime}
                         fetchedAt={hourly[Variable.Temp].fetchedAt}
@@ -112,10 +119,10 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
                         isAvailable={isOutdated}
                         isFetching={isFetching}
                         onRefresh={onRefresh}
-                        className="max-sm:w-full max-sm:flex-1"
+                        className={cn(PHONE_BUTTON, 'max-sm:w-full')}
                         wrapperClassName="max-sm:flex-1"
                     />
-                    <Button asChild size="sm" className="max-sm:flex-1">
+                    <Button asChild size="sm" className={PHONE_BUTTON}>
                         <Link href={`/city/${city.slug}`}>
                             {t('details')} <ArrowRight />
                         </Link>

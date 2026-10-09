@@ -47,9 +47,9 @@ export function Landing() {
     }, [isFirstVisit, starters.data])
 
     return (
-        <div className="flex flex-col gap-6 py-6">
-            <section className="flex flex-col items-center gap-5 text-center">
-                <h1 className="max-w-3xl text-4xl font-bold tracking-tight text-balance sm:text-5xl">{t('hero')}</h1>
+        <div className="flex flex-col gap-4 pt-2 pb-6 sm:gap-6 sm:pt-6">
+            <section className="flex flex-col items-center gap-3 text-center sm:gap-5">
+                <h1 className="max-w-3xl text-[2rem] font-bold tracking-tight text-balance sm:text-5xl">{t('hero')}</h1>
                 <p className="max-w-2xl text-base text-pretty text-muted-foreground">{t('sub')}</p>
                 <div className="flex w-full flex-col items-center gap-3">
                     <SearchBox isLocateShown onSelectCity={(next) => void setSlug(next)} />
@@ -58,7 +58,7 @@ export function Landing() {
                         aria-label={t('seeds')}
                         className="flex flex-wrap items-center justify-center gap-2"
                     >
-                        <span className="text-xs font-medium text-muted-foreground" aria-hidden="true">
+                        <span className="text-xs font-medium text-muted-foreground max-sm:hidden" aria-hidden="true">
                             {t('seeds')}
                         </span>
                         {chips?.map((place) => (
@@ -75,7 +75,7 @@ export function Landing() {
                 </div>
             </section>
             <div className="mx-auto grid w-full max-w-5xl gap-6 3xl:max-w-none 3xl:grid-cols-[minmax(0,64rem)_minmax(0,1fr)]">
-                <section className="min-w-0">
+                <section className="min-w-0 max-sm:-mx-4">
                     {slug ? <CityOverview key={slug} slug={slug} /> : <OverviewCardSkeleton status={to('loading')} />}
                 </section>
                 <section className="grid gap-(--card-gap) sm:grid-cols-3 3xl:auto-rows-fr 3xl:grid-cols-1">
@@ -84,7 +84,9 @@ export function Landing() {
                             <Card className="h-full gap-2 transition-colors group-hover:border-primary">
                                 <CardHeader className="flex items-center gap-2">
                                     <Icon className="size-5 shrink-0 text-primary" aria-hidden="true" />
-                                    <CardTitle className="font-semibold">{t(`tiles.${key}.title`)}</CardTitle>
+                                    <CardTitle className="font-semibold max-sm:text-[1rem]">
+                                        {t(`tiles.${key}.title`)}
+                                    </CardTitle>
                                 </CardHeader>
                                 <CardContent className="text-sm text-muted-foreground">
                                     {t(`tiles.${key}.body`)}

@@ -32,22 +32,61 @@ interface RowLayout {
     height: number
 }
 
+interface ChartSize {
+    rows: { variable: Variable; height: number }[]
+    marginLeft: number
+    tickFontSize: number
+    labelFontSize: number
+    hoverLabelHalfWidth: number
+    isNowLabelAbove: boolean
+}
+
+interface ChartGeometry extends ChartSize {
+    layout: RowLayout[]
+    spans: { top: number; bottom: number }[]
+    plotTop: number
+    plotBottom: number
+    totalHeight: number
+}
+
 type Point = [Date, number | null]
 
-const ROWS: { variable: Variable; height: number }[] = [
-    { variable: Variable.Temp, height: 104 },
-    { variable: Variable.Wind, height: 100 },
-    { variable: Variable.Pressure, height: 80 },
-    { variable: Variable.Precip, height: 80 },
-]
+// On a phone the overview is the landing page's main content, so its panels are taller and its text larger than in
+// the desktop column (author, 2026-10-09); the readouts above the chart leave it the full width.
+const DESKTOP_SIZE: ChartSize = {
+    rows: [
+        { variable: Variable.Temp, height: 104 },
+        { variable: Variable.Wind, height: 100 },
+        { variable: Variable.Pressure, height: 80 },
+        { variable: Variable.Precip, height: 80 },
+    ],
+    marginLeft: 36,
+    tickFontSize: 10,
+    labelFontSize: 11,
+    hoverLabelHalfWidth: 34,
+    isNowLabelAbove: false,
+}
+const PHONE_SIZE: ChartSize = {
+    rows: [
+        { variable: Variable.Temp, height: 120 },
+        { variable: Variable.Wind, height: 115 },
+        { variable: Variable.Pressure, height: 92 },
+        { variable: Variable.Precip, height: 92 },
+    ],
+    marginLeft: 44,
+    tickFontSize: 14,
+    labelFontSize: 14,
+    hoverLabelHalfWidth: 44,
+    // The panel names sit in the panels' top-left corner, where the "now" line always is right after a fetch.
+    isNowLabelAbove: true,
+}
 const ROW_GAP = 14
 const ROW_PAD = 6
 const ARROW_STRIP = 20
 const HOVER_STRIP = 20
 const AXIS_HEIGHT = 22
-const MARGIN = { left: 36, right: 8 }
+const MARGIN_RIGHT = 8
 const PANEL_RADIUS = 4
-const HOVER_LABEL_HALF_WIDTH = 34
 const SLOT_MS = SLOT_HOURS * HOUR_MS
 const SUMMARY_HOURS = 24
 // Phones stack the readouts in a 2 × 2 grid above a full-width chart; from `sm` they form a column beside it, one
@@ -57,18 +96,37 @@ const READOUTS = 'grid grid-cols-2 gap-2 sm:flex sm:flex-col sm:gap-3.5 sm:pt-5 
 const STACKED_QUERY = '(width < 40rem)'
 const COLUMN_GAP = 16
 const SKELETON_GAP = 24
-const SKELETON_READOUT_REACH = SKELETON_GAP - COLUMN_GAP - MARGIN.left
+const SKELETON_READOUT_REACH = SKELETON_GAP - COLUMN_GAP - DESKTOP_SIZE.marginLeft
 
-const LAYOUT: RowLayout[] = ROWS.reduce<RowLayout[]>((rows, row) => {
-    const top = rows.length ? rows[rows.length - 1].top + rows[rows.length - 1].height + ROW_GAP : HOVER_STRIP
-    const strip = row.variable === Variable.Wind ? ARROW_STRIP : 0
+const getLayout = (rows: ChartSize['rows']) =>
+    rows.reduce<RowLayout[]>((layout, row) => {
+        const previous = layout[layout.length - 1]
+        const top = previous ? previous.top + previous.height + ROW_GAP : HOVER_STRIP
+        const strip = row.variable === Variable.Wind ? ARROW_STRIP : 0
 
-    return [...rows, { variable: row.variable, top, height: row.height, bottom: top + row.height - ROW_PAD - strip }]
-}, [])
-const PLOT_TOP = LAYOUT[0].top
-const PLOT_BOTTOM = LAYOUT[LAYOUT.length - 1].top + LAYOUT[LAYOUT.length - 1].height
-const TOTAL_HEIGHT = PLOT_BOTTOM + AXIS_HEIGHT
-const SPANS = LAYOUT.map(({ top, height }) => ({ top, bottom: top + height }))
+        return [
+            ...layout,
+            { variable: row.variable, top, height: row.height, bottom: top + row.height - ROW_PAD - strip },
+        ]
+    }, [])
+
+const getGeometry = (size: ChartSize): ChartGeometry => {
+    const layout = getLayout(size.rows)
+    const last = layout[layout.length - 1]
+    const plotBottom = last.top + last.height
+
+    return {
+        ...size,
+        layout,
+        spans: layout.map(({ top, height }) => ({ top, bottom: top + height })),
+        plotTop: layout[0].top,
+        plotBottom,
+        totalHeight: plotBottom + AXIS_HEIGHT,
+    }
+}
+
+const DESKTOP = getGeometry(DESKTOP_SIZE)
+const PHONE = getGeometry(PHONE_SIZE)
 
 const isDefined = (p: Point) => p[1] !== null
 
@@ -121,11 +179,12 @@ const getLinePath = (points: Point[], x: ScaleTime<number, number>, y: ScaleLine
         .curve(curveMonotoneX)(points) ?? ''
 
 // The chart column's blocks are inset by the tick-label margin, so they cover exactly the panel backgrounds; the
-// readout blocks reach across the tick labels to leave a SKELETON_GAP between the two columns.
+// readout blocks reach across the tick labels to leave a SKELETON_GAP between the two columns. It renders before the
+// media query is known, so CSS picks the phone or desktop geometry.
 export const MedianOverviewSkeleton = () => (
     <div className={GRID} role="presentation">
         <div className={READOUTS}>
-            {ROWS.map(({ variable, height }) => (
+            {DESKTOP.rows.map(({ variable, height }) => (
                 <Skeleton
                     key={variable}
                     className="h-18 sm:mr-(--reach) sm:h-(--row-h)"
@@ -134,8 +193,20 @@ export const MedianOverviewSkeleton = () => (
             ))}
         </div>
         <div className="flex flex-col" style={{ gap: ROW_GAP, paddingTop: HOVER_STRIP, paddingBottom: AXIS_HEIGHT }}>
-            {ROWS.map(({ variable, height }) => (
-                <Skeleton key={variable} style={{ height, marginLeft: MARGIN.left, marginRight: MARGIN.right }} />
+            {DESKTOP.rows.map(({ variable, height }, i) => (
+                <Skeleton
+                    key={variable}
+                    className="ml-(--phone-left) h-(--phone-h) sm:ml-(--left) sm:h-(--row-h)"
+                    style={
+                        {
+                            '--row-h': `${height}px`,
+                            '--phone-h': `${PHONE.rows[i].height}px`,
+                            '--left': `${DESKTOP.marginLeft}px`,
+                            '--phone-left': `${PHONE.marginLeft}px`,
+                            marginRight: MARGIN_RIGHT,
+                        } as CSSProperties
+                    }
+                />
             ))}
         </div>
     </div>
@@ -166,24 +237,31 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
     const { ref, width } = useElementWidth<HTMLDivElement>()
     const [hoverIndex, setHoverIndex] = useState<number | null>(null)
 
+    const geometry = isStacked ? PHONE : DESKTOP
     const axisSteps = series[Variable.Temp].steps
     const times = axisSteps.map((s) => new Date(s))
-    const plotRight = width - MARGIN.right
-    const x = getTimeScale(times, [MARGIN.left, Math.max(MARGIN.left + 1, plotRight)])
+    const plotRight = width - MARGIN_RIGHT
+    const x = getTimeScale(times, [geometry.marginLeft, Math.max(geometry.marginLeft + 1, plotRight)])
     // One crosshair for every panel: each reads the slot nearest the pointer (or now), so a precipitation readout is
     // the 3 hours from that slot, which can be the bar after the one under the line (author, 2026-10-09).
     const readoutIndex = hoverIndex ?? (now ? getNearestIndex(times, now) : 0)
     const readoutTime = axisSteps[readoutIndex]
-    const nowX = getNowX(x, now, MARGIN.left, plotRight)
+    const nowX = getNowX(x, now, geometry.marginLeft, plotRight)
+    const nowLabelY = geometry.isNowLabelAbove ? geometry.plotTop - 7 : geometry.plotTop + geometry.tickFontSize
+    const isNowLabelShown = !geometry.isNowLabelAbove || hoverIndex === null
     const barWidth = getBarWidth(x, times[0], SLOT_MS)
-    const plotWidth = Math.max(0, width - MARGIN.left - MARGIN.right)
+    const plotWidth = Math.max(0, width - geometry.marginLeft - MARGIN_RIGHT)
     const hoverX =
         hoverIndex === null
             ? null
-            : clamp(x(times[hoverIndex]), MARGIN.left + HOVER_LABEL_HALF_WIDTH, plotRight - HOVER_LABEL_HALF_WIDTH)
+            : clamp(
+                  x(times[hoverIndex]),
+                  geometry.marginLeft + geometry.hoverLabelHalfWidth,
+                  plotRight - geometry.hoverLabelHalfWidth,
+              )
 
     const handlePointerMove = (e: PointerEvent<SVGRectElement>) =>
-        setHoverIndex(getNearestIndex(times, getPointerTime(e, x, MARGIN.left)))
+        setHoverIndex(getNearestIndex(times, getPointerTime(e, x, geometry.marginLeft)))
 
     const handleKeyDown = (e: KeyboardEvent<SVGSVGElement>) => {
         const step = getArrowStep(e.key)
@@ -197,7 +275,7 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
     return (
         <div className={GRID}>
             <div className={READOUTS}>
-                {LAYOUT.map(({ variable, height }) => {
+                {geometry.layout.map(({ variable, height }) => {
                     const info = VARIABLE_BY_ID[variable]
                     const s = series[variable]
                     const value = getValueAt(s, readoutTime)
@@ -228,7 +306,7 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
             <div ref={ref} className="relative min-w-0 select-none">
                 <svg
                     width={width}
-                    height={TOTAL_HEIGHT}
+                    height={geometry.totalHeight}
                     role="img"
                     aria-label={ariaLabel}
                     tabIndex={0}
@@ -237,10 +315,10 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                     className="block overflow-visible outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                     <defs>
-                        {SPANS.map(({ top, bottom }, i) => (
+                        {geometry.spans.map(({ top, bottom }, i) => (
                             <clipPath key={top} id={`${clipId}-${i}`}>
                                 <rect
-                                    x={MARGIN.left}
+                                    x={geometry.marginLeft}
                                     y={top}
                                     width={plotWidth}
                                     height={bottom - top}
@@ -249,10 +327,10 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                             </clipPath>
                         ))}
                     </defs>
-                    {SPANS.map(({ top, bottom }) => (
+                    {geometry.spans.map(({ top, bottom }) => (
                         <rect
                             key={top}
-                            x={MARGIN.left}
+                            x={geometry.marginLeft}
                             y={top}
                             width={plotWidth}
                             height={bottom - top}
@@ -262,19 +340,19 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                         />
                     ))}
                     {nowX !== null &&
-                        SPANS.map(({ top, bottom }, i) => (
+                        geometry.spans.map(({ top, bottom }, i) => (
                             <rect
                                 key={top}
-                                x={MARGIN.left}
+                                x={geometry.marginLeft}
                                 y={top}
-                                width={Math.max(0, nowX - MARGIN.left)}
+                                width={Math.max(0, nowX - geometry.marginLeft)}
                                 height={bottom - top}
                                 fill={theme.grid}
                                 opacity={0.6}
                                 clipPath={`url(#${clipId}-${i})`}
                             />
                         ))}
-                    {LAYOUT.map(({ variable, top, bottom }) => {
+                    {geometry.layout.map(({ variable, top, bottom }) => {
                         const s = series[variable]
                         const points = toPoints(s)
                         const domain = getYDomain(s.values, variable)
@@ -286,18 +364,18 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                                 {getYTicks(domain, variable, 3).map((tick) => (
                                     <g key={tick}>
                                         <line
-                                            x1={MARGIN.left}
+                                            x1={geometry.marginLeft}
                                             x2={plotRight}
                                             y1={y(tick)}
                                             y2={y(tick)}
                                             stroke={theme.grid}
                                         />
                                         <text
-                                            x={MARGIN.left - 6}
+                                            x={geometry.marginLeft - 6}
                                             y={y(tick)}
                                             dy="0.32em"
                                             textAnchor="end"
-                                            fontSize={10}
+                                            fontSize={geometry.tickFontSize}
                                             fill={theme.muted}
                                         >
                                             {formatYTick(tick)}
@@ -373,14 +451,15 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                         end={times[times.length - 1]}
                         timeZone={timeZone}
                         locale={locale}
-                        spans={SPANS}
-                        labelYs={[PLOT_BOTTOM + 16]}
+                        spans={geometry.spans}
+                        labelYs={[geometry.plotBottom + 5 + geometry.labelFontSize]}
+                        fontSize={geometry.labelFontSize}
                         lineColor={theme.border}
                         labelColor={theme.muted}
                     />
                     {nowX !== null && (
                         <g pointerEvents="none">
-                            {SPANS.map(({ top, bottom }) => (
+                            {geometry.spans.map(({ top, bottom }) => (
                                 <line
                                     key={top}
                                     x1={nowX}
@@ -391,17 +470,25 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                                     strokeDasharray="4 3"
                                 />
                             ))}
-                            <text x={nowX + 4} y={PLOT_TOP + 10} fontSize={10} fontWeight={600} fill={theme.foreground}>
-                                {tc('now')}
-                            </text>
+                            {isNowLabelShown && (
+                                <text
+                                    x={nowX + 4}
+                                    y={nowLabelY}
+                                    fontSize={geometry.tickFontSize}
+                                    fontWeight={600}
+                                    fill={theme.foreground}
+                                >
+                                    {tc('now')}
+                                </text>
+                            )}
                         </g>
                     )}
                     {hoverIndex !== null && hoverX !== null && (
                         <text
                             x={hoverX}
-                            y={PLOT_TOP - 7}
+                            y={geometry.plotTop - 7}
                             textAnchor="middle"
-                            fontSize={11}
+                            fontSize={geometry.labelFontSize}
                             fontWeight={600}
                             fill={theme.foreground}
                             pointerEvents="none"
@@ -410,7 +497,7 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                         </text>
                     )}
                     {hoverIndex !== null &&
-                        SPANS.map(({ top, bottom }) => (
+                        geometry.spans.map(({ top, bottom }) => (
                             <line
                                 key={top}
                                 x1={x(times[hoverIndex])}
@@ -422,12 +509,12 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                             />
                         ))}
                     {isStacked &&
-                        LAYOUT.map(({ variable, top }) => (
+                        geometry.layout.map(({ variable, top }) => (
                             <text
                                 key={variable}
-                                x={MARGIN.left + 6}
-                                y={top + 12}
-                                fontSize={10}
+                                x={geometry.marginLeft + 6}
+                                y={top + geometry.tickFontSize + 2}
+                                fontSize={geometry.tickFontSize}
                                 fontWeight={600}
                                 fill={theme.muted}
                                 stroke={theme.card}
@@ -439,10 +526,10 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                             </text>
                         ))}
                     <rect
-                        x={MARGIN.left}
-                        y={PLOT_TOP}
+                        x={geometry.marginLeft}
+                        y={geometry.plotTop}
                         width={plotWidth}
-                        height={PLOT_BOTTOM - PLOT_TOP}
+                        height={geometry.plotBottom - geometry.plotTop}
                         fill="transparent"
                         style={{ touchAction: 'pan-y' }}
                         onPointerDown={handlePointerMove}

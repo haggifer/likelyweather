@@ -191,6 +191,14 @@
 .dark [data-slot='card'] {
     box-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
 }
+/* On phones a card of dense charts runs edge to edge, without corners or top and bottom borders, so its plot gets the
+   screen's whole width; its parent cancels the page's side padding. */
+@media (width < 40rem) {
+    [data-slot='card'][data-bleed] {
+        border-radius: 0;
+        border-block-width: 0;
+    }
+}
 
 @layer components {
     /* status chips */

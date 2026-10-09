@@ -54,7 +54,7 @@ export function CityOverview({ slug }: IProps) {
 
     if (error || failed || isEmpty) {
         return (
-            <Card>
+            <Card data-bleed>
                 <CardContent className="py-10">
                     {isEmpty ? (
                         <p className="text-center text-sm text-muted-foreground">{t('unavailable')}</p>
