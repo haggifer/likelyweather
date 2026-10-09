@@ -9,15 +9,13 @@ import {
     DropdownMenuRadioItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { LOCALE_COOKIE } from '@/i18n/locale-cookie'
+import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE_S } from '@/i18n/locale-cookie'
 import { cn } from '@/lib/cn'
 import { Locale, LOCALES } from '@fa/shared/api'
 import { Languages } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
-
-const ONE_YEAR_SECONDS = 31_536_000
 
 // Endonyms: each language is listed in its own name so a reader can always find theirs.
 const LANGUAGE_NAMES: Record<Locale, string> = {
@@ -37,7 +35,7 @@ export function LanguageSwitch() {
     const handleChange = (next: string) => {
         if (next === locale) return
 
-        document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=${ONE_YEAR_SECONDS}; samesite=lax`
+        document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=${LOCALE_COOKIE_MAX_AGE_S}; samesite=lax`
         startTransition(() => router.refresh())
     }
 

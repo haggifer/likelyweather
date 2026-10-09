@@ -1,1 +1,2 @@
 export const LOCALE_COOKIE = 'NEXT_LOCALE'
+export const LOCALE_COOKIE_MAX_AGE_S = 31_536_000
