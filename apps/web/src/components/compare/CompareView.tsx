@@ -106,16 +106,18 @@ export function CompareView() {
                 <p className="text-sm text-muted-foreground">{t('description')}</p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-                <VariableSwitch />
+                <VariableSwitch className="max-sm:w-full" />
                 {shown.length < MAX_COMPARE_CITIES && <SearchBox onSelectCity={handleAdd} className="sm:max-w-xs" />}
-                {!shown.length && (
-                    <Button variant="outline" size="sm" onClick={handleSeed}>
-                        {t('seed')}
-                    </Button>
-                )}
-                <span className="text-xs text-muted-foreground">
-                    {t('count', { count: shown.length, max: MAX_COMPARE_CITIES })}
-                </span>
+                <div className="flex items-center gap-3 max-sm:w-full max-sm:justify-between">
+                    <span className="text-xs text-muted-foreground">
+                        {t('count', { count: shown.length, max: MAX_COMPARE_CITIES })}
+                    </span>
+                    {!shown.length && (
+                        <Button variant="outline" size="sm" onClick={handleSeed} className="pointer-coarse:h-9">
+                            {t('seed')}
+                        </Button>
+                    )}
+                </div>
             </div>
             {!shown.length && <p className="py-10 text-center text-sm text-muted-foreground">{t('empty')}</p>}
             {error && <ErrorNotice error={error} onRetry={() => void refetch()} />}
@@ -141,6 +143,7 @@ export function CompareView() {
                                         variant="ghost"
                                         size="icon-sm"
                                         onClick={() => handleRemove(slug)}
+                                        className="pointer-coarse:size-9"
                                         aria-label={t('remove')}
                                     >
                                         <X />
