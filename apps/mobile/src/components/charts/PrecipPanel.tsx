@@ -7,25 +7,32 @@ import { addHours, getLocalDateKey, toIsoMinute } from '@fa/shared/time'
 import { Variable } from '@fa/shared/variables'
 import { scaleLinear } from 'd3-scale'
 import { useState } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
-import Svg, { G, Line, Rect, Text as SvgText } from 'react-native-svg'
+import { StyleSheet, View } from 'react-native'
+import Svg, { G, Line, Path, Rect, Text as SvgText } from 'react-native-svg'
 import { useTranslations } from 'use-intl'
 import { useLayoutWidth } from '../../hooks/useLayoutWidth'
 import { useTheme } from '../../hooks/useTheme'
+import { getFontFamily } from '../../theme/fonts'
+import { Text } from '../ui/Text'
+import { getTopRoundedBarPath } from './bar-path'
 import { ScrubSurface } from './ScrubSurface'
 
 const HEIGHT = 230
 const MARGIN = { top: 8, right: 8, bottom: 40, left: 36 }
+// Recharts' band on the web: a bar takes about 80 % of its window, at most 28 px, with its top corners rounded.
 const MAX_BAR_WIDTH = 28
-const BAR_RATIO = 0.7
+const BAR_RATIO = 0.8
+const BAR_RADIUS = 4
 const TICK_HALF_WIDTH = 7
 // Below this width per window the hour and chance labels touch, so every other one is shown.
 const MIN_WIDTH_PER_LABEL = 28
 const HOUR_FORMAT: Intl.DateTimeFormatOptions = { hour: '2-digit', hourCycle: 'h23' }
 
 const styles = StyleSheet.create({
-    details: { marginTop: 8, gap: 2 },
-    row: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
+    details: { marginTop: 8, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth, gap: 2 },
+    row: { flexDirection: 'row', justifyContent: 'space-between', gap: 16 },
+    models: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 16, marginTop: 4 },
+    model: { width: '45%', flexGrow: 1, flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
     small: { fontSize: 12 },
     strong: { fontSize: 12, fontWeight: '600' },
 })
@@ -51,7 +58,8 @@ interface IProps {
 }
 
 // 6-hour totals: the median as a bar with a tick per model, each window's end hour and chance of rain under it.
-// A tap or a drag picks a window and lists its numbers below.
+// A tap or a drag on the plot picks a window and lists its numbers under the panel until another is picked or a tap
+// outside the plot clears it, as on the web's phone panel.
 export function PrecipPanel({ steps, series, median, chance, timeZone, locale, windowHours }: IProps) {
     const t = useTranslations('city')
     const { chart, colors } = useTheme()
@@ -69,6 +77,11 @@ export function PrecipPanel({ steps, series, median, chance, timeZone, locale, w
     const y = scaleLinear().domain(domain).range([plotBottom, MARGIN.top])
     const getCenter = (i: number) => MARGIN.left + (i + 0.5) * slotWidth
     const dayStarts = getDayStartIndexes(steps, timeZone)
+    const area = {
+        plot: { left: MARGIN.left, top: MARGIN.top, right: plotRight, bottom: plotBottom },
+        width,
+        height: HEIGHT,
+    }
 
     const handleScrub = (touchX: number) =>
         setSelected(clamp(Math.floor((touchX - MARGIN.left) / slotWidth), 0, steps.length - 1))
@@ -78,7 +91,7 @@ export function PrecipPanel({ steps, series, median, chance, timeZone, locale, w
             <View onLayout={onLayout}>
                 {width === 0 && <View style={{ height: HEIGHT }} />}
                 {width > 0 && (
-                    <ScrubSurface onScrub={handleScrub}>
+                    <ScrubSurface onScrub={handleScrub} area={area} onClear={() => setSelected(null)}>
                         <Svg width={width} height={HEIGHT}>
                             {yTicks.map((tick) => (
                                 <G key={tick}>
@@ -94,6 +107,7 @@ export function PrecipPanel({ steps, series, median, chance, timeZone, locale, w
                                         y={y(tick) + 3.5}
                                         textAnchor="end"
                                         fontSize={10}
+                                        fontFamily={getFontFamily('400')}
                                         fill={chart.muted}
                                     >
                                         {formatYTick(tick)}
@@ -134,14 +148,16 @@ export function PrecipPanel({ steps, series, median, chance, timeZone, locale, w
                                 return (
                                     <G key={step}>
                                         {value !== null && (
-                                            <Rect
-                                                x={center - barWidth / 2}
-                                                y={y(value)}
-                                                width={barWidth}
-                                                height={Math.max(0, plotBottom - y(value))}
-                                                rx={3}
+                                            <Path
+                                                d={getTopRoundedBarPath(
+                                                    center - barWidth / 2,
+                                                    y(value),
+                                                    barWidth,
+                                                    Math.max(0, plotBottom - y(value)),
+                                                    BAR_RADIUS,
+                                                )}
                                                 fill={chart.band}
-                                                opacity={0.55}
+                                                opacity={i === selected ? 0.9 : 0.55}
                                             />
                                         )}
                                         {series.map((s) => {
@@ -171,6 +187,7 @@ export function PrecipPanel({ steps, series, median, chance, timeZone, locale, w
                                                     y={plotBottom + 14}
                                                     textAnchor="middle"
                                                     fontSize={10}
+                                                    fontFamily={getFontFamily('400')}
                                                     fill={chart.muted}
                                                 >
                                                     {formatTime(step, timeZone, locale, HOUR_FORMAT)}
@@ -180,7 +197,7 @@ export function PrecipPanel({ steps, series, median, chance, timeZone, locale, w
                                                     y={plotBottom + 28}
                                                     textAnchor="middle"
                                                     fontSize={10}
-                                                    fontWeight="600"
+                                                    fontFamily={getFontFamily('600')}
                                                     fill={chart.foreground}
                                                 >
                                                     {formatPercent(chance[i])}
@@ -195,32 +212,34 @@ export function PrecipPanel({ steps, series, median, chance, timeZone, locale, w
                 )}
             </View>
             {selected !== null && (
-                <View style={styles.details}>
+                <View style={[styles.details, { borderTopColor: colors.border }]}>
                     <Text style={[styles.small, { color: colors['muted-foreground'] }]}>
                         {formatWindowLabel(steps[selected], windowHours, timeZone, locale)}
                     </Text>
                     <View style={styles.row}>
                         <Text style={[styles.strong, { color: colors.foreground }]}>{t('medianTotal')}</Text>
-                        <Text style={[styles.strong, { color: colors.foreground }]}>
+                        <Text isTabular style={[styles.strong, { color: colors.foreground }]}>
                             {formatNumber(median[selected])} mm
                         </Text>
                     </View>
                     <View style={styles.row}>
                         <Text style={[styles.small, { color: colors.foreground }]}>{t('chanceOfRain')}</Text>
-                        <Text style={[styles.small, { color: colors.foreground }]}>
+                        <Text isTabular style={[styles.small, { color: colors.foreground }]}>
                             {formatPercent(chance[selected])}
                         </Text>
                     </View>
-                    {series.map((s) => (
-                        <View key={s.modelId} style={styles.row}>
-                            <Text style={[styles.small, { color: colors['muted-foreground'] }]}>
-                                {MODEL_BY_ID[s.modelId].name}
-                            </Text>
-                            <Text style={[styles.small, { color: colors.foreground }]}>
-                                {formatNumber(s.values[selected])}
-                            </Text>
-                        </View>
-                    ))}
+                    <View style={styles.models}>
+                        {series.map((s) => (
+                            <View key={s.modelId} style={styles.model}>
+                                <Text style={[styles.small, { color: colors['muted-foreground'] }]}>
+                                    {MODEL_BY_ID[s.modelId].name}
+                                </Text>
+                                <Text isTabular style={[styles.small, { color: colors.foreground }]}>
+                                    {formatNumber(s.values[selected])}
+                                </Text>
+                            </View>
+                        ))}
+                    </View>
                 </View>
             )}
         </View>
