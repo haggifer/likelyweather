@@ -31,12 +31,13 @@ const CHART_HEIGHT = 220
 
 const styles = StyleSheet.create({
     content: { padding: 16, gap: 16 },
-    title: { fontSize: 24, fontWeight: '700' },
+    title: { fontSize: 24, lineHeight: 32, fontWeight: '700', letterSpacing: -0.6 },
     text: { fontSize: 14 },
     small: { fontSize: 12 },
     row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
     cityLink: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 },
-    cardTitle: { fontSize: 16, fontWeight: '600', flexShrink: 1 },
+    cardTitle: { fontSize: 14, fontWeight: '600', flexShrink: 1 },
+    emptyList: { paddingVertical: 40, textAlign: 'center' },
     empty: { height: CHART_HEIGHT, alignItems: 'center', justifyContent: 'center' },
 })
 
@@ -152,33 +153,38 @@ export function CompareScreen() {
             <VariableSwitch value={variable} onChange={setVariable} />
             {shown.length < MAX_COMPARE_CITIES && <SearchBox onSelectCity={handleAdd} />}
             <View style={styles.row}>
-                <Text style={[styles.small, { color: colors['muted-foreground'] }]}>
+                <Text isTabular style={[styles.small, { color: colors['muted-foreground'] }]}>
                     {t('count', { count: shown.length, max: MAX_COMPARE_CITIES })}
                 </Text>
                 {!shown.length && <Button variant="outline" label={t('seed')} onPress={() => setSlugs(SEED_SLUGS)} />}
             </View>
             {!shown.length && (
-                <Text style={[styles.text, { color: colors['muted-foreground'], textAlign: 'center' }]}>
-                    {t('empty')}
-                </Text>
+                <Text style={[styles.text, styles.emptyList, { color: colors['muted-foreground'] }]}>{t('empty')}</Text>
             )}
             {error && <ErrorNotice error={error} onRetry={() => void refetch()} />}
             {shown.map((slug) => {
                 const item = items.find((i) => i.city.slug === slug)
 
                 return (
-                    <Card key={slug} style={isFetching && { opacity: 0.7 }}>
+                    <Card key={slug} isDimmed={isFetching}>
                         <View style={styles.row}>
-                            <Pressable
-                                onPress={() => item && router.push(`/city/${slug}`)}
-                                accessibilityRole="link"
-                                style={styles.cityLink}
-                            >
-                                {item && <FlagIcon countryCode={item.city.countryCode} />}
+                            {item ? (
+                                <Pressable
+                                    onPress={() => router.push(`/city/${slug}`)}
+                                    accessibilityRole="link"
+                                    style={styles.cityLink}
+                                >
+                                    <FlagIcon countryCode={item.city.countryCode} />
+                                    <Text style={[styles.cardTitle, { color: colors.foreground }]} numberOfLines={1}>
+                                        {getCityName(item.city, locale)}
+                                    </Text>
+                                </Pressable>
+                            ) : (
+                                // A slug the API does not know opens nothing, so it is not dressed as a link.
                                 <Text style={[styles.cardTitle, { color: colors.foreground }]} numberOfLines={1}>
-                                    {item ? getCityName(item.city, locale) : slug}
+                                    {slug}
                                 </Text>
-                            </Pressable>
+                            )}
                             <Pressable
                                 onPress={() => handleRemove(slug)}
                                 hitSlop={10}
