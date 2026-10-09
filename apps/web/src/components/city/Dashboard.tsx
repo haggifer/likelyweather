@@ -214,13 +214,14 @@ export function Dashboard({ slug }: IProps) {
                         {t('fetching', { name: cityName })}
                     </div>
                 )}
+                {/* On phones: the chart card with its model list, the row of day tiles and the precipitation panel. */}
                 <div className="grid gap-(--card-gap) lg:grid-cols-[minmax(0,1fr)_18.75rem]">
-                    <Skeleton className="h-[25rem]" />
+                    <Skeleton className="h-[25rem] max-sm:h-[37.5rem]" />
                     <Skeleton className="h-[25rem] max-sm:hidden" />
                 </div>
                 <div className="grid gap-(--card-gap) lg:grid-cols-2">
-                    <Skeleton className="h-[13.75rem]" />
-                    <Skeleton className="h-[13.75rem]" />
+                    <Skeleton className="h-[13.75rem] max-sm:h-[9rem]" />
+                    <Skeleton className="h-[13.75rem] max-sm:h-[23.75rem]" />
                 </div>
             </div>
         )
