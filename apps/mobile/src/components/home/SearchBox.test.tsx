@@ -33,13 +33,13 @@ const toResult = (name: string, id: number): GeocodeResult => ({
     population: id,
 })
 
-const renderSearch = (onSelectCity = jest.fn()) => {
+const renderSearch = (onSelectCity = jest.fn(), initialQuery?: string) => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } })
 
     return render(
         <QueryClientProvider client={client}>
             <IntlProvider locale="en" messages={en}>
-                <SearchBox onSelectCity={onSelectCity} />
+                <SearchBox onSelectCity={onSelectCity} initialQuery={initialQuery} />
             </IntlProvider>
         </QueryClientProvider>,
     )
@@ -69,6 +69,20 @@ describe('SearchBox', () => {
         await fireEvent(getField(), 'submitEditing')
 
         expect(onSelectCity).toHaveBeenCalledWith('place-0')
+    })
+
+    it('holds the current name for a switcher and searches only once it is edited', async () => {
+        jest.mocked(apiGet).mockResolvedValue({ results: [toResult('Paris', 1)] })
+
+        await renderSearch(jest.fn(), 'Kyiv')
+        await fireEvent(getField(), 'focus')
+
+        expect(getField().props.value).toBe('Kyiv')
+        expect(screen.getByText(en.search.places)).toBeOnTheScreen()
+        expect(apiGet).not.toHaveBeenCalled()
+
+        await fireEvent.changeText(getField(), 'Paris')
+        await waitFor(() => expect(screen.getByText('Paris, France')).toBeOnTheScreen())
     })
 
     it('closes the list when the field loses focus', async () => {

@@ -55,6 +55,9 @@ interface IProps {
     onSelectCity: (slug: string) => void
     // Called whenever the field lets go of focus (a pick, a tap elsewhere, Android's back), so a switcher can fold away.
     onDismiss?: () => void
+    // The current city's name for a switcher: it starts selected, so typing replaces it, and results only appear once
+    // it has been edited, like the web's.
+    initialQuery?: string
     isLocateShown?: boolean
     autoFocus?: boolean
 }
@@ -62,7 +65,13 @@ interface IProps {
 // Typing three letters searches any place; picking a result stores it and makes it the newest recent place. While
 // the field is focused and empty it lists the viewer's places instead, favorites first. The keyboard's Search key
 // picks the first row, as Enter does on the web.
-export function SearchBox({ onSelectCity, onDismiss, isLocateShown = false, autoFocus = false }: IProps) {
+export function SearchBox({
+    onSelectCity,
+    onDismiss,
+    initialQuery = '',
+    isLocateShown = false,
+    autoFocus = false,
+}: IProps) {
     const t = useTranslations('search')
     const te = useTranslations('errors')
     const locale = useLocale() as Locale
@@ -70,11 +79,12 @@ export function SearchBox({ onSelectCity, onDismiss, isLocateShown = false, auto
     const { colors, radius } = useTheme()
 
     const inputRef = useRef<TextInput>(null)
-    const [query, setQuery] = useState('')
+    const [query, setQuery] = useState(initialQuery)
     const [isOpen, setIsOpen] = useState(autoFocus)
     const [lastAnswer, setLastAnswer] = useState<GeocodeResponse | undefined>()
 
-    const debounced = useDebouncedValue(query.trim(), SEARCH_DEBOUNCE_MS)
+    const isEdited = query !== initialQuery
+    const debounced = useDebouncedValue(isEdited ? query.trim() : '', SEARCH_DEBOUNCE_MS)
     const { data, isFetching, isError, error, fetchStatus } = useGeocode(debounced, locale)
     const track = useTrackCity()
 
@@ -84,7 +94,7 @@ export function SearchBox({ onSelectCity, onDismiss, isLocateShown = false, auto
     const trimmed = query.trim()
     const answer = data ?? (isError ? lastAnswer : undefined)
     const results = rankByFavorite([...(answer?.results ?? [])].sort(byPopulation), places)
-    const isPlacesView = trimmed.length === 0
+    const isPlacesView = !isEdited || trimmed.length === 0
     const isQueryReady = trimmed.length >= MIN_QUERY
     const isOffline = fetchStatus === 'paused'
     const placeList = getPlaceList(places)
@@ -232,6 +242,7 @@ export function SearchBox({ onSelectCity, onDismiss, isLocateShown = false, auto
                     placeholderTextColor={colors['muted-foreground']}
                     accessibilityLabel={t('label')}
                     autoFocus={autoFocus}
+                    selectTextOnFocus={Boolean(initialQuery)}
                     autoCorrect={false}
                     returnKeyType="search"
                     style={[styles.input, { color: colors.foreground }]}
