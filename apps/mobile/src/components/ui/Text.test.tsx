@@ -2,8 +2,12 @@ import { render, screen } from '@testing-library/react-native'
 import { Text } from './Text'
 
 describe('Text', () => {
-    it('sets the Inter file of the requested weight and tabular figures', async () => {
-        await render(<Text style={{ fontWeight: '600' }}>21.9</Text>)
+    it('sets the Inter file of the requested weight and, when asked, tabular figures', async () => {
+        await render(
+            <Text style={{ fontWeight: '600' }} isTabular>
+                21.9
+            </Text>,
+        )
 
         expect(screen.getByText('21.9')).toHaveStyle({
             fontFamily: 'Inter_600SemiBold',
@@ -16,5 +20,6 @@ describe('Text', () => {
         await render(<Text>Kyiv</Text>)
 
         expect(screen.getByText('Kyiv')).toHaveStyle({ fontFamily: 'Inter_400Regular' })
+        expect(screen.getByText('Kyiv')).not.toHaveStyle({ fontVariant: ['tabular-nums'] })
     })
 })

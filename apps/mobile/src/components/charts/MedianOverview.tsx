@@ -183,14 +183,16 @@ export function MedianOverview({
                     return (
                         <View key={variable} style={[styles.readout, { borderLeftColor: colors.border }]}>
                             <Text style={[styles.label, { color: colors['muted-foreground'] }]}>{tv(variable)}</Text>
-                            <Text style={[styles.value, { color: colors.foreground }]}>
+                            <Text isTabular style={[styles.value, { color: colors.foreground }]}>
                                 {formatNumber(getValueAt(s, readoutTime), info.decimals)}
                                 <Text style={[styles.unit, { color: colors['muted-foreground'] }]}>
                                     {' '}
                                     {isSum ? t('perSlot', { unit: info.unit, hours: SLOT_HOURS }) : info.unit}
                                 </Text>
                             </Text>
-                            <Text style={[styles.summary, { color: colors['muted-foreground'] }]}>{summary}</Text>
+                            <Text isTabular style={[styles.summary, { color: colors['muted-foreground'] }]}>
+                                {summary}
+                            </Text>
                         </View>
                     )
                 })}

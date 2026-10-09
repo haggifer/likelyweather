@@ -42,6 +42,7 @@ export function StatusChip({ tone, label }: IProps) {
 
     return (
         <Text
+            isTabular
             style={[
                 styles.chip,
                 {
