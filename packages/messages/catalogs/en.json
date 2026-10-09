@@ -22,7 +22,7 @@
         "methodology": "Methodology"
     },
     "footer": {
-        "attribution": "Weather data by <openMeteo>Open-Meteo.com</openMeteo> (CC BY 4.0) and <metno>MET Norway</metno>. Geocoding by Open-Meteo.",
+        "attribution": "Weather data by <openMeteo>Open-Meteo.com</openMeteo> (CC BY 4.0) and <metno>MET Norway</metno> (CC BY 4.0). Geocoding by Open-Meteo, based on GeoNames.",
         "methodology": "Methodology",
         "repo": "Source code"
     },
@@ -38,7 +38,8 @@
         "locateFar": "The nearest stored city is {name}, {km} km away",
         "locateUse": "Use it",
         "locateSearch": "Search",
-        "locateUnavailable": "Location is not available; search for your city instead"
+        "locateUnavailable": "Location is not available; search for your city instead",
+        "close": "Close search"
     },
     "chart": {
         "table": "Table",
@@ -47,7 +48,8 @@
         "showChart": "Show the chart",
         "now": "now",
         "median": "Median",
-        "compass": "N,NE,E,SE,S,SW,W,NW"
+        "compass": "N,NE,E,SE,S,SW,W,NW",
+        "windFrom": "Wind from: {direction}"
     },
     "variables": {
         "label": "Variable",
@@ -86,7 +88,7 @@
         "summary": "Median {variable} over the next four days ranges from {min} to {max} {unit} across {count} models. They disagree most on {day} (spread {spread} {unit}).",
         "median": "Median",
         "time": "Time (city)",
-        "windArrows": "Arrows show where the median wind blows to; hover one for the direction it comes from.",
+        "windArrows": "Arrows show where the median wind blows to; select a time to read the direction it comes from.",
         "precipTitle": "Precipitation, 6-hour totals",
         "precipDescription": "Bars: median of models. Ticks: each model. Row under the bars: share of models above 0.2 mm.",
         "precipSummary": "{steps, plural, =0 {No 6-hour step has} one {# 6-hour step has} other {# 6-hour steps have}} a chance of rain of 50% or more; the median totals {total} mm over the next four days."
@@ -191,7 +193,8 @@
         "pending": "The forecast is still being fetched. Try again in a moment.",
         "unavailable": "The weather services are not answering. Try again later.",
         "generic": "Something went wrong. Try again in a moment.",
-        "retry": "Try again"
+        "retry": "Try again",
+        "offline": "You are offline. Saved forecasts still show; connect to load new ones."
     },
     "promo": {
         "label": "Get the Android app",
@@ -215,15 +218,12 @@
         "widgets": "Home-screen widgets",
         "widgetsHint": "Touch and hold an empty spot on your home screen, tap Widgets and pick Forecast Arena.",
         "widgetsNone": "No widget is on your home screen yet.",
-        "widgetCity": "A widget shows {city}",
-        "search": "Search",
-        "explore": "Explore"
+        "widgetCity": "A widget shows {city}"
     },
     "widget": {
         "configureTitle": "Choose the city for this widget",
         "configureEmpty": "Pick or pin a place in Forecast Arena first; it then appears here.",
         "openApp": "Open Forecast Arena to load {city}",
-        "today": "Today",
         "next24": "Next 24 h",
         "wind": "Wind",
         "rain": "Rain",

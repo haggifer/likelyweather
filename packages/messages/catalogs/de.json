@@ -22,7 +22,7 @@
         "methodology": "Methodik"
     },
     "footer": {
-        "attribution": "Wetterdaten von <openMeteo>Open-Meteo.com</openMeteo> (CC BY 4.0) und <metno>MET Norway</metno>. Geokodierung von Open-Meteo.",
+        "attribution": "Wetterdaten von <openMeteo>Open-Meteo.com</openMeteo> (CC BY 4.0) und <metno>MET Norway</metno> (CC BY 4.0). Geokodierung von Open-Meteo auf Basis von GeoNames.",
         "methodology": "Methodik",
         "repo": "Quellcode"
     },
@@ -38,7 +38,8 @@
         "locateFar": "Die nächste gespeicherte Stadt ist {name}, {km} km entfernt",
         "locateUse": "Öffnen",
         "locateSearch": "Suchen",
-        "locateUnavailable": "Der Standort ist nicht verfügbar; suche stattdessen deine Stadt"
+        "locateUnavailable": "Der Standort ist nicht verfügbar; suche stattdessen deine Stadt",
+        "close": "Suche schließen"
     },
     "chart": {
         "table": "Tabelle",
@@ -47,7 +48,8 @@
         "showChart": "Diagramm anzeigen",
         "now": "jetzt",
         "median": "Median",
-        "compass": "N,NO,O,SO,S,SW,W,NW"
+        "compass": "N,NO,O,SO,S,SW,W,NW",
+        "windFrom": "Kommt aus: {direction}"
     },
     "variables": {
         "label": "Größe",
@@ -86,7 +88,7 @@
         "summary": "Der Median ({variable}) der nächsten vier Tage reicht über {count} Modelle von {min} bis {max} {unit}. Am meisten weichen sie am {day} ab (Spanne {spread} {unit}).",
         "median": "Median",
         "time": "Zeit (Ortszeit)",
-        "windArrows": "Die Pfeile zeigen, wohin der mittlere Wind weht; mit der Maus darauf siehst du, woher er kommt.",
+        "windArrows": "Die Pfeile zeigen, wohin der mittlere Wind weht; wähle eine Zeit, um zu sehen, woher er kommt.",
         "precipTitle": "Niederschlag, 6-Stunden-Summen",
         "precipDescription": "Balken: Median der Modelle. Striche: jedes Modell. Zeile unter den Balken: Anteil der Modelle über 0,2 mm.",
         "precipSummary": "{steps, plural, =0 {Kein 6-Stunden-Schritt hat} one {# 6-Stunden-Schritt hat} other {# 6-Stunden-Schritte haben}} eine Regenwahrscheinlichkeit von 50 % oder mehr; der Median summiert sich in den nächsten vier Tagen auf {total} mm."
@@ -191,7 +193,8 @@
         "pending": "Die Vorhersage wird noch abgerufen. Bitte gleich noch einmal versuchen.",
         "unavailable": "Die Wetterdienste antworten nicht. Bitte später erneut versuchen.",
         "generic": "Etwas ist schiefgelaufen. Bitte gleich noch einmal versuchen.",
-        "retry": "Erneut versuchen"
+        "retry": "Erneut versuchen",
+        "offline": "Du bist offline. Gespeicherte Vorhersagen bleiben sichtbar; verbinde dich, um neue zu laden."
     },
     "promo": {
         "label": "Android-App holen",
@@ -215,15 +218,12 @@
         "widgets": "Startbildschirm-Widgets",
         "widgetsHint": "Halte eine freie Stelle auf dem Startbildschirm gedrückt, tippe auf Widgets und wähle Forecast Arena.",
         "widgetsNone": "Auf dem Startbildschirm ist noch kein Widget.",
-        "widgetCity": "Ein Widget zeigt {city}",
-        "search": "Suchen",
-        "explore": "Entdecken"
+        "widgetCity": "Ein Widget zeigt {city}"
     },
     "widget": {
         "configureTitle": "Stadt für dieses Widget wählen",
         "configureEmpty": "Suche oder markiere zuerst einen Ort in Forecast Arena; dann erscheint er hier.",
         "openApp": "Öffne Forecast Arena, um {city} zu laden",
-        "today": "Heute",
         "next24": "Nächste 24 h",
         "wind": "Wind",
         "rain": "Regen",

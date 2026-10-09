@@ -22,7 +22,7 @@
         "methodology": "Metodología"
     },
     "footer": {
-        "attribution": "Datos meteorológicos de <openMeteo>Open-Meteo.com</openMeteo> (CC BY 4.0) y <metno>MET Norway</metno>. Geocodificación de Open-Meteo.",
+        "attribution": "Datos meteorológicos de <openMeteo>Open-Meteo.com</openMeteo> (CC BY 4.0) y <metno>MET Norway</metno> (CC BY 4.0). Geocodificación de Open-Meteo, basada en GeoNames.",
         "methodology": "Metodología",
         "repo": "Código fuente"
     },
@@ -38,7 +38,8 @@
         "locateFar": "La ciudad guardada más cercana es {name}, a {km} km",
         "locateUse": "Usarla",
         "locateSearch": "Buscar",
-        "locateUnavailable": "La ubicación no está disponible; busca tu ciudad"
+        "locateUnavailable": "La ubicación no está disponible; busca tu ciudad",
+        "close": "Cerrar búsqueda"
     },
     "chart": {
         "table": "Tabla",
@@ -47,7 +48,8 @@
         "showChart": "Mostrar el gráfico",
         "now": "ahora",
         "median": "Mediana",
-        "compass": "N,NE,E,SE,S,SO,O,NO"
+        "compass": "N,NE,E,SE,S,SO,O,NO",
+        "windFrom": "Viene de: {direction}"
     },
     "variables": {
         "label": "Variable",
@@ -86,7 +88,7 @@
         "summary": "La mediana ({variable}) de los próximos cuatro días va de {min} a {max} {unit} entre {count} modelos. Discrepan más el {day} (dispersión {spread} {unit}).",
         "median": "Mediana",
         "time": "Hora (ciudad)",
-        "windArrows": "Las flechas muestran hacia dónde sopla el viento mediano; pasa el cursor por una para ver de dónde viene.",
+        "windArrows": "Las flechas muestran hacia dónde sopla el viento mediano; elige una hora para ver de dónde viene.",
         "precipTitle": "Precipitación, totales de 6 horas",
         "precipDescription": "Barras: mediana de los modelos. Marcas: cada modelo. Fila bajo las barras: proporción de modelos por encima de 0,2 mm.",
         "precipSummary": "{steps, plural, =0 {Ningún intervalo de 6 horas tiene} one {# intervalo de 6 horas tiene} other {# intervalos de 6 horas tienen}} una probabilidad de lluvia del 50 % o más; la mediana suma {total} mm en los próximos cuatro días."
@@ -191,7 +193,8 @@
         "pending": "El pronóstico aún se está obteniendo. Inténtalo de nuevo en un momento.",
         "unavailable": "Los servicios meteorológicos no responden. Inténtalo más tarde.",
         "generic": "Algo salió mal. Inténtalo de nuevo en un momento.",
-        "retry": "Reintentar"
+        "retry": "Reintentar",
+        "offline": "Estás sin conexión. Los pronósticos guardados siguen visibles; conéctate para cargar otros nuevos."
     },
     "promo": {
         "label": "Obtener la app para Android",
@@ -215,15 +218,12 @@
         "widgets": "Widgets de la pantalla de inicio",
         "widgetsHint": "Mantén pulsado un espacio vacío de la pantalla de inicio, toca Widgets y elige Forecast Arena.",
         "widgetsNone": "Aún no hay ningún widget en tu pantalla de inicio.",
-        "widgetCity": "Un widget muestra {city}",
-        "search": "Buscar",
-        "explore": "Explorar"
+        "widgetCity": "Un widget muestra {city}"
     },
     "widget": {
         "configureTitle": "Elige la ciudad de este widget",
         "configureEmpty": "Primero busca o fija un lugar en Forecast Arena; luego aparecerá aquí.",
         "openApp": "Abre Forecast Arena para cargar {city}",
-        "today": "Hoy",
         "next24": "Próximas 24 h",
         "wind": "Viento",
         "rain": "Lluvia",
