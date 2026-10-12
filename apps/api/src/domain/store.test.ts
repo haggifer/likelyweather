@@ -33,13 +33,14 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('store (database)', () => {
     const values = (base: number) => steps.map((_, i) => (i % 5 === 0 ? null : base + i))
     const series = {
         temp: values(10),
+        feels: values(8),
         wind: values(1),
+        gusts: values(3),
         windDir: values(90),
         pressure: values(1000),
-        pressureSfc: values(990),
         precip: values(0),
-        rain: values(0),
-        snow: values(0),
+        humidity: values(50),
+        cloud: values(20),
     }
 
     beforeAll(async () => {

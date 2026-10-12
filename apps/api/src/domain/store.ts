@@ -52,15 +52,19 @@ type SnapshotRow = Prisma.SnapshotGetPayload<{ include: { run: { select: { statu
 
 const COLUMNS: Record<SeriesField, keyof Prisma.ForecastCreateManyInput> = {
     temp: 'tempC',
+    feels: 'feelsC',
     wind: 'windMs',
+    gusts: 'gustsMs',
     windDir: 'windDirDeg',
     pressure: 'pressureMsl',
-    pressureSfc: 'pressureSfc',
     precip: 'precipMm',
-    rain: 'rainMm',
-    snow: 'snowCm',
+    humidity: 'humidityPct',
+    cloud: 'cloudPct',
 }
 const FIELDS = Object.keys(COLUMNS) as SeriesField[]
+// A refresh writes a few thousand rows (fourteen days for the longest models); the default 5 s left no room on a slow
+// connection, and the request still ends inside the function's 30 s.
+const WRITE_TIMEOUT_MS = 10_000
 // Every run is fetched on demand now; the column still holds the origin of older scheduled and imported runs.
 const ORIGIN = 'PREVIEW' as const
 
@@ -118,9 +122,15 @@ const ensurePartitionsOnce = (issueTime: Date) => {
     return pending
 }
 
+const hasValues = (series: ModelSeries, i: number) => FIELDS.some((field) => (series[field][i] ?? null) !== null)
+
+// Steps past a model's horizon (ARPEGE ends after about 4 days, GFS after 16) have no values and are not stored; the
+// grid reads a missing row as empty.
 const toForecastRows = (snapshot: Snapshot, issueTime: Date): Prisma.ForecastCreateManyInput[] =>
     Object.entries(snapshot.models).flatMap(([modelId, series]) =>
-        snapshot.steps.map((step, i) => {
+        snapshot.steps.flatMap((step, i) => {
+            if (!hasValues(series!, i)) return []
+
             const validTime = new Date(step)
             const row: Prisma.ForecastCreateManyInput = {
                 cityId: snapshot.cityId,
@@ -132,7 +142,7 @@ const toForecastRows = (snapshot: Snapshot, issueTime: Date): Prisma.ForecastCre
 
             for (const field of FIELDS) Object.assign(row, { [COLUMNS[field]]: series![field][i] ?? null })
 
-            return row
+            return [row]
         }),
     )
 
@@ -242,16 +252,19 @@ export const writeSnapshot = async (snapshot: Snapshot) => {
     }
 
     await ensurePartitionsOnce(issueTime)
-    await prisma.$transaction([
-        prisma.forecast.deleteMany({ where: { cityId: snapshot.cityId, issueTime, modelId: { in: modelIds } } }),
-        // Another instance can write the same run between the delete and the insert; its rows are identical.
-        prisma.forecast.createMany({ data: rows, skipDuplicates: true }),
-        prisma.snapshot.upsert({
-            where: { cityId_issueTime: { cityId: snapshot.cityId, issueTime } },
-            create: { cityId: snapshot.cityId, issueTime, ...meta },
-            update: meta,
-        }),
-    ])
+    await prisma.$transaction(
+        [
+            prisma.forecast.deleteMany({ where: { cityId: snapshot.cityId, issueTime, modelId: { in: modelIds } } }),
+            // Another instance can write the same run between the delete and the insert; its rows are identical.
+            prisma.forecast.createMany({ data: rows, skipDuplicates: true }),
+            prisma.snapshot.upsert({
+                where: { cityId_issueTime: { cityId: snapshot.cityId, issueTime } },
+                create: { cityId: snapshot.cityId, issueTime, ...meta },
+                update: meta,
+            }),
+        ],
+        { timeout: WRITE_TIMEOUT_MS },
+    )
 }
 
 export const getLatestSnapshotMeta = async (cityId: number) => {

@@ -1,3 +1,4 @@
+import { getApparentTemperatures } from '@fa/shared/apparent-temperature'
 import { addHours, toIsoMinute } from '@fa/shared/time'
 import { ModelSeries } from '@fa/shared/variables'
 import { env } from '../env'
@@ -8,6 +9,8 @@ interface MetnoDetails {
     wind_speed?: number
     wind_from_direction?: number
     air_pressure_at_sea_level?: number
+    relative_humidity?: number
+    cloud_area_fraction?: number
     precipitation_amount?: number
 }
 
@@ -66,15 +69,21 @@ export const fetchMetno = (lat: number, lon: number, ifModifiedSince?: string): 
 export const parseMetno = (body: MetnoBody, steps: string[]): ModelSeries | null => {
     const byTime = new Map(body.properties.timeseries.map((e) => [toIsoMinute(new Date(e.time)), e]))
     const getInstant = (step: string, key: keyof MetnoDetails) => byTime.get(step)?.data.instant.details[key] ?? null
+    const temp = steps.map((s) => getInstant(s, 'air_temperature'))
+    const wind = steps.map((s) => getInstant(s, 'wind_speed'))
+    const humidity = steps.map((s) => getInstant(s, 'relative_humidity'))
+    // The compact feed has no gusts and no radiation: met.no's gust line stays empty, and its feels-like is the value
+    // in the shade.
     const series: ModelSeries = {
-        temp: steps.map((s) => getInstant(s, 'air_temperature')),
-        wind: steps.map((s) => getInstant(s, 'wind_speed')),
+        temp,
+        feels: getApparentTemperatures(temp, humidity, wind),
+        wind,
+        gusts: steps.map(() => null),
         windDir: steps.map((s) => getInstant(s, 'wind_from_direction')),
         pressure: steps.map((s) => getInstant(s, 'air_pressure_at_sea_level')),
-        pressureSfc: steps.map(() => null),
         precip: steps.map((s) => getPrecipEndingAt(byTime, s)),
-        rain: steps.map(() => null),
-        snow: steps.map(() => null),
+        humidity,
+        cloud: steps.map((s) => getInstant(s, 'cloud_area_fraction')),
     }
 
     return series.temp.some((v) => v !== null) ? series : null

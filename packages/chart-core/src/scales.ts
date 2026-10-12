@@ -10,11 +10,14 @@ const EPSILON = 1e-9
 const pickTickStep = (steps: number[], max: number) =>
     steps.find((step) => Math.ceil(max / step - EPSILON) <= MAX_SEGMENTS) ?? steps[steps.length - 1]
 
-// Y domain for a variable: snapped outward to the variable's gridline step (5 °C, 2 m/s), zero-based with the
-// smallest step from `tickSteps` that covers the maximum in at most three segments (precipitation), or padded
-// and niced.
+// Y domain for a variable: its fixed range (percentages), snapped outward to the variable's gridline step (5 °C,
+// 2 m/s), zero-based with the smallest step from `tickSteps` that covers the maximum in at most three segments
+// (precipitation), or padded and niced.
 export const getYDomain = (values: (number | null | undefined)[], variable: Variable): [number, number] => {
-    const { tickStep, tickSteps, isNonNegative } = VARIABLE_BY_ID[variable]
+    const { tickStep, tickSteps, isNonNegative, fixedDomain } = VARIABLE_BY_ID[variable]
+
+    if (fixedDomain) return fixedDomain
+
     const defined = values.filter((v): v is number => v !== null && v !== undefined)
     const zeroBased = variable === Variable.Precip
 

@@ -81,11 +81,16 @@ model Forecast {
   validTime   DateTime
   leadHours   Int
   tempC       Float?
+  feelsC      Float? // computed from temperature, humidity, wind and radiation when the run is stored
   windMs      Float?
+  gustsMs     Float?
   windDirDeg  Float?
   pressureMsl Float?
-  pressureSfc Float?
   precipMm    Float? // the hour ending at validTime
+  humidityPct Float?
+  cloudPct    Float?
+  // Not written since 2026-10-12; dropped by a later migration once the code that stopped writing them is live.
+  pressureSfc Float?
   rainMm      Float?
   snowCm      Float?
 

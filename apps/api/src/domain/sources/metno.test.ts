@@ -1,3 +1,4 @@
+import { getApparentTemperature } from '@fa/shared/apparent-temperature'
 import { MetnoBody, parseMetno } from './metno'
 
 const entry = (
@@ -8,7 +9,14 @@ const entry = (
     time,
     data: {
         instant: {
-            details: { air_temperature: temp, wind_speed: 3, wind_from_direction: 90, air_pressure_at_sea_level: 1012 },
+            details: {
+                air_temperature: temp,
+                wind_speed: 3,
+                wind_from_direction: 90,
+                air_pressure_at_sea_level: 1012,
+                relative_humidity: 60,
+                cloud_area_fraction: 40,
+            },
         },
         ...extra,
     },
@@ -35,7 +43,15 @@ describe('parseMetno', () => {
         expect(series.temp).toEqual([14, 14, 12])
         expect(series.pressure).toEqual([1012, 1012, 1012])
         expect(series.precip).toEqual([null, 0.1, 0.1])
-        expect(series.pressureSfc).toEqual([null, null, null])
+    })
+
+    it('reads humidity and cloud cover, has no gusts, and computes feels-like in the shade', () => {
+        const series = parseMetno(BODY, ['2026-09-23T13:00Z', '2026-09-23T19:00Z'])!
+
+        expect(series.humidity).toEqual([60, null])
+        expect(series.cloud).toEqual([40, null])
+        expect(series.gusts).toEqual([null, null])
+        expect(series.feels).toEqual([getApparentTemperature(14, 60, 3), null])
     })
 
     it('leaves hours without an hourly entry empty, even where a 6-hour amount exists', () => {

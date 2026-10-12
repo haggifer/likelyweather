@@ -7,8 +7,12 @@ import { getSnapshotGrid, SeriesGrid, SnapshotMeta } from './store'
 
 const PAYLOAD_TTL_SECONDS = 300
 
+// A model without a single value for the field (met.no has no gusts) is left out, so it is neither drawn nor counted.
 const pickSeries = (grid: SeriesGrid, field: SeriesField): Series[] =>
-    MODELS.filter((m) => grid.models[m.id]).map((m) => ({ modelId: m.id, values: grid.models[m.id]![field] }))
+    MODELS.filter((m) => grid.models[m.id]?.[field].some((v) => v !== null)).map((m) => ({
+        modelId: m.id,
+        values: grid.models[m.id]![field],
+    }))
 
 const getFields = (variable: Variable): SeriesField[] =>
     variable === Variable.Wind ? [VARIABLE_BY_ID[variable].field, 'windDir'] : [VARIABLE_BY_ID[variable].field]

@@ -1,5 +1,6 @@
 import { getPrisma, loadLocalEnv } from '@fa/db/client'
 import { City } from '@fa/shared/api'
+import { FORECAST_HOURS, PAST_HOURS } from '@fa/shared/constants'
 import { ModelId } from '@fa/shared/models'
 import { ModelSeries } from '@fa/shared/variables'
 import { readFileSync } from 'node:fs'
@@ -67,7 +68,7 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('collect (database, recorded u
 
         expect(run).toMatchObject({ id: `preview-${CITY.id}-20260924T1200Z`, status: 'OK', citiesCount: 1 })
         expect(run.rows).toBeGreaterThan(500)
-        expect(snapshot?.steps).toHaveLength(112)
+        expect(snapshot?.steps).toHaveLength(PAST_HOURS + FORECAST_HOURS + 1)
         expect(Object.keys(snapshot!.models)).toContain(ModelId.Metno)
     })
 

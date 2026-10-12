@@ -1,5 +1,15 @@
 import { Variable, VARIABLES } from '@fa/shared/variables'
-import { CloudRain, Gauge, LucideIcon, Thermometer, Wind } from 'lucide-react-native'
+import {
+    Cloud,
+    CloudRain,
+    Droplets,
+    Gauge,
+    LucideIcon,
+    Thermometer,
+    ThermometerSun,
+    Wind,
+    WindArrowDown,
+} from 'lucide-react-native'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { useTranslations } from 'use-intl'
 import { useTheme } from '../../hooks/useTheme'
@@ -7,9 +17,13 @@ import { Text } from '../ui/Text'
 
 const ICONS: Record<Variable, LucideIcon> = {
     [Variable.Temp]: Thermometer,
+    [Variable.Feels]: ThermometerSun,
     [Variable.Wind]: Wind,
+    [Variable.Gusts]: WindArrowDown,
     [Variable.Pressure]: Gauge,
     [Variable.Precip]: CloudRain,
+    [Variable.Humidity]: Droplets,
+    [Variable.Cloud]: Cloud,
 }
 
 // The selected segment carries its name, so it takes the room the three icon-only segments leave.

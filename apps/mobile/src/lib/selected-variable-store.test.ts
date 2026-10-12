@@ -26,9 +26,9 @@ describe('selected variable store', () => {
         expect(onChange).toHaveBeenCalledTimes(2)
     })
 
-    it('reads only the four variables from a route param', () => {
+    it('reads only known variables from a route param', () => {
         expect(parseVariable('wind')).toBe(Variable.Wind)
-        expect(parseVariable('humidity')).toBeNull()
+        expect(parseVariable('snow')).toBeNull()
         expect(parseVariable(['wind'])).toBeNull()
         expect(parseVariable(undefined)).toBeNull()
     })

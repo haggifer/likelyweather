@@ -30,7 +30,7 @@ const toOpenMeteoTime = (ms) => new Date(ms).toISOString().slice(0, 16)
 
 const shiftMetnoTime = (time, ms) => new Date(new Date(time).getTime() + ms).toISOString().replace('.000Z', 'Z')
 
-// The recording starts at midnight one day before its run, like a live `past_days=1` request.
+// The recording starts at midnight one day before its run, so it covers the 9 past hours a live request asks for.
 const getOpenMeteoForecast = (lat, lon) => {
     const start = Math.floor(Date.now() / DAY_MS) * DAY_MS - DAY_MS
     const time = OPEN_METEO.hourly.time.map((_, i) => toOpenMeteoTime(start + i * HOUR_MS))
