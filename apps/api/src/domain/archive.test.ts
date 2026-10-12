@@ -1,6 +1,6 @@
 import { getPrisma, loadLocalEnv } from '@fa/db/client'
 import { City } from '@fa/shared/api'
-import { getArchivePayload } from './archive'
+import { getArchivePayload, isCompleteArchive } from './archive'
 import { fetchArchiveHours } from './sources/open-meteo-archive'
 import { addCity } from './store'
 
@@ -70,10 +70,11 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('archive (database)', () => {
         const spend = vi.fn().mockResolvedValue(undefined)
         fetchMock.mockResolvedValue(toHours('2026-10-09T00:00:00Z', 48, (i) => (i < 40 ? i : null)))
 
-        await getArchivePayload(CITY, RANGE, spend, NOW)
+        const first = await getArchivePayload(CITY, RANGE, spend, NOW)
         await getArchivePayload(CITY, RANGE, spend, NOW)
 
         expect(fetchMock).toHaveBeenCalledTimes(2)
+        expect(isCompleteArchive(first)).toBe(false)
     })
 
     it('rejects a period longer than twelve days or reaching today, before spending anything', async () => {

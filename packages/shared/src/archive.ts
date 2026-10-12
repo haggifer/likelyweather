@@ -48,9 +48,13 @@ export const getDefaultArchiveRange = (now: Date, timeZone: string): ArchiveRang
     return { from: addDays(to, 1 - DEFAULT_DAYS), to }
 }
 
+// A real calendar day: `Date.parse` would roll 30 February over into March.
+const isDateKey = (value: string) =>
+    DATE_KEY.test(value) && new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) === value
+
 export const isValidArchiveRange = (range: ArchiveRange, latest: string) =>
-    DATE_KEY.test(range.from) &&
-    DATE_KEY.test(range.to) &&
+    isDateKey(range.from) &&
+    isDateKey(range.to) &&
     range.from >= ARCHIVE_FIRST_DATE &&
     range.from <= range.to &&
     range.to <= latest &&

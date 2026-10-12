@@ -13,7 +13,7 @@ import {
 } from '@fa/shared/api'
 import { MODELS } from '@fa/shared/models'
 import { Router } from 'express'
-import { getArchivePayload } from './domain/archive'
+import { getArchivePayload, isCompleteArchive } from './domain/archive'
 import { ensureFreshSnapshot, findNearestCity, getStarterCities, requireCity, trackCity } from './domain/cities'
 import { getErrorMessage, HttpError } from './domain/errors'
 import { getLatestPayload } from './domain/latest'
@@ -112,7 +112,8 @@ apiRouter.get('/cities/:slug/latest', rateLimit('read'), async (req, res) => {
     sendJson(res, payload, { maxAge: getLatestMaxAge(meta, new Date()) })
 })
 
-// Past weather does not change once stored, so CloudFront and browsers may keep an answer for a day.
+// Past weather does not change once stored, so a browser may keep a complete answer for a day (CloudFront keeps its
+// own copy for at most 5 minutes); an answer with gaps is not kept, so the hours still missing are asked for again.
 const ARCHIVE_MAX_AGE_SECONDS = 24 * 60 * 60
 
 // Read from the database when the hours are stored; otherwise fetched once from Open-Meteo, spending one unit of the
@@ -126,7 +127,7 @@ apiRouter.get('/cities/:slug/archive', rateLimit('read'), async (req, res) => {
         toUpstreamError('The archive is unavailable'),
     )
 
-    sendJson(res, payload, { maxAge: ARCHIVE_MAX_AGE_SECONDS })
+    sendJson(res, payload, { maxAge: isCompleteArchive(payload) ? ARCHIVE_MAX_AGE_SECONDS : null })
 })
 
 apiRouter.get('/quota', rateLimit('read'), async (req, res) => {

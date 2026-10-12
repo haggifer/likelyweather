@@ -1,4 +1,4 @@
-import { ARCHIVE_FIELDS, ArchiveField } from '@fa/shared/archive'
+import { ARCHIVE_FIELDS, ARCHIVE_FIRST_DATE, ArchiveField } from '@fa/shared/archive'
 import { env } from '../env'
 import { fetchJson } from './fetch-with-retry'
 import { LatLon } from './open-meteo'
@@ -27,7 +27,8 @@ const buildArchiveUrl = ({ lat, lon }: LatLon, start: Date, end: Date) => {
     const params = new URLSearchParams({
         latitude: lat.toFixed(4),
         longitude: lon.toFixed(4),
-        start_date: toDateKey(start),
+        // East of UTC, 1 January 1940 starts on 31 December 1939 in UTC, a day the archive does not have.
+        start_date: toDateKey(start) < ARCHIVE_FIRST_DATE ? ARCHIVE_FIRST_DATE : toDateKey(start),
         end_date: toDateKey(new Date(end.getTime() - 1)),
         hourly: HOURLY_KEYS,
         timezone: 'GMT',

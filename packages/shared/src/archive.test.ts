@@ -28,6 +28,7 @@ describe('archive ranges', () => {
         expect(isValidArchiveRange({ from: '2026-10-11', to: '2026-10-10' }, '2026-10-11')).toBe(false)
         expect(isValidArchiveRange({ from: '1939-12-31', to: '1940-01-01' }, '2026-10-11')).toBe(false)
         expect(isValidArchiveRange({ from: '2026-1-1', to: '2026-01-02' }, '2026-10-11')).toBe(false)
+        expect(isValidArchiveRange({ from: '2026-02-27', to: '2026-02-30' }, '2026-10-11')).toBe(false)
     })
 
     it('covers the local days in whole UTC hours', () => {
