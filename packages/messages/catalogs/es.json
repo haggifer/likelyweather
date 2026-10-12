@@ -121,8 +121,7 @@
         "empty": "Esta ejecución no tiene pasos futuros."
     },
     "landing": {
-        "hero": "Compara los pronósticos del tiempo para tu ciudad",
-        "sub": "Diez modelos, una ciudad: la mediana del pronóstico para los próximos diez días.",
+        "heading": "Forecast Arena: compara pronósticos del tiempo",
         "seeds": "Empieza con"
     },
     "methodology": {

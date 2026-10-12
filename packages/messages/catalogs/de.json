@@ -121,8 +121,7 @@
         "empty": "Dieser Lauf hat keine künftigen Schritte."
     },
     "landing": {
-        "hero": "Vergleiche Wettervorhersagen für deine Stadt",
-        "sub": "Zehn Wettermodelle, eine Stadt: die Median-Vorhersage für die nächsten zehn Tage.",
+        "heading": "Forecast Arena: Wettervorhersagen vergleichen",
         "seeds": "Starte mit"
     },
     "methodology": {

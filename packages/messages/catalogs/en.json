@@ -121,8 +121,7 @@
         "empty": "No future steps in this run."
     },
     "landing": {
-        "hero": "Compare weather forecasts for your city",
-        "sub": "Ten weather models, one city: the median forecast for the next ten days.",
+        "heading": "Forecast Arena: compare weather forecasts",
         "seeds": "Start with"
     },
     "methodology": {

@@ -121,8 +121,7 @@
         "empty": "Cette exécution n’a aucun pas futur."
     },
     "landing": {
-        "hero": "Comparez les prévisions météo de votre ville",
-        "sub": "Dix modèles météo, une ville : la prévision médiane des dix prochains jours.",
+        "heading": "Forecast Arena : comparer les prévisions météo",
         "seeds": "Commencer par"
     },
     "methodology": {
