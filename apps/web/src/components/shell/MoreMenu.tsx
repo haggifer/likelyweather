@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { BookOpen, Columns3, Menu } from 'lucide-react'
+import { BookOpen, Menu } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 
@@ -17,11 +17,6 @@ export function MoreMenu() {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem asChild>
-                    <Link href="/compare">
-                        <Columns3 /> {t('compare')}
-                    </Link>
-                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link href="/methodology">
                         <BookOpen /> {t('methodology')}

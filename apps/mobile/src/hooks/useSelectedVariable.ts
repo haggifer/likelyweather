@@ -14,7 +14,7 @@ export interface UseSelectedVariableResult {
     setVariable: (variable: Variable) => void
 }
 
-// The variable shared by City and Compare. The `v` param read when the screen opened wins on the first render, before
+// The variable shared by the City screens in the stack. The `v` param read when the screen opened wins on the first render, before
 // the shared store has taken it, so a deep link never queries the previous variable first. A screen left under another
 // in the stack keeps its variable until it is shown again: its queries would otherwise fetch a variable nobody looks
 // at, and a city due for a refresh would spend the viewer's quota for it.

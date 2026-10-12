@@ -16,6 +16,6 @@ describe('loadMessages', () => {
         const uk = await loadMessages(Locale.Uk)
         const en = await loadMessages(Locale.En)
 
-        expect(uk.nav.compare).not.toBe(en.nav.compare)
+        expect(uk.nav.methodology).not.toBe(en.nav.methodology)
     })
 })

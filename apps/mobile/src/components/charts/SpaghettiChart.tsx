@@ -119,7 +119,6 @@ interface IProps {
     height?: number
     compact?: boolean
     showTooltip?: boolean
-    yDomain?: [number, number]
     isMedianHidden?: boolean
 }
 
@@ -140,7 +139,6 @@ export function SpaghettiChart({
     height: heightProp = 340,
     compact = false,
     showTooltip = false,
-    yDomain,
     isMedianHidden = false,
 }: IProps) {
     const t = useTranslations('chart')
@@ -154,7 +152,7 @@ export function SpaghettiChart({
     const isBars = variable === Variable.Precip
     const hasArrows = Boolean(directions)
     const margin = useMemo(() => getMargin(compact, hasArrows), [compact, hasArrows])
-    const target = useMemo(() => yDomain ?? getSeriesYDomain(series, variable), [yDomain, series, variable])
+    const target = useMemo(() => getSeriesYDomain(series, variable), [series, variable])
     // A refresh of the same variable eases the axis to its new range; another variable jumps.
     const domain = useAnimatedDomain(target, variable, isReducedMotion)
     const geometry = useMemo(

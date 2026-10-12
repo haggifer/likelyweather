@@ -11,8 +11,8 @@ const VARIABLE_IDS = new Set<string>(Object.values(Variable))
 const listeners = new Set<() => void>()
 let state: SelectedVariableState = { variable: null, version: 0 }
 
-// The variable City and Compare show, kept in memory for the session like the web's Redux slice; each screen's `v`
-// param mirrors it like the web's `?v=`, so a deep link opens on its variable.
+// The variable the City screens show, kept in memory for the session like the web's Redux slice, so the next city
+// opens on it too; each screen's `v` param mirrors it like the web's `?v=`, so a deep link opens on its variable.
 export const getSelectedVariableState = () => state
 
 export const setSelectedVariable = (variable: Variable) => {

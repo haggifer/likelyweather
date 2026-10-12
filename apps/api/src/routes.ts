@@ -1,6 +1,4 @@
 import {
-    CompareQuerySchema,
-    CompareResponse,
     DEFAULT_LOCALE,
     GeocodeQuerySchema,
     GeocodeResponse,
@@ -13,7 +11,6 @@ import {
     TrackResponse,
 } from '@fa/shared/api'
 import { MODELS } from '@fa/shared/models'
-import { Variable } from '@fa/shared/variables'
 import { Router } from 'express'
 import { ensureFreshSnapshot, findNearestCity, getStarterCities, requireCity, trackCity } from './domain/cities'
 import { getErrorMessage, HttpError } from './domain/errors'
@@ -33,8 +30,6 @@ import {
 } from './http'
 import { getLatestMaxAge } from './latest-cache'
 
-type CompareItem = CompareResponse['items'][number]
-
 // Upstream failures (Open-Meteo down, a timeout) reach the client as a short 502; the detail stays in the logs.
 const toUpstreamError = (message: string) => (error: unknown) => {
     if (error instanceof HttpError) throw error
@@ -47,45 +42,6 @@ const requireQuota = async (client: string) => {
     const hasQuota = await trySpendQuota(client)
 
     if (!hasQuota) throw quotaExceeded()
-}
-
-const findCity = (slug: string) =>
-    requireCity(slug).catch((error) => {
-        if (error instanceof HttpError && error.status === 404) return null
-
-        throw error
-    })
-
-const getCompareMeta = (city: CompareItem['city'], client: string) =>
-    ensureFreshSnapshot(city, client).catch((error) => {
-        console.warn(`Compare could not refresh ${city.slug}: ${getErrorMessage(error)}`)
-
-        return null
-    })
-
-// An unknown slug is left out rather than failing the other cities; the client shows it as not found.
-const getCompareItem = async (slug: string, variable: Variable, client: string) => {
-    const city = await findCity(slug)
-
-    if (!city) return null
-
-    const meta = await getCompareMeta(city, client)
-
-    if (!meta) return { item: { city, latest: null }, maxAge: null }
-
-    const latest = await getLatestPayload(meta, variable)
-
-    return { item: { city, latest }, maxAge: getLatestMaxAge(meta, new Date()) }
-}
-
-// Shared only when every requested city was found and every run can still be shared, for the shortest of their times.
-const toCompareResponse = (results: Awaited<ReturnType<typeof getCompareItem>>[]) => {
-    const found = results.filter((r) => r !== null)
-    const items: CompareItem[] = found.map((r) => r.item)
-    const ages = found.map((r) => r.maxAge)
-    const isShared = found.length === results.length && ages.every((age) => age !== null)
-
-    return { items, maxAge: isShared ? Math.min(...(ages as number[])) : null }
 }
 
 export const apiRouter = Router()
@@ -162,14 +118,4 @@ apiRouter.get('/quota', rateLimit('read'), async (req, res) => {
 
 apiRouter.get('/models', rateLimit('read'), (_req, res) => {
     sendJson(res, MODELS)
-})
-
-apiRouter.get('/compare', rateLimit('read'), async (req, res) => {
-    const { cities, variable } = parseQuery(req, CompareQuerySchema)
-    const client = getClientKey(req)
-
-    const results = await Promise.all(cities.map((slug) => getCompareItem(slug, variable, client)))
-    const { items, maxAge } = toCompareResponse(results)
-
-    sendJson(res, { items } satisfies CompareResponse, { maxAge })
 })

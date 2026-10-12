@@ -39,8 +39,7 @@ const AppStack = () => {
             >
                 <Stack.Screen name="index" options={{ title: 'Forecast Arena', headerTitle: () => <Wordmark /> }} />
                 <Stack.Screen name="city/[slug]" options={{ title: '' }} />
-                {/* Compare and Methodology open with their own heading, as on the web, so the header names nothing. */}
-                <Stack.Screen name="compare" options={{ title: '' }} />
+                {/* Methodology opens with its own heading, as on the web, so the header names nothing. */}
                 <Stack.Screen name="methodology" options={{ title: '' }} />
                 <Stack.Screen name="settings" options={{ title: tm('settings') }} />
                 <Stack.Screen name="+not-found" options={{ title: '' }} />

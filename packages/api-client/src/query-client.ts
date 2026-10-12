@@ -1,7 +1,7 @@
 import { MutationCache, QueryCache, QueryClient, QueryKey } from '@tanstack/react-query'
 
 // Requests that can make the server call the weather services, and so spend the daily quota.
-const QUOTA_SPENDING = new Set(['latest', 'compare', 'geocode'])
+const QUOTA_SPENDING = new Set(['latest', 'geocode'])
 
 export const makeQueryClient = () => {
     // One page settles several quota-spending queries at once; they share the quota request already in flight.

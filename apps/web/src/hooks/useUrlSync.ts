@@ -10,7 +10,7 @@ export interface UseUrlSyncResult {
 
 const variableParser = parseAsStringEnum<Variable>(Object.values(Variable))
 
-// Redux owns the chosen variable; the URL mirrors it (`?v=`) so a dashboard or compare view is linkable. On mount
+// Redux owns the chosen variable; the URL mirrors it (`?v=`) so a dashboard view is linkable. On mount
 // the URL is read once, then Redux writes back. Queries wait for `isHydrated` so a deep link never fires a wasted
 // request with the default variable first. The flag is local to the mount: a page-wide flag would stay true after
 // the first page and let the next page query before reading its own URL.

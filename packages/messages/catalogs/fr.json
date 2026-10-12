@@ -18,7 +18,6 @@
     },
     "nav": {
         "more": "Autres pages",
-        "compare": "Comparer",
         "methodology": "Méthodologie"
     },
     "footer": {
@@ -113,16 +112,6 @@
         "split": "Division",
         "empty": "Cette exécution n’a aucun pas futur."
     },
-    "compare": {
-        "title": "Comparer des villes",
-        "description": "Jusqu’à quatre villes côte à côte sur un axe commun.",
-        "seed": "Essayer les quatre villes ukrainiennes",
-        "count": "{count} villes sur {max}",
-        "empty": "Ajoutez des villes pour comparer leurs prévisions.",
-        "remove": "Retirer la ville",
-        "sharedAxis": "Tous les panneaux partagent un même axe vertical pour comparer les valeurs directement.",
-        "noForecast": "Aucune prévision n’est disponible pour cette ville pour le moment."
-    },
     "landing": {
         "hero": "Comparez les prévisions météo de votre ville",
         "sub": "Dix modèles météo, une ville : la prévision médiane des trois prochains jours.",
@@ -134,7 +123,7 @@
         "europeOnly": "Europe seulement",
         "sources": {
             "title": "Sources",
-            "body": "Neuf modèles numériques proviennent de l’API de prévision d’Open-Meteo et un du Locationforecast de MET Norway. Les modèles lancent une nouvelle exécution à 00, 06, 12 et 18 UTC. La prévision d’une ville est récupérée quand quelqu’un l’ouvre et que celle enregistrée a 3 heures ou plus, puis stockée heure par heure, de 3 heures avant l’exécution à 108 heures après.\nLes graphiques utilisent des tranches de 3 heures à l’heure locale de la ville (00, 03, 06…), à partir de la tranche où la prévision a été récupérée, avec une ligne à l’heure actuelle : 72 heures dans l’aperçu de l’accueil, 96 heures sur le tableau de bord de la ville et dans Comparer. La température, le vent et la pression sont les valeurs à la tranche ; les précipitations sont le cumul des 3 heures suivantes, et le survol d’une barre sélectionne ces 3 heures. Le panneau des précipitations du tableau de bord ajoute des cumuls sur 6 heures.\nLes modèles régionaux ne renvoient des données que dans leur domaine : une ville hors d’Europe affiche donc jusqu’à huit modèles. MET Norway ne publie des valeurs horaires que pour les 60 premières heures environ ; les tranches suivantes utilisent les autres modèles."
+            "body": "Neuf modèles numériques proviennent de l’API de prévision d’Open-Meteo et un du Locationforecast de MET Norway. Les modèles lancent une nouvelle exécution à 00, 06, 12 et 18 UTC. La prévision d’une ville est récupérée quand quelqu’un l’ouvre et que celle enregistrée a 3 heures ou plus, puis stockée heure par heure, de 3 heures avant l’exécution à 108 heures après.\nLes graphiques utilisent des tranches de 3 heures à l’heure locale de la ville (00, 03, 06…), à partir de la tranche où la prévision a été récupérée, avec une ligne à l’heure actuelle : 72 heures dans l’aperçu de l’accueil, 96 heures sur le tableau de bord de la ville. La température, le vent et la pression sont les valeurs à la tranche ; les précipitations sont le cumul des 3 heures suivantes, et le survol d’une barre sélectionne ces 3 heures. Le panneau des précipitations du tableau de bord ajoute des cumuls sur 6 heures.\nLes modèles régionaux ne renvoient des données que dans leur domaine : une ville hors d’Europe affiche donc jusqu’à huit modèles. MET Norway ne publie des valeurs horaires que pour les 60 premières heures environ ; les tranches suivantes utilisent les autres modèles."
         },
         "median": {
             "title": "Médiane et écart",

@@ -117,25 +117,6 @@ test('the dashboard switches variables and draws precipitation as bars', async (
     await expect(page.locator('main svg[role=img] rect[rx="2"]').first()).toBeAttached()
 })
 
-test('compare shows one chart per city on a shared axis', async ({ page }) => {
-    await page.goto(`/compare?cities=${KYIV},${LONDON}`)
-
-    await expect(page.locator('main svg[role=img]')).toHaveCount(2)
-})
-
-test('compare adds a searched city and names an unknown one instead of loading forever', async ({ page }) => {
-    await page.goto(`/compare?cities=${KYIV},nowhere-xx-1`)
-
-    await expect(page.locator('main svg[role=img]')).toHaveCount(1)
-    await expect(page.getByText('This city is not in Forecast Arena.')).toBeVisible()
-
-    await page.getByRole('combobox', { name: 'Search any place' }).fill('Vinnytsia')
-    await page.getByRole('option', { name: /Vinnytsia/ }).click()
-
-    await expect(page).toHaveURL(/vinnytsia-ua-689558/)
-    await expect(page.locator('main svg[role=img]')).toHaveCount(2)
-})
-
 test('an unknown city page says so and offers the search', async ({ page }) => {
     await page.goto('/city/nowhere-xx-1')
 

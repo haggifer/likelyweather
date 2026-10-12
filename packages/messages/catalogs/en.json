@@ -18,7 +18,6 @@
     },
     "nav": {
         "more": "More pages",
-        "compare": "Compare",
         "methodology": "Methodology"
     },
     "footer": {
@@ -113,16 +112,6 @@
         "split": "Split",
         "empty": "No future steps in this run."
     },
-    "compare": {
-        "title": "Compare cities",
-        "description": "Up to four cities side by side on a shared axis.",
-        "seed": "Try the four Ukrainian cities",
-        "count": "{count} of {max} cities",
-        "empty": "Add cities to compare their forecasts.",
-        "remove": "Remove city",
-        "sharedAxis": "All panels share one vertical axis so values compare directly.",
-        "noForecast": "No forecast is available for this city right now."
-    },
     "landing": {
         "hero": "Compare weather forecasts for your city",
         "sub": "Ten weather models, one city: the median forecast for the next three days.",
@@ -134,7 +123,7 @@
         "europeOnly": "Europe only",
         "sources": {
             "title": "Sources",
-            "body": "Nine numerical models come from the Open-Meteo forecast API and one from MET Norway’s Locationforecast. The models start a new run at 00, 06, 12 and 18 UTC. A city’s forecast is fetched when someone opens it and the stored one is 3 hours old or more, and stored hour by hour, from 3 hours before the run to 108 hours after it.\nThe charts use 3-hour slots on the city’s local clock (00, 03, 06…), starting at the slot the forecast was fetched in, with a line at the current time: 72 hours on the landing overview, 96 hours on the city dashboard and in Compare. Temperature, wind and pressure are the values at the slot; precipitation is the amount of the 3 hours after it, and hovering a bar selects those 3 hours. The dashboard’s precipitation panel adds 6-hour totals.\nRegional models return data only inside their domain, so a city outside Europe shows up to eight models. MET Norway publishes hourly values for about the first 60 hours only; later slots use the other models."
+            "body": "Nine numerical models come from the Open-Meteo forecast API and one from MET Norway’s Locationforecast. The models start a new run at 00, 06, 12 and 18 UTC. A city’s forecast is fetched when someone opens it and the stored one is 3 hours old or more, and stored hour by hour, from 3 hours before the run to 108 hours after it.\nThe charts use 3-hour slots on the city’s local clock (00, 03, 06…), starting at the slot the forecast was fetched in, with a line at the current time: 72 hours on the landing overview, 96 hours on the city dashboard. Temperature, wind and pressure are the values at the slot; precipitation is the amount of the 3 hours after it, and hovering a bar selects those 3 hours. The dashboard’s precipitation panel adds 6-hour totals.\nRegional models return data only inside their domain, so a city outside Europe shows up to eight models. MET Norway publishes hourly values for about the first 60 hours only; later slots use the other models."
         },
         "median": {
             "title": "Median and spread",

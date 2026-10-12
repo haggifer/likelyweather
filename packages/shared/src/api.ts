@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { MAX_COMPARE_CITIES } from './constants'
 import { ModelId } from './models'
 import { Variable } from './variables'
 
@@ -97,19 +96,6 @@ export const LatestResponseSchema = z.object({
     directions: z.array(SeriesSchema).optional(),
 })
 export type LatestResponse = z.infer<typeof LatestResponseSchema>
-
-export const CompareQuerySchema = z.strictObject({
-    cities: z
-        .string()
-        .transform((v) => v.split(',').filter(Boolean))
-        .pipe(z.array(z.string()).min(1).max(MAX_COMPARE_CITIES)),
-    variable: VariableSchema.default(Variable.Temp),
-})
-
-export const CompareResponseSchema = z.object({
-    items: z.array(z.object({ city: CitySchema, latest: LatestResponseSchema.nullable() })),
-})
-export type CompareResponse = z.infer<typeof CompareResponseSchema>
 
 export const HealthResponseSchema = z.object({ ok: z.boolean(), cities: z.number() })
 export type HealthResponse = z.infer<typeof HealthResponseSchema>
