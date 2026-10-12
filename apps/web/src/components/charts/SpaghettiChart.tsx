@@ -494,14 +494,15 @@ export function SpaghettiChart({
                     )}
                 </div>
             </div>
-            {/* The axis stays while the plot scrolls under it, on a card-coloured column. */}
+            {/* The axis stays while the plot scrolls under it, on a card-coloured column that starts a pixel early, so a
+                fractional zoom leaves no seam where the plot would show through. */}
             <svg
                 width={margin.left}
                 height={height}
                 aria-hidden="true"
-                className="pointer-events-none absolute top-0 left-0"
+                className="pointer-events-none absolute top-0 left-0 overflow-visible"
             >
-                <rect width={margin.left} height={height} fill={theme.card} />
+                <rect x={-1} width={margin.left + 1} height={height} fill={theme.card} />
                 {yTicks.map((tick) => (
                     <text
                         key={tick}

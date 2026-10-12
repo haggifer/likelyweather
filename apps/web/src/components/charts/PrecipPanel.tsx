@@ -274,14 +274,15 @@ export function PrecipPanel({
                     ))}
                 </ComposedChart>
             </div>
-            {/* The axis stays while the bars scroll under it, on a card-coloured column. */}
+            {/* The axis stays while the bars scroll under it, on a card-coloured column that starts a pixel early, so a
+                fractional zoom leaves no seam where the bars would show through. */}
             <svg
                 width={Y_AXIS_WIDTH}
                 height={height}
                 aria-hidden="true"
-                className="pointer-events-none absolute top-0 left-0"
+                className="pointer-events-none absolute top-0 left-0 overflow-visible"
             >
-                <rect width={Y_AXIS_WIDTH} height={height} fill={theme.card} />
+                <rect x={-1} width={Y_AXIS_WIDTH + 1} height={height} fill={theme.card} />
                 {yTicks.map((tick) => (
                     <text
                         key={tick}

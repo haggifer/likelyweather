@@ -607,14 +607,15 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                     </svg>
                 </div>
                 {/* The axis stays while the plot scrolls under it: the tick labels on a card-coloured column, and on
-                    phones the panel names in the panels' corners. */}
+                    phones the panel names in the panels' corners. The column starts a pixel early, so a fractional zoom leaves no
+                    seam where the plot would show through. */}
                 <svg
                     width={width}
                     height={geometry.totalHeight}
                     aria-hidden="true"
-                    className="pointer-events-none absolute top-0 left-0"
+                    className="pointer-events-none absolute top-0 left-0 overflow-visible"
                 >
-                    <rect width={geometry.marginLeft} height={geometry.totalHeight} fill={theme.card} />
+                    <rect x={-1} width={geometry.marginLeft + 1} height={geometry.totalHeight} fill={theme.card} />
                     {geometry.layout.map(({ variable, bottom }, rowIndex) => (
                         <g key={variable}>
                             {scales[rowIndex].ticks.map((tick) => (
