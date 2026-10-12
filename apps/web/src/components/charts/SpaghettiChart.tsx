@@ -46,6 +46,9 @@ const MAX_TICK_WIDTH = 16
 const HOVER_LABEL_HALF_WIDTH = 34
 const PERIOD_LABEL_HALF_WIDTH = 50
 const UNIT_LABEL_WIDTH = 28
+// The clip reaches past the plot by half the median's 3 px stroke and a pixel more, so a line on the axis's top or
+// bottom value (a humidity or cloud cover of 100 %) shows its whole stroke.
+const CLIP_BLEED = 2.5
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
 // Phones get a shorter plot so the model list under it stays in view while scrubbing.
 const NARROW_WIDTH = 480
@@ -276,9 +279,9 @@ export function SpaghettiChart({
                             <clipPath id={clipId}>
                                 <rect
                                     x={margin.left}
-                                    y={margin.top}
+                                    y={margin.top - CLIP_BLEED}
                                     width={Math.max(0, plotRight - margin.left)}
-                                    height={Math.max(0, plotBottom - margin.top)}
+                                    height={Math.max(0, plotBottom - margin.top + 2 * CLIP_BLEED)}
                                 />
                             </clipPath>
                         </defs>
