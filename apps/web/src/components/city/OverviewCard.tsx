@@ -114,6 +114,7 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
             </CardHeader>
             <CardContent>
                 <MedianOverview
+                    key={city.slug}
                     series={medians}
                     directions={directions}
                     chance={chance}

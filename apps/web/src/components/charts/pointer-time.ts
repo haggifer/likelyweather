@@ -1,6 +1,7 @@
 import { ScaleTime } from 'd3-scale'
-import { PointerEvent } from 'react'
+import { MouseEvent } from 'react'
 
-// The overlay rect starts at the left margin, so the pointer offset inside it is shifted back onto the x range.
-export const getPointerTime = (e: PointerEvent<Element>, x: ScaleTime<number, number>, left: number) =>
+// The overlay rect starts at the left margin, so the pointer offset inside it is shifted back onto the x range. Its
+// box moves with a scrolled chart, so the offset holds at any scroll position.
+export const getPointerTime = (e: MouseEvent<Element>, x: ScaleTime<number, number>, left: number) =>
     x.invert(e.clientX - e.currentTarget.getBoundingClientRect().left + left)

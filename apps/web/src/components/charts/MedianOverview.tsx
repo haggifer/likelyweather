@@ -1,12 +1,14 @@
 'use client'
 
 import { Skeleton } from '@/components/ui/skeleton'
+import { useChartScroll } from '@/hooks/useChartScroll'
 import { useChartTheme } from '@/hooks/useChartTheme'
 import { useElementWidth } from '@/hooks/useElementWidth'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { MedianSeries } from '@fa/chart-core/overview-stats'
 import { clamp, getBarWidth, getNowX, getTimeScale, getValueScale } from '@fa/chart-core/plot-geometry'
 import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
+import { getInitialScrollLeft, getMinSlotWidth, getScrollWidth } from '@fa/chart-core/scroll-geometry'
 import { getNearestIndex, getSumBarCenter } from '@fa/chart-core/spaghetti-geometry'
 import { HOUR_MS } from '@fa/shared/constants'
 import { formatNumber, formatStepLabel } from '@fa/shared/format'
@@ -15,7 +17,7 @@ import { OverviewVariable, Variable, VARIABLE_BY_ID } from '@fa/shared/variables
 import { ScaleLinear, ScaleTime } from 'd3-scale'
 import { area, curveMonotoneX, line } from 'd3-shape'
 import { useTranslations } from 'next-intl'
-import { CSSProperties, KeyboardEvent, PointerEvent, useId, useState } from 'react'
+import { CSSProperties, KeyboardEvent, MouseEvent, PointerEvent, useId, useState } from 'react'
 import { getArrowStep } from './arrow-keys'
 import { DayGrid } from './DayGrid'
 import { getPointerTime } from './pointer-time'
@@ -151,8 +153,14 @@ const getPanelDomain = (variable: PanelVariable, s: MedianSeries, secondary: Med
     return { domain: getYDomain(values, scaleVariable), scaleVariable }
 }
 
-// Every chance-of-rain label gets about two characters' width; narrower slots show every other one.
-const getLabelEvery = (slotWidth: number, fontSize: number) => Math.max(1, Math.ceil((fontSize * 2) / slotWidth))
+// A panel's value axis: the scale and the ticks its gridlines and its pinned labels share.
+const getPanelScale = (row: RowLayout, series: Record<OverviewVariable, MedianSeries>) => {
+    const secondaryVariable = SECONDARY[row.variable]
+    const secondary = secondaryVariable ? series[secondaryVariable] : null
+    const { domain, scaleVariable } = getPanelDomain(row.variable, series[row.variable], secondary)
+
+    return { y: getValueScale(domain, [row.bottom, row.top + ROW_PAD]), ticks: getYTicks(domain, scaleVariable, 3) }
+}
 
 const toPoints = (s: MedianSeries): Point[] => s.steps.map((step, i) => [new Date(step), s.values[i]])
 
@@ -234,7 +242,9 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
     const geometry = isStacked ? PHONE : DESKTOP
     const axisSteps = series[Variable.Temp].steps
     const times = axisSteps.map((s) => new Date(s))
-    const plotRight = width - MARGIN_RIGHT
+    const minSlot = getMinSlotWidth(geometry.tickFontSize)
+    const contentWidth = getScrollWidth(width, times.length - 1, minSlot, geometry.marginLeft + MARGIN_RIGHT)
+    const plotRight = contentWidth - MARGIN_RIGHT
     const x = getTimeScale(times, [geometry.marginLeft, Math.max(geometry.marginLeft + 1, plotRight)])
     // One crosshair for every panel: each reads the slot nearest the pointer (or now), so a precipitation readout is
     // the 3 hours from that slot, which can be the bar after the one under the line (author, 2026-10-09).
@@ -244,9 +254,15 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
     const nowLabelY = geometry.isNowLabelAbove ? geometry.plotTop - 7 : geometry.plotTop + geometry.tickFontSize
     const isNowLabelShown = !geometry.isNowLabelAbove || hoverIndex === null
     const barWidth = getBarWidth(x, times[0], SLOT_MS)
-    const plotWidth = Math.max(0, width - geometry.marginLeft - MARGIN_RIGHT)
+    const plotWidth = Math.max(0, contentWidth - geometry.marginLeft - MARGIN_RIGHT)
     const slotWidth = times.length > 1 ? x(times[1]) - x(times[0]) : plotWidth
-    const chanceEvery = getLabelEvery(slotWidth, geometry.tickFontSize)
+    const scales = geometry.layout.map((row) => getPanelScale(row, series))
+    const initialScrollLeft = getInitialScrollLeft(now ? x(now) : null, {
+        slotWidth,
+        insetLeft: geometry.marginLeft,
+        contentWidth,
+        viewportWidth: width,
+    })
     const hoverX =
         hoverIndex === null
             ? null
@@ -256,10 +272,19 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                   plotRight - geometry.hoverLabelHalfWidth,
               )
 
-    const handlePointerMove = (e: PointerEvent<SVGRectElement>) =>
+    const { ref: scrollRef, reveal } = useChartScroll(`${axisSteps[0]}|${contentWidth}`, initialScrollLeft, [
+        geometry.marginLeft,
+        MARGIN_RIGHT,
+    ])
+
+    const selectAt = (e: MouseEvent<SVGRectElement>) =>
         setHoverIndex(getNearestIndex(times, getPointerTime(e, x, geometry.marginLeft)))
-    // On a touch screen a selection stays after the finger lifts, so its readout can be read; a tap outside the plot
-    // clears it, and so does a tap elsewhere, which blurs the chart. A mouse clears it on leaving the plot.
+    // A finger's drag scrolls the chart, so touch selects on a tap (`click`) and keeps the selection after the finger
+    // lifts, so its readout can be read; a tap outside the plot clears it, and so does a tap elsewhere, which blurs the
+    // chart. A mouse follows the pointer and clears on leaving the plot.
+    const handlePointerMove = (e: PointerEvent<SVGRectElement>) => {
+        if (e.pointerType !== 'touch') selectAt(e)
+    }
     const handlePlotPointerDown = (e: PointerEvent<SVGRectElement>) => {
         e.stopPropagation()
         handlePointerMove(e)
@@ -270,8 +295,11 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
 
         if (!step) return
 
+        const next = clamp(readoutIndex + step, 0, times.length - 1)
+
         e.preventDefault()
-        setHoverIndex(clamp(readoutIndex + step, 0, times.length - 1))
+        setHoverIndex(next)
+        reveal(x(times[next]))
     }
 
     return (
@@ -320,274 +348,302 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                 })}
             </div>
             <div ref={ref} className="relative min-w-0 select-none">
-                <svg
-                    width={width}
-                    height={geometry.totalHeight}
-                    role="img"
-                    aria-label={ariaLabel}
-                    tabIndex={0}
-                    onKeyDown={handleKeyDown}
-                    onBlur={() => setHoverIndex(null)}
-                    onPointerDown={() => setHoverIndex(null)}
-                    className="block overflow-visible outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                    <defs>
-                        {geometry.spans.map(({ top, bottom }, i) => (
-                            <clipPath key={top} id={`${clipId}-${i}`}>
-                                <rect
-                                    x={geometry.marginLeft}
-                                    y={top}
-                                    width={plotWidth}
-                                    height={bottom - top}
-                                    rx={PANEL_RADIUS}
-                                />
-                            </clipPath>
-                        ))}
-                    </defs>
-                    {geometry.spans.map(({ top, bottom }) => (
-                        <rect
-                            key={top}
-                            x={geometry.marginLeft}
-                            y={top}
-                            width={plotWidth}
-                            height={bottom - top}
-                            rx={PANEL_RADIUS}
-                            fill={theme.grid}
-                            opacity={0.4}
-                        />
-                    ))}
-                    {nowX !== null &&
-                        geometry.spans.map(({ top, bottom }, i) => (
+                <div ref={scrollRef} className="overflow-x-auto overscroll-x-contain [scrollbar-width:thin]">
+                    <svg
+                        width={contentWidth}
+                        height={geometry.totalHeight}
+                        role="img"
+                        aria-label={ariaLabel}
+                        tabIndex={0}
+                        onKeyDown={handleKeyDown}
+                        onBlur={() => setHoverIndex(null)}
+                        onPointerDown={() => setHoverIndex(null)}
+                        className="block overflow-visible outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                        <defs>
+                            {geometry.spans.map(({ top, bottom }, i) => (
+                                <clipPath key={top} id={`${clipId}-${i}`}>
+                                    <rect
+                                        x={geometry.marginLeft}
+                                        y={top}
+                                        width={plotWidth}
+                                        height={bottom - top}
+                                        rx={PANEL_RADIUS}
+                                    />
+                                </clipPath>
+                            ))}
+                        </defs>
+                        {geometry.spans.map(({ top, bottom }) => (
                             <rect
                                 key={top}
                                 x={geometry.marginLeft}
                                 y={top}
-                                width={Math.max(0, nowX - geometry.marginLeft)}
+                                width={plotWidth}
                                 height={bottom - top}
+                                rx={PANEL_RADIUS}
                                 fill={theme.grid}
-                                opacity={0.6}
-                                clipPath={`url(#${clipId}-${i})`}
+                                opacity={0.4}
                             />
                         ))}
-                    {geometry.layout.map(({ variable, top, bottom }) => {
-                        const s = series[variable]
-                        const secondaryVariable = SECONDARY[variable]
-                        const secondary = secondaryVariable ? series[secondaryVariable] : null
-                        const points = toPoints(s)
-                        const { domain, scaleVariable } = getPanelDomain(variable, s, secondary)
-                        const y = getValueScale(domain, [bottom, top + ROW_PAD])
-                        const hoverValue = hoverIndex === null ? null : getValueAt(s, axisSteps[hoverIndex])
-                        const hoverSecondary =
-                            hoverIndex === null || !secondary ? null : getValueAt(secondary, axisSteps[hoverIndex])
+                        {nowX !== null &&
+                            geometry.spans.map(({ top, bottom }, i) => (
+                                <rect
+                                    key={top}
+                                    x={geometry.marginLeft}
+                                    y={top}
+                                    width={Math.max(0, nowX - geometry.marginLeft)}
+                                    height={bottom - top}
+                                    fill={theme.grid}
+                                    opacity={0.6}
+                                    clipPath={`url(#${clipId}-${i})`}
+                                />
+                            ))}
+                        {geometry.layout.map(({ variable, bottom }, rowIndex) => {
+                            const s = series[variable]
+                            const secondaryVariable = SECONDARY[variable]
+                            const secondary = secondaryVariable ? series[secondaryVariable] : null
+                            const points = toPoints(s)
+                            const { y, ticks } = scales[rowIndex]
+                            const hoverValue = hoverIndex === null ? null : getValueAt(s, axisSteps[hoverIndex])
+                            const hoverSecondary =
+                                hoverIndex === null || !secondary ? null : getValueAt(secondary, axisSteps[hoverIndex])
 
-                        return (
-                            <g key={variable}>
-                                {getYTicks(domain, scaleVariable, 3).map((tick) => (
-                                    <g key={tick}>
+                            return (
+                                <g key={variable}>
+                                    {ticks.map((tick) => (
                                         <line
+                                            key={tick}
                                             x1={geometry.marginLeft}
                                             x2={plotRight}
                                             y1={y(tick)}
                                             y2={y(tick)}
                                             stroke={theme.grid}
                                         />
-                                        <text
-                                            x={geometry.marginLeft - 6}
-                                            y={y(tick)}
-                                            dy="0.32em"
-                                            textAnchor="end"
-                                            fontSize={geometry.tickFontSize}
-                                            fill={theme.muted}
-                                        >
-                                            {formatYTick(tick)}
-                                        </text>
-                                    </g>
-                                ))}
-                                {variable === Variable.Precip ? (
-                                    points.map((p) => {
-                                        const center = x(getSumBarCenter(p[0], SLOT_MS))
+                                    ))}
+                                    {variable === Variable.Precip ? (
+                                        points.map((p) => {
+                                            const center = x(getSumBarCenter(p[0], SLOT_MS))
 
-                                        if (p[1] === null || center + barWidth / 2 > plotRight) return null
-
-                                        return (
-                                            <rect
-                                                key={p[0].toISOString()}
-                                                x={center - barWidth / 2}
-                                                y={y(p[1])}
-                                                width={barWidth}
-                                                height={Math.max(0, bottom - y(p[1]))}
-                                                rx={2}
-                                                fill={theme.band}
-                                                opacity={0.75}
-                                            />
-                                        )
-                                    })
-                                ) : (
-                                    <>
-                                        <path
-                                            d={getAreaPath(points, x, y, bottom)}
-                                            fill={theme.band}
-                                            opacity={theme.bandOuterOpacity}
-                                        />
-                                        <path
-                                            d={getLinePath(points, x, y)}
-                                            fill="none"
-                                            stroke={theme.median}
-                                            strokeWidth={2}
-                                            strokeLinecap="round"
-                                        />
-                                        {secondary && (
-                                            <path
-                                                d={getLinePath(toPoints(secondary), x, y)}
-                                                fill="none"
-                                                stroke={theme.median}
-                                                strokeWidth={1.5}
-                                                strokeDasharray={SECONDARY_DASH}
-                                                opacity={0.7}
-                                            />
-                                        )}
-                                    </>
-                                )}
-                                {variable === Variable.Precip && (
-                                    <g aria-hidden="true">
-                                        <text
-                                            x={geometry.marginLeft - 6}
-                                            y={bottom + CHANCE_STRIP / 2}
-                                            dy="0.32em"
-                                            textAnchor="end"
-                                            fontSize={geometry.tickFontSize}
-                                            fill={theme.muted}
-                                        >
-                                            %
-                                        </text>
-                                        {chance.map((c, i) => {
-                                            const center = x(getSumBarCenter(times[i], SLOT_MS))
-                                            const isShown =
-                                                c !== null &&
-                                                i % chanceEvery === 0 &&
-                                                center + barWidth / 2 <= plotRight
+                                            if (p[1] === null || center + barWidth / 2 > plotRight) return null
 
                                             return (
-                                                isShown && (
-                                                    <text
-                                                        key={axisSteps[i]}
-                                                        x={center}
-                                                        y={bottom + CHANCE_STRIP / 2}
-                                                        dy="0.32em"
-                                                        textAnchor="middle"
-                                                        fontSize={geometry.tickFontSize}
-                                                        fontWeight={c >= 0.5 ? 600 : 400}
-                                                        fill={c >= 0.5 ? theme.foreground : theme.muted}
-                                                    >
-                                                        {Math.round(c * 100)}
-                                                    </text>
-                                                )
+                                                <rect
+                                                    key={p[0].toISOString()}
+                                                    x={center - barWidth / 2}
+                                                    y={y(p[1])}
+                                                    width={barWidth}
+                                                    height={Math.max(0, bottom - y(p[1]))}
+                                                    rx={2}
+                                                    fill={theme.band}
+                                                    opacity={0.75}
+                                                />
                                             )
-                                        })}
-                                    </g>
-                                )}
-                                {variable === Variable.Wind && directions && (
-                                    <WindArrows
-                                        x={x}
-                                        times={times}
-                                        directions={directions}
-                                        y={bottom + ARROW_STRIP / 2 + 2}
-                                        color={theme.foreground}
-                                        mutedColor={theme.muted}
-                                        compassLabels={tc('compass').split(',')}
-                                    />
-                                )}
-                                {hoverIndex !== null &&
-                                    hoverValue !== null &&
-                                    hoverValue !== undefined &&
-                                    variable !== Variable.Precip && (
+                                        })
+                                    ) : (
+                                        <>
+                                            <path
+                                                d={getAreaPath(points, x, y, bottom)}
+                                                fill={theme.band}
+                                                opacity={theme.bandOuterOpacity}
+                                            />
+                                            <path
+                                                d={getLinePath(points, x, y)}
+                                                fill="none"
+                                                stroke={theme.median}
+                                                strokeWidth={2}
+                                                strokeLinecap="round"
+                                            />
+                                            {secondary && (
+                                                <path
+                                                    d={getLinePath(toPoints(secondary), x, y)}
+                                                    fill="none"
+                                                    stroke={theme.median}
+                                                    strokeWidth={1.5}
+                                                    strokeDasharray={SECONDARY_DASH}
+                                                    opacity={0.7}
+                                                />
+                                            )}
+                                        </>
+                                    )}
+                                    {variable === Variable.Precip && (
+                                        <g aria-hidden="true">
+                                            {chance.map((c, i) => {
+                                                const center = x(getSumBarCenter(times[i], SLOT_MS))
+                                                const isShown = c !== null && center + barWidth / 2 <= plotRight
+
+                                                return (
+                                                    isShown && (
+                                                        <text
+                                                            key={axisSteps[i]}
+                                                            x={center}
+                                                            y={bottom + CHANCE_STRIP / 2}
+                                                            dy="0.32em"
+                                                            textAnchor="middle"
+                                                            fontSize={geometry.tickFontSize}
+                                                            fontWeight={c >= 0.5 ? 600 : 400}
+                                                            fill={c >= 0.5 ? theme.foreground : theme.muted}
+                                                        >
+                                                            {Math.round(c * 100)}
+                                                        </text>
+                                                    )
+                                                )
+                                            })}
+                                        </g>
+                                    )}
+                                    {variable === Variable.Wind && directions && (
+                                        <WindArrows
+                                            x={x}
+                                            times={times}
+                                            directions={directions}
+                                            y={bottom + ARROW_STRIP / 2 + 2}
+                                            color={theme.foreground}
+                                            mutedColor={theme.muted}
+                                            compassLabels={tc('compass').split(',')}
+                                        />
+                                    )}
+                                    {hoverIndex !== null &&
+                                        hoverValue !== null &&
+                                        hoverValue !== undefined &&
+                                        variable !== Variable.Precip && (
+                                            <circle
+                                                cx={x(times[hoverIndex])}
+                                                cy={y(hoverValue)}
+                                                r={4}
+                                                fill={theme.median}
+                                                stroke={theme.card}
+                                                strokeWidth={2}
+                                                pointerEvents="none"
+                                            />
+                                        )}
+                                    {hoverIndex !== null && hoverSecondary !== null && (
                                         <circle
                                             cx={x(times[hoverIndex])}
-                                            cy={y(hoverValue)}
-                                            r={4}
-                                            fill={theme.median}
-                                            stroke={theme.card}
-                                            strokeWidth={2}
+                                            cy={y(hoverSecondary)}
+                                            r={3}
+                                            fill={theme.card}
+                                            stroke={theme.median}
+                                            strokeWidth={1.5}
                                             pointerEvents="none"
                                         />
                                     )}
-                                {hoverIndex !== null && hoverSecondary !== null && (
-                                    <circle
-                                        cx={x(times[hoverIndex])}
-                                        cy={y(hoverSecondary)}
-                                        r={3}
-                                        fill={theme.card}
-                                        stroke={theme.median}
-                                        strokeWidth={1.5}
-                                        pointerEvents="none"
+                                </g>
+                            )
+                        })}
+                        <DayGrid
+                            x={x}
+                            start={times[0]}
+                            end={times[times.length - 1]}
+                            timeZone={timeZone}
+                            locale={locale}
+                            spans={geometry.spans}
+                            labelYs={[geometry.plotBottom + 5 + geometry.labelFontSize]}
+                            fontSize={geometry.labelFontSize}
+                            lineColor={theme.border}
+                            labelColor={theme.muted}
+                        />
+                        {nowX !== null && (
+                            <g pointerEvents="none">
+                                {geometry.spans.map(({ top, bottom }) => (
+                                    <line
+                                        key={top}
+                                        x1={nowX}
+                                        x2={nowX}
+                                        y1={top}
+                                        y2={bottom}
+                                        stroke={theme.foreground}
+                                        strokeDasharray="4 3"
                                     />
+                                ))}
+                                {isNowLabelShown && (
+                                    <text
+                                        x={nowX + 4}
+                                        y={nowLabelY}
+                                        fontSize={geometry.tickFontSize}
+                                        fontWeight={600}
+                                        fill={theme.foreground}
+                                    >
+                                        {tc('now')}
+                                    </text>
                                 )}
                             </g>
-                        )
-                    })}
-                    <DayGrid
-                        x={x}
-                        start={times[0]}
-                        end={times[times.length - 1]}
-                        timeZone={timeZone}
-                        locale={locale}
-                        spans={geometry.spans}
-                        labelYs={[geometry.plotBottom + 5 + geometry.labelFontSize]}
-                        fontSize={geometry.labelFontSize}
-                        lineColor={theme.border}
-                        labelColor={theme.muted}
-                    />
-                    {nowX !== null && (
-                        <g pointerEvents="none">
-                            {geometry.spans.map(({ top, bottom }) => (
+                        )}
+                        {hoverIndex !== null && hoverX !== null && (
+                            <text
+                                x={hoverX}
+                                y={geometry.plotTop - 7}
+                                textAnchor="middle"
+                                fontSize={geometry.labelFontSize}
+                                fontWeight={600}
+                                fill={theme.foreground}
+                                pointerEvents="none"
+                            >
+                                {formatStepLabel(axisSteps[hoverIndex], timeZone, locale)}
+                            </text>
+                        )}
+                        {hoverIndex !== null &&
+                            geometry.spans.map(({ top, bottom }) => (
                                 <line
                                     key={top}
-                                    x1={nowX}
-                                    x2={nowX}
+                                    x1={x(times[hoverIndex])}
+                                    x2={x(times[hoverIndex])}
                                     y1={top}
                                     y2={bottom}
-                                    stroke={theme.foreground}
-                                    strokeDasharray="4 3"
+                                    stroke={theme.muted}
+                                    pointerEvents="none"
                                 />
                             ))}
-                            {isNowLabelShown && (
+                        <rect
+                            x={geometry.marginLeft}
+                            y={geometry.plotTop}
+                            width={plotWidth}
+                            height={geometry.plotBottom - geometry.plotTop}
+                            fill="transparent"
+                            style={{ touchAction: 'pan-x pan-y' }}
+                            onPointerDown={handlePlotPointerDown}
+                            onPointerMove={handlePointerMove}
+                            onPointerLeave={(e) => e.pointerType !== 'touch' && setHoverIndex(null)}
+                            onClick={selectAt}
+                        />
+                    </svg>
+                </div>
+                {/* The axis stays while the plot scrolls under it: the tick labels on a card-coloured column, and on
+                    phones the panel names in the panels' corners. */}
+                <svg
+                    width={width}
+                    height={geometry.totalHeight}
+                    aria-hidden="true"
+                    className="pointer-events-none absolute top-0 left-0"
+                >
+                    <rect width={geometry.marginLeft} height={geometry.totalHeight} fill={theme.card} />
+                    {geometry.layout.map(({ variable, bottom }, rowIndex) => (
+                        <g key={variable}>
+                            {scales[rowIndex].ticks.map((tick) => (
                                 <text
-                                    x={nowX + 4}
-                                    y={nowLabelY}
+                                    key={tick}
+                                    x={geometry.marginLeft - 6}
+                                    y={scales[rowIndex].y(tick)}
+                                    dy="0.32em"
+                                    textAnchor="end"
                                     fontSize={geometry.tickFontSize}
-                                    fontWeight={600}
-                                    fill={theme.foreground}
+                                    fill={theme.muted}
                                 >
-                                    {tc('now')}
+                                    {formatYTick(tick)}
+                                </text>
+                            ))}
+                            {variable === Variable.Precip && (
+                                <text
+                                    x={geometry.marginLeft - 6}
+                                    y={bottom + CHANCE_STRIP / 2}
+                                    dy="0.32em"
+                                    textAnchor="end"
+                                    fontSize={geometry.tickFontSize}
+                                    fill={theme.muted}
+                                >
+                                    %
                                 </text>
                             )}
                         </g>
-                    )}
-                    {hoverIndex !== null && hoverX !== null && (
-                        <text
-                            x={hoverX}
-                            y={geometry.plotTop - 7}
-                            textAnchor="middle"
-                            fontSize={geometry.labelFontSize}
-                            fontWeight={600}
-                            fill={theme.foreground}
-                            pointerEvents="none"
-                        >
-                            {formatStepLabel(axisSteps[hoverIndex], timeZone, locale)}
-                        </text>
-                    )}
-                    {hoverIndex !== null &&
-                        geometry.spans.map(({ top, bottom }) => (
-                            <line
-                                key={top}
-                                x1={x(times[hoverIndex])}
-                                x2={x(times[hoverIndex])}
-                                y1={top}
-                                y2={bottom}
-                                stroke={theme.muted}
-                                pointerEvents="none"
-                            />
-                        ))}
+                    ))}
                     {isStacked &&
                         geometry.layout.map(({ variable, top }) => (
                             <text
@@ -600,22 +656,10 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                                 stroke={theme.card}
                                 strokeWidth={3}
                                 paintOrder="stroke"
-                                pointerEvents="none"
                             >
                                 {tv(variable)}, {VARIABLE_BY_ID[variable].unit}
                             </text>
                         ))}
-                    <rect
-                        x={geometry.marginLeft}
-                        y={geometry.plotTop}
-                        width={plotWidth}
-                        height={geometry.plotBottom - geometry.plotTop}
-                        fill="transparent"
-                        style={{ touchAction: 'pan-y' }}
-                        onPointerDown={handlePlotPointerDown}
-                        onPointerMove={handlePointerMove}
-                        onPointerLeave={(e) => e.pointerType !== 'touch' && setHoverIndex(null)}
-                    />
                 </svg>
             </div>
         </div>
