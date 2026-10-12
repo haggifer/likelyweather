@@ -2,6 +2,7 @@ import {
     DEFAULT_OVERVIEW_PANELS,
     getVisiblePanels,
     movePanel,
+    OverviewPanels,
     PanelVariable,
     togglePanel,
 } from '@fa/shared/overview-panels'
@@ -9,7 +10,6 @@ import { Check, ChevronDown, ChevronUp } from 'lucide-react-native'
 import { Modal, Pressable, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTranslations } from 'use-intl'
-import { useOverviewPanels } from '../../hooks/useOverviewPanels'
 import { useTheme } from '../../hooks/useTheme'
 import { withAlpha } from '../../theme/color-mix'
 import { DARK } from '../../theme/tokens'
@@ -95,17 +95,19 @@ const PanelRow = ({ variable, isVisible, isLastVisible, isFirst, isLast, onToggl
 }
 
 interface IProps {
+    // The overview's panels or the archive's, which keeps its own choice.
+    panels: OverviewPanels
+    onChange: (update: (panels: OverviewPanels) => OverviewPanels) => void
     isOpen: boolean
     onClose: () => void
 }
 
 // Which of the overview's panels show and in which order; every change applies to the chart at once and is kept on
 // the device.
-export function OverviewPanelsSheet({ isOpen, onClose }: IProps) {
+export function OverviewPanelsSheet({ panels, onChange: setPanels, isOpen, onClose }: IProps) {
     const t = useTranslations('overview')
     const { colors, radius } = useTheme()
     const insets = useSafeAreaInsets()
-    const { panels, setPanels } = useOverviewPanels()
 
     const visible = getVisiblePanels(panels)
 

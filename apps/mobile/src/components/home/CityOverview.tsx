@@ -47,7 +47,7 @@ export function CityOverview({ slug }: IProps) {
     const locale = useLocale()
     const now = useNow()
     const { colors } = useTheme()
-    const { panels } = useOverviewPanels()
+    const { panels, setPanels } = useOverviewPanels()
 
     const [isCustomizing, setIsCustomizing] = useState(false)
 
@@ -132,7 +132,12 @@ export function CityOverview({ slug }: IProps) {
                     onCustomize={handleCustomize}
                 />
             )}
-            <OverviewPanelsSheet isOpen={isCustomizing} onClose={handleCloseCustomize} />
+            <OverviewPanelsSheet
+                panels={panels}
+                onChange={setPanels}
+                isOpen={isCustomizing}
+                onClose={handleCloseCustomize}
+            />
         </>
     )
 }

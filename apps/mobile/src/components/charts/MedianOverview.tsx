@@ -157,7 +157,7 @@ const getPanelDomain = (variable: PanelVariable, s: MedianSeries, secondary: Med
 const getExtraReadout = (
     variable: PanelVariable,
     series: OverviewMedians,
-    chance: (number | null)[],
+    chance: (number | null)[] | null,
     index: number,
 ): ExtraReadout | null => {
     const secondary = SECONDARY_VARIABLE[variable]
@@ -169,7 +169,7 @@ const getExtraReadout = (
         return { variable: secondary, value: formatNumber(getValueAt(s, s.steps[index]), decimals), unit }
     }
 
-    if (variable !== Variable.Precip) return null
+    if (variable !== Variable.Precip || !chance) return null
 
     const value = chance[index] ?? null
 
@@ -185,8 +185,8 @@ const getPanelScale = (row: RowLayout, series: OverviewMedians): PanelScale => {
     return { y: getValueScale(domain, [row.bottom, row.top + ROW_PAD]), ticks: getPanelTicks(domain, scaleVariable) }
 }
 
-const hasExtraReadout = (variable: PanelVariable) =>
-    Boolean(SECONDARY_VARIABLE[variable]) || variable === Variable.Precip
+const hasExtraReadout = (variable: PanelVariable, hasChance: boolean) =>
+    Boolean(SECONDARY_VARIABLE[variable]) || (hasChance && variable === Variable.Precip)
 
 const toPoints = (s: MedianSeries): Point[] => s.steps.map((step, i) => [new Date(step), s.values[i]])
 
@@ -228,7 +228,7 @@ interface PanelDrawingProps {
     x: ScaleTime<number, number>
     times: Date[]
     directions: (number | null)[] | null
-    chance: (number | null)[]
+    chance: (number | null)[] | null
     barWidth: number
     plotRight: number
 }
@@ -298,7 +298,7 @@ const PanelDrawing = ({
                     )}
                 </G>
             )}
-            {variable === Variable.Precip && (
+            {variable === Variable.Precip && chance && (
                 <ChanceStrip
                     x={x}
                     times={times}
@@ -333,7 +333,7 @@ interface DrawingProps {
     x: ScaleTime<number, number>
     times: Date[]
     directions: (number | null)[] | null
-    chance: (number | null)[]
+    chance: (number | null)[] | null
     barWidth: number
     plotRight: number
     plotWidth: number
@@ -453,11 +453,13 @@ const SkeletonLine = ({ textStyle, width }: SkeletonLineProps) => (
 
 interface SkeletonProps {
     panels: PanelVariable[]
+    // The archive's precipitation readout has no chance-of-rain line.
+    isArchive?: boolean
 }
 
 // The loaded overview's shape, line for line: the panels' readouts with their second lines, then the panels at their
 // full height.
-export function MedianOverviewSkeleton({ panels }: SkeletonProps) {
+export function MedianOverviewSkeleton({ panels, isArchive = false }: SkeletonProps) {
     const { colors } = useTheme()
 
     const layout = useMemo(() => getLayout(panels), [panels])
@@ -469,7 +471,7 @@ export function MedianOverviewSkeleton({ panels }: SkeletonProps) {
                     <View key={variable} style={[styles.readout, { borderLeftColor: colors.border }]}>
                         <SkeletonLine textStyle={styles.label} width="55%" />
                         <SkeletonLine textStyle={styles.value} width="40%" />
-                        {hasExtraReadout(variable) && <SkeletonLine textStyle={styles.extra} width="65%" />}
+                        {hasExtraReadout(variable, !isArchive) && <SkeletonLine textStyle={styles.extra} width="65%" />}
                     </View>
                 ))}
             </View>
@@ -483,16 +485,20 @@ interface IProps {
     panels: PanelVariable[]
     series: OverviewMedians
     directions: (number | null)[] | null
-    chance: (number | null)[]
+    // The share of models above 0.2 mm per slot; the archive has one series and passes none.
+    chance: (number | null)[] | null
     timeZone: string
     locale: string
-    now: Date
+    now: Date | null
     accessibilityLabel: string
+    // Past weather: precipitation reads as the 3 hours from the slot, not the next 3 hours.
+    isArchive?: boolean
 }
 
 // Median of all models for every panel's variable on one axis of local 3-hour slots; a precipitation bar is the amount
 // of the 3 hours after its slot, and the strip under the bars the share of models above 0.2 mm in it. The readouts
-// follow the finger, or the slot nearest to now.
+// follow the finger, or the slot nearest to now. The archive draws a city's past weather the same way, without a now
+// line or a chance of rain, opening at its first slot.
 export function MedianOverview({
     panels,
     series,
@@ -502,6 +508,7 @@ export function MedianOverview({
     locale,
     now,
     accessibilityLabel,
+    isArchive = false,
 }: IProps) {
     const t = useTranslations('overview')
     const tv = useTranslations('variables')
@@ -525,7 +532,7 @@ export function MedianOverview({
     )
     // One crosshair for every panel: each reads the slot nearest the pointer (or now), so a precipitation readout is
     // the 3 hours from that slot, which can be the bar after the one under the line (author, 2026-10-09).
-    const readoutIndex = hoverIndex ?? getNearestIndex(times, now)
+    const readoutIndex = hoverIndex ?? (now ? getNearestIndex(times, now) : 0)
     const readoutTime = axisSteps[readoutIndex]
     const nowX = getNowX(x, now, MARGIN.left, plotRight)
     const barWidth = getBarWidth(x, times[0], SLOT_MS)
@@ -533,7 +540,7 @@ export function MedianOverview({
     const slotWidth = times.length > 1 ? x(times[1]) - x(times[0]) : plotWidth
     const scales = useMemo(() => layout.rows.map((row) => getPanelScale(row, series)), [layout, series])
     const hoverDots = hoverIndex === null ? [] : getHoverDots(layout.rows, scales, series, axisSteps[hoverIndex])
-    const initialScrollLeft = getInitialScrollLeft(x(now), {
+    const initialScrollLeft = getInitialScrollLeft(now ? x(now) : null, {
         slotWidth,
         insetLeft: MARGIN.left,
         contentWidth,
@@ -575,7 +582,12 @@ export function MedianOverview({
                                 {formatNumber(getValueAt(s, readoutTime), info.decimals)}
                                 <Text style={[styles.unit, { color: colors['muted-foreground'] }]}>
                                     {' '}
-                                    {isSum ? t('perSlot', { unit: info.unit, hours: SLOT_HOURS }) : info.unit}
+                                    {isSum
+                                        ? t(isArchive ? 'perSlotPast' : 'perSlot', {
+                                              unit: info.unit,
+                                              hours: SLOT_HOURS,
+                                          })
+                                        : info.unit}
                                 </Text>
                             </Text>
                             {extra && (
@@ -693,7 +705,7 @@ export function MedianOverview({
                                             {formatYTick(tick)}
                                         </SvgText>
                                     ))}
-                                    {variable === Variable.Precip && (
+                                    {variable === Variable.Precip && chance && (
                                         <SvgText
                                             x={MARGIN.left - 6}
                                             y={bottom + CHANCE_STRIP / 2 + BASELINE_SHIFT}

@@ -138,6 +138,28 @@ describe('MedianOverview', () => {
         expect(names.map((name) => name.props.children)).toEqual([en.variables.cloud, en.variables.temp])
     })
 
+    it('draws past weather without a chance of rain, reading precipitation over the past 3 hours', async () => {
+        await render(
+            <IntlProvider locale="en" messages={en}>
+                <MedianOverview
+                    panels={DEFAULT_PANELS}
+                    series={SERIES}
+                    directions={null}
+                    chance={null}
+                    timeZone="UTC"
+                    locale="en"
+                    now={null}
+                    isArchive
+                    accessibilityLabel="Archive"
+                />
+            </IntlProvider>,
+        )
+
+        expect(screen.queryByText(/Chance of rain/)).toBeNull()
+        expect(screen.getByText('mm / 3 h')).toBeOnTheScreen()
+        expect(screen.getByText('16.0 °C')).toBeOnTheScreen()
+    })
+
     it('shows no next-24-hour summary', async () => {
         await renderOverview()
 

@@ -15,7 +15,7 @@ describe('MethodologyScreen', () => {
 
         expect(screen.getByText(en.methodology.title)).toBeOnTheScreen()
         expect(screen.getByText(en.methodology.sources.title)).toBeOnTheScreen()
-        expect(screen.getByText(MODELS[0].name, { exact: false })).toBeOnTheScreen()
+        expect(screen.getByText(MODELS[0].name)).toBeOnTheScreen()
         expect(screen.getAllByRole('listitem')).toHaveLength(MODELS.length + VARIABLES.length)
     })
 })

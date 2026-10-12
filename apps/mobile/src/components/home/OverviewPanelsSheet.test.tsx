@@ -3,13 +3,20 @@ import { DEFAULT_OVERVIEW_PANELS } from '@fa/shared/overview-panels'
 import { Variable } from '@fa/shared/variables'
 import { fireEvent, render, screen } from '@testing-library/react-native'
 import { IntlProvider } from 'use-intl'
+import { useOverviewPanels } from '../../hooks/useOverviewPanels'
 import { settingsStore } from '../../lib/settings'
 import { OverviewPanelsSheet } from './OverviewPanelsSheet'
+
+const BoundSheet = () => {
+    const { panels, setPanels } = useOverviewPanels()
+
+    return <OverviewPanelsSheet panels={panels} onChange={setPanels} isOpen onClose={jest.fn()} />
+}
 
 const renderSheet = () =>
     render(
         <IntlProvider locale="en" messages={en}>
-            <OverviewPanelsSheet isOpen onClose={jest.fn()} />
+            <BoundSheet />
         </IntlProvider>,
     )
 

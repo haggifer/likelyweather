@@ -1,5 +1,5 @@
 import { Href, useRouter } from 'expo-router'
-import { BookOpen, LucideIcon, Menu, Settings } from 'lucide-react-native'
+import { Archive, BookOpen, LucideIcon, Menu, Settings } from 'lucide-react-native'
 import { useRef, useState } from 'react'
 import { Modal, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native'
 import { useTranslations } from 'use-intl'
@@ -12,12 +12,13 @@ interface Anchor {
 }
 
 interface MenuItem {
-    key: 'methodology' | 'settings'
+    key: 'archive' | 'methodology' | 'settings'
     icon: LucideIcon
     href: Href
 }
 
 const ITEMS: MenuItem[] = [
+    { key: 'archive', icon: Archive, href: '/archive' },
     { key: 'methodology', icon: BookOpen, href: '/methodology' },
     { key: 'settings', icon: Settings, href: '/settings' },
 ]
@@ -36,8 +37,8 @@ const styles = StyleSheet.create({
     label: { fontSize: 14 },
 })
 
-// The web top bar's "More" menu, on every screen's header; Settings joins Methodology because the app has no top-bar
-// controls for language and theme.
+// The web header's pages (the Archive, then Methodology), on every screen's header; Settings joins them because the app
+// has no top-bar controls for language and theme.
 export function MoreMenu() {
     const t = useTranslations('nav')
     const tm = useTranslations('mobile')
@@ -48,7 +49,7 @@ export function MoreMenu() {
     const triggerRef = useRef<View>(null)
     const [anchor, setAnchor] = useState<Anchor | null>(null)
 
-    const labels = { methodology: t('methodology'), settings: tm('settings') }
+    const labels = { archive: t('archive'), methodology: t('methodology'), settings: tm('settings') }
 
     // The menu hangs from the button wherever the header puts it.
     const handleOpen = () =>

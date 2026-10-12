@@ -22,6 +22,7 @@ import { getFontFamily } from '../theme/fonts'
 // The stack lives inside the IntlProvider so screen titles come from the catalogs too.
 const AppStack = () => {
     const tm = useTranslations('mobile')
+    const ta = useTranslations('archive')
     const { colors, isDark } = useTheme()
 
     return (
@@ -39,6 +40,7 @@ const AppStack = () => {
             >
                 <Stack.Screen name="index" options={{ title: 'Forecast Arena', headerTitle: () => <Wordmark /> }} />
                 <Stack.Screen name="city/[slug]" options={{ title: '' }} />
+                <Stack.Screen name="archive" options={{ title: ta('title') }} />
                 {/* Methodology opens with its own heading, as on the web, so the header names nothing. */}
                 <Stack.Screen name="methodology" options={{ title: '' }} />
                 <Stack.Screen name="settings" options={{ title: tm('settings') }} />
