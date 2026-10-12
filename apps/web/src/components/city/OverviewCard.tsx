@@ -1,6 +1,6 @@
 'use client'
 
-import { MedianOverview, MedianOverviewSkeleton, MedianSeries } from '@/components/charts/MedianOverview'
+import { MedianOverview, MedianOverviewSkeleton } from '@/components/charts/MedianOverview'
 import { FavoriteToggle } from '@/components/city/FavoriteToggle'
 import { RefreshButton } from '@/components/city/RefreshButton'
 import { UpdatedChip } from '@/components/city/UpdatedChip'
@@ -10,12 +10,17 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/componen
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/cn'
 import { isRefreshOffered } from '@fa/api-client/refresh-due'
-import { City, LatestResponse } from '@fa/shared/api'
+import {
+    getOverviewChance,
+    getOverviewDirections,
+    getOverviewMedians,
+    OverviewHourly,
+} from '@fa/chart-core/overview-stats'
+import { City } from '@fa/shared/api'
 import { getCityRegion } from '@fa/shared/city-region'
-import { computeEnsemble, computeMedianDirection } from '@fa/shared/ensemble'
 import { getCityName } from '@fa/shared/format'
-import { buildSlots, getSlotStart, toSlotSeries } from '@fa/shared/slots'
-import { Variable, VARIABLES } from '@fa/shared/variables'
+import { buildSlots, getSlotStart } from '@fa/shared/slots'
+import { Variable } from '@fa/shared/variables'
 import { ArrowRight, Loader2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
@@ -31,27 +36,6 @@ const ACTIONS =
     'flex items-center gap-2 max-sm:col-span-2 max-sm:col-start-1 max-sm:row-start-2 max-sm:mt-2 max-sm:mb-3 max-sm:w-full max-sm:justify-self-stretch'
 const PHONE_BUTTON = 'max-sm:h-8 max-sm:flex-1 max-sm:text-sm'
 const TITLE = 'flex min-w-0 items-center gap-2.5 text-lg tracking-tight sm:text-xl'
-
-const getVariableMedians = (hourly: Record<Variable, LatestResponse>, slots: string[]) =>
-    Object.fromEntries(
-        VARIABLES.map(({ id, aggregation }) => {
-            const { steps, series } = hourly[id]
-            const values = computeEnsemble(
-                series.map((s) => toSlotSeries(steps, s.values, slots, aggregation)),
-                slots.length,
-            ).median
-
-            return [id, { steps: slots, values }]
-        }),
-    ) as Record<Variable, MedianSeries>
-
-const getWindDirections = (wind: LatestResponse, slots: string[]) =>
-    wind.directions
-        ? computeMedianDirection(
-              wind.directions.map((d) => toSlotSeries(wind.steps, d.values, slots, 'instant')),
-              slots.length,
-          )
-        : null
 
 // Same header and panel structure as the loaded card, so nothing moves when the data arrives.
 export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
@@ -75,7 +59,7 @@ export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
 
 interface IProps {
     city: City
-    hourly: Record<Variable, LatestResponse>
+    hourly: OverviewHourly
     anchor: Date
     now: Date | null
     isFetching?: boolean
@@ -93,8 +77,9 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
     const isOutdated = isRefreshOffered(hourly[Variable.Temp].fetchedAt, now)
     const modelCount = hourly[Variable.Temp].series.length
     const slots = useMemo(() => buildSlots(anchor), [anchor])
-    const medians = useMemo(() => getVariableMedians(hourly, slots), [hourly, slots])
-    const directions = useMemo(() => getWindDirections(hourly[Variable.Wind], slots), [hourly, slots])
+    const medians = useMemo(() => getOverviewMedians(hourly, slots), [hourly, slots])
+    const directions = useMemo(() => getOverviewDirections(hourly[Variable.Wind], slots), [hourly, slots])
+    const chance = useMemo(() => getOverviewChance(hourly[Variable.Precip], slots), [hourly, slots])
 
     return (
         <Card data-bleed className={cn(CARD, 'transition-opacity', isFetching && 'opacity-70')}>
@@ -132,6 +117,7 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
                 <MedianOverview
                     series={medians}
                     directions={directions}
+                    chance={chance}
                     timeZone={city.timezone}
                     locale={locale}
                     now={now}

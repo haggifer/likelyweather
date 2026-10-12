@@ -53,15 +53,23 @@
     "variables": {
         "label": "Variable",
         "temp": "Température",
+        "feels": "Ressenti",
         "wind": "Vitesse du vent",
+        "gusts": "Rafales",
         "pressure": "Pression",
-        "precip": "Précipitations"
+        "precip": "Précipitations",
+        "humidity": "Humidité",
+        "cloud": "Nébulosité"
     },
     "variablesInline": {
         "temp": "température",
+        "feels": "température ressentie",
         "wind": "vitesse du vent",
+        "gusts": "rafales",
         "pressure": "pression",
-        "precip": "précipitations"
+        "precip": "précipitations",
+        "humidity": "humidité",
+        "cloud": "nébulosité"
     },
     "city": {
         "forecastAge": "{hours, plural, one {Il y a # heure} other {Il y a # heures}}",
@@ -123,7 +131,7 @@
         "europeOnly": "Europe seulement",
         "sources": {
             "title": "Sources",
-            "body": "Neuf modèles numériques proviennent de l’API de prévision d’Open-Meteo et un du Locationforecast de MET Norway. Les modèles lancent une nouvelle exécution à 00, 06, 12 et 18 UTC. La prévision d’une ville est récupérée quand quelqu’un l’ouvre et que celle enregistrée a 3 heures ou plus, puis stockée heure par heure, de 3 heures avant l’exécution à 108 heures après.\nLes graphiques utilisent des tranches de 3 heures à l’heure locale de la ville (00, 03, 06…), à partir de la tranche où la prévision a été récupérée, avec une ligne à l’heure actuelle : 72 heures dans l’aperçu de l’accueil, 96 heures sur le tableau de bord de la ville. La température, le vent et la pression sont les valeurs à la tranche ; les précipitations sont le cumul des 3 heures suivantes, et le survol d’une barre sélectionne ces 3 heures. Le panneau des précipitations du tableau de bord ajoute des cumuls sur 6 heures.\nLes modèles régionaux ne renvoient des données que dans leur domaine : une ville hors d’Europe affiche donc jusqu’à huit modèles. MET Norway ne publie des valeurs horaires que pour les 60 premières heures environ ; les tranches suivantes utilisent les autres modèles."
+            "body": "Neuf modèles numériques proviennent de l’API de prévision d’Open-Meteo et un du Locationforecast de MET Norway. Les modèles lancent une nouvelle exécution à 00, 06, 12 et 18 UTC. La prévision d’une ville est récupérée quand quelqu’un l’ouvre et que celle enregistrée a 3 heures ou plus, puis stockée heure par heure, de 3 heures avant l’exécution à 108 heures après.\nLes graphiques utilisent des tranches de 3 heures à l’heure locale de la ville (00, 03, 06…), à partir de la tranche où la prévision a été récupérée, avec une ligne à l’heure actuelle : 72 heures dans l’aperçu de l’accueil, 96 heures sur le tableau de bord de la ville. La température, le vent et la pression sont les valeurs à la tranche ; les précipitations sont le cumul des 3 heures suivantes, et le survol d’une barre sélectionne ces 3 heures. Le panneau des précipitations du tableau de bord ajoute des cumuls sur 6 heures.\nLes modèles régionaux ne renvoient des données que dans leur domaine : une ville hors d’Europe affiche donc jusqu’à huit modèles. MET Norway ne publie des valeurs horaires que pour les 60 premières heures environ ; les tranches suivantes utilisent les autres modèles.\nLa température ressentie est calculée pour chaque modèle avec la formule d’Open-Meteo (la température apparente de Steadman) à partir de la température, de l’humidité, du vent et du rayonnement solaire ; MET Norway ne publie pas de rayonnement, son ressenti est donc la valeur à l’ombre. Les rafales ne viennent que des neuf modèles d’Open-Meteo. L’humidité et la nébulosité sont des pourcentages, tracés sur toute leur échelle."
         },
         "median": {
             "title": "Médiane et écart",
@@ -153,7 +161,8 @@
         "fetching": "Récupération de dix modèles pour {name}…",
         "loading": "Chargement…",
         "perSlot": "{unit} / {hours} h à venir",
-        "unavailable": "Aucune prévision horaire n’est encore disponible pour cette ville. Réessayez dans une minute."
+        "unavailable": "Aucune prévision horaire n’est encore disponible pour cette ville. Réessayez dans une minute.",
+        "secondary": "{name} : {value} {unit}"
     },
     "legal": {
         "privacy": "Politique de confidentialité",

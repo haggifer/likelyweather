@@ -53,15 +53,23 @@
     "variables": {
         "label": "Größe",
         "temp": "Temperatur",
+        "feels": "Gefühlte Temperatur",
         "wind": "Windgeschwindigkeit",
+        "gusts": "Windböen",
         "pressure": "Luftdruck",
-        "precip": "Niederschlag"
+        "precip": "Niederschlag",
+        "humidity": "Luftfeuchtigkeit",
+        "cloud": "Bewölkung"
     },
     "variablesInline": {
         "temp": "Temperatur",
+        "feels": "gefühlte Temperatur",
         "wind": "Windgeschwindigkeit",
+        "gusts": "Windböen",
         "pressure": "Luftdruck",
-        "precip": "Niederschlag"
+        "precip": "Niederschlag",
+        "humidity": "Luftfeuchtigkeit",
+        "cloud": "Bewölkung"
     },
     "city": {
         "forecastAge": "{hours, plural, one {# Stunde alt} other {# Stunden alt}}",
@@ -123,7 +131,7 @@
         "europeOnly": "nur Europa",
         "sources": {
             "title": "Quellen",
-            "body": "Neun numerische Modelle stammen aus der Vorhersage-API von Open-Meteo, eines aus Locationforecast von MET Norway. Die Modelle starten um 00, 06, 12 und 18 UTC einen neuen Lauf. Die Vorhersage einer Stadt wird abgerufen, wenn jemand sie öffnet und die gespeicherte mindestens 3 Stunden alt ist, und stündlich gespeichert, von 3 Stunden vor dem Lauf bis 108 Stunden danach.\nDie Diagramme nutzen 3-Stunden-Abschnitte in der Ortszeit der Stadt (00, 03, 06…), beginnend mit dem Abschnitt, in dem die Vorhersage abgerufen wurde, mit einer Linie bei der aktuellen Zeit: 72 Stunden in der Übersicht auf der Startseite, 96 Stunden im Stadt-Dashboard. Temperatur, Wind und Luftdruck sind die Werte zum Abschnitt; Niederschlag ist die Menge der 3 Stunden danach, und das Überfahren eines Balkens markiert diese 3 Stunden. Das Niederschlagsfeld im Dashboard ergänzt 6-Stunden-Summen.\nRegionalmodelle liefern nur innerhalb ihres Gebiets Daten, daher zeigt eine Stadt außerhalb Europas bis zu acht Modelle. MET Norway veröffentlicht Stundenwerte nur für etwa die ersten 60 Stunden; spätere Abschnitte nutzen die übrigen Modelle."
+            "body": "Neun numerische Modelle stammen aus der Vorhersage-API von Open-Meteo, eines aus Locationforecast von MET Norway. Die Modelle starten um 00, 06, 12 und 18 UTC einen neuen Lauf. Die Vorhersage einer Stadt wird abgerufen, wenn jemand sie öffnet und die gespeicherte mindestens 3 Stunden alt ist, und stündlich gespeichert, von 3 Stunden vor dem Lauf bis 108 Stunden danach.\nDie Diagramme nutzen 3-Stunden-Abschnitte in der Ortszeit der Stadt (00, 03, 06…), beginnend mit dem Abschnitt, in dem die Vorhersage abgerufen wurde, mit einer Linie bei der aktuellen Zeit: 72 Stunden in der Übersicht auf der Startseite, 96 Stunden im Stadt-Dashboard. Temperatur, Wind und Luftdruck sind die Werte zum Abschnitt; Niederschlag ist die Menge der 3 Stunden danach, und das Überfahren eines Balkens markiert diese 3 Stunden. Das Niederschlagsfeld im Dashboard ergänzt 6-Stunden-Summen.\nRegionalmodelle liefern nur innerhalb ihres Gebiets Daten, daher zeigt eine Stadt außerhalb Europas bis zu acht Modelle. MET Norway veröffentlicht Stundenwerte nur für etwa die ersten 60 Stunden; spätere Abschnitte nutzen die übrigen Modelle.\nDie gefühlte Temperatur wird für jedes Modell mit der Formel von Open-Meteo (Steadmans scheinbare Temperatur) aus Temperatur, Luftfeuchtigkeit, Wind und Sonneneinstrahlung berechnet; MET Norway veröffentlicht keine Einstrahlung, daher ist sein Wert der im Schatten. Windböen liefern nur die neun Open-Meteo-Modelle. Luftfeuchtigkeit und Bewölkung sind Prozentwerte und werden über ihre ganze Skala gezeigt."
         },
         "median": {
             "title": "Median und Streuung",
@@ -153,7 +161,8 @@
         "fetching": "Zehn Modelle für {name} werden abgerufen…",
         "loading": "Lädt…",
         "perSlot": "{unit} / nächste {hours} h",
-        "unavailable": "Für diese Stadt gibt es noch keine stündliche Vorhersage. Versuche es in einer Minute erneut."
+        "unavailable": "Für diese Stadt gibt es noch keine stündliche Vorhersage. Versuche es in einer Minute erneut.",
+        "secondary": "{name}: {value} {unit}"
     },
     "legal": {
         "privacy": "Datenschutzerklärung",

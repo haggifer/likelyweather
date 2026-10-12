@@ -5,20 +5,37 @@ import { cn } from '@/lib/cn'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { setVariable } from '@/store/dashboard-slice'
 import { Variable, VARIABLES } from '@fa/shared/variables'
-import { CloudRain, Gauge, LucideIcon, Thermometer, Wind } from 'lucide-react'
+import {
+    Cloud,
+    CloudRain,
+    Droplets,
+    Gauge,
+    LucideIcon,
+    Thermometer,
+    ThermometerSun,
+    Wind,
+    WindArrowDown,
+} from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
 const ICONS: Record<Variable, LucideIcon> = {
     [Variable.Temp]: Thermometer,
+    [Variable.Feels]: ThermometerSun,
     [Variable.Wind]: Wind,
+    [Variable.Gusts]: WindArrowDown,
     [Variable.Pressure]: Gauge,
     [Variable.Precip]: CloudRain,
+    [Variable.Humidity]: Droplets,
+    [Variable.Cloud]: Cloud,
 }
 
 interface IProps {
     className?: string
 }
 
+// Eight variables leave room for every label only from `lg`; below it only the selected one is named, the others
+// keep their icon and their accessible name. On phones the named segment takes the room its label needs and the
+// others share the rest, as in the app.
 export function VariableSwitch({ className }: IProps) {
     const t = useTranslations('variables')
     const dispatch = useAppDispatch()
@@ -44,10 +61,13 @@ export function VariableSwitch({ className }: IProps) {
                         value={id}
                         aria-label={t(id)}
                         title={t(id)}
-                        className="gap-1.5 border-border px-2.5 text-xs pointer-coarse:h-9 data-[state=on]:bg-accent max-sm:flex-1 dark:border-input"
+                        className={cn(
+                            'min-w-0 gap-1.5 border-border px-2.5 text-xs pointer-coarse:h-9 data-[state=on]:bg-accent dark:border-input',
+                            id === variable ? 'max-sm:flex-[3.4] max-sm:px-2' : 'max-sm:flex-1 max-sm:px-0',
+                        )}
                     >
-                        <Icon className="size-3.5" />
-                        <span className={cn(id !== variable && 'max-sm:sr-only')}>{t(id)}</span>
+                        <Icon className={cn('size-3.5 shrink-0', id === variable && 'max-sm:hidden')} />
+                        <span className={cn('truncate', id !== variable && 'max-lg:sr-only')}>{t(id)}</span>
                     </ToggleGroupItem>
                 )
             })}

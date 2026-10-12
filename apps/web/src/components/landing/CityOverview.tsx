@@ -7,17 +7,18 @@ import { useNow } from '@/hooks/useNow'
 import { getErrorKind } from '@fa/api-client/error-kind'
 import { useCity } from '@fa/api-client/hooks/useCity'
 import { useHourlyAll } from '@fa/api-client/hooks/useHourlyAll'
+import { OverviewHourly } from '@fa/chart-core/overview-stats'
 import { LatestResponse } from '@fa/shared/api'
 import { getCityName } from '@fa/shared/format'
 import { getChartStart } from '@fa/shared/slots'
-import { Variable, VARIABLES } from '@fa/shared/variables'
+import { OVERVIEW_VARIABLES } from '@fa/shared/variables'
 import { UseQueryResult } from '@tanstack/react-query'
 import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 import { toast } from 'sonner'
 
 const getHourlyByVariable = (results: UseQueryResult<LatestResponse, Error>[]) =>
-    Object.fromEntries(VARIABLES.map((v, i) => [v.id, results[i].data])) as Record<Variable, LatestResponse>
+    Object.fromEntries(OVERVIEW_VARIABLES.map((variable, i) => [variable, results[i].data])) as OverviewHourly
 
 interface IProps {
     slug: string

@@ -4,13 +4,14 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useChartTheme } from '@/hooks/useChartTheme'
 import { useElementWidth } from '@/hooks/useElementWidth'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { MedianSeries } from '@fa/chart-core/overview-stats'
 import { clamp, getBarWidth, getNowX, getTimeScale, getValueScale } from '@fa/chart-core/plot-geometry'
 import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
 import { getNearestIndex, getSumBarCenter } from '@fa/chart-core/spaghetti-geometry'
 import { HOUR_MS } from '@fa/shared/constants'
 import { formatNumber, formatStepLabel } from '@fa/shared/format'
 import { SLOT_HOURS } from '@fa/shared/slots'
-import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
+import { OverviewVariable, Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { ScaleLinear, ScaleTime } from 'd3-scale'
 import { area, curveMonotoneX, line } from 'd3-shape'
 import { useTranslations } from 'next-intl'
@@ -20,20 +21,17 @@ import { DayGrid } from './DayGrid'
 import { getPointerTime } from './pointer-time'
 import { WindArrows } from './WindArrows'
 
-export interface MedianSeries {
-    steps: string[]
-    values: (number | null)[]
-}
+type PanelVariable = Variable.Temp | Variable.Wind | Variable.Pressure | Variable.Precip
 
 interface RowLayout {
-    variable: Variable
+    variable: PanelVariable
     top: number
     bottom: number
     height: number
 }
 
 interface ChartSize {
-    rows: { variable: Variable; height: number }[]
+    rows: { variable: PanelVariable; height: number }[]
     marginLeft: number
     tickFontSize: number
     labelFontSize: number
@@ -58,7 +56,7 @@ const DESKTOP_SIZE: ChartSize = {
         { variable: Variable.Temp, height: 104 },
         { variable: Variable.Wind, height: 100 },
         { variable: Variable.Pressure, height: 80 },
-        { variable: Variable.Precip, height: 80 },
+        { variable: Variable.Precip, height: 80 + 18 },
     ],
     marginLeft: 36,
     tickFontSize: 10,
@@ -71,7 +69,7 @@ const PHONE_SIZE: ChartSize = {
         { variable: Variable.Temp, height: 120 },
         { variable: Variable.Wind, height: 115 },
         { variable: Variable.Pressure, height: 92 },
-        { variable: Variable.Precip, height: 92 },
+        { variable: Variable.Precip, height: 92 + 18 },
     ],
     marginLeft: 44,
     tickFontSize: 13,
@@ -83,6 +81,15 @@ const PHONE_SIZE: ChartSize = {
 const ROW_GAP = 14
 const ROW_PAD = 6
 const ARROW_STRIP = 20
+// The chance of rain sits under the precipitation bars like the direction arrows under the wind; the panel's height
+// above includes it, so the bars keep their room.
+const CHANCE_STRIP = 18
+// Feels-like and gusts are drawn as a second, dashed line in the panel of the variable they belong to.
+const SECONDARY: Partial<Record<PanelVariable, OverviewVariable>> = {
+    [Variable.Temp]: Variable.Feels,
+    [Variable.Wind]: Variable.Gusts,
+}
+const SECONDARY_DASH = '5 3'
 const HOVER_STRIP = 20
 const AXIS_HEIGHT = 22
 const MARGIN_RIGHT = 8
@@ -102,7 +109,7 @@ const getLayout = (rows: ChartSize['rows']) =>
     rows.reduce<RowLayout[]>((layout, row) => {
         const previous = layout[layout.length - 1]
         const top = previous ? previous.top + previous.height + ROW_GAP : HOVER_STRIP
-        const strip = row.variable === Variable.Wind ? ARROW_STRIP : 0
+        const strip = row.variable === Variable.Wind ? ARROW_STRIP : row.variable === Variable.Precip ? CHANCE_STRIP : 0
 
         return [
             ...layout,
@@ -161,6 +168,18 @@ const getValueAt = (s: MedianSeries, step: string) => {
     return index >= 0 ? s.values[index] : null
 }
 
+// Gusts outrun the mean wind, so a wind panel showing them takes the gusts' axis steps.
+const getPanelDomain = (variable: PanelVariable, s: MedianSeries, secondary: MedianSeries | null) => {
+    const hasSecondary = Boolean(secondary?.values.some((v) => v !== null))
+    const scaleVariable = hasSecondary && variable === Variable.Wind ? Variable.Gusts : variable
+    const values = hasSecondary ? [...s.values, ...secondary!.values] : s.values
+
+    return { domain: getYDomain(values, scaleVariable), scaleVariable }
+}
+
+// Every chance-of-rain label gets about two characters' width; narrower slots show every other one.
+const getLabelEvery = (slotWidth: number, fontSize: number) => Math.max(1, Math.ceil((fontSize * 2) / slotWidth))
+
 const toPoints = (s: MedianSeries): Point[] => s.steps.map((step, i) => [new Date(step), s.values[i]])
 
 const getAreaPath = (points: Point[], x: ScaleTime<number, number>, y: ScaleLinear<number, number>, bottom: number) =>
@@ -213,8 +232,9 @@ export const MedianOverviewSkeleton = () => (
 )
 
 interface IProps {
-    series: Record<Variable, MedianSeries>
+    series: Record<OverviewVariable, MedianSeries>
     directions: (number | null)[] | null
+    chance: (number | null)[]
     timeZone: string
     locale: string
     now: Date | null
@@ -223,13 +243,14 @@ interface IProps {
 }
 
 // Median of all models for every tracked variable on one time axis of 3-hour slots; a precipitation bar is the
-// amount of the 3 hours after its slot. Readouts on the left follow the crosshair, or the slot nearest to `now`;
+// amount of the 3 hours after its slot, and the strip under the bars the share of models above 0.2 mm in it. Readouts on the left follow the crosshair, or the slot nearest to `now`;
 // the hovered slot's time sits above the panels. `now` draws the "now" line at the exact current time, which is
 // inside the first slot right after a refresh, and shades the past.
-export function MedianOverview({ series, directions, timeZone, locale, now, summaryStart, ariaLabel }: IProps) {
+export function MedianOverview({ series, directions, chance, timeZone, locale, now, summaryStart, ariaLabel }: IProps) {
     const t = useTranslations('overview')
     const tv = useTranslations('variables')
     const tc = useTranslations('chart')
+    const tcity = useTranslations('city')
     const theme = useChartTheme()
     const isStacked = useMediaQuery(STACKED_QUERY)
     const clipId = useId().replace(/[^\w-]/g, '')
@@ -251,6 +272,8 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
     const isNowLabelShown = !geometry.isNowLabelAbove || hoverIndex === null
     const barWidth = getBarWidth(x, times[0], SLOT_MS)
     const plotWidth = Math.max(0, width - geometry.marginLeft - MARGIN_RIGHT)
+    const slotWidth = times.length > 1 ? x(times[1]) - x(times[0]) : plotWidth
+    const chanceEvery = getLabelEvery(slotWidth, geometry.tickFontSize)
     const hoverX =
         hoverIndex === null
             ? null
@@ -290,6 +313,24 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                     const summary = isSum
                         ? t('total', { value: formatTotal(upcoming, getSlotCount(s)), unit: info.unit })
                         : t('range', { ...formatRange(upcoming, info.decimals), unit: info.unit })
+                    const secondaryVariable = SECONDARY[variable]
+                    const chanceValue = chance[readoutIndex] ?? null
+                    const extra = secondaryVariable
+                        ? t('secondary', {
+                              name: tv(secondaryVariable),
+                              value: formatNumber(
+                                  getValueAt(series[secondaryVariable], readoutTime),
+                                  VARIABLE_BY_ID[secondaryVariable].decimals,
+                              ),
+                              unit: VARIABLE_BY_ID[secondaryVariable].unit,
+                          })
+                        : isSum
+                          ? t('secondary', {
+                                name: tcity('chanceOfRain'),
+                                value: formatNumber(chanceValue === null ? null : chanceValue * 100, 0),
+                                unit: '%',
+                            })
+                          : null
 
                     return (
                         <div
@@ -304,6 +345,7 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                                     {isSum ? t('perSlot', { unit: info.unit, hours: SLOT_HOURS }) : info.unit}
                                 </span>
                             </span>
+                            {extra && <span className="text-xs text-muted-foreground">{extra}</span>}
                             <span className="text-[0.6875rem] text-muted-foreground">{summary}</span>
                         </div>
                     )
@@ -361,14 +403,18 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                         ))}
                     {geometry.layout.map(({ variable, top, bottom }) => {
                         const s = series[variable]
+                        const secondaryVariable = SECONDARY[variable]
+                        const secondary = secondaryVariable ? series[secondaryVariable] : null
                         const points = toPoints(s)
-                        const domain = getYDomain(s.values, variable)
+                        const { domain, scaleVariable } = getPanelDomain(variable, s, secondary)
                         const y = getValueScale(domain, [bottom, top + ROW_PAD])
                         const hoverValue = hoverIndex === null ? null : getValueAt(s, axisSteps[hoverIndex])
+                        const hoverSecondary =
+                            hoverIndex === null || !secondary ? null : getValueAt(secondary, axisSteps[hoverIndex])
 
                         return (
                             <g key={variable}>
-                                {getYTicks(domain, variable, 3).map((tick) => (
+                                {getYTicks(domain, scaleVariable, 3).map((tick) => (
                                     <g key={tick}>
                                         <line
                                             x1={geometry.marginLeft}
@@ -422,7 +468,55 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                                             strokeWidth={2}
                                             strokeLinecap="round"
                                         />
+                                        {secondary && (
+                                            <path
+                                                d={getLinePath(toPoints(secondary), x, y)}
+                                                fill="none"
+                                                stroke={theme.median}
+                                                strokeWidth={1.5}
+                                                strokeDasharray={SECONDARY_DASH}
+                                                opacity={0.7}
+                                            />
+                                        )}
                                     </>
+                                )}
+                                {variable === Variable.Precip && (
+                                    <g aria-hidden="true">
+                                        <text
+                                            x={geometry.marginLeft - 6}
+                                            y={bottom + CHANCE_STRIP / 2}
+                                            dy="0.32em"
+                                            textAnchor="end"
+                                            fontSize={geometry.tickFontSize}
+                                            fill={theme.muted}
+                                        >
+                                            %
+                                        </text>
+                                        {chance.map((c, i) => {
+                                            const center = x(getSumBarCenter(times[i], SLOT_MS))
+                                            const isShown =
+                                                c !== null &&
+                                                i % chanceEvery === 0 &&
+                                                center + barWidth / 2 <= plotRight
+
+                                            return (
+                                                isShown && (
+                                                    <text
+                                                        key={axisSteps[i]}
+                                                        x={center}
+                                                        y={bottom + CHANCE_STRIP / 2}
+                                                        dy="0.32em"
+                                                        textAnchor="middle"
+                                                        fontSize={geometry.tickFontSize}
+                                                        fontWeight={c >= 0.5 ? 600 : 400}
+                                                        fill={c >= 0.5 ? theme.foreground : theme.muted}
+                                                    >
+                                                        {Math.round(c * 100)}
+                                                    </text>
+                                                )
+                                            )
+                                        })}
+                                    </g>
                                 )}
                                 {variable === Variable.Wind && directions && (
                                     <WindArrows
@@ -449,6 +543,17 @@ export function MedianOverview({ series, directions, timeZone, locale, now, summ
                                             pointerEvents="none"
                                         />
                                     )}
+                                {hoverIndex !== null && hoverSecondary !== null && (
+                                    <circle
+                                        cx={x(times[hoverIndex])}
+                                        cy={y(hoverSecondary)}
+                                        r={3}
+                                        fill={theme.card}
+                                        stroke={theme.median}
+                                        strokeWidth={1.5}
+                                        pointerEvents="none"
+                                    />
+                                )}
                             </g>
                         )
                     })}

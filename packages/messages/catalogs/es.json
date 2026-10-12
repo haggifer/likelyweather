@@ -53,15 +53,23 @@
     "variables": {
         "label": "Variable",
         "temp": "Temperatura",
+        "feels": "Sensación térmica",
         "wind": "Velocidad del viento",
+        "gusts": "Rachas de viento",
         "pressure": "Presión",
-        "precip": "Precipitación"
+        "precip": "Precipitación",
+        "humidity": "Humedad",
+        "cloud": "Nubosidad"
     },
     "variablesInline": {
         "temp": "temperatura",
+        "feels": "sensación térmica",
         "wind": "velocidad del viento",
+        "gusts": "rachas de viento",
         "pressure": "presión",
-        "precip": "precipitación"
+        "precip": "precipitación",
+        "humidity": "humedad",
+        "cloud": "nubosidad"
     },
     "city": {
         "forecastAge": "{hours, plural, one {De hace # hora} other {De hace # horas}}",
@@ -123,7 +131,7 @@
         "europeOnly": "solo Europa",
         "sources": {
             "title": "Fuentes",
-            "body": "Nueve modelos numéricos proceden de la API de pronósticos de Open-Meteo y uno de Locationforecast de MET Norway. Los modelos inician una nueva ejecución a las 00, 06, 12 y 18 UTC. El pronóstico de una ciudad se obtiene cuando alguien la abre y el guardado tiene 3 horas o más, y se guarda hora a hora, desde 3 horas antes de la ejecución hasta 108 horas después.\nLos gráficos usan franjas de 3 horas en la hora local de la ciudad (00, 03, 06…), empezando por la franja en la que se obtuvo el pronóstico, con una línea en la hora actual: 72 horas en el resumen de la portada, 96 horas en el panel de la ciudad. La temperatura, el viento y la presión son los valores en la franja; la precipitación es la cantidad de las 3 horas siguientes, y al pasar el cursor por una barra se seleccionan esas 3 horas. El panel de precipitación de la ciudad añade totales de 6 horas.\nLos modelos regionales solo devuelven datos dentro de su dominio, así que una ciudad fuera de Europa muestra hasta ocho modelos. MET Norway publica valores horarios solo para unas 60 primeras horas; las franjas posteriores usan los demás modelos."
+            "body": "Nueve modelos numéricos proceden de la API de pronósticos de Open-Meteo y uno de Locationforecast de MET Norway. Los modelos inician una nueva ejecución a las 00, 06, 12 y 18 UTC. El pronóstico de una ciudad se obtiene cuando alguien la abre y el guardado tiene 3 horas o más, y se guarda hora a hora, desde 3 horas antes de la ejecución hasta 108 horas después.\nLos gráficos usan franjas de 3 horas en la hora local de la ciudad (00, 03, 06…), empezando por la franja en la que se obtuvo el pronóstico, con una línea en la hora actual: 72 horas en el resumen de la portada, 96 horas en el panel de la ciudad. La temperatura, el viento y la presión son los valores en la franja; la precipitación es la cantidad de las 3 horas siguientes, y al pasar el cursor por una barra se seleccionan esas 3 horas. El panel de precipitación de la ciudad añade totales de 6 horas.\nLos modelos regionales solo devuelven datos dentro de su dominio, así que una ciudad fuera de Europa muestra hasta ocho modelos. MET Norway publica valores horarios solo para unas 60 primeras horas; las franjas posteriores usan los demás modelos.\nLa sensación térmica se calcula para cada modelo con la fórmula de Open-Meteo (la temperatura aparente de Steadman) a partir de la temperatura, la humedad, el viento y la radiación solar; MET Norway no publica radiación, así que su sensación térmica es la de la sombra. Las rachas de viento solo vienen de los nueve modelos de Open-Meteo. La humedad y la nubosidad son porcentajes y se dibujan en toda su escala."
         },
         "median": {
             "title": "Mediana y dispersión",
@@ -153,7 +161,8 @@
         "fetching": "Obteniendo diez modelos para {name}…",
         "loading": "Cargando…",
         "perSlot": "{unit} / próx. {hours} h",
-        "unavailable": "Todavía no hay pronóstico horario para esta ciudad. Inténtalo de nuevo en un minuto."
+        "unavailable": "Todavía no hay pronóstico horario para esta ciudad. Inténtalo de nuevo en un minuto.",
+        "secondary": "{name}: {value} {unit}"
     },
     "legal": {
         "privacy": "Política de privacidad",
