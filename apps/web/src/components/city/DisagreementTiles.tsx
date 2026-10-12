@@ -35,18 +35,15 @@ export function DisagreementTiles({ days, variable }: IProps) {
                     })}
                 </CardDescription>
             </CardHeader>
-            {/* On phones the tiles scroll sideways, so the region must be reachable and named for keyboard/screen-reader users. */}
+            {/* The tiles scroll sideways, so the region must be reachable and named for keyboard/screen-reader users. */}
             <CardContent
                 tabIndex={days.length > 0 ? 0 : undefined}
                 role={days.length > 0 ? 'region' : undefined}
                 aria-label={days.length > 0 ? t('title') : undefined}
-                className="grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] gap-2 rounded-md outline-none max-sm:flex max-sm:snap-x max-sm:snap-mandatory max-sm:overflow-x-auto max-sm:pb-1 focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex snap-x snap-mandatory gap-2 overflow-x-auto rounded-md pb-1 outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
                 {days.map((d) => (
-                    <div
-                        key={d.day}
-                        className="flex flex-col gap-1.5 rounded-md border p-2.5 max-sm:w-28 max-sm:shrink-0 max-sm:snap-start"
-                    >
+                    <div key={d.day} className="flex w-28 shrink-0 snap-start flex-col gap-1.5 rounded-md border p-2.5">
                         <span className="text-xs text-muted-foreground">
                             {formatDateKey(d.day, locale, { weekday: 'short', day: 'numeric', month: 'short' })}
                         </span>
