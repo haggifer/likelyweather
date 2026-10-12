@@ -4,26 +4,16 @@ import { OverviewCardSkeleton } from '@/components/city/OverviewCard'
 import { CityOverview } from '@/components/landing/CityOverview'
 import { PlaceChip } from '@/components/landing/PlaceChip'
 import { SearchBox } from '@/components/shell/SearchBox'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { usePlaces } from '@/hooks/usePlaces'
 import { useStarters } from '@/hooks/useStarters'
 import { updatePlaces } from '@/lib/places-store'
 import { DEFAULT_PLACES, getPlaceChips, getStarterPlaces, isFavorite, MAX_PLACES } from '@fa/shared/places'
-import { BookOpen, Columns3, Split } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import Link from 'next/link'
 import { parseAsString, useQueryState } from 'nuqs'
 import { useEffect } from 'react'
 
 const CHIP_PLACEHOLDERS = Array.from({ length: MAX_PLACES }, (_, i) => i)
-
-const getTiles = (slug: string) =>
-    [
-        { key: 'disagree', icon: Split, href: `/city/${slug}` },
-        { key: 'compare', icon: Columns3, href: '/compare' },
-        { key: 'method', icon: BookOpen, href: '/methodology' },
-    ] as const
 
 export function Landing() {
     const t = useTranslations('landing')
@@ -40,7 +30,6 @@ export function Landing() {
     const chips = places && !isChoosingStarters ? getPlaceChips(places) : null
     // Without a city in the URL the overview opens the viewer's first chip, which is a pinned home city for most.
     const slug = urlSlug ?? chips?.[0].slug ?? null
-    const tiles = getTiles(slug ?? DEFAULT_PLACES.recents[0].slug)
 
     useEffect(() => {
         if (isFirstVisit && starters.data?.items.length) updatePlaces(() => getStarterPlaces(starters.data.items))
@@ -77,28 +66,9 @@ export function Landing() {
                     </div>
                 </div>
             </section>
-            <div className="mx-auto grid w-full max-w-5xl gap-6 3xl:max-w-none 3xl:grid-cols-[minmax(0,64rem)_minmax(0,1fr)]">
-                <section className="min-w-0 max-sm:-mx-4">
-                    {slug ? <CityOverview key={slug} slug={slug} /> : <OverviewCardSkeleton status={to('loading')} />}
-                </section>
-                <section className="grid gap-(--card-gap) sm:grid-cols-3 3xl:auto-rows-fr 3xl:grid-cols-1">
-                    {tiles.map(({ key, icon: Icon, href }) => (
-                        <Link key={key} href={href} className="group">
-                            <Card className="h-full gap-2 transition-colors group-hover:border-primary">
-                                <CardHeader className="flex items-center gap-2">
-                                    <Icon className="size-5 shrink-0 text-primary" aria-hidden="true" />
-                                    <CardTitle className="font-semibold max-sm:text-[1rem]">
-                                        {t(`tiles.${key}.title`)}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="text-sm text-muted-foreground">
-                                    {t(`tiles.${key}.body`)}
-                                </CardContent>
-                            </Card>
-                        </Link>
-                    ))}
-                </section>
-            </div>
+            <section className="mx-auto w-full max-w-5xl max-sm:-mx-4 max-sm:w-auto">
+                {slug ? <CityOverview key={slug} slug={slug} /> : <OverviewCardSkeleton status={to('loading')} />}
+            </section>
         </div>
     )
 }

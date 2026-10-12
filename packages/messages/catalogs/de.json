@@ -126,21 +126,7 @@
     "landing": {
         "hero": "Vergleiche Wettervorhersagen für deine Stadt",
         "sub": "Zehn Wettermodelle, eine Stadt: die Median-Vorhersage für die nächsten drei Tage.",
-        "seeds": "Starte mit",
-        "tiles": {
-            "disagree": {
-                "title": "Sieh, wo sie abweichen",
-                "body": "Alle Modelle in einem Diagramm, mit Median, Streuung und einer täglichen Anzeige der Uneinigkeit."
-            },
-            "compare": {
-                "title": "Städte vergleichen",
-                "body": "Bis zu vier Städte nebeneinander auf einer gemeinsamen Achse."
-            },
-            "method": {
-                "title": "So funktioniert es",
-                "body": "Woher die zehn Vorhersagen kommen und wie Median und Uneinigkeit berechnet werden."
-            }
-        }
+        "seeds": "Starte mit"
     },
     "methodology": {
         "title": "Methodik",

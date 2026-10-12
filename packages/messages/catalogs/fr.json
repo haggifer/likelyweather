@@ -126,21 +126,7 @@
     "landing": {
         "hero": "Comparez les prévisions météo de votre ville",
         "sub": "Dix modèles météo, une ville : la prévision médiane des trois prochains jours.",
-        "seeds": "Commencer par",
-        "tiles": {
-            "disagree": {
-                "title": "Voir où ils divergent",
-                "body": "Tous les modèles sur un même graphique, avec la médiane, l’écart et un indicateur quotidien de désaccord."
-            },
-            "compare": {
-                "title": "Comparer des villes",
-                "body": "Jusqu’à quatre villes côte à côte sur un axe commun."
-            },
-            "method": {
-                "title": "Comment ça marche",
-                "body": "D’où viennent les dix prévisions et comment la médiane et le désaccord sont calculés."
-            }
-        }
+        "seeds": "Commencer par"
     },
     "methodology": {
         "title": "Méthodologie",

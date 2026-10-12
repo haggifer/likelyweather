@@ -126,21 +126,7 @@
     "landing": {
         "hero": "Compara los pronósticos del tiempo para tu ciudad",
         "sub": "Diez modelos, una ciudad: la mediana del pronóstico para los próximos tres días.",
-        "seeds": "Empieza con",
-        "tiles": {
-            "disagree": {
-                "title": "Mira dónde discrepan",
-                "body": "Todos los modelos en un gráfico, con la mediana, la dispersión y un indicador diario de discrepancia."
-            },
-            "compare": {
-                "title": "Compara ciudades",
-                "body": "Hasta cuatro ciudades lado a lado con un eje común."
-            },
-            "method": {
-                "title": "Cómo funciona",
-                "body": "De dónde salen los diez pronósticos y cómo se calculan la mediana y la discrepancia."
-            }
-        }
+        "seeds": "Empieza con"
     },
     "methodology": {
         "title": "Metodología",

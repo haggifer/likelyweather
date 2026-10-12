@@ -126,21 +126,7 @@
     "landing": {
         "hero": "Compare weather forecasts for your city",
         "sub": "Ten weather models, one city: the median forecast for the next three days.",
-        "seeds": "Start with",
-        "tiles": {
-            "disagree": {
-                "title": "See where they disagree",
-                "body": "Every model on one chart, with the median, the spread, and a day-by-day disagreement meter."
-            },
-            "compare": {
-                "title": "Compare cities",
-                "body": "Up to four cities side by side on a shared axis."
-            },
-            "method": {
-                "title": "How it works",
-                "body": "Where the ten forecasts come from and how the median and the disagreement are computed."
-            }
-        }
+        "seeds": "Start with"
     },
     "methodology": {
         "title": "Methodology",
