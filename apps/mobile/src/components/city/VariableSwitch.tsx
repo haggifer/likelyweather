@@ -26,13 +26,12 @@ const ICONS: Record<Variable, LucideIcon> = {
     [Variable.Cloud]: Cloud,
 }
 
-// The selected segment carries its name, so it takes the room the three icon-only segments leave.
-const SELECTED_FLEX = 2.6
-
 const styles = StyleSheet.create({
     group: { flexDirection: 'row', borderWidth: 1, overflow: 'hidden' },
-    item: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 36 },
-    label: { fontSize: 13, fontWeight: '500' },
+    item: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', minHeight: 36 },
+    // The named segment takes the room its label needs, the web's `flex-[3.4]`; a longer name ends in an ellipsis.
+    selected: { flex: 3.4, paddingHorizontal: 8 },
+    label: { flexShrink: 1, fontSize: 13, fontWeight: '500' },
 })
 
 interface IProps {
@@ -40,7 +39,8 @@ interface IProps {
     onChange: (variable: Variable) => void
 }
 
-// The web's phone layout: four equal segments, only the selected one named.
+// The web's phone layout: eight segments, only the selected one named and without its icon; the others show their
+// icon and keep their accessible name.
 export function VariableSwitch({ value, onChange }: IProps) {
     const t = useTranslations('variables')
     const { colors, radius } = useTheme()
@@ -70,11 +70,16 @@ export function VariableSwitch({ value, onChange }: IProps) {
                         style={[
                             styles.item,
                             i > 0 && { borderLeftWidth: 1, borderLeftColor: colors.border },
-                            isSelected && { backgroundColor: colors.accent, flex: SELECTED_FLEX },
+                            isSelected && [styles.selected, { backgroundColor: colors.accent }],
                         ]}
                     >
-                        <Icon size={16} color={color} />
-                        {isSelected && <Text style={[styles.label, { color }]}>{t(id)}</Text>}
+                        {isSelected ? (
+                            <Text numberOfLines={1} style={[styles.label, { color }]}>
+                                {t(id)}
+                            </Text>
+                        ) : (
+                            <Icon size={16} color={color} />
+                        )}
                     </Pressable>
                 )
             })}
