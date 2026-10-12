@@ -154,8 +154,6 @@
         "home": "Back to the start"
     },
     "overview": {
-        "range": "Next 24 hours: {min}–{max} {unit}",
-        "total": "Next 24 hours: {value} {unit} in total",
         "details": "Open details",
         "aria": "Median forecast for {name} across {count} models: temperature, wind speed, pressure and precipitation",
         "fetching": "Fetching ten models for {name}…",

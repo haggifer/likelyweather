@@ -154,8 +154,6 @@
         "home": "Volver al inicio"
     },
     "overview": {
-        "range": "Próximas 24 horas: {min}–{max} {unit}",
-        "total": "Próximas 24 horas: {value} {unit} en total",
         "details": "Ver detalles",
         "aria": "Pronóstico mediano para {name} con {count} modelos: temperatura, velocidad del viento, presión y precipitación",
         "fetching": "Obteniendo diez modelos para {name}…",

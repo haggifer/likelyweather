@@ -65,7 +65,6 @@ const MARGIN = { left: 36, right: 8 }
 const PANEL_RADIUS = 4
 const HOVER_LABEL_HALF_WIDTH = 34
 const SLOT_MS = SLOT_HOURS * HOUR_MS
-const SUMMARY_HOURS = 24
 const NO_BREAK_SPACE = ' '
 
 const LAYOUT: RowLayout[] = ROWS.reduce<RowLayout[]>((rows, row) => {
@@ -89,34 +88,9 @@ const styles = StyleSheet.create({
     value: { fontSize: 20, fontWeight: '600' },
     unit: { fontSize: 14, fontWeight: '400' },
     extra: { fontSize: 12 },
-    summary: { fontSize: 11 },
 })
 
 const isDefined = (p: Point) => p[1] !== null
-
-const getSummaryValues = (s: MedianSeries, from: Date) => {
-    const to = from.getTime() + SUMMARY_HOURS * HOUR_MS
-
-    return s.values.filter((v, i): v is number => {
-        const t = new Date(s.steps[i]).getTime()
-
-        return v !== null && t >= from.getTime() && t < to
-    })
-}
-
-const getSlotCount = (s: MedianSeries) =>
-    s.steps.length > 1
-        ? (SUMMARY_HOURS * HOUR_MS) / (new Date(s.steps[1]).getTime() - new Date(s.steps[0]).getTime())
-        : Infinity
-
-// A total over fewer slots than the window holds would read as a drier forecast than it is, so it shows as unknown.
-const formatTotal = (values: number[], slotCount: number) =>
-    formatNumber(values.length >= slotCount ? values.reduce((sum, v) => sum + v, 0) : null, 1)
-
-const formatRange = (values: number[], decimals: number) => ({
-    min: formatNumber(values.length ? Math.min(...values) : null, decimals),
-    max: formatNumber(values.length ? Math.max(...values) : null, decimals),
-})
 
 const getValueAt = (s: MedianSeries, step: string) => {
     const index = s.steps.indexOf(step)
@@ -200,7 +174,6 @@ export function MedianOverviewSkeleton() {
                         <SkeletonLine textStyle={styles.label} width="55%" />
                         <SkeletonLine textStyle={styles.value} width="40%" />
                         {hasExtraReadout(variable) && <SkeletonLine textStyle={styles.extra} width="65%" />}
-                        <SkeletonLine textStyle={styles.summary} width="85%" />
                     </View>
                 ))}
             </View>
@@ -216,23 +189,13 @@ interface IProps {
     timeZone: string
     locale: string
     now: Date
-    summaryStart: Date
     accessibilityLabel: string
 }
 
 // Median of all models for every variable on one axis of local 3-hour slots; a precipitation bar is the amount of
 // the 3 hours after its slot, and the strip under the bars the share of models above 0.2 mm in it. The readouts
 // follow the finger, or the slot nearest to now.
-export function MedianOverview({
-    series,
-    directions,
-    chance,
-    timeZone,
-    locale,
-    now,
-    summaryStart,
-    accessibilityLabel,
-}: IProps) {
+export function MedianOverview({ series, directions, chance, timeZone, locale, now, accessibilityLabel }: IProps) {
     const t = useTranslations('overview')
     const tv = useTranslations('variables')
     const tc = useTranslations('chart')
@@ -268,10 +231,6 @@ export function MedianOverview({
                     const info = VARIABLE_BY_ID[variable]
                     const s = series[variable]
                     const isSum = variable === Variable.Precip
-                    const upcoming = getSummaryValues(s, summaryStart)
-                    const summary = isSum
-                        ? t('total', { value: formatTotal(upcoming, getSlotCount(s)), unit: info.unit })
-                        : t('range', { ...formatRange(upcoming, info.decimals), unit: info.unit })
                     const extra = getExtraReadout(variable, series, chance, readoutIndex)
 
                     return (
@@ -293,9 +252,6 @@ export function MedianOverview({
                                     })}
                                 </Text>
                             )}
-                            <Text isTabular style={[styles.summary, { color: colors['muted-foreground'] }]}>
-                                {summary}
-                            </Text>
                         </View>
                     )
                 })}

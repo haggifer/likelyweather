@@ -8,7 +8,7 @@ import {
 import { City } from '@fa/shared/api'
 import { getCityRegion } from '@fa/shared/city-region'
 import { getCityName } from '@fa/shared/format'
-import { buildSlots, getSlotStart } from '@fa/shared/slots'
+import { buildSlots } from '@fa/shared/slots'
 import { Variable } from '@fa/shared/variables'
 import { useRouter } from 'expo-router'
 import { ArrowRight } from 'lucide-react-native'
@@ -118,7 +118,6 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
                 timeZone={city.timezone}
                 locale={locale}
                 now={now}
-                summaryStart={getSlotStart(now, city.timezone)}
                 accessibilityLabel={t('aria', { name, count: temp.series.length })}
             />
         </Card>

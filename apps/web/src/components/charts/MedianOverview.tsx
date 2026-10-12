@@ -95,7 +95,6 @@ const AXIS_HEIGHT = 22
 const MARGIN_RIGHT = 8
 const PANEL_RADIUS = 4
 const SLOT_MS = SLOT_HOURS * HOUR_MS
-const SUMMARY_HOURS = 24
 // Phones stack the readouts in a 2 × 2 grid above a full-width chart; from `sm` they form a column beside it, one
 // per panel. The column's gap and padding match ROW_GAP, HOVER_STRIP and AXIS_HEIGHT.
 const GRID = 'grid grid-cols-1 gap-y-3 sm:grid-cols-[minmax(8rem,12rem)_minmax(0,1fr)] sm:gap-x-4'
@@ -136,31 +135,6 @@ const DESKTOP = getGeometry(DESKTOP_SIZE)
 const PHONE = getGeometry(PHONE_SIZE)
 
 const isDefined = (p: Point) => p[1] !== null
-
-const getSummaryValues = (s: MedianSeries, from: Date) => {
-    const to = from.getTime() + SUMMARY_HOURS * HOUR_MS
-
-    return s.values.filter((v, i): v is number => {
-        const t = new Date(s.steps[i]).getTime()
-
-        return v !== null && t >= from.getTime() && t < to
-    })
-}
-
-const getSlotCount = (s: MedianSeries) =>
-    s.steps.length > 1
-        ? (SUMMARY_HOURS * HOUR_MS) / (new Date(s.steps[1]).getTime() - new Date(s.steps[0]).getTime())
-        : Infinity
-
-// A total over fewer slots than the window holds (an old run served without a refresh ends early) would read as a
-// drier forecast than it is, so it is shown as unknown.
-const formatTotal = (values: number[], slotCount: number) =>
-    formatNumber(values.length >= slotCount ? values.reduce((sum, v) => sum + v, 0) : null, 1)
-
-const formatRange = (values: number[], decimals: number) => ({
-    min: formatNumber(values.length ? Math.min(...values) : null, decimals),
-    max: formatNumber(values.length ? Math.max(...values) : null, decimals),
-})
 
 const getValueAt = (s: MedianSeries, step: string) => {
     const index = s.steps.indexOf(step)
@@ -206,7 +180,7 @@ export const MedianOverviewSkeleton = () => (
             {DESKTOP.rows.map(({ variable, height }) => (
                 <Skeleton
                     key={variable}
-                    className="h-18 sm:mr-(--reach) sm:h-(--row-h)"
+                    className="h-[3.5625rem] sm:mr-(--reach) sm:h-(--row-h)"
                     style={{ '--row-h': `${height}px`, '--reach': `${SKELETON_READOUT_REACH}px` } as CSSProperties}
                 />
             ))}
@@ -238,7 +212,6 @@ interface IProps {
     timeZone: string
     locale: string
     now: Date | null
-    summaryStart: Date
     ariaLabel: string
 }
 
@@ -246,7 +219,7 @@ interface IProps {
 // amount of the 3 hours after its slot, and the strip under the bars the share of models above 0.2 mm in it. Readouts on the left follow the crosshair, or the slot nearest to `now`;
 // the hovered slot's time sits above the panels. `now` draws the "now" line at the exact current time, which is
 // inside the first slot right after a refresh, and shades the past.
-export function MedianOverview({ series, directions, chance, timeZone, locale, now, summaryStart, ariaLabel }: IProps) {
+export function MedianOverview({ series, directions, chance, timeZone, locale, now, ariaLabel }: IProps) {
     const t = useTranslations('overview')
     const tv = useTranslations('variables')
     const tc = useTranslations('chart')
@@ -309,10 +282,6 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                     const s = series[variable]
                     const value = getValueAt(s, readoutTime)
                     const isSum = variable === Variable.Precip
-                    const upcoming = getSummaryValues(s, summaryStart)
-                    const summary = isSum
-                        ? t('total', { value: formatTotal(upcoming, getSlotCount(s)), unit: info.unit })
-                        : t('range', { ...formatRange(upcoming, info.decimals), unit: info.unit })
                     const secondaryVariable = SECONDARY[variable]
                     const chanceValue = chance[readoutIndex] ?? null
                     const extra = secondaryVariable
@@ -346,7 +315,6 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                                 </span>
                             </span>
                             {extra && <span className="text-xs text-muted-foreground">{extra}</span>}
-                            <span className="text-[0.6875rem] text-muted-foreground">{summary}</span>
                         </div>
                     )
                 })}

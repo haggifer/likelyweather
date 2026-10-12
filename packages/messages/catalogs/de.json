@@ -154,8 +154,6 @@
         "home": "Zurück zum Anfang"
     },
     "overview": {
-        "range": "Nächste 24 Stunden: {min}–{max} {unit}",
-        "total": "Nächste 24 Stunden: insgesamt {value} {unit}",
         "details": "Details öffnen",
         "aria": "Median-Vorhersage für {name} aus {count} Modellen: Temperatur, Windgeschwindigkeit, Luftdruck und Niederschlag",
         "fetching": "Zehn Modelle für {name} werden abgerufen…",

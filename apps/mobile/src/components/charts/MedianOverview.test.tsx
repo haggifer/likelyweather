@@ -29,7 +29,6 @@ const renderOverview = (series = SERIES) =>
                 timeZone="UTC"
                 locale="en"
                 now={NOW}
-                summaryStart={new Date(SLOTS[0])}
                 accessibilityLabel="Overview"
             />
         </IntlProvider>,
@@ -48,5 +47,11 @@ describe('MedianOverview', () => {
         await renderOverview({ ...SERIES, [Variable.Gusts]: { steps: SLOTS, values: [null, null, null] } })
 
         expect(screen.getByText('Wind gusts: – m/s')).toBeOnTheScreen()
+    })
+
+    it('shows no next-24-hour summary', async () => {
+        await renderOverview()
+
+        expect(screen.queryByText(/Next 24 hours/)).toBeNull()
     })
 })

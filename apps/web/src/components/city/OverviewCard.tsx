@@ -19,7 +19,7 @@ import {
 import { City } from '@fa/shared/api'
 import { getCityRegion } from '@fa/shared/city-region'
 import { getCityName } from '@fa/shared/format'
-import { buildSlots, getSlotStart } from '@fa/shared/slots'
+import { buildSlots } from '@fa/shared/slots'
 import { Variable } from '@fa/shared/variables'
 import { ArrowRight, Loader2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
@@ -73,7 +73,6 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
 
     const name = getCityName(city, locale)
     const region = getCityRegion(city, locale)
-    const currentSlot = now ? getSlotStart(now, city.timezone) : anchor
     const isOutdated = isRefreshOffered(hourly[Variable.Temp].fetchedAt, now)
     const modelCount = hourly[Variable.Temp].series.length
     const slots = useMemo(() => buildSlots(anchor), [anchor])
@@ -121,7 +120,6 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
                     timeZone={city.timezone}
                     locale={locale}
                     now={now}
-                    summaryStart={currentSlot}
                     ariaLabel={t('aria', { name, count: modelCount })}
                 />
             </CardContent>
