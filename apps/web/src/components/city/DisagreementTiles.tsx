@@ -35,7 +35,8 @@ export function DisagreementTiles({ days, variable }: IProps) {
                     })}
                 </CardDescription>
             </CardHeader>
-            {/* The tiles scroll sideways, so the region must be reachable and named for keyboard/screen-reader users. */}
+            {/* One row of days sharing the card's width; where 4.75 rem each do not fit, the row scrolls sideways, so the region
+                must be reachable and named for keyboard and screen-reader users. */}
             <CardContent
                 tabIndex={days.length > 0 ? 0 : undefined}
                 role={days.length > 0 ? 'region' : undefined}
@@ -43,7 +44,10 @@ export function DisagreementTiles({ days, variable }: IProps) {
                 className="flex snap-x snap-mandatory scroll-px-(--card-spacing) gap-2 overflow-x-auto rounded-md pb-1 outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
                 {days.map((d) => (
-                    <div key={d.day} className="flex w-28 shrink-0 snap-start flex-col gap-1.5 rounded-md border p-2.5">
+                    <div
+                        key={d.day}
+                        className="flex min-w-19 flex-1 shrink-0 snap-start flex-col gap-1.5 rounded-md border p-2"
+                    >
                         <span className="text-xs text-muted-foreground">
                             {formatDateKey(d.day, locale, { weekday: 'short', day: 'numeric', month: 'short' })}
                         </span>

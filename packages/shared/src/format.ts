@@ -75,9 +75,6 @@ export const formatNumber = (value: number | null | undefined, decimals = 1) => 
     return Number(text) === 0 ? text.replace('-', '') : text
 }
 
-export const formatPercent = (value: number | null | undefined) =>
-    value === null || value === undefined ? '–' : `${Math.round(value * 100)}%`
-
 export const getCityName = (city: Pick<City, 'name' | 'nameLocal'>, locale: string) =>
     city.nameLocal?.[locale as Locale] ?? city.name
 

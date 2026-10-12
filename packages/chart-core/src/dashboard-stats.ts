@@ -1,7 +1,6 @@
-import { LatestResponse, Series } from '@fa/shared/api'
+import { LatestResponse } from '@fa/shared/api'
 import { HOUR_MS } from '@fa/shared/constants'
 import {
-    computeChanceOfRain,
     computeDisagreement,
     computeEnsemble,
     computeMedianDirection,
@@ -9,8 +8,7 @@ import {
     EnsembleStats,
 } from '@fa/shared/ensemble'
 import { formatNumber } from '@fa/shared/format'
-import { indexSteps, toStepSeries } from '@fa/shared/resample'
-import { DASHBOARD_HOURS, SLOT_HOURS } from '@fa/shared/slots'
+import { SLOT_HOURS } from '@fa/shared/slots'
 import { addHours, toIsoMinute } from '@fa/shared/time'
 import { Variable } from '@fa/shared/variables'
 import { getNearestIndex, getSpanIndex } from './spaghetti-geometry'
@@ -21,19 +19,10 @@ interface DashboardStats {
     directions: (number | null)[] | null
 }
 
-export interface PrecipTotals {
-    steps: string[]
-    series: Series[]
-    median: (number | null)[]
-    chance: (number | null)[]
-}
-
 interface ValueRange {
     min: number | null
     max: number | null
 }
-
-export const PRECIP_WINDOW_HOURS = 6
 
 const SLOT_MS = SLOT_HOURS * HOUR_MS
 
@@ -67,26 +56,6 @@ export const getDashboardStats = (
     }
 }
 
-// 6-hour totals from the chart start, each labelled by the hour it ends, so the labels stay on the 3-hour grid.
-export const getPrecipTotals = (data: LatestResponse, anchor: Date): PrecipTotals => {
-    const steps = Array.from({ length: DASHBOARD_HOURS / PRECIP_WINDOW_HOURS }, (_, k) =>
-        toIsoMinute(addHours(anchor, (k + 1) * PRECIP_WINDOW_HOURS)),
-    )
-    const timeIndex = indexSteps(data.steps)
-    const series = data.series.map((s) => ({
-        modelId: s.modelId,
-        values: toStepSeries(timeIndex, s.values, steps, 'sum', PRECIP_WINDOW_HOURS),
-    }))
-    const values = series.map((s) => s.values)
-
-    return {
-        steps,
-        series,
-        median: computeEnsemble(values, steps.length).median,
-        chance: computeChanceOfRain(values, steps.length),
-    }
-}
-
 // The slot a readout follows: the hovered one, else the one for `now`. An instant reads at the nearest slot; a sum
 // covers the 3 hours after its slot, so it reads at the slot whose span contains `now`, like a bar under the pointer.
 export const getReadoutIndex = (steps: string[], hoverIndex: number, now: Date | null, isSum = false) => {
@@ -104,10 +73,6 @@ export const getFutureRange = (values: (number | null)[], steps: string[], now: 
 
     return future.length ? { min: Math.min(...future), max: Math.max(...future) } : { min: null, max: null }
 }
-
-export const countRainySteps = (chance: (number | null)[]) => chance.filter((c) => (c ?? 0) >= 0.5).length
-
-export const sumValues = (values: (number | null)[]) => values.reduce<number>((sum, v) => sum + (v ?? 0), 0)
 
 // A spread of a whole-number variable still needs its tenths: two models at 1012 and 1013 hPa differ by 1.0, not 1.
 export const formatSpread = (spread: number | undefined, decimals: number) =>

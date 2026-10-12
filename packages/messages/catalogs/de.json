@@ -80,7 +80,6 @@
         "upToDate": "Aktuell: vor weniger als {hours} Stunden abgerufen.",
         "notFound": "Diese Stadt ist nicht in Forecast Arena",
         "notFoundBody": "Suche sie, um ihre Vorhersage in wenigen Sekunden zu öffnen.",
-        "medianTotal": "Median-Summe",
         "chanceOfRain": "Regenwahrscheinlichkeit",
         "back": "Zurück zur Übersicht",
         "change": "Stadt wechseln",
@@ -95,10 +94,7 @@
         "summary": "Der Median ({variable}) der nächsten zehn Tage reicht über {count} Modelle von {min} bis {max} {unit}. Am meisten weichen sie am {day} ab (Spanne {spread} {unit}).",
         "median": "Median",
         "time": "Zeit (Ortszeit)",
-        "windArrows": "Die Pfeile zeigen, wohin der mittlere Wind weht; wähle eine Zeit, um zu sehen, woher er kommt.",
-        "precipTitle": "Niederschlag, 6-Stunden-Summen",
-        "precipDescription": "Balken: Median der Modelle. Striche: jedes Modell. Zeile unter den Balken: Anteil der Modelle über 0,2 mm.",
-        "precipSummary": "{steps, plural, =0 {Kein 6-Stunden-Schritt hat} one {# 6-Stunden-Schritt hat} other {# 6-Stunden-Schritte haben}} eine Regenwahrscheinlichkeit von 50 % oder mehr; der Median summiert sich in den nächsten zehn Tagen auf {total} mm."
+        "windArrows": "Die Pfeile zeigen, wohin der mittlere Wind weht; wähle eine Zeit, um zu sehen, woher er kommt."
     },
     "legend": {
         "median": "Median",
@@ -130,11 +126,11 @@
         "europeOnly": "nur Europa",
         "sources": {
             "title": "Quellen",
-            "body": "Neun numerische Modelle stammen aus der Vorhersage-API von Open-Meteo, eines aus Locationforecast von MET Norway. Die Modelle starten um 00, 06, 12 und 18 UTC einen neuen Lauf. Die Vorhersage einer Stadt wird abgerufen, wenn jemand sie öffnet und die gespeicherte mindestens 3 Stunden alt ist, und stündlich gespeichert, von 3 Stunden vor dem Lauf bis 320 Stunden danach.\nDie Diagramme nutzen 3-Stunden-Abschnitte in der Ortszeit der Stadt (00, 03, 06…), beginnend mit dem Abschnitt, in dem die Vorhersage abgerufen wurde, mit einer Linie bei der aktuellen Zeit: zehn Tage in der Übersicht auf der Startseite und im Stadt-Dashboard. Temperatur, Wind und Luftdruck sind die Werte zum Abschnitt; Niederschlag ist die Menge der 3 Stunden danach, und das Überfahren eines Balkens markiert diese 3 Stunden. Das Niederschlagsfeld im Dashboard ergänzt 6-Stunden-Summen.\nRegionalmodelle liefern nur innerhalb ihres Gebiets Daten, daher zeigt eine Stadt außerhalb Europas bis zu acht Modelle. MET Norway veröffentlicht Stundenwerte nur für etwa die ersten 60 Stunden; spätere Abschnitte nutzen die übrigen Modelle.\nDie gefühlte Temperatur wird für jedes Modell mit der Formel von Open-Meteo (Steadmans scheinbare Temperatur) aus Temperatur, Luftfeuchtigkeit, Wind und Sonneneinstrahlung berechnet; MET Norway veröffentlicht keine Einstrahlung, daher ist sein Wert der im Schatten. Windböen liefern nur die neun Open-Meteo-Modelle. Luftfeuchtigkeit und Bewölkung sind Prozentwerte und werden über ihre ganze Skala gezeigt."
+            "body": "Neun numerische Modelle stammen aus der Vorhersage-API von Open-Meteo, eines aus Locationforecast von MET Norway. Die Modelle starten um 00, 06, 12 und 18 UTC einen neuen Lauf. Die Vorhersage einer Stadt wird abgerufen, wenn jemand sie öffnet und die gespeicherte mindestens 3 Stunden alt ist, und stündlich gespeichert, von 3 Stunden vor dem Lauf bis 320 Stunden danach.\nDie Diagramme nutzen 3-Stunden-Abschnitte in der Ortszeit der Stadt (00, 03, 06…), beginnend mit dem Abschnitt, in dem die Vorhersage abgerufen wurde, mit einer Linie bei der aktuellen Zeit: zehn Tage in der Übersicht auf der Startseite und im Stadt-Dashboard. Temperatur, Wind und Luftdruck sind die Werte zum Abschnitt; Niederschlag ist die Menge der 3 Stunden danach, und das Überfahren eines Balkens markiert diese 3 Stunden.\nRegionalmodelle liefern nur innerhalb ihres Gebiets Daten, daher zeigt eine Stadt außerhalb Europas bis zu acht Modelle. MET Norway veröffentlicht Stundenwerte nur für etwa die ersten 60 Stunden; spätere Abschnitte nutzen die übrigen Modelle.\nDie gefühlte Temperatur wird für jedes Modell mit der Formel von Open-Meteo (Steadmans scheinbare Temperatur) aus Temperatur, Luftfeuchtigkeit, Wind und Sonneneinstrahlung berechnet; MET Norway veröffentlicht keine Einstrahlung, daher ist sein Wert der im Schatten. Windböen liefern nur die neun Open-Meteo-Modelle. Luftfeuchtigkeit und Bewölkung sind Prozentwerte und werden über ihre ganze Skala gezeigt."
         },
         "median": {
             "title": "Median und Streuung",
-            "body": "Der Median ist der mittlere Wert aller Modelle, die für einen Schritt Daten geliefert haben (bei gerader Anzahl der Mittelwert der beiden mittleren). Die Bänder im Dashboard zeigen die Spanne vom niedrigsten bis zum höchsten Modell und die mittlere Hälfte der Modelle. Die Windrichtung nutzt einen zirkulären Median, sodass sich 350° und 10° im Norden treffen. Die Regenwahrscheinlichkeit ist der Anteil der Modelle, die in einem 6-Stunden-Fenster des Niederschlagsfelds mehr als {rain} mm vorhersagen."
+            "body": "Der Median ist der mittlere Wert aller Modelle, die für einen Schritt Daten geliefert haben (bei gerader Anzahl der Mittelwert der beiden mittleren). Die Bänder im Dashboard zeigen die Spanne vom niedrigsten bis zum höchsten Modell und die mittlere Hälfte der Modelle. Die Windrichtung nutzt einen zirkulären Median, sodass sich 350° und 10° im Norden treffen. Die Regenwahrscheinlichkeit ist der Anteil der Modelle, die in einem 3-Stunden-Abschnitt (die Zeile unter den Niederschlagsbalken der Übersicht) mehr als {rain} mm vorhersagen."
         },
         "disagreement": {
             "title": "Uneinigkeit",

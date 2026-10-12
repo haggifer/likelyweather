@@ -2,16 +2,11 @@ import { isNotFound } from '@fa/api-client/api'
 import { useCity } from '@fa/api-client/hooks/useCity'
 import { useLatest } from '@fa/api-client/hooks/useLatest'
 import {
-    countRainySteps,
     formatSpread,
     getDashboardStats,
     getFutureRange,
-    getPrecipTotals,
     getReadoutIndex,
     getSlotEnd,
-    PRECIP_WINDOW_HOURS,
-    PrecipTotals,
-    sumValues,
 } from '@fa/chart-core/dashboard-stats'
 import { City } from '@fa/shared/api'
 import { formatDateKey, formatNumber, formatPeriodLabel, formatStepLabel, getCityName } from '@fa/shared/format'
@@ -23,7 +18,6 @@ import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { ChartFrame } from '../components/charts/ChartFrame'
-import { PrecipPanel } from '../components/charts/PrecipPanel'
 import { SpaghettiChart } from '../components/charts/SpaghettiChart'
 import { CityHeader, HEADER_BUTTON_SIZE } from '../components/city/CityHeader'
 import { CityTitle } from '../components/city/CityTitle'
@@ -70,32 +64,6 @@ const getReadoutLabel = (step: string, variable: Variable, timeZone: string, loc
     variable === Variable.Precip
         ? formatPeriodLabel(step, getSlotEnd(step), timeZone, locale)
         : formatStepLabel(step, timeZone, locale)
-
-// The panel does not depend on the selected variable or the scrub, so the dashboard keeps one element for it and a
-// variable switch or a scrub leaves its drawing alone, as the web's.
-const renderPrecipChart = (
-    precip: PrecipTotals | null,
-    error: unknown,
-    onRetry: () => void,
-    timeZone: string,
-    locale: string,
-) => {
-    if (precip) {
-        return (
-            <PrecipPanel
-                steps={precip.steps}
-                series={precip.series}
-                median={precip.median}
-                chance={precip.chance}
-                timeZone={timeZone}
-                locale={locale}
-                windowHours={PRECIP_WINDOW_HOURS}
-            />
-        )
-    }
-
-    return error ? <ErrorNotice error={error} onRetry={onRetry} /> : <Skeleton height={230} />
-}
 
 // The slug names the place while the city itself is loading, missing or failing, so the screen always has its heading.
 const SlugHeading = ({ slug, children }: { slug: string; children?: ReactNode }) => {
@@ -157,15 +125,6 @@ const Dashboard = ({ city }: DashboardProps) => {
         () => (latest ? getDashboardStats(latest, variable, timeZone, now) : null),
         [latest, variable, timeZone, now],
     )
-    const precip = useMemo(
-        () => (precipQuery.data && anchor ? getPrecipTotals(precipQuery.data, anchor) : null),
-        [precipQuery.data, anchor],
-    )
-    const { error: precipError, refetch: refetchPrecip } = precipQuery
-    const precipChart = useMemo(
-        () => renderPrecipChart(precip, precipError, () => void refetchPrecip(), timeZone, locale),
-        [precip, precipError, refetchPrecip, timeZone, locale],
-    )
 
     const handleSwitchCity = (slug: string) => {
         setSelectedCity(slug)
@@ -217,12 +176,6 @@ const Dashboard = ({ city }: DashboardProps) => {
         day: mostSplit ? formatDateKey(mostSplit.day, locale, { weekday: 'long' }) : '–',
         spread: formatSpread(mostSplit?.spread, info.decimals),
     })
-    const precipSummary = precip
-        ? t('precipSummary', {
-              steps: countRainySteps(precip.chance),
-              total: formatNumber(sumValues(precip.median), 1),
-          })
-        : null
     const noteStyle = [styles.note, { color: colors['muted-foreground'] }]
 
     return (
@@ -280,9 +233,6 @@ const Dashboard = ({ city }: DashboardProps) => {
                 </View>
             </ChartFrame>
             <DisagreementTiles days={derived.disagreement} variable={variable} />
-            <ChartFrame title={t('precipTitle')} description={t('precipDescription')} summary={precipSummary}>
-                {precipChart}
-            </ChartFrame>
         </ScreenScroll>
     )
 }

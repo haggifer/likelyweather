@@ -15,16 +15,11 @@ import { setHoverStep } from '@/store/dashboard-slice'
 import { useCity } from '@fa/api-client/hooks/useCity'
 import { useLatest } from '@fa/api-client/hooks/useLatest'
 import {
-    countRainySteps,
     formatSpread,
     getDashboardStats,
     getFutureRange,
-    getPrecipTotals,
     getReadoutIndex,
     getSlotEnd,
-    PRECIP_WINDOW_HOURS,
-    PrecipTotals,
-    sumValues,
 } from '@fa/chart-core/dashboard-stats'
 import { Series } from '@fa/shared/api'
 import { EnsembleStats } from '@fa/shared/ensemble'
@@ -34,7 +29,6 @@ import { buildSlots, DASHBOARD_HOURS, getChartStart, toSlotLatest } from '@fa/sh
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Loader2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
-import dynamic from 'next/dynamic'
 import { useMemo } from 'react'
 
 interface SeriesTableProps {
@@ -53,12 +47,6 @@ interface SeriesTableProps {
 const STICKY_TIME_CELL =
     'sticky left-0 z-1 bg-card group-hover:bg-[color-mix(in_srgb,var(--color-muted)_50%,var(--color-card))]'
 
-// Recharts is the heaviest chart library here and the panel sits below the fold, so it loads after the main chart.
-const PrecipPanel = dynamic(() => import('@/components/charts/PrecipPanel').then((mod) => mod.PrecipPanel), {
-    ssr: false,
-    loading: () => <Skeleton className="h-[14.375rem]" />,
-})
-
 // On phones the switch stays under the top bar, so another variable is one tap away wherever the page is scrolled.
 const VARIABLE_BAR = (
     <div
@@ -73,30 +61,6 @@ const getReadoutLabel = (step: string, variable: Variable, timeZone: string, loc
     variable === Variable.Precip
         ? formatPeriodLabel(step, getSlotEnd(step), timeZone, locale)
         : formatStepLabel(step, timeZone, locale)
-
-const renderPrecipChart = (
-    precip: PrecipTotals | null,
-    error: unknown,
-    onRetry: () => void,
-    timeZone: string,
-    locale: string,
-) => {
-    if (precip) {
-        return (
-            <PrecipPanel
-                steps={precip.steps}
-                series={precip.series}
-                median={precip.median}
-                chance={precip.chance}
-                timeZone={timeZone}
-                locale={locale}
-                windowHours={PRECIP_WINDOW_HOURS}
-            />
-        )
-    }
-
-    return error ? <ErrorNotice error={error} onRetry={onRetry} /> : <Skeleton className="h-[14.375rem]" />
-}
 
 const SeriesTable = ({
     steps,
@@ -179,17 +143,6 @@ export function Dashboard({ slug }: IProps) {
         () => (latest && now ? getDashboardStats(latest, variable, timeZone, now) : null),
         [latest, variable, timeZone, now],
     )
-    const precip = useMemo(
-        () => (precipQuery.data && anchor ? getPrecipTotals(precipQuery.data, anchor) : null),
-        [precipQuery.data, anchor],
-    )
-    // The precipitation panel does not depend on the selected variable; a stable element keeps a variable switch
-    // from re-rendering the Recharts tree.
-    const { error: precipError, refetch: refetchPrecip } = precipQuery
-    const precipChart = useMemo(
-        () => renderPrecipChart(precip, precipError, () => void refetchPrecip(), timeZone, locale),
-        [precip, precipError, refetchPrecip, timeZone, locale],
-    )
     const chartNow = anchor ? now : null
 
     if (!city) return null
@@ -214,15 +167,12 @@ export function Dashboard({ slug }: IProps) {
                         {t('fetching', { name: cityName })}
                     </div>
                 )}
-                {/* On phones: the chart card with its model list, the row of day tiles and the precipitation panel. */}
+                {/* On phones: the chart card with its model list, then the row of day tiles. */}
                 <div className="grid gap-(--card-gap) lg:grid-cols-[minmax(0,1fr)_18.75rem]">
                     <Skeleton className="h-[25rem] max-sm:h-[37.5rem]" />
                     <Skeleton className="h-[25rem] max-sm:hidden" />
                 </div>
-                <div className="grid gap-(--card-gap) lg:grid-cols-2">
-                    <Skeleton className="h-[13.75rem] max-sm:h-[9rem]" />
-                    <Skeleton className="h-[13.75rem] max-sm:h-[23.75rem]" />
-                </div>
+                <Skeleton className="h-[9rem]" />
             </div>
         )
     }
@@ -242,12 +192,6 @@ export function Dashboard({ slug }: IProps) {
         day: mostSplit ? formatDateKey(mostSplit.day, locale, { weekday: 'long' }) : '–',
         spread: formatSpread(mostSplit?.spread, info.decimals),
     })
-    const precipSummary = precip
-        ? t('precipSummary', {
-              steps: countRainySteps(precip.chance),
-              total: formatNumber(sumValues(precip.median), 1),
-          })
-        : undefined
     const legend = (
         <ModelLegend
             series={latest.series}
@@ -302,12 +246,7 @@ export function Dashboard({ slug }: IProps) {
                 </ChartFrame>
                 <div className="rounded-(--radius) border bg-card p-3 max-sm:hidden">{legend}</div>
             </div>
-            <div className="grid gap-(--card-gap) lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-                <DisagreementTiles days={derived.disagreement} variable={variable} />
-                <ChartFrame title={t('precipTitle')} description={t('precipDescription')} summary={precipSummary}>
-                    {precipChart}
-                </ChartFrame>
-            </div>
+            <DisagreementTiles days={derived.disagreement} variable={variable} />
         </div>
     )
 }
