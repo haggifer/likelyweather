@@ -38,6 +38,7 @@ model City {
   firstTrackedAt DateTime   @default(now()) // when someone first opened it
   forecasts      Forecast[]
   snapshots      Snapshot[]
+  archiveHours   ArchiveHour[]
 }
 
 model CollectionRun {
@@ -95,4 +96,23 @@ model Forecast {
   snowCm      Float?
 
   @@id([cityId, issueTime, modelId, validTime])
+}
+
+// One UTC hour of a city's past weather from Open-Meteo's Historical Weather API (ERA5 and the ECMWF IFS analysis).
+// Kept for good: a place and period is fetched once and read from here afterwards.
+model ArchiveHour {
+  cityId      Int
+  city        City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  time        DateTime
+  tempC       Float?   @db.Real
+  feelsC      Float?   @db.Real // Open-Meteo's apparent temperature
+  windMs      Float?   @db.Real
+  gustsMs     Float?   @db.Real
+  windDirDeg  Float?   @db.Real
+  pressureMsl Float?   @db.Real
+  precipMm    Float?   @db.Real // the hour ending at time
+  humidityPct Float?   @db.Real
+  cloudPct    Float?   @db.Real
+
+  @@id([cityId, time])
 }

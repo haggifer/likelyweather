@@ -117,6 +117,10 @@ const toLocalMidnight = (day: number, timeZone: string) => {
     return localMs < day ? new Date(midnight.getTime() + HOUR_MS) : midnight
 }
 
+// The instant a local calendar day (`2026-10-12`) starts in a time zone.
+export const getLocalMidnight = (dateKey: string, timeZone: string) =>
+    toLocalMidnight(Date.parse(`${dateKey}T00:00:00Z`), timeZone)
+
 export const getLocalMidnights = (start: Date, end: Date, timeZone: string) => {
     const midnights: Date[] = []
 

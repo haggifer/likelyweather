@@ -97,6 +97,31 @@ export const LatestResponseSchema = z.object({
 })
 export type LatestResponse = z.infer<typeof LatestResponseSchema>
 
+const DateKey = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+
+// A city's past weather for whole local days (`archive.ts` holds the range rules the API checks).
+export const ArchiveQuerySchema = z.strictObject({ from: DateKey, to: DateKey })
+
+// Hourly, in UTC, one value list per field (`ARCHIVE_FIELDS` in archive.ts); precipitation is the hour ending at the
+// step, as in the forecasts.
+export const ArchiveResponseSchema = z.object({
+    from: z.string(),
+    to: z.string(),
+    steps: z.array(z.string()),
+    values: z.object({
+        temp: NumberList,
+        feels: NumberList,
+        wind: NumberList,
+        gusts: NumberList,
+        windDir: NumberList,
+        pressure: NumberList,
+        precip: NumberList,
+        humidity: NumberList,
+        cloud: NumberList,
+    }),
+})
+export type ArchiveResponse = z.infer<typeof ArchiveResponseSchema>
+
 export const HealthResponseSchema = z.object({ ok: z.boolean(), cities: z.number() })
 export type HealthResponse = z.infer<typeof HealthResponseSchema>
 

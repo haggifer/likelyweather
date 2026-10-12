@@ -1,4 +1,5 @@
 import {
+    ArchiveQuerySchema,
     DEFAULT_LOCALE,
     GeocodeQuerySchema,
     GeocodeResponse,
@@ -12,6 +13,7 @@ import {
 } from '@fa/shared/api'
 import { MODELS } from '@fa/shared/models'
 import { Router } from 'express'
+import { getArchivePayload } from './domain/archive'
 import { ensureFreshSnapshot, findNearestCity, getStarterCities, requireCity, trackCity } from './domain/cities'
 import { getErrorMessage, HttpError } from './domain/errors'
 import { getLatestPayload } from './domain/latest'
@@ -108,6 +110,23 @@ apiRouter.get('/cities/:slug/latest', rateLimit('read'), async (req, res) => {
     const payload = await getLatestPayload(meta, variable)
 
     sendJson(res, payload, { maxAge: getLatestMaxAge(meta, new Date()) })
+})
+
+// Past weather does not change once stored, so CloudFront and browsers may keep an answer for a day.
+const ARCHIVE_MAX_AGE_SECONDS = 24 * 60 * 60
+
+// Read from the database when the hours are stored; otherwise fetched once from Open-Meteo, spending one unit of the
+// viewer's quota at most.
+apiRouter.get('/cities/:slug/archive', rateLimit('read'), async (req, res) => {
+    const range = parseQuery(req, ArchiveQuerySchema)
+    const client = getClientKey(req)
+
+    const city = await requireCity(getParam(req, 'slug'))
+    const payload = await getArchivePayload(city, range, () => requireQuota(client)).catch(
+        toUpstreamError('The archive is unavailable'),
+    )
+
+    sendJson(res, payload, { maxAge: ARCHIVE_MAX_AGE_SECONDS })
 })
 
 apiRouter.get('/quota', rateLimit('read'), async (req, res) => {

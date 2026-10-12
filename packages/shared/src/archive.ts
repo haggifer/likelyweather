@@ -1,0 +1,90 @@
+import { DAY_MS, HOUR_MS } from './constants'
+import { getLocalMidnight } from './format'
+import { getLocalDateKey } from './time'
+
+// A period of a city's past weather: whole local days, both ends included (`YYYY-MM-DD`).
+export interface ArchiveRange {
+    from: string
+    to: string
+}
+
+// Open-Meteo counts a request of up to 14 days and 10 variables as one call; 12 days keep a margin (author,
+// 2026-10-12), so an archive request never costs more than one call and one unit of the viewer's quota.
+export const ARCHIVE_MAX_DAYS = 12
+// ERA5 starts in 1940.
+export const ARCHIVE_FIRST_DATE = '1940-01-01'
+const DEFAULT_DAYS = 7
+const DATE_KEY = /^\d{4}-\d{2}-\d{2}$/
+
+// The stored hourly fields and the Historical Weather API variables they come from. Feels-like is Open-Meteo's own
+// apparent temperature here, the formula the forecasts use at ingest.
+export const ARCHIVE_FIELDS = [
+    { field: 'temp', openMeteoKey: 'temperature_2m' },
+    { field: 'feels', openMeteoKey: 'apparent_temperature' },
+    { field: 'wind', openMeteoKey: 'wind_speed_10m' },
+    { field: 'gusts', openMeteoKey: 'wind_gusts_10m' },
+    { field: 'windDir', openMeteoKey: 'wind_direction_10m' },
+    { field: 'pressure', openMeteoKey: 'pressure_msl' },
+    { field: 'precip', openMeteoKey: 'precipitation' },
+    { field: 'humidity', openMeteoKey: 'relative_humidity_2m' },
+    { field: 'cloud', openMeteoKey: 'cloud_cover' },
+] as const
+
+export type ArchiveField = (typeof ARCHIVE_FIELDS)[number]['field']
+
+const addDays = (dateKey: string, days: number) =>
+    new Date(Date.parse(`${dateKey}T00:00:00Z`) + days * DAY_MS).toISOString().slice(0, 10)
+
+export const countArchiveDays = ({ from, to }: ArchiveRange) =>
+    Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / DAY_MS) + 1
+
+// Yesterday in the city: today's later hours are still a forecast in the archive.
+export const getLatestArchiveDate = (now: Date, timeZone: string) =>
+    addDays(getLocalDateKey(now.toISOString(), timeZone), -1)
+
+export const getDefaultArchiveRange = (now: Date, timeZone: string): ArchiveRange => {
+    const to = getLatestArchiveDate(now, timeZone)
+
+    return { from: addDays(to, 1 - DEFAULT_DAYS), to }
+}
+
+export const isValidArchiveRange = (range: ArchiveRange, latest: string) =>
+    DATE_KEY.test(range.from) &&
+    DATE_KEY.test(range.to) &&
+    range.from >= ARCHIVE_FIRST_DATE &&
+    range.from <= range.to &&
+    range.to <= latest &&
+    countArchiveDays(range) <= ARCHIVE_MAX_DAYS
+
+const clampDate = (date: string, latest: string) =>
+    date < ARCHIVE_FIRST_DATE ? ARCHIVE_FIRST_DATE : date > latest ? latest : date
+
+// After the reader moves one end of the period, the other follows so the period stays in order, inside 1940 to
+// yesterday and at most 12 days long.
+export const adjustArchiveRange = (range: ArchiveRange, moved: 'from' | 'to', latest: string): ArchiveRange => {
+    const span = ARCHIVE_MAX_DAYS - 1
+
+    if (moved === 'from') {
+        const from = clampDate(range.from, latest)
+        const to = clampDate(range.to, latest)
+
+        return { from, to: to < from ? from : to > addDays(from, span) ? addDays(from, span) : to }
+    }
+
+    const to = clampDate(range.to, latest)
+    const from = clampDate(range.from, latest)
+
+    return { from: from > to ? to : from < addDays(to, -span) ? addDays(to, -span) : from, to }
+}
+
+// The UTC hours the local days cover, start included and end excluded, widened to whole hours for zones that are a
+// half hour off UTC, since the archive is hourly in UTC.
+export const getArchiveHours = ({ from, to }: ArchiveRange, timeZone: string) => {
+    const start = getLocalMidnight(from, timeZone)
+    const end = getLocalMidnight(addDays(to, 1), timeZone)
+
+    return {
+        start: new Date(Math.floor(start.getTime() / HOUR_MS) * HOUR_MS),
+        end: new Date(Math.ceil(end.getTime() / HOUR_MS) * HOUR_MS),
+    }
+}

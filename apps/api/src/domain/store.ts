@@ -10,6 +10,7 @@ import { HOUR_MS } from '@fa/shared/constants'
 import { Coordinates } from '@fa/shared/geo'
 import { ModelId } from '@fa/shared/models'
 import { ModelSeries, SeriesField } from '@fa/shared/variables'
+import { ArchiveHourValues } from './sources/open-meteo-archive'
 import { getWindowSteps } from './window'
 
 export interface SeriesGrid {
@@ -175,6 +176,48 @@ const toGridModels = (rows: GridRow[], fields: SeriesField[], steps: string[]) =
 
     return models
 }
+
+// A city's stored past hours in [start, end), oldest first.
+export const readArchiveHours = async (cityId: number, start: Date, end: Date): Promise<ArchiveHourValues[]> => {
+    const rows = await getPrisma().archiveHour.findMany({
+        where: { cityId, time: { gte: start, lt: end } },
+        orderBy: { time: 'asc' },
+    })
+
+    return rows.map((row) => ({
+        time: row.time,
+        values: {
+            temp: row.tempC,
+            feels: row.feelsC,
+            wind: row.windMs,
+            gusts: row.gustsMs,
+            windDir: row.windDirDeg,
+            pressure: row.pressureMsl,
+            precip: row.precipMm,
+            humidity: row.humidityPct,
+            cloud: row.cloudPct,
+        },
+    }))
+}
+
+// Past weather does not change, so an hour already stored is left as it is.
+export const writeArchiveHours = (cityId: number, hours: ArchiveHourValues[]) =>
+    getPrisma().archiveHour.createMany({
+        data: hours.map(({ time, values }) => ({
+            cityId,
+            time,
+            tempC: values.temp,
+            feelsC: values.feels,
+            windMs: values.wind,
+            gustsMs: values.gusts,
+            windDirDeg: values.windDir,
+            pressureMsl: values.pressure,
+            precipMm: values.precip,
+            humidityPct: values.humidity,
+            cloudPct: values.cloud,
+        })),
+        skipDuplicates: true,
+    })
 
 export const countCities = () => getPrisma().city.count()
 
