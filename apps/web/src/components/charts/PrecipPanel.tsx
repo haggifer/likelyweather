@@ -1,14 +1,19 @@
 'use client'
 
+import { useChartScroll } from '@/hooks/useChartScroll'
 import { useChartTheme } from '@/hooks/useChartTheme'
 import { useElementWidth } from '@/hooks/useElementWidth'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { useNow } from '@/hooks/useNow'
 import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
+import { getInitialScrollLeft, getMinSlotWidth, getScrollWidth } from '@fa/chart-core/scroll-geometry'
 import { Series } from '@fa/shared/api'
+import { HOUR_MS } from '@fa/shared/constants'
 import { formatNumber, formatPercent, formatPeriodLabel, formatTime } from '@fa/shared/format'
 import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { addHours, getLocalDateKey, toIsoMinute } from '@fa/shared/time'
 import { Variable } from '@fa/shared/variables'
+import { scaleLinear } from 'd3-scale'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import {
@@ -18,7 +23,6 @@ import {
     ComposedChart,
     MouseHandlerDataParam,
     ReferenceLine,
-    ResponsiveContainer,
     Scatter,
     Tooltip,
     XAxis,
@@ -50,9 +54,11 @@ interface TooltipContentProps {
     payload?: readonly { payload?: Row }[]
 }
 
-// Below this much of the plot per window the hour and chance labels touch, so every other one is shown.
-const MIN_WIDTH_PER_LABEL = 28
 const Y_AXIS_WIDTH = 36
+const X_AXIS_HEIGHT = 36
+const TICK_FONT_SIZE = 10
+// A window is two 3-hour slots, so it gets two slots' minimum width.
+const WINDOW_MIN_WIDTH = 2 * getMinSlotWidth(TICK_FONT_SIZE)
 const MARGIN = { top: 8, right: 8, bottom: 16, left: 0 }
 const HOUR_FORMAT: Intl.DateTimeFormatOptions = { hour: '2-digit', hourCycle: 'h23' }
 const PHONE_QUERY = '(width < 40rem)'
@@ -81,6 +87,10 @@ const toIndex = (state: MouseHandlerDataParam) =>
         : Number(state.activeTooltipIndex)
 
 const renderNothing = () => null
+
+// How many windows have passed at `now`; each step is labelled by the hour its window ends.
+const getElapsedWindows = (steps: string[], windowHours: number, now: Date) =>
+    (now.getTime() - new Date(steps[0]).getTime()) / (windowHours * HOUR_MS) + 1
 
 // Dashed models keep their pattern here too (the palette's second encoding); round caps would close the gaps.
 const ModelTick = ({ cx, cy, color, dash }: ModelTickProps) =>
@@ -123,6 +133,7 @@ export function PrecipPanel({
     const t = useTranslations('city')
     const theme = useChartTheme()
     const isPhone = useMediaQuery(PHONE_QUERY)
+    const now = useNow()
 
     const { ref, width } = useElementWidth<HTMLDivElement>()
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
@@ -133,13 +144,31 @@ export function PrecipPanel({
     const yTicks = getYTicks(yDomain, Variable.Precip, 3)
     const dayStarts = getDayStarts(steps, timeZone)
     const selectedRow = isPhone && selectedIndex !== null ? rows[selectedIndex] : undefined
+    const contentWidth = getScrollWidth(width, steps.length, WINDOW_MIN_WIDTH, Y_AXIS_WIDTH + MARGIN.right)
+    const windowWidth = (contentWidth - Y_AXIS_WIDTH - MARGIN.right) / steps.length
+    const y = scaleLinear()
+        .domain(yDomain)
+        .range([height - MARGIN.bottom - X_AXIS_HEIGHT, MARGIN.top])
+    const nowX = now ? Y_AXIS_WIDTH + getElapsedWindows(steps, windowHours, now) * windowWidth : null
+    const initialScrollLeft = getInitialScrollLeft(nowX, {
+        slotWidth: windowWidth,
+        insetLeft: Y_AXIS_WIDTH,
+        contentWidth,
+        viewportWidth: width,
+    })
+
+    // The panel has no now line; it opens at the window under way, like the charts at their now line.
+    const { ref: scrollRef } = useChartScroll(`${steps[0]}|${contentWidth}|${now !== null}`, initialScrollLeft, [
+        Y_AXIS_WIDTH,
+        MARGIN.right,
+    ])
 
     const TimeAndChanceTick = ({ x = 0, y = 0, index = 0 }: TickProps) => (
         <g transform={`translate(${x},${y})`}>
-            <text dy={12} textAnchor="middle" fontSize={10} fill={theme.muted}>
+            <text dy={12} textAnchor="middle" fontSize={TICK_FONT_SIZE} fill={theme.muted}>
                 {formatTime(rows[index]?.step ?? steps[0], timeZone, locale, HOUR_FORMAT)}
             </text>
-            <text dy={25} textAnchor="middle" fontSize={10} fontWeight={600} fill={theme.foreground}>
+            <text dy={25} textAnchor="middle" fontSize={TICK_FONT_SIZE} fontWeight={600} fill={theme.foreground}>
                 {formatPercent(rows[index]?.chance)}
             </text>
         </g>
@@ -177,9 +206,11 @@ export function PrecipPanel({
     }
 
     return (
-        <div ref={ref} className="[&_.recharts-surface:focus:not(:focus-visible)]:outline-none">
-            <ResponsiveContainer width="100%" height={height}>
+        <div ref={ref} className="relative [&_.recharts-surface:focus:not(:focus-visible)]:outline-none">
+            <div ref={scrollRef} className="overflow-x-auto overscroll-x-contain [scrollbar-width:thin]">
                 <ComposedChart
+                    width={contentWidth}
+                    height={height}
                     data={rows}
                     margin={MARGIN}
                     onClick={isPhone ? (state) => setSelectedIndex(toIndex(state)) : undefined}
@@ -190,15 +221,14 @@ export function PrecipPanel({
                         tick={TimeAndChanceTick}
                         tickLine={false}
                         axisLine={{ stroke: theme.border }}
-                        interval={width - Y_AXIS_WIDTH - MARGIN.right < MIN_WIDTH_PER_LABEL * steps.length ? 1 : 0}
-                        height={36}
+                        interval={0}
+                        height={X_AXIS_HEIGHT}
                     />
                     <YAxis
                         width={Y_AXIS_WIDTH}
                         domain={yDomain}
                         ticks={yTicks}
-                        tickFormatter={(tick: number) => formatYTick(tick)}
-                        tick={{ fontSize: 10, fill: theme.muted }}
+                        tick={renderNothing}
                         tickLine={false}
                         axisLine={false}
                         allowDataOverflow
@@ -243,7 +273,29 @@ export function PrecipPanel({
                         />
                     ))}
                 </ComposedChart>
-            </ResponsiveContainer>
+            </div>
+            {/* The axis stays while the bars scroll under it, on a card-coloured column. */}
+            <svg
+                width={Y_AXIS_WIDTH}
+                height={height}
+                aria-hidden="true"
+                className="pointer-events-none absolute top-0 left-0"
+            >
+                <rect width={Y_AXIS_WIDTH} height={height} fill={theme.card} />
+                {yTicks.map((tick) => (
+                    <text
+                        key={tick}
+                        x={Y_AXIS_WIDTH - 6}
+                        y={y(tick)}
+                        dy="0.32em"
+                        textAnchor="end"
+                        fontSize={TICK_FONT_SIZE}
+                        fill={theme.muted}
+                    >
+                        {formatYTick(tick)}
+                    </text>
+                ))}
+            </svg>
             {selectedRow && (
                 <div className="mt-2 border-t pt-2 text-xs">
                     {renderWindow(selectedRow, 'grid grid-cols-2 gap-x-4')}
