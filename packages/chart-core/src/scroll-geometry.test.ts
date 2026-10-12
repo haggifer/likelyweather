@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { getInitialScrollLeft, getMinSlotWidth, getRevealScrollLeft, getScrollWidth } from './scroll-geometry'
+import {
+    getInitialScrollLeft,
+    getMinSlotWidth,
+    getRevealScrollLeft,
+    getScrollWidth,
+    getVisibleRange,
+} from './scroll-geometry'
 
 describe('getMinSlotWidth', () => {
     it('fits "100" with 2 px on each side', () => {
@@ -53,5 +59,15 @@ describe('getRevealScrollLeft', () => {
 
     it('scrolls on to a point right of the plot', () => {
         expect(getRevealScrollLeft(600, input)).toBe(600 - 390 + 8)
+    })
+})
+
+describe('getVisibleRange', () => {
+    it('is the plot between the insets when the chart is not scrolled', () => {
+        expect(getVisibleRange(0, 390, [36, 8])).toEqual([36, 382])
+    })
+
+    it('follows the scroll, so labels clamp to what is on screen', () => {
+        expect(getVisibleRange(500, 390, [36, 8])).toEqual([536, 882])
     })
 })

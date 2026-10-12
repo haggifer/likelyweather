@@ -1,7 +1,7 @@
 import { useAnimatedDomain } from '@fa/chart-core/hooks/useAnimatedDomain'
 import { clamp, getBarWidth, getNowX } from '@fa/chart-core/plot-geometry'
 import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
-import { getInitialScrollLeft, getMinSlotWidth, getScrollWidth } from '@fa/chart-core/scroll-geometry'
+import { getInitialScrollLeft, getMinSlotWidth, getScrollWidth, getVisibleRange } from '@fa/chart-core/scroll-geometry'
 import {
     buildSpaghettiGeometry,
     getNearestIndex,
@@ -17,7 +17,7 @@ import { formatNumber, formatPeriodLabel, formatStepLabel } from '@fa/shared/for
 import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { ScaleTime } from 'd3-scale'
-import { useId, useMemo } from 'react'
+import { useId, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import Svg, { Circle, ClipPath, Defs, G, Line, Path, Rect, Text as SvgText } from 'react-native-svg'
@@ -46,6 +46,7 @@ interface TooltipRow {
 const ARROW_ROW = 26
 const MAX_TICK_WIDTH = 16
 const HOVER_LABEL_HALF_WIDTH = 34
+const SCROLL_THROTTLE_MS = 100
 const PERIOD_LABEL_HALF_WIDTH = 50
 const UNIT_LABEL_WIDTH = 28
 const TOOLTIP_SWATCH_WIDTH = 12
@@ -148,6 +149,7 @@ export function SpaghettiChart({
     const { chart, colors } = useTheme()
     const isReducedMotion = useReducedMotion()
     const { width, onLayout } = useLayoutWidth()
+    const [viewLeft, setViewLeft] = useState(0)
     const clipId = useId().replace(/[^\w-]/g, '')
 
     const height = width < NARROW_WIDTH ? Math.min(heightProp, NARROW_HEIGHT) : heightProp
@@ -183,10 +185,11 @@ export function SpaghettiChart({
     const hoverX = hoverTime ? x(hoverTime) : null
     const hoverLabel = hover === null ? null : getHoverLabel(steps[hover], hoverSpan, timeZone, locale)
     const labelHalfWidth = hoverSpan ? PERIOD_LABEL_HALF_WIDTH : HOVER_LABEL_HALF_WIDTH
+    const [visibleLeft, visibleRight] = getVisibleRange(viewLeft, width, [margin.left, margin.right])
     const hoverLabelX =
         hoverX === null
             ? null
-            : clamp(hoverX, margin.left + UNIT_LABEL_WIDTH + labelHalfWidth, plotRight - labelHalfWidth)
+            : clamp(hoverX, visibleLeft + UNIT_LABEL_WIDTH + labelHalfWidth, visibleRight - labelHalfWidth)
     const spanLeft = hoverSpan ? Math.max(margin.left, x(hoverSpan[0])) : 0
     const spanRight = hoverSpan ? Math.min(plotRight, x(hoverSpan[1])) : 0
     const tooltipRows = hover !== null && showTooltip ? getTooltipRows(series, hover) : []
@@ -199,13 +202,15 @@ export function SpaghettiChart({
     })
 
     // The key is the chart's start, not the variable, so switching variables keeps the reader's place.
-    const { ref: scrollRef, onContentSizeChange } = useChartScroll(steps[0], initialScrollLeft)
+    const { ref: scrollRef, onContentSizeChange, onScroll, getScrollLeft } = useChartScroll(steps[0], initialScrollLeft)
 
     const handleSelect = (touchX: number) => {
         const at = x.invert(touchX)
         const index = isBars ? getSpanIndex(times, at, stepMs) : getNearestIndex(times, at)
 
         onHoverIndex(clamp(index, minIndex, maxIndex))
+        // The picked time's label clamps to the part of the chart on screen when it was picked.
+        setViewLeft(getScrollLeft())
     }
 
     return (
@@ -213,7 +218,13 @@ export function SpaghettiChart({
             {width === 0 && <View style={{ height }} />}
             {width > 0 && (
                 <View>
-                    <ScrollView ref={scrollRef} horizontal onContentSizeChange={onContentSizeChange}>
+                    <ScrollView
+                        ref={scrollRef}
+                        horizontal
+                        onContentSizeChange={onContentSizeChange}
+                        onScroll={onScroll}
+                        scrollEventThrottle={SCROLL_THROTTLE_MS}
+                    >
                         <View style={{ width: contentWidth }}>
                             <TapSurface onSelect={handleSelect} plot={plot} onClear={() => onHoverIndex(null)}>
                                 <Svg width={contentWidth} height={height}>

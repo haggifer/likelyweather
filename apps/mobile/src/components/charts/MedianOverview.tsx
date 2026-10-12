@@ -1,7 +1,7 @@
 import { MedianSeries } from '@fa/chart-core/overview-stats'
 import { clamp, getBarWidth, getNowX, getTimeScale, getValueScale } from '@fa/chart-core/plot-geometry'
 import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
-import { getInitialScrollLeft, getMinSlotWidth, getScrollWidth } from '@fa/chart-core/scroll-geometry'
+import { getInitialScrollLeft, getMinSlotWidth, getScrollWidth, getVisibleRange } from '@fa/chart-core/scroll-geometry'
 import { getNearestIndex, getSumBarCenter } from '@fa/chart-core/spaghetti-geometry'
 import { HOUR_MS } from '@fa/shared/constants'
 import { formatNumber, formatStepLabel } from '@fa/shared/format'
@@ -67,6 +67,7 @@ const AXIS_HEIGHT = 22
 const MARGIN = { left: 36, right: 8 }
 const PANEL_RADIUS = 4
 const HOVER_LABEL_HALF_WIDTH = 34
+const SCROLL_THROTTLE_MS = 100
 const SLOT_MS = SLOT_HOURS * HOUR_MS
 // Half the cap height of the tick font, so a label centres on its gridline.
 const BASELINE_SHIFT = 3.5
@@ -219,6 +220,7 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
     const clipId = useId().replace(/[^\w-]/g, '')
 
     const [hoverIndex, setHoverIndex] = useState<number | null>(null)
+    const [viewLeft, setViewLeft] = useState(0)
 
     const axisSteps = series[Variable.Temp].steps
     const times = axisSteps.map((s) => new Date(s))
@@ -241,14 +243,24 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
         contentWidth,
         viewportWidth: width,
     })
+    const [visibleLeft, visibleRight] = getVisibleRange(viewLeft, width, [MARGIN.left, MARGIN.right])
     const hoverX =
         hoverIndex === null
             ? null
-            : clamp(x(times[hoverIndex]), MARGIN.left + HOVER_LABEL_HALF_WIDTH, plotRight - HOVER_LABEL_HALF_WIDTH)
+            : clamp(x(times[hoverIndex]), visibleLeft + HOVER_LABEL_HALF_WIDTH, visibleRight - HOVER_LABEL_HALF_WIDTH)
 
-    const { ref: scrollRef, onContentSizeChange } = useChartScroll(axisSteps[0], initialScrollLeft)
+    const {
+        ref: scrollRef,
+        onContentSizeChange,
+        onScroll,
+        getScrollLeft,
+    } = useChartScroll(axisSteps[0], initialScrollLeft)
 
-    const handleSelect = (touchX: number) => setHoverIndex(getNearestIndex(times, x.invert(touchX)))
+    // The picked time's label clamps to the part of the chart on screen when it was picked.
+    const handleSelect = (touchX: number) => {
+        setHoverIndex(getNearestIndex(times, x.invert(touchX)))
+        setViewLeft(getScrollLeft())
+    }
 
     return (
         <View>
@@ -290,6 +302,8 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                             ref={scrollRef}
                             horizontal
                             onContentSizeChange={onContentSizeChange}
+                            onScroll={onScroll}
+                            scrollEventThrottle={SCROLL_THROTTLE_MS}
                         >
                             <TapSurface onSelect={handleSelect}>
                                 <Svg testID="overview-plot" width={contentWidth} height={TOTAL_HEIGHT}>

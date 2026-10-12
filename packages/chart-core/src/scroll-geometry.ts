@@ -40,3 +40,11 @@ export const getRevealScrollLeft = (x: number, { scrollLeft, viewportWidth, inse
 
     return scrollLeft
 }
+
+// The part of a scrolled chart's plot that is on screen, in the chart's own coordinates: between the pinned axis
+// column and the right margin. Hover labels clamp to it, so none slides under the axis or past the visible edge.
+export const getVisibleRange = (
+    scrollLeft: number,
+    viewportWidth: number,
+    [insetLeft, insetRight]: [number, number],
+): [number, number] => [scrollLeft + insetLeft, scrollLeft + viewportWidth - insetRight]
