@@ -60,6 +60,22 @@ test('an Android phone sees the "Get the app" bar on the landing and city pages 
     await expect(bar).toHaveCount(0)
 })
 
+// Ten days never squeeze into a phone: the chart grows past its card and scrolls inside it, never the page.
+test('the overview chart scrolls inside its card', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'phone layout only')
+
+    await page.goto(`/?city=${KYIV}`)
+
+    const chart = page.getByRole('img', { name: /^Median forecast for Kyiv/ })
+
+    await expect(chart).toBeVisible()
+
+    const [scrollWidth, clientWidth] = await chart.locator('..').evaluate((el) => [el.scrollWidth, el.clientWidth])
+
+    expect(scrollWidth).toBeGreaterThan(clientWidth)
+    await expectNoSideScroll(page)
+})
+
 test('the dashboard chart labels its days', async ({ page }) => {
     await page.goto(`/city/${KYIV}`)
 
