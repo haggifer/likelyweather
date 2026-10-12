@@ -8,7 +8,8 @@ import {
     getReadoutIndex,
     getSlotEnd,
 } from '@fa/chart-core/dashboard-stats'
-import { City } from '@fa/shared/api'
+import { City, Series } from '@fa/shared/api'
+import { EnsembleStats } from '@fa/shared/ensemble'
 import { formatDateKey, formatNumber, formatPeriodLabel, formatStepLabel, getCityName } from '@fa/shared/format'
 import { ModelId } from '@fa/shared/models'
 import { buildSlots, DASHBOARD_HOURS, getChartStart, toSlotLatest } from '@fa/shared/slots'
@@ -58,6 +59,11 @@ const styles = StyleSheet.create({
     search: { alignSelf: 'stretch' },
 })
 
+interface Selection {
+    variable: Variable
+    step: string
+}
+
 const toggle = (list: ModelId[], id: ModelId) => (list.includes(id) ? list.filter((m) => m !== id) : [...list, id])
 
 const getReadoutLabel = (step: string, variable: Variable, timeZone: string, locale: string) =>
@@ -88,6 +94,95 @@ const VariableBar = ({ value, onChange }: { value: Variable; onChange: (variable
     )
 }
 
+interface SelectableChartProps {
+    steps: string[]
+    series: Series[]
+    visibleSeries: Series[]
+    stats: EnsembleStats
+    directions: (number | null)[] | null
+    variable: Variable
+    timeZone: string
+    locale: string
+    summary: string
+    now: Date
+    hidden: ModelId[]
+    isMedianHidden: boolean
+    onToggleHidden: (id: ModelId) => void
+    onToggleMedian: () => void
+    onReset: () => void
+}
+
+// The chart and its model list hold the picked slot themselves, so a tap re-renders them and not the rest of the
+// screen: the header, the disagreement tiles and the table.
+const SelectableChart = ({
+    steps,
+    series,
+    visibleSeries,
+    stats,
+    directions,
+    variable,
+    timeZone,
+    locale,
+    summary,
+    now,
+    hidden,
+    isMedianHidden,
+    onToggleHidden,
+    onToggleMedian,
+    onReset,
+}: SelectableChartProps) => {
+    const t = useTranslations('dashboard')
+    const { colors } = useTheme()
+
+    const [selection, setSelection] = useState<Selection | null>(null)
+
+    const info = VARIABLE_BY_ID[variable]
+    // A pick belongs to the variable it was made on, so switching variables drops it.
+    const hoverStep = selection?.variable === variable ? selection.step : null
+    const hoverIndex = hoverStep ? steps.indexOf(hoverStep) : -1
+    const readoutIndex = getReadoutIndex(steps, hoverIndex, now, info.aggregation === 'sum')
+    const windDirections = variable === Variable.Wind ? directions : null
+
+    const handleHoverIndex = (i: number | null) => setSelection(i === null ? null : { variable, step: steps[i] })
+
+    return (
+        <>
+            <SpaghettiChart
+                steps={steps}
+                series={visibleSeries}
+                stats={stats}
+                variable={variable}
+                timeZone={timeZone}
+                locale={locale}
+                accessibilityLabel={summary}
+                hoverIndex={hoverIndex >= 0 ? hoverIndex : null}
+                onHoverIndex={handleHoverIndex}
+                directions={windDirections}
+                now={now}
+                isMedianHidden={isMedianHidden}
+            />
+            {variable === Variable.Wind && (
+                <Text style={[styles.note, { color: colors['muted-foreground'] }]}>{t('windArrows')}</Text>
+            )}
+            <View style={[styles.legend, { borderTopColor: colors.border }]}>
+                <ModelLegend
+                    series={series}
+                    median={stats.median[readoutIndex]}
+                    readoutIndex={readoutIndex}
+                    readoutLabel={getReadoutLabel(steps[readoutIndex], variable, timeZone, locale)}
+                    direction={windDirections?.[readoutIndex] ?? null}
+                    variable={variable}
+                    hidden={hidden}
+                    isMedianHidden={isMedianHidden}
+                    onToggleHidden={onToggleHidden}
+                    onToggleMedian={onToggleMedian}
+                    onReset={onReset}
+                />
+            </View>
+        </>
+    )
+}
+
 interface DashboardProps {
     city: City
 }
@@ -101,10 +196,8 @@ const Dashboard = ({ city }: DashboardProps) => {
     const locale = useLocale()
     const now = useNow()
     const router = useRouter()
-    const { colors } = useTheme()
     const { variable, setVariable } = useSelectedVariable()
 
-    const [hoverStep, setHoverStep] = useState<string | null>(null)
     const [hidden, setHidden] = useState<ModelId[]>([])
     const [isMedianHidden, setIsMedianHidden] = useState(false)
 
@@ -125,14 +218,15 @@ const Dashboard = ({ city }: DashboardProps) => {
         () => (latest ? getDashboardStats(latest, variable, timeZone, now) : null),
         [latest, variable, timeZone, now],
     )
+    // A stable list, so the chart's memoized drawing survives renders that did not hide or show a model.
+    const visibleSeries = useMemo(
+        () => latest?.series.filter((s) => !hidden.includes(s.modelId)) ?? [],
+        [latest, hidden],
+    )
 
     const handleSwitchCity = (slug: string) => {
         setSelectedCity(slug)
         router.replace(`/city/${slug}`)
-    }
-    const handleVariable = (next: Variable) => {
-        setVariable(next)
-        setHoverStep(null)
     }
     const handleRetry = () => {
         void latestQuery.refetch()
@@ -142,6 +236,8 @@ const Dashboard = ({ city }: DashboardProps) => {
         setHidden([])
         setIsMedianHidden(false)
     }
+    const handleToggleHidden = (id: ModelId) => setHidden((list) => toggle(list, id))
+    const handleToggleMedian = () => setIsMedianHidden((v) => !v)
 
     if (!latest || !derived) {
         return (
@@ -151,7 +247,7 @@ const Dashboard = ({ city }: DashboardProps) => {
                 keyboardShouldPersistTaps="handled"
             >
                 <CityHeader city={city} onSelectCity={handleSwitchCity} />
-                <VariableBar value={variable} onChange={handleVariable} />
+                <VariableBar value={variable} onChange={setVariable} />
                 {latestQuery.isError || precipQuery.isError ? (
                     <ErrorNotice error={latestQuery.error ?? precipQuery.error} onRetry={handleRetry} />
                 ) : (
@@ -162,9 +258,6 @@ const Dashboard = ({ city }: DashboardProps) => {
         )
     }
 
-    const visibleSeries = latest.series.filter((s) => !hidden.includes(s.modelId))
-    const hoverIndex = hoverStep ? latest.steps.indexOf(hoverStep) : -1
-    const readoutIndex = getReadoutIndex(latest.steps, hoverIndex, now, info.aggregation === 'sum')
     const futureRange = getFutureRange(derived.stats.median, latest.steps, now)
     const mostSplit = [...derived.disagreement].sort((a, b) => b.spread - a.spread)[0]
     const summary = t('summary', {
@@ -176,7 +269,6 @@ const Dashboard = ({ city }: DashboardProps) => {
         day: mostSplit ? formatDateKey(mostSplit.day, locale, { weekday: 'long' }) : '–',
         spread: formatSpread(mostSplit?.spread, info.decimals),
     })
-    const noteStyle = [styles.note, { color: colors['muted-foreground'] }]
 
     return (
         <ScreenScroll
@@ -185,7 +277,7 @@ const Dashboard = ({ city }: DashboardProps) => {
             keyboardShouldPersistTaps="handled"
         >
             <CityHeader city={city} onSelectCity={handleSwitchCity} />
-            <VariableBar value={variable} onChange={handleVariable} />
+            <VariableBar value={variable} onChange={setVariable} />
             <ChartFrame
                 title={tv(variable)}
                 summary={summary}
@@ -201,36 +293,23 @@ const Dashboard = ({ city }: DashboardProps) => {
                     />
                 }
             >
-                <SpaghettiChart
+                <SelectableChart
                     steps={latest.steps}
-                    series={visibleSeries}
+                    series={latest.series}
+                    visibleSeries={visibleSeries}
                     stats={derived.stats}
+                    directions={derived.directions}
                     variable={variable}
                     timeZone={timeZone}
                     locale={locale}
-                    accessibilityLabel={summary}
-                    hoverIndex={hoverIndex >= 0 ? hoverIndex : null}
-                    onHoverIndex={(i) => setHoverStep(i === null ? null : latest.steps[i])}
-                    directions={variable === Variable.Wind ? derived.directions : null}
+                    summary={summary}
                     now={now}
+                    hidden={hidden}
                     isMedianHidden={isMedianHidden}
+                    onToggleHidden={handleToggleHidden}
+                    onToggleMedian={handleToggleMedian}
+                    onReset={handleReset}
                 />
-                {variable === Variable.Wind && <Text style={noteStyle}>{t('windArrows')}</Text>}
-                <View style={[styles.legend, { borderTopColor: colors.border }]}>
-                    <ModelLegend
-                        series={latest.series}
-                        median={derived.stats.median[readoutIndex]}
-                        readoutIndex={readoutIndex}
-                        readoutLabel={getReadoutLabel(latest.steps[readoutIndex], variable, timeZone, locale)}
-                        direction={variable === Variable.Wind ? (derived.directions?.[readoutIndex] ?? null) : null}
-                        variable={variable}
-                        hidden={hidden}
-                        isMedianHidden={isMedianHidden}
-                        onToggleHidden={(id) => setHidden((list) => toggle(list, id))}
-                        onToggleMedian={() => setIsMedianHidden((v) => !v)}
-                        onReset={handleReset}
-                    />
-                </View>
             </ChartFrame>
             <DisagreementTiles days={derived.disagreement} variable={variable} />
         </ScreenScroll>

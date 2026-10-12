@@ -9,6 +9,7 @@ import {
     getSumBarCenter,
     getSumSpan,
     Margin,
+    SpaghettiGeometry,
 } from '@fa/chart-core/spaghetti-geometry'
 import { Series } from '@fa/shared/api'
 import { HOUR_MS } from '@fa/shared/constants'
@@ -16,8 +17,8 @@ import { EnsembleStats } from '@fa/shared/ensemble'
 import { formatNumber, formatPeriodLabel, formatStepLabel } from '@fa/shared/format'
 import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
-import { ScaleTime } from 'd3-scale'
-import { useId, useMemo, useState } from 'react'
+import { ScaleLinear, ScaleTime } from 'd3-scale'
+import { memo, useId, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import Svg, { Circle, ClipPath, Defs, G, Line, Path, Rect, Text as SvgText } from 'react-native-svg'
@@ -53,6 +54,9 @@ const UNIT_LABEL_WIDTH = 28
 // bottom value (a humidity or cloud cover of 100 %) shows its whole stroke.
 const CLIP_BLEED = 2.5
 const TOOLTIP_SWATCH_WIDTH = 12
+const BAR_OPACITY = 0.6
+// The selected bar is drawn again over its static copy, which together reach the 0.95 of a selected bar.
+const SELECTED_BAR_OPACITY = 0.875
 // Phones get a shorter plot so the model list under it stays in view while scrubbing, as on the web.
 const NARROW_WIDTH = 480
 const NARROW_HEIGHT = 280
@@ -110,6 +114,188 @@ const getTooltipRows = (series: Series[], index: number) =>
         .map((s) => ({ modelId: s.modelId, value: s.values[index] }))
         .filter((r): r is TooltipRow => r.value !== null)
         .sort((a, b) => b.value - a.value)
+
+interface BarTicksProps {
+    series: Series[]
+    i: number
+    center: number
+    tickWidth: number
+    y: ScaleLinear<number, number>
+}
+
+// Each model's amount as a tick across its bar.
+const BarTicks = ({ series, i, center, tickWidth, y }: BarTicksProps) =>
+    series.map((s) => {
+        const v = s.values[i]
+        const model = MODEL_BY_ID[s.modelId]
+
+        if (v === null) return null
+
+        return (
+            <Line
+                key={s.modelId}
+                x1={center - tickWidth / 2}
+                x2={center + tickWidth / 2}
+                y1={y(v)}
+                y2={y(v)}
+                stroke={model.color}
+                strokeWidth={2}
+                strokeDasharray={model.dash}
+                strokeLinecap={model.dash ? 'butt' : 'round'}
+                opacity={0.9}
+            />
+        )
+    })
+
+interface DrawingProps {
+    geometry: SpaghettiGeometry
+    series: Series[]
+    stats: EnsembleStats
+    bars: DrawnBar[]
+    barWidth: number
+    tickWidth: number
+    yTicks: number[]
+    margin: Margin
+    height: number
+    plotRight: number
+    nowX: number | null
+    directions?: (number | null)[] | null
+    timeZone: string
+    locale: string
+    clipId: string
+    isBars: boolean
+    isMedianHidden: boolean
+    compact: boolean
+}
+
+// Everything that does not follow the selection: ten models over ten days, the bands, the grid and the arrows. Its
+// props keep their identity while a tap moves the selection, so a tap re-renders only the small layer drawn over it.
+const SpaghettiDrawing = memo(function SpaghettiDrawing({
+    geometry,
+    series,
+    stats,
+    bars,
+    barWidth,
+    tickWidth,
+    yTicks,
+    margin,
+    height,
+    plotRight,
+    nowX,
+    directions,
+    timeZone,
+    locale,
+    clipId,
+    isBars,
+    isMedianHidden,
+    compact,
+}: DrawingProps) {
+    const { chart } = useTheme()
+
+    const { x, y, times } = geometry
+    const plotBottom = height - margin.bottom
+
+    return (
+        <>
+            {nowX !== null && (
+                <Rect
+                    x={margin.left}
+                    y={margin.top}
+                    width={Math.max(0, nowX - margin.left)}
+                    height={plotBottom - margin.top}
+                    fill={chart.grid}
+                    opacity={0.45}
+                />
+            )}
+            {yTicks.map((tick) => (
+                <Line key={tick} x1={margin.left} x2={plotRight} y1={y(tick)} y2={y(tick)} stroke={chart.grid} />
+            ))}
+            <DayGrid
+                x={x}
+                start={times[0]}
+                end={times[times.length - 1]}
+                timeZone={timeZone}
+                locale={locale}
+                spans={[{ top: margin.top, bottom: plotBottom }]}
+                labelY={plotBottom + (compact ? 15 : 18)}
+                lineColor={chart.border}
+                labelColor={chart.muted}
+                fontSize={CHART_FONT_SIZE}
+            />
+            <Defs>
+                <ClipPath id={clipId}>
+                    <Rect
+                        x={margin.left}
+                        y={margin.top - CLIP_BLEED}
+                        width={Math.max(0, plotRight - margin.left)}
+                        height={Math.max(0, plotBottom - margin.top + 2 * CLIP_BLEED)}
+                    />
+                </ClipPath>
+            </Defs>
+            {/* The bands span every model while the y-domain fits the visible ones, so they are clipped. */}
+            <G clipPath={`url(#${clipId})`}>
+                {!isBars && <Path d={geometry.outerBand} fill={chart.band} opacity={chart.bandOuterOpacity} />}
+                {!isBars && <Path d={geometry.innerBand} fill={chart.band} opacity={chart.bandInnerOpacity} />}
+                {bars.map(({ i, center }) => {
+                    const median = stats.median[i]
+
+                    return (
+                        <G key={times[i].toISOString()}>
+                            {median !== null && !isMedianHidden && (
+                                <Rect
+                                    x={center - barWidth / 2}
+                                    y={y(median)}
+                                    width={barWidth}
+                                    height={Math.max(0, plotBottom - y(median))}
+                                    rx={2}
+                                    fill={chart.band}
+                                    opacity={BAR_OPACITY}
+                                />
+                            )}
+                            <BarTicks series={series} i={i} center={center} tickWidth={tickWidth} y={y} />
+                        </G>
+                    )
+                })}
+                {!isBars &&
+                    geometry.lines.map(({ modelId, d }) => (
+                        <Path
+                            key={modelId}
+                            d={d}
+                            fill="none"
+                            stroke={MODEL_BY_ID[modelId].color}
+                            strokeWidth={1.5}
+                            strokeDasharray={MODEL_BY_ID[modelId].dash}
+                            strokeLinecap={MODEL_BY_ID[modelId].dash ? 'butt' : 'round'}
+                            opacity={0.9}
+                        />
+                    ))}
+                {!isBars && !isMedianHidden && (
+                    <Path d={geometry.median} fill="none" stroke={chart.median} strokeWidth={3} strokeLinecap="round" />
+                )}
+            </G>
+            {nowX !== null && (
+                <Line
+                    x1={nowX}
+                    x2={nowX}
+                    y1={margin.top}
+                    y2={plotBottom}
+                    stroke={chart.foreground}
+                    strokeDasharray="4 3"
+                />
+            )}
+            {directions && (
+                <WindArrows
+                    x={x}
+                    times={times}
+                    directions={directions}
+                    y={height - ARROW_ROW / 2 - 2}
+                    color={chart.foreground}
+                    mutedColor={chart.muted}
+                />
+            )}
+        </>
+    )
+})
 
 interface IProps {
     steps: string[]
@@ -174,11 +360,14 @@ export function SpaghettiChart({
     const plotBottom = height - margin.bottom
     const plotRight = contentWidth - margin.right
     const nowX = getNowX(x, now, margin.left, plotRight)
-    const yTicks = getYTicks(domain, variable, compact ? 3 : 5)
+    const yTicks = useMemo(() => getYTicks(domain, variable, compact ? 3 : 5), [domain, variable, compact])
     const stepMs = times.length > 1 ? times[1].getTime() - times[0].getTime() : 3 * HOUR_MS
     const barWidth = getBarWidth(x, times[0], stepMs)
     const tickWidth = Math.min(barWidth, MAX_TICK_WIDTH)
-    const bars = isBars ? getDrawnBars(times, x, stepMs, barWidth, [margin.left, plotRight]) : []
+    const bars = useMemo(
+        () => (isBars ? getDrawnBars(times, x, stepMs, barWidth, [margin.left, plotRight]) : []),
+        [isBars, times, x, stepMs, barWidth, margin.left, plotRight],
+    )
     const minIndex = isBars && bars.length ? bars[0].i : 0
     const maxIndex = isBars && bars.length ? bars[bars.length - 1].i : times.length - 1
     const hover = hoverIndex !== null && times[hoverIndex] ? hoverIndex : null
@@ -186,6 +375,8 @@ export function SpaghettiChart({
     const hoverTime = hover === null ? null : hoverSpan ? getSumBarCenter(times[hover], stepMs) : times[hover]
     const hoverX = hoverTime ? x(hoverTime) : null
     const hoverLabel = hover === null ? null : getHoverLabel(steps[hover], hoverSpan, timeZone, locale)
+    const hoverBar = hover === null ? undefined : bars.find(({ i }) => i === hover)
+    const hoverMedian = hover === null ? null : stats.median[hover]
     const labelHalfWidth = hoverSpan ? PERIOD_LABEL_HALF_WIDTH : HOVER_LABEL_HALF_WIDTH
     const [visibleLeft, visibleRight] = getVisibleRange(viewLeft, width, [margin.left, margin.right])
     const hoverLabelX =
@@ -230,169 +421,69 @@ export function SpaghettiChart({
                         <View style={{ width: contentWidth }}>
                             <TapSurface onSelect={handleSelect} plot={plot} onClear={() => onHoverIndex(null)}>
                                 <Svg width={contentWidth} height={height}>
-                                    {nowX !== null && (
+                                    {/* The picked span's shade goes under the static drawing, as on the web. */}
+                                    {hoverSpan && (
                                         <Rect
-                                            x={margin.left}
+                                            x={spanLeft}
                                             y={margin.top}
-                                            width={Math.max(0, nowX - margin.left)}
+                                            width={Math.max(0, spanRight - spanLeft)}
                                             height={plotBottom - margin.top}
                                             fill={chart.grid}
-                                            opacity={0.45}
+                                            opacity={0.8}
                                         />
                                     )}
-                                    {yTicks.map((tick) => (
-                                        <Line
-                                            key={tick}
-                                            x1={margin.left}
-                                            x2={plotRight}
-                                            y1={y(tick)}
-                                            y2={y(tick)}
-                                            stroke={chart.grid}
-                                        />
-                                    ))}
-                                    <DayGrid
-                                        x={x}
-                                        start={times[0]}
-                                        end={times[times.length - 1]}
+                                    <SpaghettiDrawing
+                                        geometry={geometry}
+                                        series={series}
+                                        stats={stats}
+                                        bars={bars}
+                                        barWidth={barWidth}
+                                        tickWidth={tickWidth}
+                                        yTicks={yTicks}
+                                        margin={margin}
+                                        height={height}
+                                        plotRight={plotRight}
+                                        nowX={nowX}
+                                        directions={directions}
                                         timeZone={timeZone}
                                         locale={locale}
-                                        spans={[{ top: margin.top, bottom: plotBottom }]}
-                                        labelY={plotBottom + (compact ? 15 : 18)}
-                                        lineColor={chart.border}
-                                        labelColor={chart.muted}
-                                        fontSize={CHART_FONT_SIZE}
+                                        clipId={clipId}
+                                        isBars={isBars}
+                                        isMedianHidden={isMedianHidden}
+                                        compact={compact}
                                     />
-                                    <Defs>
-                                        <ClipPath id={clipId}>
-                                            <Rect
-                                                x={margin.left}
-                                                y={margin.top - CLIP_BLEED}
-                                                width={Math.max(0, plotRight - margin.left)}
-                                                height={Math.max(0, plotBottom - margin.top + 2 * CLIP_BLEED)}
-                                            />
-                                        </ClipPath>
-                                    </Defs>
-                                    {/* The bands span every model while the y-domain fits the visible ones, so they are clipped. */}
-                                    <G clipPath={`url(#${clipId})`}>
-                                        {!isBars && (
-                                            <Path
-                                                d={geometry.outerBand}
-                                                fill={chart.band}
-                                                opacity={chart.bandOuterOpacity}
-                                            />
-                                        )}
-                                        {!isBars && (
-                                            <Path
-                                                d={geometry.innerBand}
-                                                fill={chart.band}
-                                                opacity={chart.bandInnerOpacity}
-                                            />
-                                        )}
-                                        {hoverSpan && (
-                                            <Rect
-                                                x={spanLeft}
-                                                y={margin.top}
-                                                width={Math.max(0, spanRight - spanLeft)}
-                                                height={plotBottom - margin.top}
-                                                fill={chart.grid}
-                                                opacity={0.8}
-                                            />
-                                        )}
-                                        {bars.map(({ i, center }) => {
-                                            const median = stats.median[i]
-
-                                            return (
-                                                <G key={times[i].toISOString()}>
-                                                    {median !== null && !isMedianHidden && (
-                                                        <Rect
-                                                            x={center - barWidth / 2}
-                                                            y={y(median)}
-                                                            width={barWidth}
-                                                            height={Math.max(0, plotBottom - y(median))}
-                                                            rx={2}
-                                                            fill={chart.band}
-                                                            opacity={hover === i ? 0.95 : 0.6}
-                                                        />
-                                                    )}
-                                                    {series.map((s) => {
-                                                        const v = s.values[i]
-                                                        const model = MODEL_BY_ID[s.modelId]
-
-                                                        if (v === null) return null
-
-                                                        return (
-                                                            <Line
-                                                                key={s.modelId}
-                                                                x1={center - tickWidth / 2}
-                                                                x2={center + tickWidth / 2}
-                                                                y1={y(v)}
-                                                                y2={y(v)}
-                                                                stroke={model.color}
-                                                                strokeWidth={2}
-                                                                strokeDasharray={model.dash}
-                                                                strokeLinecap={model.dash ? 'butt' : 'round'}
-                                                                opacity={0.9}
-                                                            />
-                                                        )
-                                                    })}
-                                                </G>
-                                            )
-                                        })}
-                                        {!isBars &&
-                                            geometry.lines.map(({ modelId, d }) => (
-                                                <Path
-                                                    key={modelId}
-                                                    d={d}
-                                                    fill="none"
-                                                    stroke={MODEL_BY_ID[modelId].color}
-                                                    strokeWidth={1.5}
-                                                    strokeDasharray={MODEL_BY_ID[modelId].dash}
-                                                    strokeLinecap={MODEL_BY_ID[modelId].dash ? 'butt' : 'round'}
-                                                    opacity={0.9}
+                                    {hoverBar && (
+                                        <G clipPath={`url(#${clipId})`}>
+                                            {hoverMedian !== null && !isMedianHidden && (
+                                                <Rect
+                                                    x={hoverBar.center - barWidth / 2}
+                                                    y={y(hoverMedian)}
+                                                    width={barWidth}
+                                                    height={Math.max(0, plotBottom - y(hoverMedian))}
+                                                    rx={2}
+                                                    fill={chart.band}
+                                                    opacity={SELECTED_BAR_OPACITY}
                                                 />
-                                            ))}
-                                        {!isBars && !isMedianHidden && (
-                                            <Path
-                                                d={geometry.median}
-                                                fill="none"
-                                                stroke={chart.median}
-                                                strokeWidth={3}
-                                                strokeLinecap="round"
-                                            />
-                                        )}
-                                    </G>
-                                    {nowX !== null && (
-                                        <G>
-                                            <Line
-                                                x1={nowX}
-                                                x2={nowX}
-                                                y1={margin.top}
-                                                y2={plotBottom}
-                                                stroke={chart.foreground}
-                                                strokeDasharray="4 3"
-                                            />
-                                            {hover === null && (
-                                                <SvgText
-                                                    x={nowX + 4}
-                                                    y={margin.top + 10}
-                                                    fontSize={CHART_FONT_SIZE}
-                                                    fontFamily={getFontFamily('600')}
-                                                    fill={chart.foreground}
-                                                >
-                                                    {t('now')}
-                                                </SvgText>
                                             )}
+                                            <BarTicks
+                                                series={series}
+                                                i={hoverBar.i}
+                                                center={hoverBar.center}
+                                                tickWidth={tickWidth}
+                                                y={y}
+                                            />
                                         </G>
                                     )}
-                                    {directions && (
-                                        <WindArrows
-                                            x={x}
-                                            times={times}
-                                            directions={directions}
-                                            y={height - ARROW_ROW / 2 - 2}
-                                            color={chart.foreground}
-                                            mutedColor={chart.muted}
-                                        />
+                                    {nowX !== null && hover === null && (
+                                        <SvgText
+                                            x={nowX + 4}
+                                            y={margin.top + 10}
+                                            fontSize={CHART_FONT_SIZE}
+                                            fontFamily={getFontFamily('600')}
+                                            fill={chart.foreground}
+                                        >
+                                            {t('now')}
+                                        </SvgText>
                                     )}
                                     {hover !== null && hoverX !== null && (
                                         <G>
@@ -435,10 +526,10 @@ export function SpaghettiChart({
                                                         />
                                                     )
                                                 })}
-                                            {!isBars && !isMedianHidden && stats.median[hover] !== null && (
+                                            {!isBars && !isMedianHidden && hoverMedian !== null && (
                                                 <Circle
                                                     cx={hoverX}
-                                                    cy={y(stats.median[hover] as number)}
+                                                    cy={y(hoverMedian)}
                                                     r={4.5}
                                                     fill={chart.median}
                                                     stroke={chart.card}

@@ -1,11 +1,33 @@
 import { MedianSeries } from '@fa/chart-core/overview-stats'
+import { MIN_SLOT_WIDTH } from '@fa/chart-core/scroll-geometry'
 import en from '@fa/messages/catalogs/en.json'
 import { DEFAULT_OVERVIEW_PANELS, getVisiblePanels, PanelVariable } from '@fa/shared/overview-panels'
 import { buildSlots } from '@fa/shared/slots'
 import { OVERVIEW_VARIABLES, OverviewVariable, Variable } from '@fa/shared/variables'
 import { fireEvent, render, screen } from '@testing-library/react-native'
+import { ReactNode } from 'react'
+import { ViewProps } from 'react-native'
 import { IntlProvider } from 'use-intl'
+import { DayGrid } from './DayGrid'
 import { MedianOverview } from './MedianOverview'
+
+// The day grid is drawn only by the overview's static layer, so its calls count that layer's renders.
+jest.mock('./DayGrid', () => {
+    const actual = jest.requireActual<typeof import('./DayGrid')>('./DayGrid')
+
+    return { DayGrid: jest.fn(actual.DayGrid) }
+})
+
+// The tap gesture has no Jest driver; a host view hands its `onSelect` to `fireEvent`.
+jest.mock('./TapSurface', () => {
+    const { createElement } = jest.requireActual<typeof import('react')>('react')
+    const { View } = jest.requireActual<typeof import('react-native')>('react-native')
+
+    return {
+        TapSurface: ({ onSelect, children }: { onSelect: (x: number) => void; children: ReactNode }) =>
+            createElement(View, { testID: 'tap-surface', onSelect } as ViewProps, children),
+    }
+})
 
 const SLOTS = ['2026-10-12T00:00:00.000Z', '2026-10-12T03:00:00.000Z', '2026-10-12T06:00:00.000Z']
 const VALUES: Record<OverviewVariable, (number | null)[]> = {
@@ -24,8 +46,10 @@ const SERIES = Object.fromEntries(
 const NOW = new Date('2026-10-12T00:30:00.000Z')
 const TEN_DAYS = buildSlots(new Date(SLOTS[0]), 240)
 const TEN_DAY_SERIES = Object.fromEntries(
-    OVERVIEW_VARIABLES.map((variable) => [variable, { steps: TEN_DAYS, values: TEN_DAYS.map(() => 1) }]),
+    OVERVIEW_VARIABLES.map((variable) => [variable, { steps: TEN_DAYS, values: TEN_DAYS.map((_, i) => i) }]),
 ) as Record<OverviewVariable, MedianSeries>
+// The overview's left margin, where the first slot sits.
+const PLOT_LEFT = 36
 
 const DEFAULT_PANELS = getVisiblePanels(DEFAULT_OVERVIEW_PANELS)
 
@@ -73,6 +97,21 @@ describe('MedianOverview', () => {
 
         expect(screen.getByTestId('overview-scroll').props.horizontal).toBe(true)
         expect(screen.getByTestId('overview-plot').props.width).toBeGreaterThan(360)
+    })
+
+    it('re-renders only the selection layer when a tap picks a slot', async () => {
+        await renderOverview(
+            TEN_DAY_SERIES,
+            TEN_DAYS.map(() => 0),
+        )
+        await fireEvent(screen.getByLabelText('Overview'), 'layout', { nativeEvent: { layout: { width: 360 } } })
+        const drawn = jest.mocked(DayGrid).mock.calls.length
+
+        await fireEvent(screen.getByTestId('tap-surface'), 'select', PLOT_LEFT + 10 * MIN_SLOT_WIDTH)
+
+        expect(screen.getByText('10.0 °C')).toBeOnTheScreen()
+        expect(drawn).toBeGreaterThan(0)
+        expect(jest.mocked(DayGrid).mock.calls.length).toBe(drawn)
     })
 
     it('draws the default four panels and no humidity', async () => {
