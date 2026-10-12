@@ -149,8 +149,13 @@
         "home": "Back to the start"
     },
     "overview": {
+        "customize": "Choose panels",
+        "customizeTitle": "Overview panels",
+        "moveUp": "Move {name} up",
+        "moveDown": "Move {name} down",
+        "resetPanels": "Reset",
         "details": "Open details",
-        "aria": "Median forecast for {name} across {count} models: temperature, wind speed, pressure and precipitation",
+        "aria": "Median forecast for {name} across {count} models",
         "fetching": "Fetching ten models for {name}…",
         "loading": "Loading…",
         "perSlot": "{unit} / next {hours} h",

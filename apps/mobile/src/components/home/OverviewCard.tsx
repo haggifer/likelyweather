@@ -5,16 +5,18 @@ import {
     getOverviewMedians,
     OverviewHourly,
 } from '@fa/chart-core/overview-stats'
-import { City } from '@fa/shared/api'
+import { City, LatestResponse } from '@fa/shared/api'
 import { getCityRegion } from '@fa/shared/city-region'
 import { getCityName } from '@fa/shared/format'
+import { getVisiblePanels, PanelVariable } from '@fa/shared/overview-panels'
 import { buildSlots } from '@fa/shared/slots'
 import { Variable } from '@fa/shared/variables'
 import { useRouter } from 'expo-router'
-import { ArrowRight } from 'lucide-react-native'
+import { ArrowRight, SlidersHorizontal } from 'lucide-react-native'
 import { useMemo } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
+import { useOverviewPanels } from '../../hooks/useOverviewPanels'
 import { useTheme } from '../../hooks/useTheme'
 import { MedianOverview, MedianOverviewSkeleton } from '../charts/MedianOverview'
 import { FavoriteToggle } from '../city/FavoriteToggle'
@@ -47,8 +49,12 @@ interface SkeletonProps {
 }
 
 // The loaded card's rows, the web's OverviewCardSkeleton: the status in the title's place, the two buttons, then the
-// readouts and panels, so nothing moves when the data arrives.
+// reader's readouts and panels, so nothing moves when the data arrives.
 export function OverviewCardSkeleton({ status }: SkeletonProps) {
+    const { panels } = useOverviewPanels()
+
+    const visible = useMemo(() => getVisiblePanels(panels), [panels])
+
     return (
         <Card>
             <View style={styles.titleRow}>
@@ -60,22 +66,26 @@ export function OverviewCardSkeleton({ status }: SkeletonProps) {
                 <Skeleton height={36} width={REFRESH_WIDTH} />
                 <Skeleton height={36} width={DETAILS_WIDTH} />
             </View>
-            <MedianOverviewSkeleton />
+            <MedianOverviewSkeleton panels={visible} />
         </Card>
     )
 }
 
 interface IProps {
     city: City
+    // The visible panels, in the reader's order; `hourly` holds their runs and `run` the first panel's.
+    panels: PanelVariable[]
     hourly: OverviewHourly
+    run: LatestResponse
     anchor: Date
     now: Date
     isFetching: boolean
     onRefresh: () => void
+    onCustomize: () => void
 }
 
 // `anchor` is the local 3-hour slot the run was fetched in, where the chart starts.
-export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh }: IProps) {
+export function OverviewCard({ city, panels, hourly, run, anchor, now, isFetching, onRefresh, onCustomize }: IProps) {
     const t = useTranslations('overview')
     const locale = useLocale()
     const router = useRouter()
@@ -83,7 +93,6 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
 
     const name = getCityName(city, locale)
     const region = getCityRegion(city, locale)
-    const temp = hourly[Variable.Temp]
     const slots = useMemo(() => buildSlots(anchor), [anchor])
     const medians = useMemo(() => getOverviewMedians(hourly, slots), [hourly, slots])
     const directions = useMemo(() => getOverviewDirections(hourly[Variable.Wind], slots), [hourly, slots])
@@ -99,13 +108,21 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
                         <Text style={[styles.region, { color: colors['muted-foreground'] }]}>, {region}</Text>
                     ) : null}
                 </Text>
+                {/* In the title row with the star: a third button in the row below would push Open details onto a line of
+                its own on a phone. */}
+                <Button
+                    icon={SlidersHorizontal}
+                    variant="ghost"
+                    onPress={onCustomize}
+                    accessibilityLabel={t('customize')}
+                />
                 <FavoriteToggle place={city} />
             </View>
             <View style={styles.actions}>
-                <UpdatedChip fetchedAt={temp.fetchedAt} issueTime={temp.issueTime} timeZone={city.timezone} now={now} />
+                <UpdatedChip fetchedAt={run.fetchedAt} issueTime={run.issueTime} timeZone={city.timezone} now={now} />
                 <View style={styles.grow} />
                 <RefreshButton
-                    isAvailable={isRefreshOffered(temp.fetchedAt, now)}
+                    isAvailable={isRefreshOffered(run.fetchedAt, now)}
                     isFetching={isFetching}
                     onRefresh={onRefresh}
                 />
@@ -113,13 +130,14 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
             </View>
             <MedianOverview
                 key={city.slug}
+                panels={panels}
                 series={medians}
                 directions={directions}
                 chance={chance}
                 timeZone={city.timezone}
                 locale={locale}
                 now={now}
-                accessibilityLabel={t('aria', { name, count: temp.series.length })}
+                accessibilityLabel={t('aria', { name, count: run.series.length })}
             />
         </Card>
     )

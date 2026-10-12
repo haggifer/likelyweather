@@ -149,8 +149,13 @@
         "home": "Volver al inicio"
     },
     "overview": {
+        "customize": "Elegir paneles",
+        "customizeTitle": "Paneles del resumen",
+        "moveUp": "Subir {name}",
+        "moveDown": "Bajar {name}",
+        "resetPanels": "Restablecer",
         "details": "Ver detalles",
-        "aria": "Pronóstico mediano para {name} con {count} modelos: temperatura, velocidad del viento, presión y precipitación",
+        "aria": "Pronóstico mediano para {name} con {count} modelos",
         "fetching": "Obteniendo diez modelos para {name}…",
         "loading": "Cargando…",
         "perSlot": "{unit} / próx. {hours} h",

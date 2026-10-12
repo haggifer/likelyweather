@@ -149,8 +149,13 @@
         "home": "Retour à l’accueil"
     },
     "overview": {
+        "customize": "Choisir les panneaux",
+        "customizeTitle": "Panneaux de l’aperçu",
+        "moveUp": "Monter {name}",
+        "moveDown": "Descendre {name}",
+        "resetPanels": "Réinitialiser",
         "details": "Voir les détails",
-        "aria": "Prévision médiane pour {name} sur {count} modèles : température, vitesse du vent, pression et précipitations",
+        "aria": "Prévision médiane pour {name} sur {count} modèles",
         "fetching": "Récupération de dix modèles pour {name}…",
         "loading": "Chargement…",
         "perSlot": "{unit} / {hours} h à venir",

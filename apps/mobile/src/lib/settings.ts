@@ -1,4 +1,5 @@
 import { DEFAULT_LOCALE, Locale, LOCALES } from '@fa/shared/api'
+import { DEFAULT_OVERVIEW_PANELS, normalizeOverviewPanels, OverviewPanels } from '@fa/shared/overview-panels'
 import { createStoredValue } from './stored-value'
 
 export type LanguageSetting = Locale | 'system'
@@ -7,9 +8,10 @@ export type ThemeSetting = 'system' | 'light' | 'dark'
 export interface Settings {
     language: LanguageSetting
     theme: ThemeSetting
+    overviewPanels: OverviewPanels
 }
 
-const DEFAULT_SETTINGS: Settings = { language: 'system', theme: 'system' }
+const DEFAULT_SETTINGS: Settings = { language: 'system', theme: 'system', overviewPanels: DEFAULT_OVERVIEW_PANELS }
 const THEMES: ThemeSetting[] = ['system', 'light', 'dark']
 
 const isLanguage = (value: unknown): value is LanguageSetting => value === 'system' || LOCALES.includes(value as Locale)
@@ -21,6 +23,7 @@ const parseSettings = (raw: string | null): Settings => {
         return {
             language: isLanguage(stored?.language) ? stored.language : DEFAULT_SETTINGS.language,
             theme: THEMES.includes(stored?.theme) ? stored.theme : DEFAULT_SETTINGS.theme,
+            overviewPanels: normalizeOverviewPanels(stored?.overviewPanels),
         }
     } catch {
         return DEFAULT_SETTINGS

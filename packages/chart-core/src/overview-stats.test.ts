@@ -38,6 +38,13 @@ describe('getOverviewMedians', () => {
         const medians = getOverviewMedians(hourly, SLOTS)
 
         expect(Object.keys(medians)).toEqual([...OVERVIEW_VARIABLES])
-        expect(medians[Variable.Feels].values[0]).toBe(12)
+        expect(medians[Variable.Feels]?.values[0]).toBe(12)
+    })
+
+    it('leaves out the variables that were not fetched', () => {
+        const latest = toLatest([[10, 11, 12, 13]])
+        const medians = getOverviewMedians({ [Variable.Temp]: latest, [Variable.Cloud]: latest }, SLOTS)
+
+        expect(Object.keys(medians)).toEqual([Variable.Temp, Variable.Cloud])
     })
 })

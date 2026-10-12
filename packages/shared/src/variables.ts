@@ -126,7 +126,8 @@ export const VARIABLES: VariableInfo[] = [
     },
 ]
 
-// What the landing overview draws: four panels, with feels-like and gusts as second lines on temperature and wind.
+// What the overview can draw: its panels (`PanelVariable`), with feels-like and gusts as second lines on temperature
+// and wind. Which panels show is the reader's choice (`overview-panels.ts`).
 export const OVERVIEW_VARIABLES = [
     Variable.Temp,
     Variable.Feels,
@@ -134,6 +135,8 @@ export const OVERVIEW_VARIABLES = [
     Variable.Gusts,
     Variable.Pressure,
     Variable.Precip,
+    Variable.Humidity,
+    Variable.Cloud,
 ] as const
 
 export type OverviewVariable = (typeof OVERVIEW_VARIABLES)[number]

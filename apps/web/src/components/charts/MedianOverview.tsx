@@ -5,25 +5,25 @@ import { useChartScroll } from '@/hooks/useChartScroll'
 import { useChartTheme } from '@/hooks/useChartTheme'
 import { useElementWidth } from '@/hooks/useElementWidth'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
-import { MedianSeries } from '@fa/chart-core/overview-stats'
+import { useOverviewPanels } from '@/hooks/useOverviewPanels'
+import { MedianSeries, OverviewMedians } from '@fa/chart-core/overview-stats'
 import { CHART_FONT_SIZE, clamp, getBarWidth, getNowX, getTimeScale, getValueScale } from '@fa/chart-core/plot-geometry'
-import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
+import { formatYTick, getPanelTicks, getYDomain } from '@fa/chart-core/scales'
 import { getInitialScrollLeft, getScrollWidth, getVisibleRange, MIN_SLOT_WIDTH } from '@fa/chart-core/scroll-geometry'
 import { getNearestIndex, getSumBarCenter } from '@fa/chart-core/spaghetti-geometry'
 import { HOUR_MS } from '@fa/shared/constants'
 import { formatNumber, formatStepLabel } from '@fa/shared/format'
+import { getVisiblePanels, PanelVariable, SECONDARY_VARIABLE } from '@fa/shared/overview-panels'
 import { SLOT_HOURS } from '@fa/shared/slots'
-import { OverviewVariable, Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
+import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { ScaleLinear, ScaleTime } from 'd3-scale'
 import { area, curveMonotoneX, line } from 'd3-shape'
 import { useTranslations } from 'next-intl'
-import { CSSProperties, KeyboardEvent, MouseEvent, PointerEvent, useId, useState } from 'react'
+import { CSSProperties, KeyboardEvent, MouseEvent, PointerEvent, useId, useMemo, useState } from 'react'
 import { getArrowStep } from './arrow-keys'
 import { DayGrid } from './DayGrid'
 import { getPointerTime } from './pointer-time'
 import { WindArrows } from './WindArrows'
-
-type PanelVariable = Variable.Temp | Variable.Wind | Variable.Pressure | Variable.Precip
 
 interface RowLayout {
     variable: PanelVariable
@@ -33,7 +33,7 @@ interface RowLayout {
 }
 
 interface ChartSize {
-    rows: { variable: PanelVariable; height: number }[]
+    heights: Record<PanelVariable, number>
     marginLeft: number
     tickFontSize: number
     labelFontSize: number
@@ -42,6 +42,7 @@ interface ChartSize {
 }
 
 interface ChartGeometry extends ChartSize {
+    rows: { variable: PanelVariable; height: number }[]
     layout: RowLayout[]
     spans: { top: number; bottom: number }[]
     plotTop: number
@@ -55,12 +56,14 @@ type Point = [Date, number | null]
 // the desktop column (author, 2026-10-09); the readouts above the chart leave it the full width. Text is 11 px on both
 // (author, 2026-10-12).
 const DESKTOP_SIZE: ChartSize = {
-    rows: [
-        { variable: Variable.Temp, height: 104 },
-        { variable: Variable.Wind, height: 100 },
-        { variable: Variable.Pressure, height: 80 },
-        { variable: Variable.Precip, height: 80 + 18 },
-    ],
+    heights: {
+        [Variable.Temp]: 104,
+        [Variable.Wind]: 100,
+        [Variable.Pressure]: 80,
+        [Variable.Precip]: 80 + 18,
+        [Variable.Humidity]: 80,
+        [Variable.Cloud]: 80,
+    },
     marginLeft: 36,
     tickFontSize: CHART_FONT_SIZE,
     labelFontSize: CHART_FONT_SIZE,
@@ -68,12 +71,14 @@ const DESKTOP_SIZE: ChartSize = {
     isNowLabelAbove: false,
 }
 const PHONE_SIZE: ChartSize = {
-    rows: [
-        { variable: Variable.Temp, height: 120 },
-        { variable: Variable.Wind, height: 115 },
-        { variable: Variable.Pressure, height: 92 },
-        { variable: Variable.Precip, height: 92 + 18 },
-    ],
+    heights: {
+        [Variable.Temp]: 120,
+        [Variable.Wind]: 115,
+        [Variable.Pressure]: 92,
+        [Variable.Precip]: 92 + 18,
+        [Variable.Humidity]: 92,
+        [Variable.Cloud]: 92,
+    },
     marginLeft: 40,
     tickFontSize: CHART_FONT_SIZE,
     labelFontSize: CHART_FONT_SIZE,
@@ -88,17 +93,13 @@ const ARROW_STRIP = 20
 // above includes it, so the bars keep their room.
 const CHANCE_STRIP = 18
 // Feels-like and gusts are drawn as a second, dashed line in the panel of the variable they belong to.
-const SECONDARY: Partial<Record<PanelVariable, OverviewVariable>> = {
-    [Variable.Temp]: Variable.Feels,
-    [Variable.Wind]: Variable.Gusts,
-}
 const SECONDARY_DASH = '5 3'
 const HOVER_STRIP = 20
 const AXIS_HEIGHT = 22
 const MARGIN_RIGHT = 8
 const PANEL_RADIUS = 4
 const SLOT_MS = SLOT_HOURS * HOUR_MS
-// Phones stack the readouts in a 2 × 2 grid above a full-width chart; from `sm` they form a column beside it, one
+// Phones stack the readouts in a two-column grid above a full-width chart; from `sm` they form a column beside it, one
 // per panel. The column's gap and padding match ROW_GAP, HOVER_STRIP and AXIS_HEIGHT.
 const GRID = 'grid grid-cols-1 gap-y-3 sm:grid-cols-[minmax(8rem,12rem)_minmax(0,1fr)] sm:gap-x-4'
 const READOUTS = 'grid grid-cols-2 gap-2 sm:flex sm:flex-col sm:gap-3.5 sm:pt-5 sm:pb-5.5'
@@ -107,7 +108,7 @@ const COLUMN_GAP = 16
 const SKELETON_GAP = 24
 const SKELETON_READOUT_REACH = SKELETON_GAP - COLUMN_GAP - DESKTOP_SIZE.marginLeft
 
-const getLayout = (rows: ChartSize['rows']) =>
+const getLayout = (rows: ChartGeometry['rows']) =>
     rows.reduce<RowLayout[]>((layout, row) => {
         const previous = layout[layout.length - 1]
         const top = previous ? previous.top + previous.height + ROW_GAP : HOVER_STRIP
@@ -119,13 +120,16 @@ const getLayout = (rows: ChartSize['rows']) =>
         ]
     }, [])
 
-const getGeometry = (size: ChartSize): ChartGeometry => {
-    const layout = getLayout(size.rows)
+// The reader's panels, stacked in their order (`overview-panels.ts`).
+const getGeometry = (size: ChartSize, panels: PanelVariable[]): ChartGeometry => {
+    const rows = panels.map((variable) => ({ variable, height: size.heights[variable] }))
+    const layout = getLayout(rows)
     const last = layout[layout.length - 1]
     const plotBottom = last.top + last.height
 
     return {
         ...size,
+        rows,
         layout,
         spans: layout.map(({ top, height }) => ({ top, bottom: top + height })),
         plotTop: layout[0].top,
@@ -134,10 +138,12 @@ const getGeometry = (size: ChartSize): ChartGeometry => {
     }
 }
 
-const DESKTOP = getGeometry(DESKTOP_SIZE)
-const PHONE = getGeometry(PHONE_SIZE)
-
 const isDefined = (p: Point) => p[1] !== null
+
+const EMPTY_SERIES: MedianSeries = { steps: [], values: [] }
+
+// The chart only draws panels whose series were fetched; a missing one draws empty rather than failing.
+const getSeries = (series: OverviewMedians, variable: PanelVariable) => series[variable] ?? EMPTY_SERIES
 
 const getValueAt = (s: MedianSeries, step: string) => {
     const index = s.steps.indexOf(step)
@@ -155,12 +161,12 @@ const getPanelDomain = (variable: PanelVariable, s: MedianSeries, secondary: Med
 }
 
 // A panel's value axis: the scale and the ticks its gridlines and its pinned labels share.
-const getPanelScale = (row: RowLayout, series: Record<OverviewVariable, MedianSeries>) => {
-    const secondaryVariable = SECONDARY[row.variable]
-    const secondary = secondaryVariable ? series[secondaryVariable] : null
-    const { domain, scaleVariable } = getPanelDomain(row.variable, series[row.variable], secondary)
+const getPanelScale = (row: RowLayout, series: OverviewMedians) => {
+    const secondaryVariable = SECONDARY_VARIABLE[row.variable]
+    const secondary = (secondaryVariable && series[secondaryVariable]) || null
+    const { domain, scaleVariable } = getPanelDomain(row.variable, getSeries(series, row.variable), secondary)
 
-    return { y: getValueScale(domain, [row.bottom, row.top + ROW_PAD]), ticks: getYTicks(domain, scaleVariable, 3) }
+    return { y: getValueScale(domain, [row.bottom, row.top + ROW_PAD]), ticks: getPanelTicks(domain, scaleVariable) }
 }
 
 const toPoints = (s: MedianSeries): Point[] => s.steps.map((step, i) => [new Date(step), s.values[i]])
@@ -182,40 +188,55 @@ const getLinePath = (points: Point[], x: ScaleTime<number, number>, y: ScaleLine
 
 // The chart column's blocks are inset by the tick-label margin, so they cover exactly the panel backgrounds; the
 // readout blocks reach across the tick labels to leave a SKELETON_GAP between the two columns. It renders before the
-// media query is known, so CSS picks the phone or desktop geometry.
-export const MedianOverviewSkeleton = () => (
-    <div className={GRID} role="presentation">
-        <div className={READOUTS}>
-            {DESKTOP.rows.map(({ variable, height }) => (
-                <Skeleton
-                    key={variable}
-                    className="h-[3.5625rem] sm:mr-(--reach) sm:h-(--row-h)"
-                    style={{ '--row-h': `${height}px`, '--reach': `${SKELETON_READOUT_REACH}px` } as CSSProperties}
-                />
-            ))}
+// media query is known, so CSS picks the phone or desktop geometry, and with the reader's panels.
+export function MedianOverviewSkeleton() {
+    const { panels } = useOverviewPanels()
+
+    const visible = getVisiblePanels(panels)
+
+    return (
+        <div className={GRID} role="presentation">
+            <div className={READOUTS}>
+                {visible.map((variable) => (
+                    <Skeleton
+                        key={variable}
+                        className="h-[3.5625rem] sm:mr-(--reach) sm:h-(--row-h)"
+                        style={
+                            {
+                                '--row-h': `${DESKTOP_SIZE.heights[variable]}px`,
+                                '--reach': `${SKELETON_READOUT_REACH}px`,
+                            } as CSSProperties
+                        }
+                    />
+                ))}
+            </div>
+            <div
+                className="flex flex-col"
+                style={{ gap: ROW_GAP, paddingTop: HOVER_STRIP, paddingBottom: AXIS_HEIGHT }}
+            >
+                {visible.map((variable) => (
+                    <Skeleton
+                        key={variable}
+                        className="ml-(--phone-left) h-(--phone-h) sm:ml-(--left) sm:h-(--row-h)"
+                        style={
+                            {
+                                '--row-h': `${DESKTOP_SIZE.heights[variable]}px`,
+                                '--phone-h': `${PHONE_SIZE.heights[variable]}px`,
+                                '--left': `${DESKTOP_SIZE.marginLeft}px`,
+                                '--phone-left': `${PHONE_SIZE.marginLeft}px`,
+                                marginRight: MARGIN_RIGHT,
+                            } as CSSProperties
+                        }
+                    />
+                ))}
+            </div>
         </div>
-        <div className="flex flex-col" style={{ gap: ROW_GAP, paddingTop: HOVER_STRIP, paddingBottom: AXIS_HEIGHT }}>
-            {DESKTOP.rows.map(({ variable, height }, i) => (
-                <Skeleton
-                    key={variable}
-                    className="ml-(--phone-left) h-(--phone-h) sm:ml-(--left) sm:h-(--row-h)"
-                    style={
-                        {
-                            '--row-h': `${height}px`,
-                            '--phone-h': `${PHONE.rows[i].height}px`,
-                            '--left': `${DESKTOP.marginLeft}px`,
-                            '--phone-left': `${PHONE.marginLeft}px`,
-                            marginRight: MARGIN_RIGHT,
-                        } as CSSProperties
-                    }
-                />
-            ))}
-        </div>
-    </div>
-)
+    )
+}
 
 interface IProps {
-    series: Record<OverviewVariable, MedianSeries>
+    panels: PanelVariable[]
+    series: OverviewMedians
     directions: (number | null)[] | null
     chance: (number | null)[]
     timeZone: string
@@ -224,11 +245,11 @@ interface IProps {
     ariaLabel: string
 }
 
-// Median of all models for every tracked variable on one time axis of 3-hour slots; a precipitation bar is the
-// amount of the 3 hours after its slot, and the strip under the bars the share of models above 0.2 mm in it. Readouts on the left follow the crosshair, or the slot nearest to `now`;
-// the hovered slot's time sits above the panels. `now` draws the "now" line at the exact current time, which is
+// Median of all models for each of the reader's panels on one time axis of 3-hour slots; a precipitation bar is the
+// amount of the 3 hours after its slot, and the strip under the bars the share of models above 0.2 mm in it. Readouts
+// follow the crosshair, or the slot nearest to `now`; the hovered slot's time sits above the panels. `now` draws the "now" line at the exact current time, which is
 // inside the first slot right after a refresh, and shades the past.
-export function MedianOverview({ series, directions, chance, timeZone, locale, now, ariaLabel }: IProps) {
+export function MedianOverview({ panels, series, directions, chance, timeZone, locale, now, ariaLabel }: IProps) {
     const t = useTranslations('overview')
     const tv = useTranslations('variables')
     const tc = useTranslations('chart')
@@ -241,8 +262,8 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
     const [hoverIndex, setHoverIndex] = useState<number | null>(null)
     const [viewLeft, setViewLeft] = useState(0)
 
-    const geometry = isStacked ? PHONE : DESKTOP
-    const axisSteps = series[Variable.Temp].steps
+    const geometry = useMemo(() => getGeometry(isStacked ? PHONE_SIZE : DESKTOP_SIZE, panels), [isStacked, panels])
+    const axisSteps = getSeries(series, panels[0]).steps
     const times = axisSteps.map((s) => new Date(s))
     const contentWidth = getScrollWidth(width, times.length - 1, MIN_SLOT_WIDTH, geometry.marginLeft + MARGIN_RIGHT)
     const plotRight = contentWidth - MARGIN_RIGHT
@@ -313,16 +334,16 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
             <div className={READOUTS}>
                 {geometry.layout.map(({ variable, height }) => {
                     const info = VARIABLE_BY_ID[variable]
-                    const s = series[variable]
+                    const s = getSeries(series, variable)
                     const value = getValueAt(s, readoutTime)
                     const isSum = variable === Variable.Precip
-                    const secondaryVariable = SECONDARY[variable]
+                    const secondaryVariable = SECONDARY_VARIABLE[variable]
                     const chanceValue = chance[readoutIndex] ?? null
                     const extra = secondaryVariable
                         ? t('secondary', {
                               name: tv(secondaryVariable),
                               value: formatNumber(
-                                  getValueAt(series[secondaryVariable], readoutTime),
+                                  getValueAt(series[secondaryVariable] ?? EMPTY_SERIES, readoutTime),
                                   VARIABLE_BY_ID[secondaryVariable].decimals,
                               ),
                               unit: VARIABLE_BY_ID[secondaryVariable].unit,
@@ -408,9 +429,9 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                                 />
                             ))}
                         {geometry.layout.map(({ variable, bottom }, rowIndex) => {
-                            const s = series[variable]
-                            const secondaryVariable = SECONDARY[variable]
-                            const secondary = secondaryVariable ? series[secondaryVariable] : null
+                            const s = getSeries(series, variable)
+                            const secondaryVariable = SECONDARY_VARIABLE[variable]
+                            const secondary = (secondaryVariable && series[secondaryVariable]) || null
                             const points = toPoints(s)
                             const { y, ticks } = scales[rowIndex]
                             const hoverValue = hoverIndex === null ? null : getValueAt(s, axisSteps[hoverIndex])

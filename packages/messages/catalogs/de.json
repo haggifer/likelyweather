@@ -149,8 +149,13 @@
         "home": "Zurück zum Anfang"
     },
     "overview": {
+        "customize": "Felder wählen",
+        "customizeTitle": "Felder der Übersicht",
+        "moveUp": "{name} nach oben",
+        "moveDown": "{name} nach unten",
+        "resetPanels": "Zurücksetzen",
         "details": "Details öffnen",
-        "aria": "Median-Vorhersage für {name} aus {count} Modellen: Temperatur, Windgeschwindigkeit, Luftdruck und Niederschlag",
+        "aria": "Median-Vorhersage für {name} aus {count} Modellen",
         "fetching": "Zehn Modelle für {name} werden abgerufen…",
         "loading": "Lädt…",
         "perSlot": "{unit} / nächste {hours} h",

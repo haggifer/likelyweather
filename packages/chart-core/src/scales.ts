@@ -57,5 +57,11 @@ export const getYTicks = (domain: [number, number], variable: Variable, count: n
     return range(Math.ceil(domain[0] / tickStep) * tickStep, domain[1] + tickStep / 2, tickStep)
 }
 
+// An overview panel is short, so a percentage on its whole range gets its ends and middle only, not every 25 %.
+export const getPanelTicks = (domain: [number, number], variable: Variable) =>
+    VARIABLE_BY_ID[variable].fixedDomain
+        ? [domain[0], (domain[0] + domain[1]) / 2, domain[1]]
+        : getYTicks(domain, variable, 3)
+
 export const formatYTick = (tick: number, isWhole = false) =>
     formatNumber(tick, isWhole || Number.isInteger(tick) ? 0 : 1)

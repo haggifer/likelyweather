@@ -1,5 +1,6 @@
 import { MedianSeries } from '@fa/chart-core/overview-stats'
 import en from '@fa/messages/catalogs/en.json'
+import { DEFAULT_OVERVIEW_PANELS, getVisiblePanels, PanelVariable } from '@fa/shared/overview-panels'
 import { buildSlots } from '@fa/shared/slots'
 import { OVERVIEW_VARIABLES, OverviewVariable, Variable } from '@fa/shared/variables'
 import { fireEvent, render, screen } from '@testing-library/react-native'
@@ -14,6 +15,8 @@ const VALUES: Record<OverviewVariable, (number | null)[]> = {
     [Variable.Gusts]: [8.5, 9, 10],
     [Variable.Pressure]: [1012, 1013, 1014],
     [Variable.Precip]: [0.4, 0, 0],
+    [Variable.Humidity]: [72, 75, 80],
+    [Variable.Cloud]: [10, 40, 90],
 }
 const SERIES = Object.fromEntries(
     OVERVIEW_VARIABLES.map((variable) => [variable, { steps: SLOTS, values: VALUES[variable] }]),
@@ -24,10 +27,17 @@ const TEN_DAY_SERIES = Object.fromEntries(
     OVERVIEW_VARIABLES.map((variable) => [variable, { steps: TEN_DAYS, values: TEN_DAYS.map(() => 1) }]),
 ) as Record<OverviewVariable, MedianSeries>
 
-const renderOverview = (series = SERIES, chance: (number | null)[] = [0.4, 0, null]) =>
+const DEFAULT_PANELS = getVisiblePanels(DEFAULT_OVERVIEW_PANELS)
+
+const renderOverview = (
+    series = SERIES,
+    chance: (number | null)[] = [0.4, 0, null],
+    panels: PanelVariable[] = DEFAULT_PANELS,
+) =>
     render(
         <IntlProvider locale="en" messages={en}>
             <MedianOverview
+                panels={panels}
                 series={series}
                 directions={null}
                 chance={chance}
@@ -63,6 +73,30 @@ describe('MedianOverview', () => {
 
         expect(screen.getByTestId('overview-scroll').props.horizontal).toBe(true)
         expect(screen.getByTestId('overview-plot').props.width).toBeGreaterThan(360)
+    })
+
+    it('draws the default four panels and no humidity', async () => {
+        await renderOverview()
+
+        expect(screen.getByText(en.variables.pressure)).toBeOnTheScreen()
+        expect(screen.queryByText(en.variables.humidity)).toBeNull()
+    })
+
+    it('shows a humidity readout in percent, without a second line, when its panel is shown', async () => {
+        await renderOverview(SERIES, [0.4, 0, null], [Variable.Humidity, Variable.Temp])
+
+        expect(screen.getByText(en.variables.humidity)).toBeOnTheScreen()
+        expect(screen.getByText('72 %')).toBeOnTheScreen()
+        expect(screen.queryByText(en.variables.wind)).toBeNull()
+        expect(screen.queryByText(/Chance of rain/)).toBeNull()
+    })
+
+    it('orders the readouts as the panels', async () => {
+        await renderOverview(SERIES, [0.4, 0, null], [Variable.Cloud, Variable.Temp])
+
+        const names = screen.getAllByText(new RegExp(`^(${en.variables.temp}|${en.variables.cloud})$`))
+
+        expect(names.map((name) => name.props.children)).toEqual([en.variables.cloud, en.variables.temp])
     })
 
     it('shows no next-24-hour summary', async () => {

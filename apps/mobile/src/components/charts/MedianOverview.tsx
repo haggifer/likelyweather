@@ -1,15 +1,16 @@
-import { MedianSeries } from '@fa/chart-core/overview-stats'
+import { MedianSeries, OverviewMedians } from '@fa/chart-core/overview-stats'
 import { CHART_FONT_SIZE, clamp, getBarWidth, getNowX, getTimeScale, getValueScale } from '@fa/chart-core/plot-geometry'
-import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
+import { formatYTick, getPanelTicks, getYDomain } from '@fa/chart-core/scales'
 import { getInitialScrollLeft, getScrollWidth, getVisibleRange, MIN_SLOT_WIDTH } from '@fa/chart-core/scroll-geometry'
 import { getNearestIndex, getSumBarCenter } from '@fa/chart-core/spaghetti-geometry'
 import { HOUR_MS } from '@fa/shared/constants'
 import { formatNumber, formatStepLabel } from '@fa/shared/format'
+import { PanelVariable, SECONDARY_VARIABLE } from '@fa/shared/overview-panels'
 import { SLOT_HOURS } from '@fa/shared/slots'
 import { OverviewVariable, Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { ScaleLinear, ScaleTime } from 'd3-scale'
 import { area, curveMonotoneX, line } from 'd3-shape'
-import { useId, useState } from 'react'
+import { useId, useMemo, useState } from 'react'
 import { StyleProp, StyleSheet, TextStyle, View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import Svg, { Circle, ClipPath, Defs, G, Line, Path, Rect, Text as SvgText } from 'react-native-svg'
@@ -25,13 +26,24 @@ import { DayGrid } from './DayGrid'
 import { TapSurface } from './TapSurface'
 import { WindArrows } from './WindArrows'
 
-type PanelVariable = Variable.Temp | Variable.Wind | Variable.Pressure | Variable.Precip
-
 interface RowLayout {
     variable: PanelVariable
     top: number
     bottom: number
     height: number
+}
+
+interface PanelSpan {
+    top: number
+    bottom: number
+}
+
+interface ChartLayout {
+    rows: RowLayout[]
+    spans: PanelSpan[]
+    plotTop: number
+    plotBottom: number
+    totalHeight: number
 }
 
 type Point = [Date, number | null]
@@ -42,13 +54,16 @@ interface ExtraReadout {
     unit: string
 }
 
-// The web's phone layout: readouts in a 2 × 2 grid above, four stacked panels below, each named inside its panel.
-const ROWS: { variable: PanelVariable; height: number }[] = [
-    { variable: Variable.Temp, height: 104 },
-    { variable: Variable.Wind, height: 100 },
-    { variable: Variable.Pressure, height: 80 },
-    { variable: Variable.Precip, height: 80 + 18 },
-]
+// The web's phone layout: readouts in a two-column grid above, the reader's panels stacked below in the same order,
+// each named inside its panel.
+const PANEL_HEIGHT: Record<PanelVariable, number> = {
+    [Variable.Temp]: 104,
+    [Variable.Wind]: 100,
+    [Variable.Pressure]: 80,
+    [Variable.Precip]: 80 + 18,
+    [Variable.Humidity]: 80,
+    [Variable.Cloud]: 80,
+}
 const ROW_GAP = 14
 const ROW_PAD = 6
 const ARROW_STRIP = 20
@@ -56,10 +71,6 @@ const ARROW_STRIP = 20
 // above includes it, so the bars keep their room.
 const CHANCE_STRIP = 18
 // Feels-like and gusts are drawn as a second, dashed line in the panel of the variable they belong to.
-const SECONDARY: Partial<Record<PanelVariable, OverviewVariable>> = {
-    [Variable.Temp]: Variable.Feels,
-    [Variable.Wind]: Variable.Gusts,
-}
 const SECONDARY_DASH = '5 3'
 const HOVER_STRIP = 20
 const AXIS_HEIGHT = 22
@@ -71,29 +82,48 @@ const SLOT_MS = SLOT_HOURS * HOUR_MS
 // Half the cap height of the tick font, so a label centres on its gridline.
 const BASELINE_SHIFT = 3.5
 const NO_BREAK_SPACE = ' '
-
-const LAYOUT: RowLayout[] = ROWS.reduce<RowLayout[]>((rows, row) => {
-    const previous = rows[rows.length - 1]
-    const top = previous ? previous.top + previous.height + ROW_GAP : HOVER_STRIP
-    const strip = row.variable === Variable.Wind ? ARROW_STRIP : row.variable === Variable.Precip ? CHANCE_STRIP : 0
-
-    return [...rows, { variable: row.variable, top, height: row.height, bottom: top + row.height - ROW_PAD - strip }]
-}, [])
-const PLOT_TOP = LAYOUT[0].top
-const PLOT_BOTTOM = LAYOUT[LAYOUT.length - 1].top + LAYOUT[LAYOUT.length - 1].height
-const TOTAL_HEIGHT = PLOT_BOTTOM + AXIS_HEIGHT
-const SPANS = LAYOUT.map(({ top, height }) => ({ top, bottom: top + height }))
+const NO_SERIES: MedianSeries = { steps: [], values: [] }
 
 const styles = StyleSheet.create({
     readouts: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 8, rowGap: 8, marginBottom: 8 },
-    // Two equal columns with the gap between them.
-    readout: { flexBasis: '40%', flexGrow: 1, borderLeftWidth: 2, paddingLeft: 10, paddingRight: 4 },
+    // Two equal columns with the gap between them; an odd last readout keeps to its column.
+    readout: { flexBasis: '40%', flexGrow: 1, maxWidth: '50%', borderLeftWidth: 2, paddingLeft: 10, paddingRight: 4 },
     skeletonLine: { position: 'absolute', top: 2, bottom: 2 },
     label: { fontSize: 12, fontWeight: '500' },
     value: { fontSize: 20, fontWeight: '600' },
     unit: { fontSize: 14, fontWeight: '400' },
     extra: { fontSize: 12 },
 })
+
+const getStripHeight = (variable: PanelVariable) =>
+    variable === Variable.Wind ? ARROW_STRIP : variable === Variable.Precip ? CHANCE_STRIP : 0
+
+const toRows = (panels: PanelVariable[]) =>
+    panels.reduce<RowLayout[]>((rows, variable) => {
+        const previous = rows[rows.length - 1]
+        const top = previous ? previous.top + previous.height + ROW_GAP : HOVER_STRIP
+        const height = PANEL_HEIGHT[variable]
+
+        return [...rows, { variable, top, height, bottom: top + height - ROW_PAD - getStripHeight(variable) }]
+    }, [])
+
+// The hover time strip sits above the first panel and the day labels under the last, whichever they are.
+const getLayout = (panels: PanelVariable[]): ChartLayout => {
+    const rows = toRows(panels)
+    const last = rows[rows.length - 1]
+    const plotBottom = last ? last.top + last.height : HOVER_STRIP
+
+    return {
+        rows,
+        spans: rows.map(({ top, height }) => ({ top, bottom: top + height })),
+        plotTop: rows[0]?.top ?? HOVER_STRIP,
+        plotBottom,
+        totalHeight: plotBottom + AXIS_HEIGHT,
+    }
+}
+
+// The caller fetches every series its panels draw; a missing one draws as an empty panel rather than failing.
+const getSeries = (series: OverviewMedians, variable: OverviewVariable) => series[variable] ?? NO_SERIES
 
 const isDefined = (p: Point) => p[1] !== null
 
@@ -115,15 +145,15 @@ const getPanelDomain = (variable: PanelVariable, s: MedianSeries, secondary: Med
 // A readout's second line: the dashed line's value at the slot, or the chance of rain of the precipitation slot.
 const getExtraReadout = (
     variable: PanelVariable,
-    series: Record<OverviewVariable, MedianSeries>,
+    series: OverviewMedians,
     chance: (number | null)[],
     index: number,
 ): ExtraReadout | null => {
-    const secondary = SECONDARY[variable]
+    const secondary = SECONDARY_VARIABLE[variable]
 
     if (secondary) {
         const { decimals, unit } = VARIABLE_BY_ID[secondary]
-        const s = series[secondary]
+        const s = getSeries(series, secondary)
 
         return { variable: secondary, value: formatNumber(getValueAt(s, s.steps[index]), decimals), unit }
     }
@@ -136,15 +166,16 @@ const getExtraReadout = (
 }
 
 // A panel's value axis: the scale and the ticks its gridlines and its pinned labels share.
-const getPanelScale = (row: RowLayout, series: Record<OverviewVariable, MedianSeries>) => {
-    const secondaryVariable = SECONDARY[row.variable]
-    const secondary = secondaryVariable ? series[secondaryVariable] : null
-    const { domain, scaleVariable } = getPanelDomain(row.variable, series[row.variable], secondary)
+const getPanelScale = (row: RowLayout, series: OverviewMedians) => {
+    const secondaryVariable = SECONDARY_VARIABLE[row.variable]
+    const secondary = secondaryVariable ? (series[secondaryVariable] ?? null) : null
+    const { domain, scaleVariable } = getPanelDomain(row.variable, getSeries(series, row.variable), secondary)
 
-    return { y: getValueScale(domain, [row.bottom, row.top + ROW_PAD]), ticks: getYTicks(domain, scaleVariable, 3) }
+    return { y: getValueScale(domain, [row.bottom, row.top + ROW_PAD]), ticks: getPanelTicks(domain, scaleVariable) }
 }
 
-const hasExtraReadout = (variable: PanelVariable) => Boolean(SECONDARY[variable]) || variable === Variable.Precip
+const hasExtraReadout = (variable: PanelVariable) =>
+    Boolean(SECONDARY_VARIABLE[variable]) || variable === Variable.Precip
 
 const toPoints = (s: MedianSeries): Point[] => s.steps.map((step, i) => [new Date(step), s.values[i]])
 
@@ -176,14 +207,21 @@ const SkeletonLine = ({ textStyle, width }: SkeletonLineProps) => (
     </View>
 )
 
-// The loaded overview's shape, line for line: the four readouts with their second lines, then the panels at their full height.
-export function MedianOverviewSkeleton() {
+interface SkeletonProps {
+    panels: PanelVariable[]
+}
+
+// The loaded overview's shape, line for line: the panels' readouts with their second lines, then the panels at their
+// full height.
+export function MedianOverviewSkeleton({ panels }: SkeletonProps) {
     const { colors } = useTheme()
+
+    const layout = useMemo(() => getLayout(panels), [panels])
 
     return (
         <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
             <View style={styles.readouts}>
-                {LAYOUT.map(({ variable }) => (
+                {layout.rows.map(({ variable }) => (
                     <View key={variable} style={[styles.readout, { borderLeftColor: colors.border }]}>
                         <SkeletonLine textStyle={styles.label} width="55%" />
                         <SkeletonLine textStyle={styles.value} width="40%" />
@@ -191,13 +229,15 @@ export function MedianOverviewSkeleton() {
                     </View>
                 ))}
             </View>
-            <Skeleton height={TOTAL_HEIGHT} />
+            <Skeleton height={layout.totalHeight} />
         </View>
     )
 }
 
 interface IProps {
-    series: Record<OverviewVariable, MedianSeries>
+    // The visible panels, in the reader's order.
+    panels: PanelVariable[]
+    series: OverviewMedians
     directions: (number | null)[] | null
     chance: (number | null)[]
     timeZone: string
@@ -206,10 +246,19 @@ interface IProps {
     accessibilityLabel: string
 }
 
-// Median of all models for every variable on one axis of local 3-hour slots; a precipitation bar is the amount of
-// the 3 hours after its slot, and the strip under the bars the share of models above 0.2 mm in it. The readouts
+// Median of all models for every panel's variable on one axis of local 3-hour slots; a precipitation bar is the amount
+// of the 3 hours after its slot, and the strip under the bars the share of models above 0.2 mm in it. The readouts
 // follow the finger, or the slot nearest to now.
-export function MedianOverview({ series, directions, chance, timeZone, locale, now, accessibilityLabel }: IProps) {
+export function MedianOverview({
+    panels,
+    series,
+    directions,
+    chance,
+    timeZone,
+    locale,
+    now,
+    accessibilityLabel,
+}: IProps) {
     const t = useTranslations('overview')
     const tv = useTranslations('variables')
     const tc = useTranslations('chart')
@@ -221,7 +270,8 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
     const [hoverIndex, setHoverIndex] = useState<number | null>(null)
     const [viewLeft, setViewLeft] = useState(0)
 
-    const axisSteps = series[Variable.Temp].steps
+    const layout = useMemo(() => getLayout(panels), [panels])
+    const axisSteps = getSeries(series, panels[0]).steps
     const times = axisSteps.map((s) => new Date(s))
     const contentWidth = getScrollWidth(width, times.length - 1, MIN_SLOT_WIDTH, MARGIN.left + MARGIN.right)
     const plotRight = contentWidth - MARGIN.right
@@ -234,7 +284,7 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
     const barWidth = getBarWidth(x, times[0], SLOT_MS)
     const plotWidth = Math.max(0, contentWidth - MARGIN.left - MARGIN.right)
     const slotWidth = times.length > 1 ? x(times[1]) - x(times[0]) : plotWidth
-    const scales = LAYOUT.map((row) => getPanelScale(row, series))
+    const scales = layout.rows.map((row) => getPanelScale(row, series))
     const initialScrollLeft = getInitialScrollLeft(x(now), {
         slotWidth,
         insetLeft: MARGIN.left,
@@ -263,9 +313,9 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
     return (
         <View>
             <View style={styles.readouts}>
-                {LAYOUT.map(({ variable }) => {
+                {layout.rows.map(({ variable }) => {
                     const info = VARIABLE_BY_ID[variable]
-                    const s = series[variable]
+                    const s = getSeries(series, variable)
                     const isSum = variable === Variable.Precip
                     const extra = getExtraReadout(variable, series, chance, readoutIndex)
 
@@ -304,9 +354,9 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                             scrollEventThrottle={SCROLL_THROTTLE_MS}
                         >
                             <TapSurface onSelect={handleSelect}>
-                                <Svg testID="overview-plot" width={contentWidth} height={TOTAL_HEIGHT}>
+                                <Svg testID="overview-plot" width={contentWidth} height={layout.totalHeight}>
                                     <Defs>
-                                        {SPANS.map(({ top, bottom }, i) => (
+                                        {layout.spans.map(({ top, bottom }, i) => (
                                             <ClipPath key={top} id={`${clipId}-${i}`}>
                                                 <Rect
                                                     x={MARGIN.left}
@@ -318,7 +368,7 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                                             </ClipPath>
                                         ))}
                                     </Defs>
-                                    {SPANS.map(({ top, bottom }) => (
+                                    {layout.spans.map(({ top, bottom }) => (
                                         <Rect
                                             key={top}
                                             x={MARGIN.left}
@@ -331,7 +381,7 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                                         />
                                     ))}
                                     {nowX !== null &&
-                                        SPANS.map(({ top, bottom }, i) => (
+                                        layout.spans.map(({ top, bottom }, i) => (
                                             <Rect
                                                 key={top}
                                                 x={MARGIN.left}
@@ -343,10 +393,10 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                                                 clipPath={`url(#${clipId}-${i})`}
                                             />
                                         ))}
-                                    {LAYOUT.map(({ variable, bottom }, rowIndex) => {
-                                        const s = series[variable]
-                                        const secondaryVariable = SECONDARY[variable]
-                                        const secondary = secondaryVariable ? series[secondaryVariable] : null
+                                    {layout.rows.map(({ variable, bottom }, rowIndex) => {
+                                        const s = getSeries(series, variable)
+                                        const secondaryVariable = SECONDARY_VARIABLE[variable]
+                                        const secondary = secondaryVariable ? (series[secondaryVariable] ?? null) : null
                                         const points = toPoints(s)
                                         const { y, ticks } = scales[rowIndex]
                                         const hoverValue =
@@ -472,14 +522,14 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                                         end={times[times.length - 1]}
                                         timeZone={timeZone}
                                         locale={locale}
-                                        spans={SPANS}
-                                        labelY={PLOT_BOTTOM + 16}
+                                        spans={layout.spans}
+                                        labelY={layout.plotBottom + 16}
                                         lineColor={chart.border}
                                         labelColor={chart.muted}
                                     />
                                     {nowX !== null && (
                                         <G>
-                                            {SPANS.map(({ top, bottom }) => (
+                                            {layout.spans.map(({ top, bottom }) => (
                                                 <Line
                                                     key={top}
                                                     x1={nowX}
@@ -492,7 +542,7 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                                             ))}
                                             <SvgText
                                                 x={nowX + 4}
-                                                y={PLOT_TOP - 6}
+                                                y={layout.plotTop - 6}
                                                 fontSize={CHART_FONT_SIZE}
                                                 fontFamily={getFontFamily('600')}
                                                 fill={chart.foreground}
@@ -505,7 +555,7 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                                         <G>
                                             <SvgText
                                                 x={hoverX}
-                                                y={PLOT_TOP - 7}
+                                                y={layout.plotTop - 7}
                                                 textAnchor="middle"
                                                 fontSize={CHART_FONT_SIZE}
                                                 fontFamily={getFontFamily('600')}
@@ -513,7 +563,7 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                                             >
                                                 {formatStepLabel(axisSteps[hoverIndex], timeZone, locale)}
                                             </SvgText>
-                                            {SPANS.map(({ top, bottom }) => (
+                                            {layout.spans.map(({ top, bottom }) => (
                                                 <Line
                                                     key={top}
                                                     x1={x(times[hoverIndex])}
@@ -530,9 +580,14 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                         </ScrollView>
                         {/* The axis stays while the plot scrolls under it: the tick labels on a card-coloured column and the
                         panel names in the panels' corners. */}
-                        <Svg width={width} height={TOTAL_HEIGHT} pointerEvents="none" style={StyleSheet.absoluteFill}>
-                            <Rect x={0} y={0} width={MARGIN.left} height={TOTAL_HEIGHT} fill={chart.card} />
-                            {LAYOUT.map(({ variable, bottom }, rowIndex) => (
+                        <Svg
+                            width={width}
+                            height={layout.totalHeight}
+                            pointerEvents="none"
+                            style={StyleSheet.absoluteFill}
+                        >
+                            <Rect x={0} y={0} width={MARGIN.left} height={layout.totalHeight} fill={chart.card} />
+                            {layout.rows.map(({ variable, bottom }, rowIndex) => (
                                 <G key={variable}>
                                     {scales[rowIndex].ticks.map((tick) => (
                                         <SvgText
@@ -562,7 +617,7 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                                 </G>
                             ))}
                             {/* Android's SVG has no paint-order, so a card-coloured outline is drawn first as the halo. */}
-                            {LAYOUT.map(({ variable, top }) =>
+                            {layout.rows.map(({ variable, top }) =>
                                 [chart.card, chart.muted].map((color, i) => (
                                     <SvgText
                                         key={`${variable}-${i}`}
@@ -582,7 +637,7 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                         </Svg>
                     </View>
                 )}
-                {width === 0 && <View style={{ height: TOTAL_HEIGHT }} />}
+                {width === 0 && <View style={{ height: layout.totalHeight }} />}
             </View>
         </View>
     )

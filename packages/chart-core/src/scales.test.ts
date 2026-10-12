@@ -1,5 +1,5 @@
 import { Variable } from '@fa/shared/variables'
-import { getYDomain, getYTicks } from './scales'
+import { getPanelTicks, getYDomain, getYTicks } from './scales'
 
 const precipTicks = (values: (number | null)[]) => getYTicks(getYDomain(values, Variable.Precip), Variable.Precip, 3)
 
@@ -32,5 +32,15 @@ describe('precipitation axis', () => {
 describe('temperature axis', () => {
     it('snaps to 5 °C gridlines', () => {
         expect(getYTicks(getYDomain([12.3, 19.8], Variable.Temp), Variable.Temp, 3)).toEqual([10, 15, 20])
+    })
+})
+
+describe('getPanelTicks', () => {
+    it('labels a percentage panel at its ends and middle', () => {
+        expect(getPanelTicks([0, 100], Variable.Cloud)).toEqual([0, 50, 100])
+    })
+
+    it('keeps the variable steps elsewhere', () => {
+        expect(getPanelTicks([0, 20], Variable.Temp)).toEqual(getYTicks([0, 20], Variable.Temp, 3))
     })
 })

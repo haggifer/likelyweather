@@ -4,13 +4,15 @@ import { useHourlyAll } from '@fa/api-client/hooks/useHourlyAll'
 import { OverviewHourly } from '@fa/chart-core/overview-stats'
 import { LatestResponse } from '@fa/shared/api'
 import { getCityName } from '@fa/shared/format'
+import { getPanelDataVariables, getVisiblePanels, PanelVariable } from '@fa/shared/overview-panels'
 import { getChartStart } from '@fa/shared/slots'
-import { OVERVIEW_VARIABLES } from '@fa/shared/variables'
+import { OverviewVariable } from '@fa/shared/variables'
 import { UseQueryResult } from '@tanstack/react-query'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { useNow } from '../../hooks/useNow'
+import { useOverviewPanels } from '../../hooks/useOverviewPanels'
 import { useTheme } from '../../hooks/useTheme'
 import { showSnackbar } from '../../lib/snackbar-store'
 import { updateWidgetsForCity } from '../../widget/widget-updates'
@@ -18,13 +20,22 @@ import { Card } from '../ui/Card'
 import { ErrorNotice } from '../ui/ErrorNotice'
 import { Text } from '../ui/Text'
 import { OverviewCard, OverviewCardSkeleton } from './OverviewCard'
+import { OverviewPanelsSheet } from './OverviewPanelsSheet'
 
 const styles = StyleSheet.create({
     notice: { fontSize: 14, lineHeight: 21, textAlign: 'center', paddingVertical: 40 },
 })
 
-const getHourlyByVariable = (results: UseQueryResult<LatestResponse, Error>[]) =>
-    Object.fromEntries(OVERVIEW_VARIABLES.map((variable, i) => [variable, results[i].data])) as OverviewHourly
+const getHourlyByVariable = (
+    variables: OverviewVariable[],
+    results: UseQueryResult<LatestResponse, Error>[],
+): OverviewHourly =>
+    Object.fromEntries(variables.flatMap((variable, i) => (results[i].data ? [[variable, results[i].data]] : [])))
+
+// A panel is drawn once its series and its second line have arrived, so showing another panel keeps the card in place
+// while that panel's series loads, as on the web.
+const getReadyPanels = (panels: PanelVariable[], hourly: OverviewHourly) =>
+    panels.filter((panel) => getPanelDataVariables([panel]).every((variable) => hourly[variable]))
 
 interface IProps {
     slug: string
@@ -36,9 +47,16 @@ export function CityOverview({ slug }: IProps) {
     const locale = useLocale()
     const now = useNow()
     const { colors } = useTheme()
+    const { panels } = useOverviewPanels()
+
+    const [isCustomizing, setIsCustomizing] = useState(false)
+
+    // Only the shown panels' series are asked for, so a hidden panel costs no request.
+    const visible = useMemo(() => getVisiblePanels(panels), [panels])
+    const variables = useMemo(() => getPanelDataVariables(visible), [visible])
 
     const { data: city, error, refetch: refetchCity, fetchStatus: cityFetchStatus } = useCity(slug)
-    const results = useHourlyAll(slug, Boolean(city))
+    const results = useHourlyAll(slug, variables, Boolean(city))
 
     // An error with data still in place is a failed Refresh: the chart stays and the handler reports the failure.
     const failed = results.find((r) => r.isError && !r.data)
@@ -47,14 +65,15 @@ export function CityOverview({ slug }: IProps) {
     // Offline, a query without stored data pauses instead of failing, and would spin until the network returns.
     const isOffline =
         (!city && cityFetchStatus === 'paused') || results.some((r) => !r.data && r.fetchStatus === 'paused')
-    const anchorRun = results[0].data
+    const anchorRun = results.find((r) => r.data)?.data
     const timeZone = city?.timezone
     const anchor = useMemo(
         () => (timeZone && anchorRun ? getChartStart(anchorRun, timeZone) : null),
         [anchorRun, timeZone],
     )
-    const hourly = isReady ? getHourlyByVariable(results) : null
-    // Refresh settles the six variables one by one; the widgets must get them as one run, so the effect waits until
+    const hourly = getHourlyByVariable(variables, results)
+    const readyPanels = getReadyPanels(visible, hourly)
+    // Refresh settles the variables one by one; the widgets must get them as one run, so the effect waits until
     // nothing is fetching and follows every fetch time rather than `hourly`, whose identity changes every render.
     const isSettled = !results.some((r) => r.isFetching)
     const fetchedAts = results.map((r) => r.data?.fetchedAt).join('|')
@@ -67,10 +86,12 @@ export function CityOverview({ slug }: IProps) {
         if (failure) showSnackbar(te(getErrorKind(failure.error)))
     }
     const handleRetry = () => (error ? void refetchCity() : void refetchAll())
+    const handleCustomize = () => setIsCustomizing(true)
+    const handleCloseCustomize = () => setIsCustomizing(false)
 
     // A home-screen widget showing this city redraws with the run the app just loaded.
     useEffect(() => {
-        if (city && hourly && isSettled) void updateWidgetsForCity(city, hourly)
+        if (city && isReady && isSettled) void updateWidgetsForCity(city, hourly)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [city, fetchedAts, isSettled])
 
@@ -91,20 +112,27 @@ export function CityOverview({ slug }: IProps) {
         )
     }
 
-    if (!city || !hourly || !anchor) {
-        return (
-            <OverviewCardSkeleton status={city ? t('fetching', { name: getCityName(city, locale) }) : t('loading')} />
-        )
-    }
-
+    // The sheet lives beside the card, so it stays open whatever the card shows while a panel loads.
     return (
-        <OverviewCard
-            city={city}
-            hourly={hourly}
-            anchor={anchor}
-            now={now}
-            isFetching={results.some((r) => r.isFetching)}
-            onRefresh={handleRefresh}
-        />
+        <>
+            {!city || !readyPanels.length || !anchor || !anchorRun ? (
+                <OverviewCardSkeleton
+                    status={city ? t('fetching', { name: getCityName(city, locale) }) : t('loading')}
+                />
+            ) : (
+                <OverviewCard
+                    city={city}
+                    panels={readyPanels}
+                    hourly={hourly}
+                    run={anchorRun}
+                    anchor={anchor}
+                    now={now}
+                    isFetching={results.some((r) => r.isFetching && r.data)}
+                    onRefresh={handleRefresh}
+                    onCustomize={handleCustomize}
+                />
+            )}
+            <OverviewPanelsSheet isOpen={isCustomizing} onClose={handleCloseCustomize} />
+        </>
     )
 }

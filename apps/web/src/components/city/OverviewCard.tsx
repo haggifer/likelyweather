@@ -2,6 +2,7 @@
 
 import { MedianOverview, MedianOverviewSkeleton } from '@/components/charts/MedianOverview'
 import { FavoriteToggle } from '@/components/city/FavoriteToggle'
+import { OverviewPanelsMenu } from '@/components/city/OverviewPanelsMenu'
 import { RefreshButton } from '@/components/city/RefreshButton'
 import { UpdatedChip } from '@/components/city/UpdatedChip'
 import { FlagIcon } from '@/components/shell/FlagIcon'
@@ -19,6 +20,7 @@ import {
 import { City } from '@fa/shared/api'
 import { getCityRegion } from '@fa/shared/city-region'
 import { getCityName } from '@fa/shared/format'
+import { PanelVariable } from '@fa/shared/overview-panels'
 import { buildSlots } from '@fa/shared/slots'
 import { Variable } from '@fa/shared/variables'
 import { ArrowRight, Loader2 } from 'lucide-react'
@@ -59,6 +61,7 @@ export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
 
 interface IProps {
     city: City
+    panels: PanelVariable[]
     hourly: OverviewHourly
     anchor: Date
     now: Date | null
@@ -66,15 +69,19 @@ interface IProps {
     onRefresh?: () => void
 }
 
+// The runs of the shown panels come from one fetch, so any of them carries the run's times and model count.
+const getRun = (hourly: OverviewHourly, panels: PanelVariable[]) => hourly[panels[0]]!
+
 // `anchor` is the local 3-hour slot the run was fetched in, where the chart starts.
-export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh }: IProps) {
+export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, onRefresh }: IProps) {
     const t = useTranslations('overview')
     const locale = useLocale()
 
     const name = getCityName(city, locale)
     const region = getCityRegion(city, locale)
-    const isOutdated = isRefreshOffered(hourly[Variable.Temp].fetchedAt, now)
-    const modelCount = hourly[Variable.Temp].series.length
+    const run = getRun(hourly, panels)
+    const isOutdated = isRefreshOffered(run.fetchedAt, now)
+    const modelCount = run.series.length
     const slots = useMemo(() => buildSlots(anchor), [anchor])
     const medians = useMemo(() => getOverviewMedians(hourly, slots), [hourly, slots])
     const directions = useMemo(() => getOverviewDirections(hourly[Variable.Wind], slots), [hourly, slots])
@@ -90,11 +97,12 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
                         {region && <span className="font-medium text-muted-foreground">, {region}</span>}
                     </span>
                     <FavoriteToggle place={city} className="-ml-1 max-sm:ml-auto" />
+                    <OverviewPanelsMenu className="-ml-2 shrink-0 pointer-coarse:size-9" />
                 </CardTitle>
                 <CardAction className={ACTIONS}>
                     <UpdatedChip
-                        issueTime={hourly[Variable.Temp].issueTime}
-                        fetchedAt={hourly[Variable.Temp].fetchedAt}
+                        issueTime={run.issueTime}
+                        fetchedAt={run.fetchedAt}
                         timeZone={city.timezone}
                         now={now}
                     />
@@ -115,6 +123,7 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
             <CardContent>
                 <MedianOverview
                     key={city.slug}
+                    panels={panels}
                     series={medians}
                     directions={directions}
                     chance={chance}
