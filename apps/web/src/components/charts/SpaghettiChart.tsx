@@ -524,7 +524,7 @@ export function SpaghettiChart({
                     className="pointer-events-none absolute top-0"
                     style={{ left: margin.left }}
                 >
-                    <rect width={UNIT_LABEL_WIDTH} height={margin.top} fill={theme.card} />
+                    <rect width={UNIT_LABEL_WIDTH} height={margin.top - 2} fill={theme.card} />
                     <text y={margin.top - 8} fontSize={10} fill={theme.muted}>
                         {info.unit}
                     </text>
