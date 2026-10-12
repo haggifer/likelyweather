@@ -40,7 +40,7 @@ export function DisagreementTiles({ days, variable }: IProps) {
                 tabIndex={days.length > 0 ? 0 : undefined}
                 role={days.length > 0 ? 'region' : undefined}
                 aria-label={days.length > 0 ? t('title') : undefined}
-                className="flex snap-x snap-mandatory gap-2 overflow-x-auto rounded-md pb-1 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex snap-x snap-mandatory scroll-px-(--card-spacing) gap-2 overflow-x-auto rounded-md pb-1 outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
                 {days.map((d) => (
                     <div key={d.day} className="flex w-28 shrink-0 snap-start flex-col gap-1.5 rounded-md border p-2.5">
