@@ -92,13 +92,13 @@
     },
     "dashboard": {
         "fetching": "Fetching ten models for {name}…",
-        "summary": "Median {variable} over the next four days ranges from {min} to {max} {unit} across {count} models. They disagree most on {day} (spread {spread} {unit}).",
+        "summary": "Median {variable} over the next ten days ranges from {min} to {max} {unit} across {count} models. They disagree most on {day} (spread {spread} {unit}).",
         "median": "Median",
         "time": "Time (city)",
         "windArrows": "Arrows show where the median wind blows to; select a time to read the direction it comes from.",
         "precipTitle": "Precipitation, 6-hour totals",
         "precipDescription": "Bars: median of models. Ticks: each model. Row under the bars: share of models above 0.2 mm.",
-        "precipSummary": "{steps, plural, =0 {No 6-hour step has} one {# 6-hour step has} other {# 6-hour steps have}} a chance of rain of 50% or more; the median totals {total} mm over the next four days."
+        "precipSummary": "{steps, plural, =0 {No 6-hour step has} one {# 6-hour step has} other {# 6-hour steps have}} a chance of rain of 50% or more; the median totals {total} mm over the next ten days."
     },
     "legend": {
         "median": "Median",
@@ -122,7 +122,7 @@
     },
     "landing": {
         "hero": "Compare weather forecasts for your city",
-        "sub": "Ten weather models, one city: the median forecast for the next three days.",
+        "sub": "Ten weather models, one city: the median forecast for the next ten days.",
         "seeds": "Start with"
     },
     "methodology": {
@@ -131,7 +131,7 @@
         "europeOnly": "Europe only",
         "sources": {
             "title": "Sources",
-            "body": "Nine numerical models come from the Open-Meteo forecast API and one from MET Norway’s Locationforecast. The models start a new run at 00, 06, 12 and 18 UTC. A city’s forecast is fetched when someone opens it and the stored one is 3 hours old or more, and stored hour by hour, from 3 hours before the run to 108 hours after it.\nThe charts use 3-hour slots on the city’s local clock (00, 03, 06…), starting at the slot the forecast was fetched in, with a line at the current time: 72 hours on the landing overview, 96 hours on the city dashboard. Temperature, wind and pressure are the values at the slot; precipitation is the amount of the 3 hours after it, and hovering a bar selects those 3 hours. The dashboard’s precipitation panel adds 6-hour totals.\nRegional models return data only inside their domain, so a city outside Europe shows up to eight models. MET Norway publishes hourly values for about the first 60 hours only; later slots use the other models.\nFeels-like is computed for every model with Open-Meteo’s formula (Steadman’s apparent temperature) from temperature, humidity, wind and sunshine; MET Norway publishes no sunshine, so its feels-like is the value in the shade. Wind gusts come from the nine Open-Meteo models only. Humidity and cloud cover are percentages, charted on their whole range."
+            "body": "Nine numerical models come from the Open-Meteo forecast API and one from MET Norway’s Locationforecast. The models start a new run at 00, 06, 12 and 18 UTC. A city’s forecast is fetched when someone opens it and the stored one is 3 hours old or more, and stored hour by hour, from 3 hours before the run to 320 hours after it.\nThe charts use 3-hour slots on the city’s local clock (00, 03, 06…), starting at the slot the forecast was fetched in, with a line at the current time: ten days on the landing overview and on the city dashboard. Temperature, wind and pressure are the values at the slot; precipitation is the amount of the 3 hours after it, and hovering a bar selects those 3 hours. The dashboard’s precipitation panel adds 6-hour totals.\nRegional models return data only inside their domain, so a city outside Europe shows up to eight models. MET Norway publishes hourly values for about the first 60 hours only; later slots use the other models.\nFeels-like is computed for every model with Open-Meteo’s formula (Steadman’s apparent temperature) from temperature, humidity, wind and sunshine; MET Norway publishes no sunshine, so its feels-like is the value in the shade. Wind gusts come from the nine Open-Meteo models only. Humidity and cloud cover are percentages, charted on their whole range."
         },
         "median": {
             "title": "Median and spread",

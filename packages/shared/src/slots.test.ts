@@ -37,12 +37,16 @@ describe('getSlotStart', () => {
 })
 
 describe('buildSlots', () => {
-    it('lists 3-hour slots over 72 hours including both ends', () => {
+    it('lists 3-hour slots over ten days including both ends', () => {
         const slots = buildSlots(at('2026-09-24T09:00:00Z'))
 
-        expect(slots).toHaveLength(25)
+        expect(slots).toHaveLength(81)
         expect(slots[1]).toBe('2026-09-24T12:00Z')
-        expect(slots.at(-1)).toBe('2026-09-27T09:00Z')
+        expect(slots.at(-1)).toBe('2026-10-04T09:00Z')
+    })
+
+    it('lists a shorter window when asked', () => {
+        expect(buildSlots(at('2026-09-24T09:00:00Z'), 72)).toHaveLength(25)
     })
 })
 

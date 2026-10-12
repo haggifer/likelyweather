@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
 })
 
 // The landing page on a phone without the web's hero, which an installed app has no need to pitch: search, the
-// viewer's chips and the selected city's 72-hour overview. Picking a city switches the overview in place, as on the
+// viewer's chips and the selected city's ten-day overview. Picking a city switches the overview in place, as on the
 // web (`?city=`); a link can still name one with `?city=`.
 export function HomeScreen() {
     const t = useTranslations('landing')

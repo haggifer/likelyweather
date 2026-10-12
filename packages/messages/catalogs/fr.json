@@ -92,13 +92,13 @@
     },
     "dashboard": {
         "fetching": "Récupération de dix modèles pour {name}…",
-        "summary": "La médiane ({variable}) des quatre prochains jours va de {min} à {max} {unit} sur {count} modèles. Ils divergent le plus le {day} (écart {spread} {unit}).",
+        "summary": "La médiane ({variable}) des dix prochains jours va de {min} à {max} {unit} sur {count} modèles. Ils divergent le plus le {day} (écart {spread} {unit}).",
         "median": "Médiane",
         "time": "Heure (locale)",
         "windArrows": "Les flèches indiquent où souffle le vent médian ; choisissez une heure pour voir d’où il vient.",
         "precipTitle": "Précipitations, cumuls sur 6 heures",
         "precipDescription": "Barres : médiane des modèles. Traits : chaque modèle. Ligne sous les barres : part des modèles au-dessus de 0,2 mm.",
-        "precipSummary": "{steps, plural, =0 {Aucun pas de 6 heures n’a} one {# pas de 6 heures a} other {# pas de 6 heures ont}} une probabilité de pluie de 50 % ou plus ; la médiane totalise {total} mm sur les quatre prochains jours."
+        "precipSummary": "{steps, plural, =0 {Aucun pas de 6 heures n’a} one {# pas de 6 heures a} other {# pas de 6 heures ont}} une probabilité de pluie de 50 % ou plus ; la médiane totalise {total} mm sur les dix prochains jours."
     },
     "legend": {
         "median": "Médiane",
@@ -122,7 +122,7 @@
     },
     "landing": {
         "hero": "Comparez les prévisions météo de votre ville",
-        "sub": "Dix modèles météo, une ville : la prévision médiane des trois prochains jours.",
+        "sub": "Dix modèles météo, une ville : la prévision médiane des dix prochains jours.",
         "seeds": "Commencer par"
     },
     "methodology": {
@@ -131,7 +131,7 @@
         "europeOnly": "Europe seulement",
         "sources": {
             "title": "Sources",
-            "body": "Neuf modèles numériques proviennent de l’API de prévision d’Open-Meteo et un du Locationforecast de MET Norway. Les modèles lancent une nouvelle exécution à 00, 06, 12 et 18 UTC. La prévision d’une ville est récupérée quand quelqu’un l’ouvre et que celle enregistrée a 3 heures ou plus, puis stockée heure par heure, de 3 heures avant l’exécution à 108 heures après.\nLes graphiques utilisent des tranches de 3 heures à l’heure locale de la ville (00, 03, 06…), à partir de la tranche où la prévision a été récupérée, avec une ligne à l’heure actuelle : 72 heures dans l’aperçu de l’accueil, 96 heures sur le tableau de bord de la ville. La température, le vent et la pression sont les valeurs à la tranche ; les précipitations sont le cumul des 3 heures suivantes, et le survol d’une barre sélectionne ces 3 heures. Le panneau des précipitations du tableau de bord ajoute des cumuls sur 6 heures.\nLes modèles régionaux ne renvoient des données que dans leur domaine : une ville hors d’Europe affiche donc jusqu’à huit modèles. MET Norway ne publie des valeurs horaires que pour les 60 premières heures environ ; les tranches suivantes utilisent les autres modèles.\nLa température ressentie est calculée pour chaque modèle avec la formule d’Open-Meteo (la température apparente de Steadman) à partir de la température, de l’humidité, du vent et du rayonnement solaire ; MET Norway ne publie pas de rayonnement, son ressenti est donc la valeur à l’ombre. Les rafales ne viennent que des neuf modèles d’Open-Meteo. L’humidité et la nébulosité sont des pourcentages, tracés sur toute leur échelle."
+            "body": "Neuf modèles numériques proviennent de l’API de prévision d’Open-Meteo et un du Locationforecast de MET Norway. Les modèles lancent une nouvelle exécution à 00, 06, 12 et 18 UTC. La prévision d’une ville est récupérée quand quelqu’un l’ouvre et que celle enregistrée a 3 heures ou plus, puis stockée heure par heure, de 3 heures avant l’exécution à 320 heures après.\nLes graphiques utilisent des tranches de 3 heures à l’heure locale de la ville (00, 03, 06…), à partir de la tranche où la prévision a été récupérée, avec une ligne à l’heure actuelle : dix jours dans l’aperçu de l’accueil et sur le tableau de bord de la ville. La température, le vent et la pression sont les valeurs à la tranche ; les précipitations sont le cumul des 3 heures suivantes, et le survol d’une barre sélectionne ces 3 heures. Le panneau des précipitations du tableau de bord ajoute des cumuls sur 6 heures.\nLes modèles régionaux ne renvoient des données que dans leur domaine : une ville hors d’Europe affiche donc jusqu’à huit modèles. MET Norway ne publie des valeurs horaires que pour les 60 premières heures environ ; les tranches suivantes utilisent les autres modèles.\nLa température ressentie est calculée pour chaque modèle avec la formule d’Open-Meteo (la température apparente de Steadman) à partir de la température, de l’humidité, du vent et du rayonnement solaire ; MET Norway ne publie pas de rayonnement, son ressenti est donc la valeur à l’ombre. Les rafales ne viennent que des neuf modèles d’Open-Meteo. L’humidité et la nébulosité sont des pourcentages, tracés sur toute leur échelle."
         },
         "median": {
             "title": "Médiane et écart",

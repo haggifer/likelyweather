@@ -4,8 +4,10 @@ import { addHours, floorToHours, getLocalHour, toIsoMinute } from './time'
 import { Aggregation } from './variables'
 
 export const SLOT_HOURS = 3
-const OVERVIEW_HOURS = 72
-export const DASHBOARD_HOURS = 96
+// Both views cover ten days (author, 2026-10-12); a run reaches 320 hours past its issue time, so ten days from the
+// slot it was fetched in are always inside it. Two constants, so either view can be shortened on its own.
+const OVERVIEW_HOURS = 240
+export const DASHBOARD_HOURS = 240
 
 // Start of the local 3-hour slot containing `date` (local 00, 03, 06…). Slots stay on whole UTC hours, where the
 // hourly data lives, so a half-hour time zone gets slots at :30 local.

@@ -92,13 +92,13 @@
     },
     "dashboard": {
         "fetching": "Zehn Modelle für {name} werden abgerufen…",
-        "summary": "Der Median ({variable}) der nächsten vier Tage reicht über {count} Modelle von {min} bis {max} {unit}. Am meisten weichen sie am {day} ab (Spanne {spread} {unit}).",
+        "summary": "Der Median ({variable}) der nächsten zehn Tage reicht über {count} Modelle von {min} bis {max} {unit}. Am meisten weichen sie am {day} ab (Spanne {spread} {unit}).",
         "median": "Median",
         "time": "Zeit (Ortszeit)",
         "windArrows": "Die Pfeile zeigen, wohin der mittlere Wind weht; wähle eine Zeit, um zu sehen, woher er kommt.",
         "precipTitle": "Niederschlag, 6-Stunden-Summen",
         "precipDescription": "Balken: Median der Modelle. Striche: jedes Modell. Zeile unter den Balken: Anteil der Modelle über 0,2 mm.",
-        "precipSummary": "{steps, plural, =0 {Kein 6-Stunden-Schritt hat} one {# 6-Stunden-Schritt hat} other {# 6-Stunden-Schritte haben}} eine Regenwahrscheinlichkeit von 50 % oder mehr; der Median summiert sich in den nächsten vier Tagen auf {total} mm."
+        "precipSummary": "{steps, plural, =0 {Kein 6-Stunden-Schritt hat} one {# 6-Stunden-Schritt hat} other {# 6-Stunden-Schritte haben}} eine Regenwahrscheinlichkeit von 50 % oder mehr; der Median summiert sich in den nächsten zehn Tagen auf {total} mm."
     },
     "legend": {
         "median": "Median",
@@ -122,7 +122,7 @@
     },
     "landing": {
         "hero": "Vergleiche Wettervorhersagen für deine Stadt",
-        "sub": "Zehn Wettermodelle, eine Stadt: die Median-Vorhersage für die nächsten drei Tage.",
+        "sub": "Zehn Wettermodelle, eine Stadt: die Median-Vorhersage für die nächsten zehn Tage.",
         "seeds": "Starte mit"
     },
     "methodology": {
@@ -131,7 +131,7 @@
         "europeOnly": "nur Europa",
         "sources": {
             "title": "Quellen",
-            "body": "Neun numerische Modelle stammen aus der Vorhersage-API von Open-Meteo, eines aus Locationforecast von MET Norway. Die Modelle starten um 00, 06, 12 und 18 UTC einen neuen Lauf. Die Vorhersage einer Stadt wird abgerufen, wenn jemand sie öffnet und die gespeicherte mindestens 3 Stunden alt ist, und stündlich gespeichert, von 3 Stunden vor dem Lauf bis 108 Stunden danach.\nDie Diagramme nutzen 3-Stunden-Abschnitte in der Ortszeit der Stadt (00, 03, 06…), beginnend mit dem Abschnitt, in dem die Vorhersage abgerufen wurde, mit einer Linie bei der aktuellen Zeit: 72 Stunden in der Übersicht auf der Startseite, 96 Stunden im Stadt-Dashboard. Temperatur, Wind und Luftdruck sind die Werte zum Abschnitt; Niederschlag ist die Menge der 3 Stunden danach, und das Überfahren eines Balkens markiert diese 3 Stunden. Das Niederschlagsfeld im Dashboard ergänzt 6-Stunden-Summen.\nRegionalmodelle liefern nur innerhalb ihres Gebiets Daten, daher zeigt eine Stadt außerhalb Europas bis zu acht Modelle. MET Norway veröffentlicht Stundenwerte nur für etwa die ersten 60 Stunden; spätere Abschnitte nutzen die übrigen Modelle.\nDie gefühlte Temperatur wird für jedes Modell mit der Formel von Open-Meteo (Steadmans scheinbare Temperatur) aus Temperatur, Luftfeuchtigkeit, Wind und Sonneneinstrahlung berechnet; MET Norway veröffentlicht keine Einstrahlung, daher ist sein Wert der im Schatten. Windböen liefern nur die neun Open-Meteo-Modelle. Luftfeuchtigkeit und Bewölkung sind Prozentwerte und werden über ihre ganze Skala gezeigt."
+            "body": "Neun numerische Modelle stammen aus der Vorhersage-API von Open-Meteo, eines aus Locationforecast von MET Norway. Die Modelle starten um 00, 06, 12 und 18 UTC einen neuen Lauf. Die Vorhersage einer Stadt wird abgerufen, wenn jemand sie öffnet und die gespeicherte mindestens 3 Stunden alt ist, und stündlich gespeichert, von 3 Stunden vor dem Lauf bis 320 Stunden danach.\nDie Diagramme nutzen 3-Stunden-Abschnitte in der Ortszeit der Stadt (00, 03, 06…), beginnend mit dem Abschnitt, in dem die Vorhersage abgerufen wurde, mit einer Linie bei der aktuellen Zeit: zehn Tage in der Übersicht auf der Startseite und im Stadt-Dashboard. Temperatur, Wind und Luftdruck sind die Werte zum Abschnitt; Niederschlag ist die Menge der 3 Stunden danach, und das Überfahren eines Balkens markiert diese 3 Stunden. Das Niederschlagsfeld im Dashboard ergänzt 6-Stunden-Summen.\nRegionalmodelle liefern nur innerhalb ihres Gebiets Daten, daher zeigt eine Stadt außerhalb Europas bis zu acht Modelle. MET Norway veröffentlicht Stundenwerte nur für etwa die ersten 60 Stunden; spätere Abschnitte nutzen die übrigen Modelle.\nDie gefühlte Temperatur wird für jedes Modell mit der Formel von Open-Meteo (Steadmans scheinbare Temperatur) aus Temperatur, Luftfeuchtigkeit, Wind und Sonneneinstrahlung berechnet; MET Norway veröffentlicht keine Einstrahlung, daher ist sein Wert der im Schatten. Windböen liefern nur die neun Open-Meteo-Modelle. Luftfeuchtigkeit und Bewölkung sind Prozentwerte und werden über ihre ganze Skala gezeigt."
         },
         "median": {
             "title": "Median und Streuung",

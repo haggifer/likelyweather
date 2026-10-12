@@ -92,13 +92,13 @@
     },
     "dashboard": {
         "fetching": "Obteniendo diez modelos para {name}…",
-        "summary": "La mediana ({variable}) de los próximos cuatro días va de {min} a {max} {unit} entre {count} modelos. Discrepan más el {day} (dispersión {spread} {unit}).",
+        "summary": "La mediana ({variable}) de los próximos diez días va de {min} a {max} {unit} entre {count} modelos. Discrepan más el {day} (dispersión {spread} {unit}).",
         "median": "Mediana",
         "time": "Hora (ciudad)",
         "windArrows": "Las flechas muestran hacia dónde sopla el viento mediano; elige una hora para ver de dónde viene.",
         "precipTitle": "Precipitación, totales de 6 horas",
         "precipDescription": "Barras: mediana de los modelos. Marcas: cada modelo. Fila bajo las barras: proporción de modelos por encima de 0,2 mm.",
-        "precipSummary": "{steps, plural, =0 {Ningún intervalo de 6 horas tiene} one {# intervalo de 6 horas tiene} other {# intervalos de 6 horas tienen}} una probabilidad de lluvia del 50 % o más; la mediana suma {total} mm en los próximos cuatro días."
+        "precipSummary": "{steps, plural, =0 {Ningún intervalo de 6 horas tiene} one {# intervalo de 6 horas tiene} other {# intervalos de 6 horas tienen}} una probabilidad de lluvia del 50 % o más; la mediana suma {total} mm en los próximos diez días."
     },
     "legend": {
         "median": "Mediana",
@@ -122,7 +122,7 @@
     },
     "landing": {
         "hero": "Compara los pronósticos del tiempo para tu ciudad",
-        "sub": "Diez modelos, una ciudad: la mediana del pronóstico para los próximos tres días.",
+        "sub": "Diez modelos, una ciudad: la mediana del pronóstico para los próximos diez días.",
         "seeds": "Empieza con"
     },
     "methodology": {
@@ -131,7 +131,7 @@
         "europeOnly": "solo Europa",
         "sources": {
             "title": "Fuentes",
-            "body": "Nueve modelos numéricos proceden de la API de pronósticos de Open-Meteo y uno de Locationforecast de MET Norway. Los modelos inician una nueva ejecución a las 00, 06, 12 y 18 UTC. El pronóstico de una ciudad se obtiene cuando alguien la abre y el guardado tiene 3 horas o más, y se guarda hora a hora, desde 3 horas antes de la ejecución hasta 108 horas después.\nLos gráficos usan franjas de 3 horas en la hora local de la ciudad (00, 03, 06…), empezando por la franja en la que se obtuvo el pronóstico, con una línea en la hora actual: 72 horas en el resumen de la portada, 96 horas en el panel de la ciudad. La temperatura, el viento y la presión son los valores en la franja; la precipitación es la cantidad de las 3 horas siguientes, y al pasar el cursor por una barra se seleccionan esas 3 horas. El panel de precipitación de la ciudad añade totales de 6 horas.\nLos modelos regionales solo devuelven datos dentro de su dominio, así que una ciudad fuera de Europa muestra hasta ocho modelos. MET Norway publica valores horarios solo para unas 60 primeras horas; las franjas posteriores usan los demás modelos.\nLa sensación térmica se calcula para cada modelo con la fórmula de Open-Meteo (la temperatura aparente de Steadman) a partir de la temperatura, la humedad, el viento y la radiación solar; MET Norway no publica radiación, así que su sensación térmica es la de la sombra. Las rachas de viento solo vienen de los nueve modelos de Open-Meteo. La humedad y la nubosidad son porcentajes y se dibujan en toda su escala."
+            "body": "Nueve modelos numéricos proceden de la API de pronósticos de Open-Meteo y uno de Locationforecast de MET Norway. Los modelos inician una nueva ejecución a las 00, 06, 12 y 18 UTC. El pronóstico de una ciudad se obtiene cuando alguien la abre y el guardado tiene 3 horas o más, y se guarda hora a hora, desde 3 horas antes de la ejecución hasta 320 horas después.\nLos gráficos usan franjas de 3 horas en la hora local de la ciudad (00, 03, 06…), empezando por la franja en la que se obtuvo el pronóstico, con una línea en la hora actual: diez días en el resumen de la portada y en el panel de la ciudad. La temperatura, el viento y la presión son los valores en la franja; la precipitación es la cantidad de las 3 horas siguientes, y al pasar el cursor por una barra se seleccionan esas 3 horas. El panel de precipitación de la ciudad añade totales de 6 horas.\nLos modelos regionales solo devuelven datos dentro de su dominio, así que una ciudad fuera de Europa muestra hasta ocho modelos. MET Norway publica valores horarios solo para unas 60 primeras horas; las franjas posteriores usan los demás modelos.\nLa sensación térmica se calcula para cada modelo con la fórmula de Open-Meteo (la temperatura aparente de Steadman) a partir de la temperatura, la humedad, el viento y la radiación solar; MET Norway no publica radiación, así que su sensación térmica es la de la sombra. Las rachas de viento solo vienen de los nueve modelos de Open-Meteo. La humedad y la nubosidad son porcentajes y se dibujan en toda su escala."
         },
         "median": {
             "title": "Mediana y dispersión",

@@ -36,9 +36,15 @@ export interface WidgetModel {
 
 const SUMMARY_HOURS = 24
 const SLOTS_PER_DAY = SUMMARY_HOURS / SLOT_HOURS
+// The widget reads only the coming day's numbers, so it slots the run's first three days, not the charts' ten.
+const WIDGET_HOURS = 72
 
 const toSlots = (latest: LatestResponse, timeZone: string, variable: Variable) =>
-    toSlotLatest(latest, buildSlots(getChartStart(latest, timeZone)), variable === Variable.Precip ? 'sum' : 'instant')
+    toSlotLatest(
+        latest,
+        buildSlots(getChartStart(latest, timeZone), WIDGET_HOURS),
+        variable === Variable.Precip ? 'sum' : 'instant',
+    )
 
 const getMedianAt = (latest: LatestResponse, now: Date) => {
     if (!latest.steps.length) return null
