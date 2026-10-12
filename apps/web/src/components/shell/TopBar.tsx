@@ -1,4 +1,5 @@
 import { LanguageSwitch } from '@/components/shell/LanguageSwitch'
+import { MainNav } from '@/components/shell/MainNav'
 import { MoreMenu } from '@/components/shell/MoreMenu'
 import { QuotaMeter } from '@/components/shell/QuotaMeter'
 import { ThemeToggle } from '@/components/shell/ThemeToggle'
@@ -16,6 +17,7 @@ export function TopBar() {
                         <span>Arena</span>
                     </span>
                 </Link>
+                <MainNav />
                 <div className="ml-auto flex items-center gap-2">
                     <QuotaMeter />
                     <LanguageSwitch />

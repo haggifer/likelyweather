@@ -62,6 +62,7 @@ export default defineConfig({
                 DISABLE_RATE_LIMITS: '1',
                 OPEN_METEO_FORECAST_BASE: FAKE,
                 OPEN_METEO_GEOCODING_BASE: FAKE,
+                OPEN_METEO_ARCHIVE_BASE: FAKE,
                 METNO_BASE: FAKE,
                 LOG_LEVEL: 'warn',
             },

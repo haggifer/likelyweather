@@ -17,12 +17,13 @@
         }
     },
     "nav": {
+        "main": "Principal",
+        "archive": "Archives",
         "more": "Autres pages",
         "methodology": "Méthodologie"
     },
     "footer": {
         "attribution": "Données météo : <openMeteo>Open-Meteo.com</openMeteo> (CC BY 4.0) et <metno>MET Norway</metno> (CC BY 4.0). Géocodage : Open-Meteo, d’après GeoNames.",
-        "methodology": "Méthodologie",
         "repo": "Code source"
     },
     "search": {
@@ -126,7 +127,7 @@
         "europeOnly": "Europe seulement",
         "sources": {
             "title": "Sources",
-            "body": "Neuf modèles numériques proviennent de l’API de prévision d’Open-Meteo et un du Locationforecast de MET Norway. Les modèles lancent une nouvelle exécution à 00, 06, 12 et 18 UTC. La prévision d’une ville est récupérée quand quelqu’un l’ouvre et que celle enregistrée a 3 heures ou plus, puis stockée heure par heure, de 3 heures avant l’exécution à 320 heures après.\nLes graphiques utilisent des tranches de 3 heures à l’heure locale de la ville (00, 03, 06…), à partir de la tranche où la prévision a été récupérée, avec une ligne à l’heure actuelle : dix jours dans l’aperçu de l’accueil et sur le tableau de bord de la ville. La température, le vent et la pression sont les valeurs à la tranche ; les précipitations sont le cumul des 3 heures suivantes, et le survol d’une barre sélectionne ces 3 heures.\nLes modèles régionaux ne renvoient des données que dans leur domaine : une ville hors d’Europe affiche donc jusqu’à huit modèles. MET Norway ne publie des valeurs horaires que pour les 60 premières heures environ ; les tranches suivantes utilisent les autres modèles.\nLa température ressentie est calculée pour chaque modèle avec la formule d’Open-Meteo (la température apparente de Steadman) à partir de la température, de l’humidité, du vent et du rayonnement solaire ; MET Norway ne publie pas de rayonnement, son ressenti est donc la valeur à l’ombre. Les rafales ne viennent que des neuf modèles d’Open-Meteo. L’humidité et la nébulosité sont des pourcentages, tracés sur toute leur échelle."
+            "body": "Neuf modèles numériques proviennent de l’API de prévision d’Open-Meteo et un du Locationforecast de MET Norway. Les modèles lancent une nouvelle exécution à 00, 06, 12 et 18 UTC. La prévision d’une ville est récupérée quand quelqu’un l’ouvre et que celle enregistrée a 3 heures ou plus, puis stockée heure par heure, de 3 heures avant l’exécution à 320 heures après.\nLes graphiques utilisent des tranches de 3 heures à l’heure locale de la ville (00, 03, 06…), à partir de la tranche où la prévision a été récupérée, avec une ligne à l’heure actuelle : dix jours dans l’aperçu de l’accueil et sur le tableau de bord de la ville. La température, le vent et la pression sont les valeurs à la tranche ; les précipitations sont le cumul des 3 heures suivantes, et le survol d’une barre sélectionne ces 3 heures.\nLes modèles régionaux ne renvoient des données que dans leur domaine : une ville hors d’Europe affiche donc jusqu’à huit modèles. MET Norway ne publie des valeurs horaires que pour les 60 premières heures environ ; les tranches suivantes utilisent les autres modèles.\nLa température ressentie est calculée pour chaque modèle avec la formule d’Open-Meteo (la température apparente de Steadman) à partir de la température, de l’humidité, du vent et du rayonnement solaire ; MET Norway ne publie pas de rayonnement, son ressenti est donc la valeur à l’ombre. Les rafales ne viennent que des neuf modèles d’Open-Meteo. L’humidité et la nébulosité sont des pourcentages, tracés sur toute leur échelle.\nLes archives montrent la météo passée d’une ville à partir de l’API Historical Weather d’Open-Meteo : la réanalyse ERA5 depuis 1940 et, pour les derniers jours, l’analyse ECMWF IFS, une valeur par heure (pas une médiane de modèles). Une ville et une période sont récupérées une fois puis conservées."
         },
         "median": {
             "title": "Médiane et écart",
@@ -160,7 +161,8 @@
         "loading": "Chargement…",
         "perSlot": "{unit} / {hours} h à venir",
         "unavailable": "Aucune prévision horaire n’est encore disponible pour cette ville. Réessayez dans une minute.",
-        "secondary": "{name} : {value} {unit}"
+        "secondary": "{name} : {value} {unit}",
+        "perSlotPast": "{unit} / {hours} h"
     },
     "legal": {
         "privacy": "Politique de confidentialité",
@@ -210,5 +212,17 @@
         "wind": "Vent",
         "rain": "Pluie",
         "cancel": "Annuler"
+    },
+    "archive": {
+        "title": "Météo passée",
+        "heading": "Forecast Arena : météo passée",
+        "period": "Période",
+        "from": "Du",
+        "to": "Au",
+        "limit": "Jusqu’à {days} jours, de 1940 à hier.",
+        "fetching": "Chargement de la météo passée pour {name}…",
+        "unavailable": "Aucune donnée de météo passée pour cette période.",
+        "aria": "Météo passée pour {name}, du {from} au {to}",
+        "source": "Météo passée : ERA5 et l’analyse ECMWF IFS via Open-Meteo. Contient des informations modifiées du Copernicus Climate Change Service."
     }
 }

@@ -17,12 +17,13 @@
         }
     },
     "nav": {
+        "main": "Principal",
+        "archive": "Archivo",
         "more": "Más páginas",
         "methodology": "Metodología"
     },
     "footer": {
         "attribution": "Datos meteorológicos de <openMeteo>Open-Meteo.com</openMeteo> (CC BY 4.0) y <metno>MET Norway</metno> (CC BY 4.0). Geocodificación de Open-Meteo, basada en GeoNames.",
-        "methodology": "Metodología",
         "repo": "Código fuente"
     },
     "search": {
@@ -126,7 +127,7 @@
         "europeOnly": "solo Europa",
         "sources": {
             "title": "Fuentes",
-            "body": "Nueve modelos numéricos proceden de la API de pronósticos de Open-Meteo y uno de Locationforecast de MET Norway. Los modelos inician una nueva ejecución a las 00, 06, 12 y 18 UTC. El pronóstico de una ciudad se obtiene cuando alguien la abre y el guardado tiene 3 horas o más, y se guarda hora a hora, desde 3 horas antes de la ejecución hasta 320 horas después.\nLos gráficos usan franjas de 3 horas en la hora local de la ciudad (00, 03, 06…), empezando por la franja en la que se obtuvo el pronóstico, con una línea en la hora actual: diez días en el resumen de la portada y en el panel de la ciudad. La temperatura, el viento y la presión son los valores en la franja; la precipitación es la cantidad de las 3 horas siguientes, y al pasar el cursor por una barra se seleccionan esas 3 horas.\nLos modelos regionales solo devuelven datos dentro de su dominio, así que una ciudad fuera de Europa muestra hasta ocho modelos. MET Norway publica valores horarios solo para unas 60 primeras horas; las franjas posteriores usan los demás modelos.\nLa sensación térmica se calcula para cada modelo con la fórmula de Open-Meteo (la temperatura aparente de Steadman) a partir de la temperatura, la humedad, el viento y la radiación solar; MET Norway no publica radiación, así que su sensación térmica es la de la sombra. Las rachas de viento solo vienen de los nueve modelos de Open-Meteo. La humedad y la nubosidad son porcentajes y se dibujan en toda su escala."
+            "body": "Nueve modelos numéricos proceden de la API de pronósticos de Open-Meteo y uno de Locationforecast de MET Norway. Los modelos inician una nueva ejecución a las 00, 06, 12 y 18 UTC. El pronóstico de una ciudad se obtiene cuando alguien la abre y el guardado tiene 3 horas o más, y se guarda hora a hora, desde 3 horas antes de la ejecución hasta 320 horas después.\nLos gráficos usan franjas de 3 horas en la hora local de la ciudad (00, 03, 06…), empezando por la franja en la que se obtuvo el pronóstico, con una línea en la hora actual: diez días en el resumen de la portada y en el panel de la ciudad. La temperatura, el viento y la presión son los valores en la franja; la precipitación es la cantidad de las 3 horas siguientes, y al pasar el cursor por una barra se seleccionan esas 3 horas.\nLos modelos regionales solo devuelven datos dentro de su dominio, así que una ciudad fuera de Europa muestra hasta ocho modelos. MET Norway publica valores horarios solo para unas 60 primeras horas; las franjas posteriores usan los demás modelos.\nLa sensación térmica se calcula para cada modelo con la fórmula de Open-Meteo (la temperatura aparente de Steadman) a partir de la temperatura, la humedad, el viento y la radiación solar; MET Norway no publica radiación, así que su sensación térmica es la de la sombra. Las rachas de viento solo vienen de los nueve modelos de Open-Meteo. La humedad y la nubosidad son porcentajes y se dibujan en toda su escala.\nEl archivo muestra el tiempo pasado de una ciudad con la Historical Weather API de Open-Meteo: el reanálisis ERA5 desde 1940 y, para los últimos días, el análisis ECMWF IFS, un valor por hora (no una mediana de modelos). Una ciudad y un periodo se obtienen una vez y se guardan."
         },
         "median": {
             "title": "Mediana y dispersión",
@@ -160,7 +161,8 @@
         "loading": "Cargando…",
         "perSlot": "{unit} / próx. {hours} h",
         "unavailable": "Todavía no hay pronóstico horario para esta ciudad. Inténtalo de nuevo en un minuto.",
-        "secondary": "{name}: {value} {unit}"
+        "secondary": "{name}: {value} {unit}",
+        "perSlotPast": "{unit} / {hours} h"
     },
     "legal": {
         "privacy": "Política de privacidad",
@@ -210,5 +212,17 @@
         "wind": "Viento",
         "rain": "Lluvia",
         "cancel": "Cancelar"
+    },
+    "archive": {
+        "title": "Tiempo pasado",
+        "heading": "Forecast Arena: tiempo pasado",
+        "period": "Periodo",
+        "from": "Desde",
+        "to": "Hasta",
+        "limit": "Hasta {days} días, desde 1940 hasta ayer.",
+        "fetching": "Cargando el tiempo pasado de {name}…",
+        "unavailable": "No hay datos del tiempo pasado para este periodo.",
+        "aria": "Tiempo pasado en {name}, del {from} al {to}",
+        "source": "Tiempo pasado: ERA5 y el análisis ECMWF IFS a través de Open-Meteo. Contiene información modificada del Copernicus Climate Change Service."
     }
 }

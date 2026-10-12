@@ -47,8 +47,8 @@ test('an Android phone sees the "Get the app" bar on the landing and city pages 
     await expect(bar.getByRole('link', { name: 'Get the app' })).toHaveAttribute('href', /releases/)
     await page.goto(`/city/${KYIV}`)
     await expect(bar).toBeVisible()
-    await page.getByRole('contentinfo').getByRole('link', { name: 'Methodology' }).scrollIntoViewIfNeeded()
-    await expect(page.getByRole('contentinfo').getByRole('link', { name: 'Methodology' })).toBeInViewport()
+    await page.getByRole('contentinfo').getByRole('link', { name: 'Privacy Policy' }).scrollIntoViewIfNeeded()
+    await expect(page.getByRole('contentinfo').getByRole('link', { name: 'Privacy Policy' })).toBeInViewport()
     await page.goto('/methodology')
     await expect(bar).toHaveCount(0)
 
@@ -70,7 +70,11 @@ test('the overview chart scrolls inside its card', async ({ page, isMobile }) =>
 
     await expect(chart).toBeVisible()
 
-    const [scrollWidth, clientWidth] = await chart.locator('..').evaluate((el) => [el.scrollWidth, el.clientWidth])
+    const [scrollWidth, clientWidth] = await chart.evaluate((svg) => {
+        const scroller = svg.closest('.overflow-x-auto')!
+
+        return [scroller.scrollWidth, scroller.clientWidth]
+    })
 
     expect(scrollWidth).toBeGreaterThan(clientWidth)
     await expectNoSideScroll(page)
@@ -79,7 +83,8 @@ test('the overview chart scrolls inside its card', async ({ page, isMobile }) =>
 test('the dashboard chart labels its days', async ({ page }) => {
     await page.goto(`/city/${KYIV}`)
 
-    const labels = page.locator('main svg[role=img]').first().locator('text').filter({ hasText: WEEKDAY })
+    // Day labels belong to the chart's static drawing, beside the interactive layer that carries its name.
+    const labels = page.locator('main svg text').filter({ hasText: WEEKDAY })
 
     await expect(labels.first()).toBeVisible()
 

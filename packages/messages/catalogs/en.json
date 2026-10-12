@@ -17,12 +17,13 @@
         }
     },
     "nav": {
+        "main": "Main",
+        "archive": "Archive",
         "more": "More pages",
         "methodology": "Methodology"
     },
     "footer": {
         "attribution": "Weather data by <openMeteo>Open-Meteo.com</openMeteo> (CC BY 4.0) and <metno>MET Norway</metno> (CC BY 4.0). Geocoding by Open-Meteo, based on GeoNames.",
-        "methodology": "Methodology",
         "repo": "Source code"
     },
     "search": {
@@ -126,7 +127,7 @@
         "europeOnly": "Europe only",
         "sources": {
             "title": "Sources",
-            "body": "Nine numerical models come from the Open-Meteo forecast API and one from MET Norway’s Locationforecast. The models start a new run at 00, 06, 12 and 18 UTC. A city’s forecast is fetched when someone opens it and the stored one is 3 hours old or more, and stored hour by hour, from 3 hours before the run to 320 hours after it.\nThe charts use 3-hour slots on the city’s local clock (00, 03, 06…), starting at the slot the forecast was fetched in, with a line at the current time: ten days on the landing overview and on the city dashboard. Temperature, wind and pressure are the values at the slot; precipitation is the amount of the 3 hours after it, and hovering a bar selects those 3 hours.\nRegional models return data only inside their domain, so a city outside Europe shows up to eight models. MET Norway publishes hourly values for about the first 60 hours only; later slots use the other models.\nFeels-like is computed for every model with Open-Meteo’s formula (Steadman’s apparent temperature) from temperature, humidity, wind and sunshine; MET Norway publishes no sunshine, so its feels-like is the value in the shade. Wind gusts come from the nine Open-Meteo models only. Humidity and cloud cover are percentages, charted on their whole range."
+            "body": "Nine numerical models come from the Open-Meteo forecast API and one from MET Norway’s Locationforecast. The models start a new run at 00, 06, 12 and 18 UTC. A city’s forecast is fetched when someone opens it and the stored one is 3 hours old or more, and stored hour by hour, from 3 hours before the run to 320 hours after it.\nThe charts use 3-hour slots on the city’s local clock (00, 03, 06…), starting at the slot the forecast was fetched in, with a line at the current time: ten days on the landing overview and on the city dashboard. Temperature, wind and pressure are the values at the slot; precipitation is the amount of the 3 hours after it, and hovering a bar selects those 3 hours.\nRegional models return data only inside their domain, so a city outside Europe shows up to eight models. MET Norway publishes hourly values for about the first 60 hours only; later slots use the other models.\nFeels-like is computed for every model with Open-Meteo’s formula (Steadman’s apparent temperature) from temperature, humidity, wind and sunshine; MET Norway publishes no sunshine, so its feels-like is the value in the shade. Wind gusts come from the nine Open-Meteo models only. Humidity and cloud cover are percentages, charted on their whole range.\nThe archive shows a city's past weather from Open-Meteo's Historical Weather API: the ERA5 reanalysis since 1940 and, for the last days, the ECMWF IFS analysis, one value per hour (not a median of models). A city and period is fetched once and kept."
         },
         "median": {
             "title": "Median and spread",
@@ -160,7 +161,8 @@
         "loading": "Loading…",
         "perSlot": "{unit} / next {hours} h",
         "unavailable": "No hourly forecast is available for this city yet. Try again in a minute.",
-        "secondary": "{name}: {value} {unit}"
+        "secondary": "{name}: {value} {unit}",
+        "perSlotPast": "{unit} / {hours} h"
     },
     "legal": {
         "privacy": "Privacy Policy",
@@ -210,5 +212,17 @@
         "wind": "Wind",
         "rain": "Rain",
         "cancel": "Cancel"
+    },
+    "archive": {
+        "title": "Past weather",
+        "heading": "Forecast Arena: past weather",
+        "period": "Period",
+        "from": "From",
+        "to": "To",
+        "limit": "Up to {days} days, from 1940 to yesterday.",
+        "fetching": "Loading past weather for {name}…",
+        "unavailable": "No past weather is available for this period.",
+        "aria": "Past weather for {name}, {from} to {to}",
+        "source": "Past weather: ERA5 and the ECMWF IFS analysis through Open-Meteo. Contains modified Copernicus Climate Change Service information."
     }
 }

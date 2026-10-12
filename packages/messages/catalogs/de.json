@@ -17,12 +17,13 @@
         }
     },
     "nav": {
+        "main": "Hauptmenü",
+        "archive": "Archiv",
         "more": "Weitere Seiten",
         "methodology": "Methodik"
     },
     "footer": {
         "attribution": "Wetterdaten von <openMeteo>Open-Meteo.com</openMeteo> (CC BY 4.0) und <metno>MET Norway</metno> (CC BY 4.0). Geokodierung von Open-Meteo auf Basis von GeoNames.",
-        "methodology": "Methodik",
         "repo": "Quellcode"
     },
     "search": {
@@ -126,7 +127,7 @@
         "europeOnly": "nur Europa",
         "sources": {
             "title": "Quellen",
-            "body": "Neun numerische Modelle stammen aus der Vorhersage-API von Open-Meteo, eines aus Locationforecast von MET Norway. Die Modelle starten um 00, 06, 12 und 18 UTC einen neuen Lauf. Die Vorhersage einer Stadt wird abgerufen, wenn jemand sie öffnet und die gespeicherte mindestens 3 Stunden alt ist, und stündlich gespeichert, von 3 Stunden vor dem Lauf bis 320 Stunden danach.\nDie Diagramme nutzen 3-Stunden-Abschnitte in der Ortszeit der Stadt (00, 03, 06…), beginnend mit dem Abschnitt, in dem die Vorhersage abgerufen wurde, mit einer Linie bei der aktuellen Zeit: zehn Tage in der Übersicht auf der Startseite und im Stadt-Dashboard. Temperatur, Wind und Luftdruck sind die Werte zum Abschnitt; Niederschlag ist die Menge der 3 Stunden danach, und das Überfahren eines Balkens markiert diese 3 Stunden.\nRegionalmodelle liefern nur innerhalb ihres Gebiets Daten, daher zeigt eine Stadt außerhalb Europas bis zu acht Modelle. MET Norway veröffentlicht Stundenwerte nur für etwa die ersten 60 Stunden; spätere Abschnitte nutzen die übrigen Modelle.\nDie gefühlte Temperatur wird für jedes Modell mit der Formel von Open-Meteo (Steadmans scheinbare Temperatur) aus Temperatur, Luftfeuchtigkeit, Wind und Sonneneinstrahlung berechnet; MET Norway veröffentlicht keine Einstrahlung, daher ist sein Wert der im Schatten. Windböen liefern nur die neun Open-Meteo-Modelle. Luftfeuchtigkeit und Bewölkung sind Prozentwerte und werden über ihre ganze Skala gezeigt."
+            "body": "Neun numerische Modelle stammen aus der Vorhersage-API von Open-Meteo, eines aus Locationforecast von MET Norway. Die Modelle starten um 00, 06, 12 und 18 UTC einen neuen Lauf. Die Vorhersage einer Stadt wird abgerufen, wenn jemand sie öffnet und die gespeicherte mindestens 3 Stunden alt ist, und stündlich gespeichert, von 3 Stunden vor dem Lauf bis 320 Stunden danach.\nDie Diagramme nutzen 3-Stunden-Abschnitte in der Ortszeit der Stadt (00, 03, 06…), beginnend mit dem Abschnitt, in dem die Vorhersage abgerufen wurde, mit einer Linie bei der aktuellen Zeit: zehn Tage in der Übersicht auf der Startseite und im Stadt-Dashboard. Temperatur, Wind und Luftdruck sind die Werte zum Abschnitt; Niederschlag ist die Menge der 3 Stunden danach, und das Überfahren eines Balkens markiert diese 3 Stunden.\nRegionalmodelle liefern nur innerhalb ihres Gebiets Daten, daher zeigt eine Stadt außerhalb Europas bis zu acht Modelle. MET Norway veröffentlicht Stundenwerte nur für etwa die ersten 60 Stunden; spätere Abschnitte nutzen die übrigen Modelle.\nDie gefühlte Temperatur wird für jedes Modell mit der Formel von Open-Meteo (Steadmans scheinbare Temperatur) aus Temperatur, Luftfeuchtigkeit, Wind und Sonneneinstrahlung berechnet; MET Norway veröffentlicht keine Einstrahlung, daher ist sein Wert der im Schatten. Windböen liefern nur die neun Open-Meteo-Modelle. Luftfeuchtigkeit und Bewölkung sind Prozentwerte und werden über ihre ganze Skala gezeigt.\nDas Archiv zeigt das vergangene Wetter einer Stadt aus der Historical Weather API von Open-Meteo: die ERA5-Reanalyse seit 1940 und für die letzten Tage die ECMWF-IFS-Analyse, ein Wert pro Stunde (kein Median der Modelle). Eine Stadt und ein Zeitraum werden einmal abgerufen und gespeichert."
         },
         "median": {
             "title": "Median und Streuung",
@@ -160,7 +161,8 @@
         "loading": "Lädt…",
         "perSlot": "{unit} / nächste {hours} h",
         "unavailable": "Für diese Stadt gibt es noch keine stündliche Vorhersage. Versuche es in einer Minute erneut.",
-        "secondary": "{name}: {value} {unit}"
+        "secondary": "{name}: {value} {unit}",
+        "perSlotPast": "{unit} / {hours} h"
     },
     "legal": {
         "privacy": "Datenschutzerklärung",
@@ -210,5 +212,17 @@
         "wind": "Wind",
         "rain": "Regen",
         "cancel": "Abbrechen"
+    },
+    "archive": {
+        "title": "Vergangenes Wetter",
+        "heading": "Forecast Arena: vergangenes Wetter",
+        "period": "Zeitraum",
+        "from": "Von",
+        "to": "Bis",
+        "limit": "Bis zu {days} Tage, von 1940 bis gestern.",
+        "fetching": "Vergangenes Wetter für {name} wird geladen…",
+        "unavailable": "Für diesen Zeitraum gibt es keine Daten zum vergangenen Wetter.",
+        "aria": "Vergangenes Wetter für {name}, {from} bis {to}",
+        "source": "Vergangenes Wetter: ERA5 und die ECMWF-IFS-Analyse über Open-Meteo. Enthält veränderte Informationen des Copernicus Climate Change Service."
     }
 }

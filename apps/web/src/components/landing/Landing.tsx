@@ -2,18 +2,15 @@
 
 import { OverviewCardSkeleton } from '@/components/city/OverviewCard'
 import { CityOverview } from '@/components/landing/CityOverview'
-import { PlaceChip } from '@/components/landing/PlaceChip'
+import { PlaceChips } from '@/components/landing/PlaceChips'
 import { SearchBox } from '@/components/shell/SearchBox'
-import { Skeleton } from '@/components/ui/skeleton'
 import { usePlaces } from '@/hooks/usePlaces'
 import { useStarters } from '@/hooks/useStarters'
 import { updatePlaces } from '@/lib/places-store'
-import { DEFAULT_PLACES, getPlaceChips, getStarterPlaces, isFavorite, MAX_PLACES } from '@fa/shared/places'
+import { DEFAULT_PLACES, getPlaceChips, getStarterPlaces } from '@fa/shared/places'
 import { useTranslations } from 'next-intl'
 import { parseAsString, useQueryState } from 'nuqs'
 import { useEffect } from 'react'
-
-const CHIP_PLACEHOLDERS = Array.from({ length: MAX_PLACES }, (_, i) => i)
 
 export function Landing() {
     const t = useTranslations('landing')
@@ -43,28 +40,7 @@ export function Landing() {
                 <h1 className="sr-only">{t('heading')}</h1>
                 <div className="flex w-full flex-col items-center gap-3">
                     <SearchBox isLocateShown onSelectCity={(next) => void setSlug(next)} className="max-w-2xl" />
-                    <div
-                        role="group"
-                        aria-label={t('seeds')}
-                        className="flex flex-wrap items-center justify-center gap-2"
-                    >
-                        <span className="text-xs font-medium text-muted-foreground max-sm:hidden" aria-hidden="true">
-                            {t('seeds')}
-                        </span>
-                        {chips?.map((place) => (
-                            <PlaceChip
-                                key={place.id}
-                                place={place}
-                                isSelected={slug === place.slug}
-                                isPinned={Boolean(places && isFavorite(places, place.id))}
-                                onSelect={(next) => void setSlug(next)}
-                            />
-                        ))}
-                        {!chips &&
-                            CHIP_PLACEHOLDERS.map((i) => (
-                                <Skeleton key={i} className="h-7 w-24 rounded-full pointer-coarse:h-9" />
-                            ))}
-                    </div>
+                    <PlaceChips places={places} chips={chips} slug={slug} onSelect={(next) => void setSlug(next)} />
                 </div>
             </section>
             <section className="mx-auto w-full max-w-5xl max-sm:-mx-4 max-sm:w-auto">

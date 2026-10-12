@@ -9,6 +9,7 @@ import { FlagIcon } from '@/components/shell/FlagIcon'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useOverviewPanels } from '@/hooks/useOverviewPanels'
 import { cn } from '@/lib/cn'
 import { isRefreshOffered } from '@fa/api-client/refresh-due'
 import {
@@ -76,6 +77,7 @@ const getRun = (hourly: OverviewHourly, panels: PanelVariable[]) => hourly[panel
 export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, onRefresh }: IProps) {
     const t = useTranslations('overview')
     const locale = useLocale()
+    const { panels: storedPanels, setPanels } = useOverviewPanels()
 
     const name = getCityName(city, locale)
     const region = getCityRegion(city, locale)
@@ -97,7 +99,11 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, on
                         {region && <span className="font-medium text-muted-foreground">, {region}</span>}
                     </span>
                     <FavoriteToggle place={city} className="-ml-1 max-sm:ml-auto" />
-                    <OverviewPanelsMenu className="-ml-2 shrink-0 pointer-coarse:size-9" />
+                    <OverviewPanelsMenu
+                        panels={storedPanels}
+                        onChange={setPanels}
+                        className="-ml-2 shrink-0 pointer-coarse:size-9"
+                    />
                 </CardTitle>
                 <CardAction className={ACTIONS}>
                     <UpdatedChip

@@ -54,6 +54,10 @@ interface ChartGeometry extends ChartSize {
 
 type Point = [Date, number | null]
 
+interface SkeletonProps {
+    panels?: PanelVariable[]
+}
+
 // On a phone the overview is the landing page's main content, so its panels are taller and its text larger than in
 // the desktop column (author, 2026-10-09); the readouts above the chart leave it the full width. Text is 11 px on both
 // (author, 2026-10-12).
@@ -191,10 +195,11 @@ const getLinePath = (points: Point[], x: ScaleTime<number, number>, y: ScaleLine
 // The chart column's blocks are inset by the tick-label margin, so they cover exactly the panel backgrounds; the
 // readout blocks reach across the tick labels to leave a SKELETON_GAP between the two columns. It renders before the
 // media query is known, so CSS picks the phone or desktop geometry, and with the reader's panels.
-export function MedianOverviewSkeleton() {
-    const { panels } = useOverviewPanels()
+export function MedianOverviewSkeleton({ panels }: SkeletonProps) {
+    const { panels: stored } = useOverviewPanels()
 
-    const visible = getVisiblePanels(panels)
+    // The overview's own choice unless a page with its own panels (the archive) passes them.
+    const visible = panels ?? getVisiblePanels(stored)
 
     return (
         <div className={GRID} role="presentation">
@@ -240,18 +245,32 @@ interface IProps {
     panels: PanelVariable[]
     series: OverviewMedians
     directions: (number | null)[] | null
-    chance: (number | null)[]
+    // The share of models above 0.2 mm per slot; the archive has one series and passes none.
+    chance: (number | null)[] | null
     timeZone: string
     locale: string
     now: Date | null
     ariaLabel: string
+    // Past weather: precipitation reads as the 3 hours from the slot, not the next 3 hours.
+    isArchive?: boolean
 }
 
 // Median of all models for each of the reader's panels on one time axis of 3-hour slots; a precipitation bar is the
 // amount of the 3 hours after its slot, and the strip under the bars the share of models above 0.2 mm in it. Readouts
-// follow the crosshair, or the slot nearest to `now`; the hovered slot's time sits above the panels. `now` draws the "now" line at the exact current time, which is
-// inside the first slot right after a refresh, and shades the past.
-export function MedianOverview({ panels, series, directions, chance, timeZone, locale, now, ariaLabel }: IProps) {
+// follow the crosshair, or the slot nearest to `now`; the hovered slot's time sits above the panels. `now` draws the
+// "now" line at the exact current time, which is inside the first slot right after a refresh, and shades the past.
+// The archive draws a city's past weather the same way, without a now line or a chance of rain.
+export function MedianOverview({
+    panels,
+    series,
+    directions,
+    chance,
+    timeZone,
+    locale,
+    now,
+    ariaLabel,
+    isArchive = false,
+}: IProps) {
     const t = useTranslations('overview')
     const tv = useTranslations('variables')
     const tc = useTranslations('chart')
@@ -415,7 +434,7 @@ export function MedianOverview({ panels, series, directions, chance, timeZone, l
                             )}
                             {variable === Variable.Precip && (
                                 <g aria-hidden="true">
-                                    {chance.map((c, i) => {
+                                    {chance?.map((c, i) => {
                                         const center = x(getSumBarCenter(times[i], SLOT_MS))
                                         const isShown = c !== null && center + barWidth / 2 <= plotRight
 
@@ -540,7 +559,7 @@ export function MedianOverview({ panels, series, directions, chance, timeZone, l
                     const value = getValueAt(s, readoutTime)
                     const isSum = variable === Variable.Precip
                     const secondaryVariable = SECONDARY_VARIABLE[variable]
-                    const chanceValue = chance[readoutIndex] ?? null
+                    const chanceValue = chance?.[readoutIndex] ?? null
                     const extra = secondaryVariable
                         ? t('secondary', {
                               name: tv(secondaryVariable),
@@ -550,7 +569,7 @@ export function MedianOverview({ panels, series, directions, chance, timeZone, l
                               ),
                               unit: VARIABLE_BY_ID[secondaryVariable].unit,
                           })
-                        : isSum
+                        : isSum && chance
                           ? t('secondary', {
                                 name: tcity('chanceOfRain'),
                                 value: formatNumber(chanceValue === null ? null : chanceValue * 100, 0),
@@ -568,7 +587,12 @@ export function MedianOverview({ panels, series, directions, chance, timeZone, l
                             <span className="text-xl leading-tight font-semibold sm:text-2xl">
                                 {formatNumber(value, info.decimals)}
                                 <span className="ml-1 text-sm font-normal whitespace-nowrap text-muted-foreground">
-                                    {isSum ? t('perSlot', { unit: info.unit, hours: SLOT_HOURS }) : info.unit}
+                                    {isSum
+                                        ? t(isArchive ? 'perSlotPast' : 'perSlot', {
+                                              unit: info.unit,
+                                              hours: SLOT_HOURS,
+                                          })
+                                        : info.unit}
                                 </span>
                             </span>
                             {extra && <span className="text-xs text-muted-foreground">{extra}</span>}
@@ -719,7 +743,7 @@ export function MedianOverview({ panels, series, directions, chance, timeZone, l
                                     {formatYTick(tick)}
                                 </text>
                             ))}
-                            {variable === Variable.Precip && (
+                            {variable === Variable.Precip && chance && (
                                 <text
                                     x={geometry.marginLeft - 6}
                                     y={bottom + CHANCE_STRIP / 2}

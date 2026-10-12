@@ -2,12 +2,12 @@
 
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverPanel, PopoverTrigger } from '@/components/ui/popover'
-import { useOverviewPanels } from '@/hooks/useOverviewPanels'
 import { cn } from '@/lib/cn'
 import {
     DEFAULT_OVERVIEW_PANELS,
     getVisiblePanels,
     movePanel,
+    OverviewPanels,
     PanelVariable,
     togglePanel,
 } from '@fa/shared/overview-panels'
@@ -15,15 +15,16 @@ import { ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
 interface IProps {
+    panels: OverviewPanels
+    onChange: (update: (panels: OverviewPanels) => OverviewPanels) => void
     className?: string
 }
 
 // Which overview panels show and in which order (author, 2026-10-12): a checkbox and arrows per panel rather than
 // drag and drop, so it works the same with a keyboard, a screen reader and a finger. The last shown panel stays.
-export function OverviewPanelsMenu({ className }: IProps) {
+export function OverviewPanelsMenu({ panels, onChange: setPanels, className }: IProps) {
     const t = useTranslations('overview')
     const tv = useTranslations('variables')
-    const { panels, setPanels } = useOverviewPanels()
 
     const visibleCount = getVisiblePanels(panels).length
 

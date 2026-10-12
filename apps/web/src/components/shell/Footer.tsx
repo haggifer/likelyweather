@@ -24,9 +24,6 @@ export async function Footer() {
                     })}
                 </p>
                 <nav className="ml-auto flex flex-wrap gap-x-4 gap-y-1">
-                    <Link href="/methodology" className="hover:text-foreground">
-                        {t('methodology')}
-                    </Link>
                     <Link href="/privacy" className="hover:text-foreground">
                         {tl('privacy')}
                     </Link>

@@ -1,4 +1,4 @@
-// Stands in for Open-Meteo (forecast and geocoding) and met.no during end-to-end tests. It replays the recorded
+// Stands in for Open-Meteo (forecast, archive and geocoding) and met.no during end-to-end tests. It replays the recorded
 // New York responses for any location, shifted so their hours line up with today, so the app's fetch path runs
 // for real without touching the network.
 import { readFileSync } from 'node:fs'
@@ -49,6 +49,29 @@ const getMetnoForecast = () => {
     return { ...METNO, properties: { ...METNO.properties, timeseries } }
 }
 
+// Smooth made-up past weather for whatever days are asked for: a daily temperature wave, some rain every few hours.
+const getArchive = (startDate, endDate) => {
+    const start = Date.parse(`${startDate}T00:00:00Z`)
+    const count = (Date.parse(`${endDate}T00:00:00Z`) - start) / HOUR_MS + 24
+    const hours = Array.from({ length: count }, (_, i) => i)
+    const wave = (i) => 10 + 6 * Math.sin(((i % 24) / 24) * 2 * Math.PI)
+
+    return {
+        hourly: {
+            time: hours.map((i) => toOpenMeteoTime(start + i * HOUR_MS)),
+            temperature_2m: hours.map(wave),
+            apparent_temperature: hours.map((i) => wave(i) - 2),
+            wind_speed_10m: hours.map(() => 4),
+            wind_gusts_10m: hours.map(() => 9),
+            wind_direction_10m: hours.map(() => 250),
+            pressure_msl: hours.map((i) => 1010 + (i % 48) / 4),
+            precipitation: hours.map((i) => (i % 7 === 0 ? 0.6 : 0)),
+            relative_humidity_2m: hours.map(() => 75),
+            cloud_cover: hours.map((i) => (i * 13) % 100),
+        },
+    }
+}
+
 const send = (res, status, body, headers = {}) => {
     res.writeHead(status, { 'Content-Type': 'application/json', ...headers })
     res.end(JSON.stringify(body))
@@ -66,6 +89,10 @@ createServer((req, res) => {
         const forecasts = lats.map((lat, i) => getOpenMeteoForecast(lat, lons[i]))
 
         return send(res, 200, forecasts.length === 1 ? forecasts[0] : forecasts)
+    }
+
+    if (url.pathname === '/v1/archive') {
+        return send(res, 200, getArchive(url.searchParams.get('start_date'), url.searchParams.get('end_date')))
     }
 
     if (url.pathname === '/v1/search') {

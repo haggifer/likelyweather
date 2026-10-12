@@ -114,7 +114,8 @@ test('the dashboard switches variables and draws precipitation as bars', async (
 
     await expect(page).toHaveURL(/v=precip/)
     await expect(page.locator('main [data-slot=card-title]').first()).toHaveText('Precipitation')
-    await expect(page.locator('main svg[role=img] rect[rx="2"]').first()).toBeAttached()
+    // The bars sit in the chart's static drawing, under the interactive layer that carries the chart's name.
+    await expect(page.locator('main svg rect[rx="2"]').first()).toBeAttached()
 })
 
 // The charts scroll inside their cards, which would clip a ring drawn on the chart itself; the ring sits on the frame
@@ -126,9 +127,29 @@ test('a focused chart shows its focus ring around the scrolling plot', async ({ 
 
     await chart.focus()
 
-    const shadow = await chart.evaluate((svg) => getComputedStyle(svg.parentElement!.parentElement!).boxShadow)
+    const shadow = await chart.evaluate((svg) => getComputedStyle(svg.closest('.rounded-sm')!).boxShadow)
 
     expect(shadow).not.toBe('none')
+})
+
+test('the archive shows past weather for a city and keeps the chosen period', async ({ page, isMobile }) => {
+    await page.goto(`/archive?city=${LONDON}`)
+
+    await expect(page.getByRole('img', { name: /^Past weather for London/ })).toBeVisible()
+
+    const from = page.getByLabel('From', { exact: true })
+
+    await from.fill('2026-01-01')
+    await expect(page.getByLabel('To', { exact: true })).toHaveValue('2026-01-12')
+    await expect(page.getByRole('img', { name: /1 Jan 2026 to 12 Jan 2026/ })).toBeVisible()
+    await page.reload()
+    await expect(page.getByLabel('From', { exact: true })).toHaveValue('2026-01-01')
+
+    if (!isMobile) {
+        await expect(
+            page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Archive' }),
+        ).toHaveAttribute('aria-current', 'page')
+    }
 })
 
 test('an unknown city page says so and offers the search', async ({ page }) => {
@@ -143,7 +164,7 @@ test('the language menu switches the interface to Ukrainian', async ({ page }) =
     await page.getByRole('button', { name: 'Language' }).click()
     await page.getByRole('menuitemradio', { name: 'Українська' }).click()
 
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Порівнюйте прогнози погоди для свого міста')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Forecast Arena: порівняння прогнозів погоди')
 })
 
 for (const path of ['/', `/city/${KYIV}`]) {
