@@ -1,6 +1,7 @@
 import { MedianSeries } from '@fa/chart-core/overview-stats'
 import { clamp, getBarWidth, getNowX, getTimeScale, getValueScale } from '@fa/chart-core/plot-geometry'
 import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
+import { getInitialScrollLeft, getMinSlotWidth, getScrollWidth } from '@fa/chart-core/scroll-geometry'
 import { getNearestIndex, getSumBarCenter } from '@fa/chart-core/spaghetti-geometry'
 import { HOUR_MS } from '@fa/shared/constants'
 import { formatNumber, formatStepLabel } from '@fa/shared/format'
@@ -10,8 +11,10 @@ import { ScaleLinear, ScaleTime } from 'd3-scale'
 import { area, curveMonotoneX, line } from 'd3-shape'
 import { useId, useState } from 'react'
 import { StyleProp, StyleSheet, TextStyle, View } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
 import Svg, { Circle, ClipPath, Defs, G, Line, Path, Rect, Text as SvgText } from 'react-native-svg'
 import { useTranslations } from 'use-intl'
+import { useChartScroll } from '../../hooks/useChartScroll'
 import { useLayoutWidth } from '../../hooks/useLayoutWidth'
 import { useTheme } from '../../hooks/useTheme'
 import { getFontFamily } from '../../theme/fonts'
@@ -19,7 +22,7 @@ import { Skeleton } from '../ui/Skeleton'
 import { Text } from '../ui/Text'
 import { ChanceStrip } from './ChanceStrip'
 import { DayGrid } from './DayGrid'
-import { ScrubSurface } from './ScrubSurface'
+import { TapSurface } from './TapSurface'
 import { WindArrows } from './WindArrows'
 
 type PanelVariable = Variable.Temp | Variable.Wind | Variable.Pressure | Variable.Precip
@@ -65,6 +68,8 @@ const MARGIN = { left: 36, right: 8 }
 const PANEL_RADIUS = 4
 const HOVER_LABEL_HALF_WIDTH = 34
 const SLOT_MS = SLOT_HOURS * HOUR_MS
+// Half the cap height of the tick font, so a label centres on its gridline.
+const BASELINE_SHIFT = 3.5
 const NO_BREAK_SPACE = ' '
 
 const LAYOUT: RowLayout[] = ROWS.reduce<RowLayout[]>((rows, row) => {
@@ -128,6 +133,15 @@ const getExtraReadout = (
     const value = chance[index] ?? null
 
     return { variable: null, value: formatNumber(value === null ? null : value * 100, 0), unit: '%' }
+}
+
+// A panel's value axis: the scale and the ticks its gridlines and its pinned labels share.
+const getPanelScale = (row: RowLayout, series: Record<OverviewVariable, MedianSeries>) => {
+    const secondaryVariable = SECONDARY[row.variable]
+    const secondary = secondaryVariable ? series[secondaryVariable] : null
+    const { domain, scaleVariable } = getPanelDomain(row.variable, series[row.variable], secondary)
+
+    return { y: getValueScale(domain, [row.bottom, row.top + ROW_PAD]), ticks: getYTicks(domain, scaleVariable, 3) }
 }
 
 const hasExtraReadout = (variable: PanelVariable) => Boolean(SECONDARY[variable]) || variable === Variable.Precip
@@ -208,7 +222,9 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
 
     const axisSteps = series[Variable.Temp].steps
     const times = axisSteps.map((s) => new Date(s))
-    const plotRight = width - MARGIN.right
+    const minSlot = getMinSlotWidth(TICK_FONT_SIZE)
+    const contentWidth = getScrollWidth(width, times.length - 1, minSlot, MARGIN.left + MARGIN.right)
+    const plotRight = contentWidth - MARGIN.right
     const x = getTimeScale(times, [MARGIN.left, Math.max(MARGIN.left + 1, plotRight)])
     // One crosshair for every panel: each reads the slot nearest the pointer (or now), so a precipitation readout is
     // the 3 hours from that slot, which can be the bar after the one under the line (author, 2026-10-09).
@@ -216,13 +232,23 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
     const readoutTime = axisSteps[readoutIndex]
     const nowX = getNowX(x, now, MARGIN.left, plotRight)
     const barWidth = getBarWidth(x, times[0], SLOT_MS)
-    const plotWidth = Math.max(0, width - MARGIN.left - MARGIN.right)
+    const plotWidth = Math.max(0, contentWidth - MARGIN.left - MARGIN.right)
+    const slotWidth = times.length > 1 ? x(times[1]) - x(times[0]) : plotWidth
+    const scales = LAYOUT.map((row) => getPanelScale(row, series))
+    const initialScrollLeft = getInitialScrollLeft(x(now), {
+        slotWidth,
+        insetLeft: MARGIN.left,
+        contentWidth,
+        viewportWidth: width,
+    })
     const hoverX =
         hoverIndex === null
             ? null
             : clamp(x(times[hoverIndex]), MARGIN.left + HOVER_LABEL_HALF_WIDTH, plotRight - HOVER_LABEL_HALF_WIDTH)
 
-    const handleScrub = (touchX: number) => setHoverIndex(getNearestIndex(times, x.invert(touchX)))
+    const { ref: scrollRef, onContentSizeChange } = useChartScroll(axisSteps[0], initialScrollLeft)
+
+    const handleSelect = (touchX: number) => setHoverIndex(getNearestIndex(times, x.invert(touchX)))
 
     return (
         <View>
@@ -258,241 +284,272 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
             </View>
             <View onLayout={onLayout} accessible accessibilityRole="image" accessibilityLabel={accessibilityLabel}>
                 {width > 0 && (
-                    <ScrubSurface onScrub={handleScrub}>
-                        <Svg width={width} height={TOTAL_HEIGHT}>
-                            <Defs>
-                                {SPANS.map(({ top, bottom }, i) => (
-                                    <ClipPath key={top} id={`${clipId}-${i}`}>
+                    <View>
+                        <ScrollView
+                            testID="overview-scroll"
+                            ref={scrollRef}
+                            horizontal
+                            onContentSizeChange={onContentSizeChange}
+                        >
+                            <TapSurface onSelect={handleSelect}>
+                                <Svg testID="overview-plot" width={contentWidth} height={TOTAL_HEIGHT}>
+                                    <Defs>
+                                        {SPANS.map(({ top, bottom }, i) => (
+                                            <ClipPath key={top} id={`${clipId}-${i}`}>
+                                                <Rect
+                                                    x={MARGIN.left}
+                                                    y={top}
+                                                    width={plotWidth}
+                                                    height={bottom - top}
+                                                    rx={PANEL_RADIUS}
+                                                />
+                                            </ClipPath>
+                                        ))}
+                                    </Defs>
+                                    {SPANS.map(({ top, bottom }) => (
                                         <Rect
+                                            key={top}
                                             x={MARGIN.left}
                                             y={top}
                                             width={plotWidth}
                                             height={bottom - top}
                                             rx={PANEL_RADIUS}
+                                            fill={chart.grid}
+                                            opacity={0.4}
                                         />
-                                    </ClipPath>
-                                ))}
-                            </Defs>
-                            {SPANS.map(({ top, bottom }) => (
-                                <Rect
-                                    key={top}
-                                    x={MARGIN.left}
-                                    y={top}
-                                    width={plotWidth}
-                                    height={bottom - top}
-                                    rx={PANEL_RADIUS}
-                                    fill={chart.grid}
-                                    opacity={0.4}
-                                />
-                            ))}
-                            {nowX !== null &&
-                                SPANS.map(({ top, bottom }, i) => (
-                                    <Rect
-                                        key={top}
-                                        x={MARGIN.left}
-                                        y={top}
-                                        width={Math.max(0, nowX - MARGIN.left)}
-                                        height={bottom - top}
-                                        fill={chart.grid}
-                                        opacity={0.6}
-                                        clipPath={`url(#${clipId}-${i})`}
-                                    />
-                                ))}
-                            {LAYOUT.map(({ variable, top, bottom }) => {
-                                const s = series[variable]
-                                const secondaryVariable = SECONDARY[variable]
-                                const secondary = secondaryVariable ? series[secondaryVariable] : null
-                                const points = toPoints(s)
-                                const { domain, scaleVariable } = getPanelDomain(variable, s, secondary)
-                                const y = getValueScale(domain, [bottom, top + ROW_PAD])
-                                const hoverValue = hoverIndex === null ? null : getValueAt(s, axisSteps[hoverIndex])
-                                const hoverSecondary =
-                                    hoverIndex === null || !secondary
-                                        ? null
-                                        : getValueAt(secondary, axisSteps[hoverIndex])
-
-                                return (
-                                    <G key={variable}>
-                                        {getYTicks(domain, scaleVariable, 3).map((tick) => (
-                                            <G key={tick}>
-                                                <Line
-                                                    x1={MARGIN.left}
-                                                    x2={plotRight}
-                                                    y1={y(tick)}
-                                                    y2={y(tick)}
-                                                    stroke={chart.grid}
-                                                />
-                                                <SvgText
-                                                    x={MARGIN.left - 6}
-                                                    y={y(tick) + 3.5}
-                                                    textAnchor="end"
-                                                    fontSize={TICK_FONT_SIZE}
-                                                    fontFamily={getFontFamily('400')}
-                                                    fill={chart.muted}
-                                                >
-                                                    {formatYTick(tick)}
-                                                </SvgText>
-                                            </G>
+                                    ))}
+                                    {nowX !== null &&
+                                        SPANS.map(({ top, bottom }, i) => (
+                                            <Rect
+                                                key={top}
+                                                x={MARGIN.left}
+                                                y={top}
+                                                width={Math.max(0, nowX - MARGIN.left)}
+                                                height={bottom - top}
+                                                fill={chart.grid}
+                                                opacity={0.6}
+                                                clipPath={`url(#${clipId}-${i})`}
+                                            />
                                         ))}
-                                        {variable === Variable.Precip ? (
-                                            points.map((p) => {
-                                                const center = x(getSumBarCenter(p[0], SLOT_MS))
+                                    {LAYOUT.map(({ variable, bottom }, rowIndex) => {
+                                        const s = series[variable]
+                                        const secondaryVariable = SECONDARY[variable]
+                                        const secondary = secondaryVariable ? series[secondaryVariable] : null
+                                        const points = toPoints(s)
+                                        const { y, ticks } = scales[rowIndex]
+                                        const hoverValue =
+                                            hoverIndex === null ? null : getValueAt(s, axisSteps[hoverIndex])
+                                        const hoverSecondary =
+                                            hoverIndex === null || !secondary
+                                                ? null
+                                                : getValueAt(secondary, axisSteps[hoverIndex])
 
-                                                if (p[1] === null || center + barWidth / 2 > plotRight) return null
-
-                                                return (
-                                                    <Rect
-                                                        key={p[0].toISOString()}
-                                                        x={center - barWidth / 2}
-                                                        y={y(p[1])}
-                                                        width={barWidth}
-                                                        height={Math.max(0, bottom - y(p[1]))}
-                                                        rx={2}
-                                                        fill={chart.band}
-                                                        opacity={0.75}
+                                        return (
+                                            <G key={variable}>
+                                                {ticks.map((tick) => (
+                                                    <Line
+                                                        key={tick}
+                                                        x1={MARGIN.left}
+                                                        x2={plotRight}
+                                                        y1={y(tick)}
+                                                        y2={y(tick)}
+                                                        stroke={chart.grid}
                                                     />
-                                                )
-                                            })
-                                        ) : (
-                                            <G>
-                                                <Path
-                                                    d={getAreaPath(points, x, y, bottom)}
-                                                    fill={chart.band}
-                                                    opacity={chart.bandOuterOpacity}
-                                                />
-                                                <Path
-                                                    d={getLinePath(points, x, y)}
-                                                    fill="none"
-                                                    stroke={chart.median}
-                                                    strokeWidth={2}
-                                                    strokeLinecap="round"
-                                                />
-                                                {secondary && (
-                                                    <Path
-                                                        d={getLinePath(toPoints(secondary), x, y)}
-                                                        fill="none"
-                                                        stroke={chart.median}
-                                                        strokeWidth={1.5}
-                                                        strokeDasharray={SECONDARY_DASH}
-                                                        opacity={0.7}
+                                                ))}
+                                                {variable === Variable.Precip ? (
+                                                    points.map((p) => {
+                                                        const center = x(getSumBarCenter(p[0], SLOT_MS))
+
+                                                        if (p[1] === null || center + barWidth / 2 > plotRight)
+                                                            return null
+
+                                                        return (
+                                                            <Rect
+                                                                key={p[0].toISOString()}
+                                                                x={center - barWidth / 2}
+                                                                y={y(p[1])}
+                                                                width={barWidth}
+                                                                height={Math.max(0, bottom - y(p[1]))}
+                                                                rx={2}
+                                                                fill={chart.band}
+                                                                opacity={0.75}
+                                                            />
+                                                        )
+                                                    })
+                                                ) : (
+                                                    <G>
+                                                        <Path
+                                                            d={getAreaPath(points, x, y, bottom)}
+                                                            fill={chart.band}
+                                                            opacity={chart.bandOuterOpacity}
+                                                        />
+                                                        <Path
+                                                            d={getLinePath(points, x, y)}
+                                                            fill="none"
+                                                            stroke={chart.median}
+                                                            strokeWidth={2}
+                                                            strokeLinecap="round"
+                                                        />
+                                                        {secondary && (
+                                                            <Path
+                                                                d={getLinePath(toPoints(secondary), x, y)}
+                                                                fill="none"
+                                                                stroke={chart.median}
+                                                                strokeWidth={1.5}
+                                                                strokeDasharray={SECONDARY_DASH}
+                                                                opacity={0.7}
+                                                            />
+                                                        )}
+                                                    </G>
+                                                )}
+                                                {variable === Variable.Precip && (
+                                                    <ChanceStrip
+                                                        x={x}
+                                                        times={times}
+                                                        chance={chance}
+                                                        slotMs={SLOT_MS}
+                                                        barWidth={barWidth}
+                                                        plotRight={plotRight}
+                                                        y={bottom + CHANCE_STRIP / 2}
+                                                        fontSize={TICK_FONT_SIZE}
+                                                        color={chart.foreground}
+                                                        mutedColor={chart.muted}
                                                     />
                                                 )}
+                                                {variable === Variable.Wind && directions && (
+                                                    <WindArrows
+                                                        x={x}
+                                                        times={times}
+                                                        directions={directions}
+                                                        y={bottom + ARROW_STRIP / 2 + 2}
+                                                        color={chart.foreground}
+                                                        mutedColor={chart.muted}
+                                                    />
+                                                )}
+                                                {hoverIndex !== null &&
+                                                    hoverValue !== null &&
+                                                    hoverValue !== undefined &&
+                                                    variable !== Variable.Precip && (
+                                                        <Circle
+                                                            cx={x(times[hoverIndex])}
+                                                            cy={y(hoverValue)}
+                                                            r={4}
+                                                            fill={chart.median}
+                                                            stroke={chart.card}
+                                                            strokeWidth={2}
+                                                        />
+                                                    )}
+                                                {hoverIndex !== null &&
+                                                    hoverSecondary !== null &&
+                                                    hoverSecondary !== undefined && (
+                                                        <Circle
+                                                            cx={x(times[hoverIndex])}
+                                                            cy={y(hoverSecondary)}
+                                                            r={3}
+                                                            fill={chart.card}
+                                                            stroke={chart.median}
+                                                            strokeWidth={1.5}
+                                                        />
+                                                    )}
                                             </G>
-                                        )}
-                                        {variable === Variable.Precip && (
-                                            <ChanceStrip
-                                                x={x}
-                                                times={times}
-                                                chance={chance}
-                                                slotMs={SLOT_MS}
-                                                barWidth={barWidth}
-                                                plotRight={plotRight}
-                                                unitX={MARGIN.left - 6}
-                                                y={bottom + CHANCE_STRIP / 2}
-                                                fontSize={TICK_FONT_SIZE}
-                                                color={chart.foreground}
-                                                mutedColor={chart.muted}
-                                            />
-                                        )}
-                                        {variable === Variable.Wind && directions && (
-                                            <WindArrows
-                                                x={x}
-                                                times={times}
-                                                directions={directions}
-                                                y={bottom + ARROW_STRIP / 2 + 2}
-                                                color={chart.foreground}
-                                                mutedColor={chart.muted}
-                                            />
-                                        )}
-                                        {hoverIndex !== null &&
-                                            hoverValue !== null &&
-                                            hoverValue !== undefined &&
-                                            variable !== Variable.Precip && (
-                                                <Circle
-                                                    cx={x(times[hoverIndex])}
-                                                    cy={y(hoverValue)}
-                                                    r={4}
-                                                    fill={chart.median}
-                                                    stroke={chart.card}
-                                                    strokeWidth={2}
+                                        )
+                                    })}
+                                    <DayGrid
+                                        x={x}
+                                        start={times[0]}
+                                        end={times[times.length - 1]}
+                                        timeZone={timeZone}
+                                        locale={locale}
+                                        spans={SPANS}
+                                        labelY={PLOT_BOTTOM + 16}
+                                        lineColor={chart.border}
+                                        labelColor={chart.muted}
+                                    />
+                                    {nowX !== null && (
+                                        <G>
+                                            {SPANS.map(({ top, bottom }) => (
+                                                <Line
+                                                    key={top}
+                                                    x1={nowX}
+                                                    x2={nowX}
+                                                    y1={top}
+                                                    y2={bottom}
+                                                    stroke={chart.foreground}
+                                                    strokeDasharray="4 3"
                                                 />
-                                            )}
-                                        {hoverIndex !== null &&
-                                            hoverSecondary !== null &&
-                                            hoverSecondary !== undefined && (
-                                                <Circle
-                                                    cx={x(times[hoverIndex])}
-                                                    cy={y(hoverSecondary)}
-                                                    r={3}
-                                                    fill={chart.card}
-                                                    stroke={chart.median}
-                                                    strokeWidth={1.5}
+                                            ))}
+                                            <SvgText
+                                                x={nowX + 4}
+                                                y={PLOT_TOP - 6}
+                                                fontSize={10}
+                                                fontFamily={getFontFamily('600')}
+                                                fill={chart.foreground}
+                                            >
+                                                {hoverIndex === null ? tc('now') : ''}
+                                            </SvgText>
+                                        </G>
+                                    )}
+                                    {hoverIndex !== null && hoverX !== null && (
+                                        <G>
+                                            <SvgText
+                                                x={hoverX}
+                                                y={PLOT_TOP - 7}
+                                                textAnchor="middle"
+                                                fontSize={11}
+                                                fontFamily={getFontFamily('600')}
+                                                fill={chart.foreground}
+                                            >
+                                                {formatStepLabel(axisSteps[hoverIndex], timeZone, locale)}
+                                            </SvgText>
+                                            {SPANS.map(({ top, bottom }) => (
+                                                <Line
+                                                    key={top}
+                                                    x1={x(times[hoverIndex])}
+                                                    x2={x(times[hoverIndex])}
+                                                    y1={top}
+                                                    y2={bottom}
+                                                    stroke={chart.muted}
                                                 />
-                                            )}
-                                    </G>
-                                )
-                            })}
-                            <DayGrid
-                                x={x}
-                                start={times[0]}
-                                end={times[times.length - 1]}
-                                timeZone={timeZone}
-                                locale={locale}
-                                spans={SPANS}
-                                labelY={PLOT_BOTTOM + 16}
-                                lineColor={chart.border}
-                                labelColor={chart.muted}
-                            />
-                            {nowX !== null && (
-                                <G>
-                                    {SPANS.map(({ top, bottom }) => (
-                                        <Line
-                                            key={top}
-                                            x1={nowX}
-                                            x2={nowX}
-                                            y1={top}
-                                            y2={bottom}
-                                            stroke={chart.foreground}
-                                            strokeDasharray="4 3"
-                                        />
+                                            ))}
+                                        </G>
+                                    )}
+                                </Svg>
+                            </TapSurface>
+                        </ScrollView>
+                        {/* The axis stays while the plot scrolls under it: the tick labels on a card-coloured column and the
+                        panel names in the panels' corners. */}
+                        <Svg width={width} height={TOTAL_HEIGHT} pointerEvents="none" style={StyleSheet.absoluteFill}>
+                            <Rect x={0} y={0} width={MARGIN.left} height={TOTAL_HEIGHT} fill={chart.card} />
+                            {LAYOUT.map(({ variable, bottom }, rowIndex) => (
+                                <G key={variable}>
+                                    {scales[rowIndex].ticks.map((tick) => (
+                                        <SvgText
+                                            key={tick}
+                                            x={MARGIN.left - 6}
+                                            y={scales[rowIndex].y(tick) + BASELINE_SHIFT}
+                                            textAnchor="end"
+                                            fontSize={TICK_FONT_SIZE}
+                                            fontFamily={getFontFamily('400')}
+                                            fill={chart.muted}
+                                        >
+                                            {formatYTick(tick)}
+                                        </SvgText>
                                     ))}
-                                    <SvgText
-                                        x={nowX + 4}
-                                        y={PLOT_TOP - 6}
-                                        fontSize={10}
-                                        fontFamily={getFontFamily('600')}
-                                        fill={chart.foreground}
-                                    >
-                                        {hoverIndex === null ? tc('now') : ''}
-                                    </SvgText>
+                                    {variable === Variable.Precip && (
+                                        <SvgText
+                                            x={MARGIN.left - 6}
+                                            y={bottom + CHANCE_STRIP / 2 + BASELINE_SHIFT}
+                                            textAnchor="end"
+                                            fontSize={TICK_FONT_SIZE}
+                                            fontFamily={getFontFamily('400')}
+                                            fill={chart.muted}
+                                        >
+                                            %
+                                        </SvgText>
+                                    )}
                                 </G>
-                            )}
-                            {hoverIndex !== null && hoverX !== null && (
-                                <G>
-                                    <SvgText
-                                        x={hoverX}
-                                        y={PLOT_TOP - 7}
-                                        textAnchor="middle"
-                                        fontSize={11}
-                                        fontFamily={getFontFamily('600')}
-                                        fill={chart.foreground}
-                                    >
-                                        {formatStepLabel(axisSteps[hoverIndex], timeZone, locale)}
-                                    </SvgText>
-                                    {SPANS.map(({ top, bottom }) => (
-                                        <Line
-                                            key={top}
-                                            x1={x(times[hoverIndex])}
-                                            x2={x(times[hoverIndex])}
-                                            y1={top}
-                                            y2={bottom}
-                                            stroke={chart.muted}
-                                        />
-                                    ))}
-                                </G>
-                            )}
-                            {/* Last, so lines, the now line and the crosshair pass under the names. Android's SVG has no
-                                paint-order, so a card-coloured outline is drawn first as the halo. */}
+                            ))}
+                            {/* Android's SVG has no paint-order, so a card-coloured outline is drawn first as the halo. */}
                             {LAYOUT.map(({ variable, top }) =>
                                 [chart.card, chart.muted].map((color, i) => (
                                     <SvgText
@@ -511,7 +568,7 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                                 )),
                             )}
                         </Svg>
-                    </ScrubSurface>
+                    </View>
                 )}
                 {width === 0 && <View style={{ height: TOTAL_HEIGHT }} />}
             </View>

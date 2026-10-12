@@ -1,4 +1,4 @@
-import { getPlotHitSlop, isInsidePlot } from './plot-area'
+import { isInsidePlot } from './plot-area'
 
 const PLOT = { left: 44, top: 24, right: 308, bottom: 250 }
 
@@ -8,14 +8,5 @@ describe('plot area', () => {
         expect(isInsidePlot(200, 100, PLOT)).toBe(true)
         expect(isInsidePlot(20, 100, PLOT)).toBe(false)
         expect(isInsidePlot(200, 265, PLOT)).toBe(false)
-    })
-
-    it('shrinks the gesture area from the drawing to the plot', () => {
-        expect(getPlotHitSlop({ plot: PLOT, width: 320, height: 280 })).toEqual({
-            left: -44,
-            top: -24,
-            right: -12,
-            bottom: -30,
-        })
     })
 })

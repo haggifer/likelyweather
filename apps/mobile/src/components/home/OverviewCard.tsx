@@ -112,6 +112,7 @@ export function OverviewCard({ city, hourly, anchor, now, isFetching, onRefresh 
                 <Button endIcon={ArrowRight} label={t('details')} onPress={() => router.push(`/city/${city.slug}`)} />
             </View>
             <MedianOverview
+                key={city.slug}
                 series={medians}
                 directions={directions}
                 chance={chance}

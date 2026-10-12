@@ -2,7 +2,6 @@ import { getSumBarCenter } from '@fa/chart-core/spaghetti-geometry'
 import { ScaleTime } from 'd3-scale'
 import { G, Text as SvgText } from 'react-native-svg'
 import { getFontFamily } from '../../theme/fonts'
-import { getLabelEvery } from './label-every'
 
 // Half the cap height of the tick font, so a label centres on the strip's middle like the axis ticks on their lines.
 const BASELINE_SHIFT = 3.5
@@ -15,47 +14,21 @@ interface IProps {
     slotMs: number
     barWidth: number
     plotRight: number
-    unitX: number
     y: number
     fontSize: number
     color: string
     mutedColor: string
 }
 
-// The share of models above 0.2 mm under each precipitation bar, in percent; the unit stands once in the tick column.
-// Likely slots (half the models or more) stand out.
-export function ChanceStrip({
-    x,
-    times,
-    chance,
-    slotMs,
-    barWidth,
-    plotRight,
-    unitX,
-    y,
-    fontSize,
-    color,
-    mutedColor,
-}: IProps) {
-    const slotWidth = times.length > 1 ? x(times[1]) - x(times[0]) : plotRight - unitX
-    const every = getLabelEvery(slotWidth, fontSize)
-
+// The share of models above 0.2 mm under each precipitation bar, in percent; the unit stands once in the pinned tick
+// column. Every slot is wide enough for its label. Likely slots (half the models or more) stand out.
+export function ChanceStrip({ x, times, chance, slotMs, barWidth, plotRight, y, fontSize, color, mutedColor }: IProps) {
     return (
         <G>
-            <SvgText
-                x={unitX}
-                y={y + BASELINE_SHIFT}
-                textAnchor="end"
-                fontSize={fontSize}
-                fontFamily={getFontFamily('400')}
-                fill={mutedColor}
-            >
-                %
-            </SvgText>
             {chance.map((c, i) => {
                 const center = x(getSumBarCenter(times[i], slotMs))
 
-                if (c === null || i % every !== 0 || center + barWidth / 2 > plotRight) return null
+                if (c === null || center + barWidth / 2 > plotRight) return null
 
                 return (
                     <SvgText

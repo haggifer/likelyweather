@@ -15,7 +15,7 @@ import { useTheme } from '../../hooks/useTheme'
 import { getFontFamily } from '../../theme/fonts'
 import { Text } from '../ui/Text'
 import { getTopRoundedBarPath } from './bar-path'
-import { ScrubSurface } from './ScrubSurface'
+import { TapSurface } from './TapSurface'
 
 const HEIGHT = 230
 const MARGIN = { top: 8, right: 8, bottom: 40, left: 36 }
@@ -77,13 +77,9 @@ export function PrecipPanel({ steps, series, median, chance, timeZone, locale, w
     const y = scaleLinear().domain(domain).range([plotBottom, MARGIN.top])
     const getCenter = (i: number) => MARGIN.left + (i + 0.5) * slotWidth
     const dayStarts = getDayStartIndexes(steps, timeZone)
-    const area = {
-        plot: { left: MARGIN.left, top: MARGIN.top, right: plotRight, bottom: plotBottom },
-        width,
-        height: HEIGHT,
-    }
+    const plot = { left: MARGIN.left, top: MARGIN.top, right: plotRight, bottom: plotBottom }
 
-    const handleScrub = (touchX: number) =>
+    const handleSelect = (touchX: number) =>
         setSelected(clamp(Math.floor((touchX - MARGIN.left) / slotWidth), 0, steps.length - 1))
 
     return (
@@ -91,7 +87,7 @@ export function PrecipPanel({ steps, series, median, chance, timeZone, locale, w
             <View onLayout={onLayout}>
                 {width === 0 && <View style={{ height: HEIGHT }} />}
                 {width > 0 && (
-                    <ScrubSurface onScrub={handleScrub} area={area} onClear={() => setSelected(null)}>
+                    <TapSurface onSelect={handleSelect} plot={plot} onClear={() => setSelected(null)}>
                         <Svg width={width} height={HEIGHT}>
                             {yTicks.map((tick) => (
                                 <G key={tick}>
@@ -208,7 +204,7 @@ export function PrecipPanel({ steps, series, median, chance, timeZone, locale, w
                                 )
                             })}
                         </Svg>
-                    </ScrubSurface>
+                    </TapSurface>
                 )}
             </View>
             {selected !== null && (

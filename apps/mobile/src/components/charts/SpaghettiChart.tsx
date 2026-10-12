@@ -27,7 +27,7 @@ import { getFontFamily } from '../../theme/fonts'
 import { LineSwatch } from '../ui/LineSwatch'
 import { Text } from '../ui/Text'
 import { DayGrid } from './DayGrid'
-import { ScrubSurface } from './ScrubSurface'
+import { TapSurface } from './TapSurface'
 import { WindArrows } from './WindArrows'
 
 interface DrawnBar {
@@ -184,9 +184,9 @@ export function SpaghettiChart({
     const spanLeft = hoverSpan ? Math.max(margin.left, x(hoverSpan[0])) : 0
     const spanRight = hoverSpan ? Math.min(plotRight, x(hoverSpan[1])) : 0
     const tooltipRows = hover !== null && showTooltip ? getTooltipRows(series, hover) : []
-    const area = { plot: { left: margin.left, top: margin.top, right: plotRight, bottom: plotBottom }, width, height }
+    const plot = { left: margin.left, top: margin.top, right: plotRight, bottom: plotBottom }
 
-    const handleScrub = (touchX: number) => {
+    const handleSelect = (touchX: number) => {
         const at = x.invert(touchX)
         const index = isBars ? getSpanIndex(times, at, stepMs) : getNearestIndex(times, at)
 
@@ -197,7 +197,7 @@ export function SpaghettiChart({
         <View onLayout={onLayout} accessible accessibilityRole="image" accessibilityLabel={accessibilityLabel}>
             {width === 0 && <View style={{ height }} />}
             {width > 0 && (
-                <ScrubSurface onScrub={handleScrub} area={area} onClear={() => onHoverIndex(null)}>
+                <TapSurface onSelect={handleSelect} plot={plot} onClear={() => onHoverIndex(null)}>
                     <Svg width={width} height={height}>
                         {nowX !== null && (
                             <Rect
@@ -425,7 +425,7 @@ export function SpaghettiChart({
                             </G>
                         )}
                     </Svg>
-                </ScrubSurface>
+                </TapSurface>
             )}
             {showTooltip && hover !== null && hoverX !== null && (
                 <View
