@@ -1,7 +1,7 @@
 import { MedianSeries } from '@fa/chart-core/overview-stats'
-import { clamp, getBarWidth, getNowX, getTimeScale, getValueScale } from '@fa/chart-core/plot-geometry'
+import { CHART_FONT_SIZE, clamp, getBarWidth, getNowX, getTimeScale, getValueScale } from '@fa/chart-core/plot-geometry'
 import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
-import { getInitialScrollLeft, getMinSlotWidth, getScrollWidth, getVisibleRange } from '@fa/chart-core/scroll-geometry'
+import { getInitialScrollLeft, getScrollWidth, getVisibleRange, MIN_SLOT_WIDTH } from '@fa/chart-core/scroll-geometry'
 import { getNearestIndex, getSumBarCenter } from '@fa/chart-core/spaghetti-geometry'
 import { HOUR_MS } from '@fa/shared/constants'
 import { formatNumber, formatStepLabel } from '@fa/shared/format'
@@ -61,7 +61,6 @@ const SECONDARY: Partial<Record<PanelVariable, OverviewVariable>> = {
     [Variable.Wind]: Variable.Gusts,
 }
 const SECONDARY_DASH = '5 3'
-const TICK_FONT_SIZE = 10
 const HOVER_STRIP = 20
 const AXIS_HEIGHT = 22
 const MARGIN = { left: 36, right: 8 }
@@ -224,8 +223,7 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
 
     const axisSteps = series[Variable.Temp].steps
     const times = axisSteps.map((s) => new Date(s))
-    const minSlot = getMinSlotWidth(TICK_FONT_SIZE)
-    const contentWidth = getScrollWidth(width, times.length - 1, minSlot, MARGIN.left + MARGIN.right)
+    const contentWidth = getScrollWidth(width, times.length - 1, MIN_SLOT_WIDTH, MARGIN.left + MARGIN.right)
     const plotRight = contentWidth - MARGIN.right
     const x = getTimeScale(times, [MARGIN.left, Math.max(MARGIN.left + 1, plotRight)])
     // One crosshair for every panel: each reads the slot nearest the pointer (or now), so a precipitation readout is
@@ -425,7 +423,7 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                                                         barWidth={barWidth}
                                                         plotRight={plotRight}
                                                         y={bottom + CHANCE_STRIP / 2}
-                                                        fontSize={TICK_FONT_SIZE}
+                                                        fontSize={CHART_FONT_SIZE}
                                                         color={chart.foreground}
                                                         mutedColor={chart.muted}
                                                     />
@@ -495,7 +493,7 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                                             <SvgText
                                                 x={nowX + 4}
                                                 y={PLOT_TOP - 6}
-                                                fontSize={10}
+                                                fontSize={CHART_FONT_SIZE}
                                                 fontFamily={getFontFamily('600')}
                                                 fill={chart.foreground}
                                             >
@@ -509,7 +507,7 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                                                 x={hoverX}
                                                 y={PLOT_TOP - 7}
                                                 textAnchor="middle"
-                                                fontSize={11}
+                                                fontSize={CHART_FONT_SIZE}
                                                 fontFamily={getFontFamily('600')}
                                                 fill={chart.foreground}
                                             >
@@ -542,7 +540,7 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                                             x={MARGIN.left - 6}
                                             y={scales[rowIndex].y(tick) + BASELINE_SHIFT}
                                             textAnchor="end"
-                                            fontSize={TICK_FONT_SIZE}
+                                            fontSize={CHART_FONT_SIZE}
                                             fontFamily={getFontFamily('400')}
                                             fill={chart.muted}
                                         >
@@ -554,7 +552,7 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                                             x={MARGIN.left - 6}
                                             y={bottom + CHANCE_STRIP / 2 + BASELINE_SHIFT}
                                             textAnchor="end"
-                                            fontSize={TICK_FONT_SIZE}
+                                            fontSize={CHART_FONT_SIZE}
                                             fontFamily={getFontFamily('400')}
                                             fill={chart.muted}
                                         >
@@ -570,7 +568,7 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                                         key={`${variable}-${i}`}
                                         x={MARGIN.left + 6}
                                         y={top + 12}
-                                        fontSize={10}
+                                        fontSize={CHART_FONT_SIZE}
                                         fontFamily={getFontFamily('600')}
                                         fill={color}
                                         stroke={i === 0 ? chart.card : undefined}

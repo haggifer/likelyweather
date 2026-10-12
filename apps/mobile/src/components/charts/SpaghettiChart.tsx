@@ -1,7 +1,7 @@
 import { useAnimatedDomain } from '@fa/chart-core/hooks/useAnimatedDomain'
-import { clamp, getBarWidth, getNowX } from '@fa/chart-core/plot-geometry'
+import { CHART_FONT_SIZE, clamp, getBarWidth, getNowX } from '@fa/chart-core/plot-geometry'
 import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
-import { getInitialScrollLeft, getMinSlotWidth, getScrollWidth, getVisibleRange } from '@fa/chart-core/scroll-geometry'
+import { getInitialScrollLeft, getScrollWidth, getVisibleRange, MIN_SLOT_WIDTH } from '@fa/chart-core/scroll-geometry'
 import {
     buildSpaghettiGeometry,
     getNearestIndex,
@@ -156,9 +156,8 @@ export function SpaghettiChart({
     const info = VARIABLE_BY_ID[variable]
     const isBars = variable === Variable.Precip
     const hasArrows = Boolean(directions)
-    const fontSize = compact ? 10 : 11
     const margin = useMemo(() => getMargin(compact, hasArrows), [compact, hasArrows])
-    const contentWidth = getScrollWidth(width, steps.length - 1, getMinSlotWidth(fontSize), margin.left + margin.right)
+    const contentWidth = getScrollWidth(width, steps.length - 1, MIN_SLOT_WIDTH, margin.left + margin.right)
     const target = useMemo(() => getSeriesYDomain(series, variable), [series, variable])
     // A refresh of the same variable eases the axis to its new range; another variable jumps.
     const domain = useAnimatedDomain(target, variable, isReducedMotion)
@@ -258,7 +257,7 @@ export function SpaghettiChart({
                                         labelY={plotBottom + (compact ? 15 : 18)}
                                         lineColor={chart.border}
                                         labelColor={chart.muted}
-                                        fontSize={fontSize}
+                                        fontSize={CHART_FONT_SIZE}
                                     />
                                     <Defs>
                                         <ClipPath id={clipId}>
@@ -373,7 +372,7 @@ export function SpaghettiChart({
                                                 <SvgText
                                                     x={nowX + 4}
                                                     y={margin.top + 10}
-                                                    fontSize={10}
+                                                    fontSize={CHART_FONT_SIZE}
                                                     fontFamily={getFontFamily('600')}
                                                     fill={chart.foreground}
                                                 >
@@ -408,7 +407,7 @@ export function SpaghettiChart({
                                                     x={hoverLabelX}
                                                     y={margin.top - 8}
                                                     textAnchor="middle"
-                                                    fontSize={11}
+                                                    fontSize={CHART_FONT_SIZE}
                                                     fontFamily={getFontFamily('600')}
                                                     fill={chart.foreground}
                                                 >
@@ -501,7 +500,7 @@ export function SpaghettiChart({
                                 x={margin.left - 6}
                                 y={y(tick) + 3.5}
                                 textAnchor="end"
-                                fontSize={fontSize}
+                                fontSize={CHART_FONT_SIZE}
                                 fontFamily={getFontFamily('400')}
                                 fill={chart.muted}
                             >
@@ -520,7 +519,7 @@ export function SpaghettiChart({
                                 <SvgText
                                     x={margin.left}
                                     y={margin.top - 8}
-                                    fontSize={10}
+                                    fontSize={CHART_FONT_SIZE}
                                     fontFamily={getFontFamily('400')}
                                     fill={chart.muted}
                                 >

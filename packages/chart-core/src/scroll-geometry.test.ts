@@ -1,19 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-    getInitialScrollLeft,
-    getMinSlotWidth,
-    getRevealScrollLeft,
-    getScrollWidth,
-    getVisibleRange,
-} from './scroll-geometry'
-
-describe('getMinSlotWidth', () => {
-    it('fits "100" with 2 px on each side', () => {
-        expect(getMinSlotWidth(10)).toBe(22)
-        expect(getMinSlotWidth(11)).toBe(24)
-        expect(getMinSlotWidth(13)).toBe(27)
-    })
-})
+import { getInitialScrollLeft, getRevealScrollLeft, getScrollWidth, getVisibleRange } from './scroll-geometry'
 
 describe('getScrollWidth', () => {
     it('keeps the container width when the slots fit', () => {

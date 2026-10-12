@@ -6,7 +6,7 @@ import { useElementWidth } from '@/hooks/useElementWidth'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useNow } from '@/hooks/useNow'
 import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
-import { getInitialScrollLeft, getMinSlotWidth, getScrollWidth } from '@fa/chart-core/scroll-geometry'
+import { getInitialScrollLeft, getScrollWidth, MIN_SLOT_WIDTH } from '@fa/chart-core/scroll-geometry'
 import { Series } from '@fa/shared/api'
 import { HOUR_MS } from '@fa/shared/constants'
 import { formatNumber, formatPercent, formatPeriodLabel, formatTime } from '@fa/shared/format'
@@ -58,7 +58,7 @@ const Y_AXIS_WIDTH = 36
 const X_AXIS_HEIGHT = 36
 const TICK_FONT_SIZE = 10
 // A window is two 3-hour slots, so it gets two slots' minimum width.
-const WINDOW_MIN_WIDTH = 2 * getMinSlotWidth(TICK_FONT_SIZE)
+const WINDOW_MIN_WIDTH = 2 * MIN_SLOT_WIDTH
 const MARGIN = { top: 8, right: 8, bottom: 16, left: 0 }
 const HOUR_FORMAT: Intl.DateTimeFormatOptions = { hour: '2-digit', hourCycle: 'h23' }
 const PHONE_QUERY = '(width < 40rem)'

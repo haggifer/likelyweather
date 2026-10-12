@@ -2,6 +2,9 @@ import { scaleLinear, ScaleTime, scaleUtc } from 'd3-scale'
 
 const BAR_RATIO = 0.62
 
+// Every chart's text, in both apps (author, 2026-10-12).
+export const CHART_FONT_SIZE = 11
+
 export const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value))
 
 export const getTimeScale = (times: Date[], range: [number, number]) =>

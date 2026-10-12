@@ -6,9 +6,9 @@ import { useChartTheme } from '@/hooks/useChartTheme'
 import { useElementWidth } from '@/hooks/useElementWidth'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { MedianSeries } from '@fa/chart-core/overview-stats'
-import { clamp, getBarWidth, getNowX, getTimeScale, getValueScale } from '@fa/chart-core/plot-geometry'
+import { CHART_FONT_SIZE, clamp, getBarWidth, getNowX, getTimeScale, getValueScale } from '@fa/chart-core/plot-geometry'
 import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
-import { getInitialScrollLeft, getMinSlotWidth, getScrollWidth, getVisibleRange } from '@fa/chart-core/scroll-geometry'
+import { getInitialScrollLeft, getScrollWidth, getVisibleRange, MIN_SLOT_WIDTH } from '@fa/chart-core/scroll-geometry'
 import { getNearestIndex, getSumBarCenter } from '@fa/chart-core/spaghetti-geometry'
 import { HOUR_MS } from '@fa/shared/constants'
 import { formatNumber, formatStepLabel } from '@fa/shared/format'
@@ -52,7 +52,8 @@ interface ChartGeometry extends ChartSize {
 type Point = [Date, number | null]
 
 // On a phone the overview is the landing page's main content, so its panels are taller and its text larger than in
-// the desktop column (author, 2026-10-09); the readouts above the chart leave it the full width.
+// the desktop column (author, 2026-10-09); the readouts above the chart leave it the full width. Text is 11 px on both
+// (author, 2026-10-12).
 const DESKTOP_SIZE: ChartSize = {
     rows: [
         { variable: Variable.Temp, height: 104 },
@@ -61,8 +62,8 @@ const DESKTOP_SIZE: ChartSize = {
         { variable: Variable.Precip, height: 80 + 18 },
     ],
     marginLeft: 36,
-    tickFontSize: 10,
-    labelFontSize: 11,
+    tickFontSize: CHART_FONT_SIZE,
+    labelFontSize: CHART_FONT_SIZE,
     hoverLabelHalfWidth: 34,
     isNowLabelAbove: false,
 }
@@ -73,10 +74,10 @@ const PHONE_SIZE: ChartSize = {
         { variable: Variable.Pressure, height: 92 },
         { variable: Variable.Precip, height: 92 + 18 },
     ],
-    marginLeft: 44,
-    tickFontSize: 13,
-    labelFontSize: 13,
-    hoverLabelHalfWidth: 42,
+    marginLeft: 40,
+    tickFontSize: CHART_FONT_SIZE,
+    labelFontSize: CHART_FONT_SIZE,
+    hoverLabelHalfWidth: 36,
     // The panel names sit in the panels' top-left corner, where the "now" line always is right after a fetch.
     isNowLabelAbove: true,
 }
@@ -243,8 +244,7 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
     const geometry = isStacked ? PHONE : DESKTOP
     const axisSteps = series[Variable.Temp].steps
     const times = axisSteps.map((s) => new Date(s))
-    const minSlot = getMinSlotWidth(geometry.tickFontSize)
-    const contentWidth = getScrollWidth(width, times.length - 1, minSlot, geometry.marginLeft + MARGIN_RIGHT)
+    const contentWidth = getScrollWidth(width, times.length - 1, MIN_SLOT_WIDTH, geometry.marginLeft + MARGIN_RIGHT)
     const plotRight = contentWidth - MARGIN_RIGHT
     const x = getTimeScale(times, [geometry.marginLeft, Math.max(geometry.marginLeft + 1, plotRight)])
     // One crosshair for every panel: each reads the slot nearest the pointer (or now), so a precipitation readout is

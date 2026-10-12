@@ -14,13 +14,9 @@ interface RevealInput {
     insetRight: number
 }
 
-// "100" in Inter SemiBold, the charts' font in both apps, measured in the browser (17.4 px at 10 px). A ratio instead
-// of a runtime measurement keeps the server render and the first client render the same width.
-const DIGITS_EM = 1.75
-const LABEL_PADDING = 4
-
-// The narrowest 3-hour slot: room for a three-digit label such as a 100 % chance of rain.
-export const getMinSlotWidth = (fontSize: number) => Math.ceil(fontSize * DIGITS_EM + LABEL_PADDING)
+// The narrowest 3-hour slot (author, 2026-10-12): room for a three-digit label at the charts' text size, such as a
+// 100 % chance of rain, with air around it.
+export const MIN_SLOT_WIDTH = 30
 
 // A chart fills its container, or grows past it and scrolls when its slots would get narrower than `minSlot`.
 export const getScrollWidth = (available: number, intervals: number, minSlot: number, sides: number) =>

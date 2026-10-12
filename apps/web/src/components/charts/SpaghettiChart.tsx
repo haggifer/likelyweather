@@ -6,9 +6,9 @@ import { useElementWidth } from '@/hooks/useElementWidth'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useNow } from '@/hooks/useNow'
 import { useAnimatedDomain } from '@fa/chart-core/hooks/useAnimatedDomain'
-import { clamp, getBarWidth, getNowX } from '@fa/chart-core/plot-geometry'
+import { CHART_FONT_SIZE, clamp, getBarWidth, getNowX } from '@fa/chart-core/plot-geometry'
 import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
-import { getInitialScrollLeft, getMinSlotWidth, getScrollWidth, getVisibleRange } from '@fa/chart-core/scroll-geometry'
+import { getInitialScrollLeft, getScrollWidth, getVisibleRange, MIN_SLOT_WIDTH } from '@fa/chart-core/scroll-geometry'
 import {
     buildSpaghettiGeometry,
     getNearestIndex,
@@ -138,9 +138,8 @@ export function SpaghettiChart({
     const info = VARIABLE_BY_ID[variable]
     const isBars = variable === Variable.Precip
     const hasArrows = Boolean(directions)
-    const fontSize = compact ? 10 : 11
     const margin = useMemo(() => getMargin(compact, hasArrows), [compact, hasArrows])
-    const contentWidth = getScrollWidth(width, steps.length - 1, getMinSlotWidth(fontSize), margin.left + margin.right)
+    const contentWidth = getScrollWidth(width, steps.length - 1, MIN_SLOT_WIDTH, margin.left + margin.right)
     const target = useMemo(() => getSeriesYDomain(series, variable), [series, variable])
     const domain = useAnimatedDomain(target, variable, isReducedMotion)
     const geometry = useMemo(
@@ -271,7 +270,7 @@ export function SpaghettiChart({
                             labelYs={[plotBottom + (compact ? 15 : 18)]}
                             lineColor={theme.border}
                             labelColor={theme.muted}
-                            fontSize={fontSize}
+                            fontSize={CHART_FONT_SIZE}
                         />
                         <defs>
                             <clipPath id={clipId}>
@@ -378,7 +377,7 @@ export function SpaghettiChart({
                                 <text
                                     x={nowX + 4}
                                     y={margin.top + 10}
-                                    fontSize={10}
+                                    fontSize={CHART_FONT_SIZE}
                                     fontWeight={600}
                                     fill={theme.foreground}
                                 >
@@ -413,7 +412,7 @@ export function SpaghettiChart({
                                         x={hoverLabelX}
                                         y={margin.top - 8}
                                         textAnchor="middle"
-                                        fontSize={11}
+                                        fontSize={CHART_FONT_SIZE}
                                         fontWeight={600}
                                         fill={theme.foreground}
                                     >
@@ -518,7 +517,7 @@ export function SpaghettiChart({
                         y={y(tick)}
                         dy="0.32em"
                         textAnchor="end"
-                        fontSize={fontSize}
+                        fontSize={CHART_FONT_SIZE}
                         fill={theme.muted}
                     >
                         {formatYTick(tick, info.decimals === 0)}
@@ -534,7 +533,7 @@ export function SpaghettiChart({
                     style={{ left: margin.left }}
                 >
                     <rect width={UNIT_LABEL_WIDTH} height={margin.top - 2} fill={theme.card} />
-                    <text y={margin.top - 8} fontSize={10} fill={theme.muted}>
+                    <text y={margin.top - 8} fontSize={CHART_FONT_SIZE} fill={theme.muted}>
                         {info.unit}
                     </text>
                 </svg>
