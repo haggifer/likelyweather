@@ -1,10 +1,11 @@
+import { MedianSeries } from '@fa/chart-core/overview-stats'
 import { clamp, getBarWidth, getNowX, getTimeScale, getValueScale } from '@fa/chart-core/plot-geometry'
 import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
 import { getNearestIndex, getSumBarCenter } from '@fa/chart-core/spaghetti-geometry'
 import { HOUR_MS } from '@fa/shared/constants'
 import { formatNumber, formatStepLabel } from '@fa/shared/format'
 import { SLOT_HOURS } from '@fa/shared/slots'
-import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
+import { OverviewVariable, Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { ScaleLinear, ScaleTime } from 'd3-scale'
 import { area, curveMonotoneX, line } from 'd3-shape'
 import { useId, useState } from 'react'
@@ -16,17 +17,15 @@ import { useTheme } from '../../hooks/useTheme'
 import { getFontFamily } from '../../theme/fonts'
 import { Skeleton } from '../ui/Skeleton'
 import { Text } from '../ui/Text'
+import { ChanceStrip } from './ChanceStrip'
 import { DayGrid } from './DayGrid'
 import { ScrubSurface } from './ScrubSurface'
 import { WindArrows } from './WindArrows'
 
-export interface MedianSeries {
-    steps: string[]
-    values: (number | null)[]
-}
+type PanelVariable = Variable.Temp | Variable.Wind | Variable.Pressure | Variable.Precip
 
 interface RowLayout {
-    variable: Variable
+    variable: PanelVariable
     top: number
     bottom: number
     height: number
@@ -34,16 +33,32 @@ interface RowLayout {
 
 type Point = [Date, number | null]
 
+interface ExtraReadout {
+    variable: OverviewVariable | null
+    value: string
+    unit: string
+}
+
 // The web's phone layout: readouts in a 2 × 2 grid above, four stacked panels below, each named inside its panel.
-const ROWS: { variable: Variable; height: number }[] = [
+const ROWS: { variable: PanelVariable; height: number }[] = [
     { variable: Variable.Temp, height: 104 },
     { variable: Variable.Wind, height: 100 },
     { variable: Variable.Pressure, height: 80 },
-    { variable: Variable.Precip, height: 80 },
+    { variable: Variable.Precip, height: 80 + 18 },
 ]
 const ROW_GAP = 14
 const ROW_PAD = 6
 const ARROW_STRIP = 20
+// The chance of rain sits under the precipitation bars like the direction arrows under the wind; the panel's height
+// above includes it, so the bars keep their room.
+const CHANCE_STRIP = 18
+// Feels-like and gusts are drawn as a second, dashed line in the panel of the variable they belong to.
+const SECONDARY: Partial<Record<PanelVariable, OverviewVariable>> = {
+    [Variable.Temp]: Variable.Feels,
+    [Variable.Wind]: Variable.Gusts,
+}
+const SECONDARY_DASH = '5 3'
+const TICK_FONT_SIZE = 10
 const HOVER_STRIP = 20
 const AXIS_HEIGHT = 22
 const MARGIN = { left: 36, right: 8 }
@@ -56,7 +71,7 @@ const NO_BREAK_SPACE = ' '
 const LAYOUT: RowLayout[] = ROWS.reduce<RowLayout[]>((rows, row) => {
     const previous = rows[rows.length - 1]
     const top = previous ? previous.top + previous.height + ROW_GAP : HOVER_STRIP
-    const strip = row.variable === Variable.Wind ? ARROW_STRIP : 0
+    const strip = row.variable === Variable.Wind ? ARROW_STRIP : row.variable === Variable.Precip ? CHANCE_STRIP : 0
 
     return [...rows, { variable: row.variable, top, height: row.height, bottom: top + row.height - ROW_PAD - strip }]
 }, [])
@@ -73,6 +88,7 @@ const styles = StyleSheet.create({
     label: { fontSize: 12, fontWeight: '500' },
     value: { fontSize: 20, fontWeight: '600' },
     unit: { fontSize: 14, fontWeight: '400' },
+    extra: { fontSize: 12 },
     summary: { fontSize: 11 },
 })
 
@@ -108,6 +124,40 @@ const getValueAt = (s: MedianSeries, step: string) => {
     return index >= 0 ? s.values[index] : null
 }
 
+// Gusts outrun the mean wind, so a wind panel showing them takes the gusts' axis steps.
+const getPanelDomain = (variable: PanelVariable, s: MedianSeries, secondary: MedianSeries | null) => {
+    const hasSecondary = secondary !== null && secondary.values.some((v) => v !== null)
+    const scaleVariable = hasSecondary && variable === Variable.Wind ? Variable.Gusts : variable
+    const values = hasSecondary ? [...s.values, ...secondary.values] : s.values
+
+    return { domain: getYDomain(values, scaleVariable), scaleVariable }
+}
+
+// A readout's second line: the dashed line's value at the slot, or the chance of rain of the precipitation slot.
+const getExtraReadout = (
+    variable: PanelVariable,
+    series: Record<OverviewVariable, MedianSeries>,
+    chance: (number | null)[],
+    index: number,
+): ExtraReadout | null => {
+    const secondary = SECONDARY[variable]
+
+    if (secondary) {
+        const { decimals, unit } = VARIABLE_BY_ID[secondary]
+        const s = series[secondary]
+
+        return { variable: secondary, value: formatNumber(getValueAt(s, s.steps[index]), decimals), unit }
+    }
+
+    if (variable !== Variable.Precip) return null
+
+    const value = chance[index] ?? null
+
+    return { variable: null, value: formatNumber(value === null ? null : value * 100, 0), unit: '%' }
+}
+
+const hasExtraReadout = (variable: PanelVariable) => Boolean(SECONDARY[variable]) || variable === Variable.Precip
+
 const toPoints = (s: MedianSeries): Point[] => s.steps.map((step, i) => [new Date(step), s.values[i]])
 
 const getAreaPath = (points: Point[], x: ScaleTime<number, number>, y: ScaleLinear<number, number>, bottom: number) =>
@@ -138,7 +188,7 @@ const SkeletonLine = ({ textStyle, width }: SkeletonLineProps) => (
     </View>
 )
 
-// The loaded overview's shape, line for line: the four readouts, then the panels at their full height.
+// The loaded overview's shape, line for line: the four readouts with their second lines, then the panels at their full height.
 export function MedianOverviewSkeleton() {
     const { colors } = useTheme()
 
@@ -149,6 +199,7 @@ export function MedianOverviewSkeleton() {
                     <View key={variable} style={[styles.readout, { borderLeftColor: colors.border }]}>
                         <SkeletonLine textStyle={styles.label} width="55%" />
                         <SkeletonLine textStyle={styles.value} width="40%" />
+                        {hasExtraReadout(variable) && <SkeletonLine textStyle={styles.extra} width="65%" />}
                         <SkeletonLine textStyle={styles.summary} width="85%" />
                     </View>
                 ))}
@@ -159,8 +210,9 @@ export function MedianOverviewSkeleton() {
 }
 
 interface IProps {
-    series: Record<Variable, MedianSeries>
+    series: Record<OverviewVariable, MedianSeries>
     directions: (number | null)[] | null
+    chance: (number | null)[]
     timeZone: string
     locale: string
     now: Date
@@ -169,10 +221,12 @@ interface IProps {
 }
 
 // Median of all models for every variable on one axis of local 3-hour slots; a precipitation bar is the amount of
-// the 3 hours after its slot. The readouts follow the finger, or the slot nearest to now.
+// the 3 hours after its slot, and the strip under the bars the share of models above 0.2 mm in it. The readouts
+// follow the finger, or the slot nearest to now.
 export function MedianOverview({
     series,
     directions,
+    chance,
     timeZone,
     locale,
     now,
@@ -182,6 +236,7 @@ export function MedianOverview({
     const t = useTranslations('overview')
     const tv = useTranslations('variables')
     const tc = useTranslations('chart')
+    const tcity = useTranslations('city')
     const { chart, colors } = useTheme()
     const { width, onLayout } = useLayoutWidth()
     const clipId = useId().replace(/[^\w-]/g, '')
@@ -217,6 +272,7 @@ export function MedianOverview({
                     const summary = isSum
                         ? t('total', { value: formatTotal(upcoming, getSlotCount(s)), unit: info.unit })
                         : t('range', { ...formatRange(upcoming, info.decimals), unit: info.unit })
+                    const extra = getExtraReadout(variable, series, chance, readoutIndex)
 
                     return (
                         <View key={variable} style={[styles.readout, { borderLeftColor: colors.border }]}>
@@ -228,6 +284,15 @@ export function MedianOverview({
                                     {isSum ? t('perSlot', { unit: info.unit, hours: SLOT_HOURS }) : info.unit}
                                 </Text>
                             </Text>
+                            {extra && (
+                                <Text isTabular style={[styles.extra, { color: colors['muted-foreground'] }]}>
+                                    {t('secondary', {
+                                        name: extra.variable ? tv(extra.variable) : tcity('chanceOfRain'),
+                                        value: extra.value,
+                                        unit: extra.unit,
+                                    })}
+                                </Text>
+                            )}
                             <Text isTabular style={[styles.summary, { color: colors['muted-foreground'] }]}>
                                 {summary}
                             </Text>
@@ -279,14 +344,20 @@ export function MedianOverview({
                                 ))}
                             {LAYOUT.map(({ variable, top, bottom }) => {
                                 const s = series[variable]
+                                const secondaryVariable = SECONDARY[variable]
+                                const secondary = secondaryVariable ? series[secondaryVariable] : null
                                 const points = toPoints(s)
-                                const domain = getYDomain(s.values, variable)
+                                const { domain, scaleVariable } = getPanelDomain(variable, s, secondary)
                                 const y = getValueScale(domain, [bottom, top + ROW_PAD])
                                 const hoverValue = hoverIndex === null ? null : getValueAt(s, axisSteps[hoverIndex])
+                                const hoverSecondary =
+                                    hoverIndex === null || !secondary
+                                        ? null
+                                        : getValueAt(secondary, axisSteps[hoverIndex])
 
                                 return (
                                     <G key={variable}>
-                                        {getYTicks(domain, variable, 3).map((tick) => (
+                                        {getYTicks(domain, scaleVariable, 3).map((tick) => (
                                             <G key={tick}>
                                                 <Line
                                                     x1={MARGIN.left}
@@ -299,7 +370,7 @@ export function MedianOverview({
                                                     x={MARGIN.left - 6}
                                                     y={y(tick) + 3.5}
                                                     textAnchor="end"
-                                                    fontSize={10}
+                                                    fontSize={TICK_FONT_SIZE}
                                                     fontFamily={getFontFamily('400')}
                                                     fill={chart.muted}
                                                 >
@@ -340,7 +411,32 @@ export function MedianOverview({
                                                     strokeWidth={2}
                                                     strokeLinecap="round"
                                                 />
+                                                {secondary && (
+                                                    <Path
+                                                        d={getLinePath(toPoints(secondary), x, y)}
+                                                        fill="none"
+                                                        stroke={chart.median}
+                                                        strokeWidth={1.5}
+                                                        strokeDasharray={SECONDARY_DASH}
+                                                        opacity={0.7}
+                                                    />
+                                                )}
                                             </G>
+                                        )}
+                                        {variable === Variable.Precip && (
+                                            <ChanceStrip
+                                                x={x}
+                                                times={times}
+                                                chance={chance}
+                                                slotMs={SLOT_MS}
+                                                barWidth={barWidth}
+                                                plotRight={plotRight}
+                                                unitX={MARGIN.left - 6}
+                                                y={bottom + CHANCE_STRIP / 2}
+                                                fontSize={TICK_FONT_SIZE}
+                                                color={chart.foreground}
+                                                mutedColor={chart.muted}
+                                            />
                                         )}
                                         {variable === Variable.Wind && directions && (
                                             <WindArrows
@@ -363,6 +459,18 @@ export function MedianOverview({
                                                     fill={chart.median}
                                                     stroke={chart.card}
                                                     strokeWidth={2}
+                                                />
+                                            )}
+                                        {hoverIndex !== null &&
+                                            hoverSecondary !== null &&
+                                            hoverSecondary !== undefined && (
+                                                <Circle
+                                                    cx={x(times[hoverIndex])}
+                                                    cy={y(hoverSecondary)}
+                                                    r={3}
+                                                    fill={chart.card}
+                                                    stroke={chart.median}
+                                                    strokeWidth={1.5}
                                                 />
                                             )}
                                     </G>

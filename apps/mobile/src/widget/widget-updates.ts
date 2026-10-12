@@ -1,4 +1,5 @@
-import { City, LatestResponse } from '@fa/shared/api'
+import { OverviewHourly } from '@fa/chart-core/overview-stats'
+import { City } from '@fa/shared/api'
 import { Variable } from '@fa/shared/variables'
 import { Platform } from 'react-native'
 import { requestWidgetUpdate } from 'react-native-android-widget'
@@ -10,7 +11,7 @@ import { widgetBindings, widgetModels } from './widget-store'
 // When the app loads a city, every widget bound to it redraws from that data without a fetch of its own, unless the
 // widget already shows a newer run; the others redraw from their saved numbers, which also applies a changed
 // language or theme.
-export const updateWidgetsForCity = async (city: City, hourly: Record<Variable, LatestResponse>) => {
+export const updateWidgetsForCity = async (city: City, hourly: OverviewHourly) => {
     if (Platform.OS !== 'android') return
 
     const data = { temp: hourly[Variable.Temp], wind: hourly[Variable.Wind], precip: hourly[Variable.Precip] }

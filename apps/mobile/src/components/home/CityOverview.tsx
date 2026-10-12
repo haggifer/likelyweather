@@ -1,10 +1,11 @@
 import { getErrorKind } from '@fa/api-client/error-kind'
 import { useCity } from '@fa/api-client/hooks/useCity'
 import { useHourlyAll } from '@fa/api-client/hooks/useHourlyAll'
+import { OverviewHourly } from '@fa/chart-core/overview-stats'
 import { LatestResponse } from '@fa/shared/api'
 import { getCityName } from '@fa/shared/format'
 import { getChartStart } from '@fa/shared/slots'
-import { Variable, VARIABLES } from '@fa/shared/variables'
+import { OVERVIEW_VARIABLES } from '@fa/shared/variables'
 import { UseQueryResult } from '@tanstack/react-query'
 import { useEffect, useMemo } from 'react'
 import { StyleSheet } from 'react-native'
@@ -23,7 +24,7 @@ const styles = StyleSheet.create({
 })
 
 const getHourlyByVariable = (results: UseQueryResult<LatestResponse, Error>[]) =>
-    Object.fromEntries(VARIABLES.map((v, i) => [v.id, results[i].data])) as Record<Variable, LatestResponse>
+    Object.fromEntries(OVERVIEW_VARIABLES.map((variable, i) => [variable, results[i].data])) as OverviewHourly
 
 interface IProps {
     slug: string
@@ -53,7 +54,7 @@ export function CityOverview({ slug }: IProps) {
         [anchorRun, timeZone],
     )
     const hourly = isReady ? getHourlyByVariable(results) : null
-    // Refresh settles the four variables one by one; the widgets must get them as one run, so the effect waits until
+    // Refresh settles the six variables one by one; the widgets must get them as one run, so the effect waits until
     // nothing is fetching and follows every fetch time rather than `hourly`, whose identity changes every render.
     const isSettled = !results.some((r) => r.isFetching)
     const fetchedAts = results.map((r) => r.data?.fetchedAt).join('|')
