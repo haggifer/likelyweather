@@ -11,6 +11,7 @@ import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Eye, EyeOff } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { memo } from 'react'
 
 const getLegendRows = (series: Series[], readoutIndex: number, hidden: ModelId[]) =>
     series
@@ -20,6 +21,59 @@ const getLegendRows = (series: Series[], readoutIndex: number, hidden: ModelId[]
             isHidden: hidden.includes(s.modelId),
         }))
         .sort((a, b) => Number(a.isHidden) - Number(b.isHidden) || (b.value ?? -Infinity) - (a.value ?? -Infinity))
+
+interface RowProps {
+    modelId: ModelId
+    value: string
+    isHidden: boolean
+}
+
+// Shared elements, so an unchanged icon is not rebuilt on every hover.
+const EYE = <Eye />
+const EYE_OFF = <EyeOff />
+
+// One model's row; a hover re-renders only the rows whose value text changed (author's lag report, 2026-10-12).
+const LegendRow = memo(function LegendRow({ modelId, value, isHidden }: RowProps) {
+    const t = useTranslations('legend')
+    const dispatch = useAppDispatch()
+
+    const model = MODEL_BY_ID[modelId]
+
+    return (
+        <li
+            className={cn(
+                'flex h-(--row-height) items-center gap-1.5 rounded-md px-1.5 text-[0.8125rem] max-sm:h-auto max-sm:min-h-9 max-sm:py-1 max-sm:text-xs sm:gap-2 hover:bg-muted',
+                isHidden && 'opacity-45',
+            )}
+            onMouseEnter={() => dispatch(setHighlightedModel(modelId))}
+            onMouseLeave={() => dispatch(setHighlightedModel(null))}
+            onFocus={() => dispatch(setHighlightedModel(modelId))}
+            onBlur={() => dispatch(setHighlightedModel(null))}
+        >
+            <div className="flex min-w-0 flex-1 items-center gap-2 max-sm:gap-1">
+                <LineSwatch color={model.color} dash={model.dash} />
+                <span
+                    className={cn(
+                        'truncate max-sm:whitespace-normal max-sm:break-words max-sm:leading-tight',
+                        isHidden && 'line-through',
+                    )}
+                >
+                    {model.name}
+                </span>
+            </div>
+            <span className="text-right font-medium max-sm:w-8 sm:w-14">{value}</span>
+            <Button
+                variant="ghost"
+                size="icon-xs"
+                className="relative pointer-coarse:after:absolute pointer-coarse:after:-inset-1.5"
+                onClick={() => dispatch(toggleHiddenModel(modelId))}
+                aria-label={isHidden ? t('show', { model: model.name }) : t('hide', { model: model.name })}
+            >
+                {isHidden ? EYE_OFF : EYE}
+            </Button>
+        </li>
+    )
+})
 
 interface IProps {
     series: Series[]
@@ -96,53 +150,18 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
                     aria-label={isMedianHidden ? t('showMedian') : t('hideMedian')}
                     aria-pressed={isMedianHidden}
                 >
-                    {isMedianHidden ? <EyeOff /> : <Eye />}
+                    {isMedianHidden ? EYE_OFF : EYE}
                 </Button>
             </div>
             <ul className="grid grid-cols-2 gap-x-3 gap-y-0.5 lg:grid-cols-1">
-                {rows.map(({ modelId, value, isHidden }) => {
-                    const model = MODEL_BY_ID[modelId]
-
-                    return (
-                        <li
-                            key={modelId}
-                            className={cn(
-                                'flex h-(--row-height) items-center gap-1.5 rounded-md px-1.5 text-[0.8125rem] max-sm:h-auto max-sm:min-h-9 max-sm:py-1 max-sm:text-xs sm:gap-2 hover:bg-muted',
-                                isHidden && 'opacity-45',
-                            )}
-                            onMouseEnter={() => dispatch(setHighlightedModel(modelId))}
-                            onMouseLeave={() => dispatch(setHighlightedModel(null))}
-                            onFocus={() => dispatch(setHighlightedModel(modelId))}
-                            onBlur={() => dispatch(setHighlightedModel(null))}
-                        >
-                            <div className="flex min-w-0 flex-1 items-center gap-2 max-sm:gap-1">
-                                <LineSwatch color={model.color} dash={model.dash} />
-                                <span
-                                    className={cn(
-                                        'truncate max-sm:whitespace-normal max-sm:break-words max-sm:leading-tight',
-                                        isHidden && 'line-through',
-                                    )}
-                                >
-                                    {model.name}
-                                </span>
-                            </div>
-                            <span className="text-right font-medium max-sm:w-8 sm:w-14">
-                                {isHidden ? '' : formatNumber(value, decimals)}
-                            </span>
-                            <Button
-                                variant="ghost"
-                                size="icon-xs"
-                                className="relative pointer-coarse:after:absolute pointer-coarse:after:-inset-1.5"
-                                onClick={() => dispatch(toggleHiddenModel(modelId))}
-                                aria-label={
-                                    isHidden ? t('show', { model: model.name }) : t('hide', { model: model.name })
-                                }
-                            >
-                                {isHidden ? <EyeOff /> : <Eye />}
-                            </Button>
-                        </li>
-                    )
-                })}
+                {rows.map(({ modelId, value, isHidden }) => (
+                    <LegendRow
+                        key={modelId}
+                        modelId={modelId}
+                        value={isHidden ? '' : formatNumber(value, decimals)}
+                        isHidden={isHidden}
+                    />
+                ))}
             </ul>
             <p className="text-[0.6875rem] leading-snug text-muted-foreground pointer-coarse:hidden">{t('hint')}</p>
             <p className="hidden text-[0.6875rem] leading-snug text-muted-foreground pointer-coarse:block">

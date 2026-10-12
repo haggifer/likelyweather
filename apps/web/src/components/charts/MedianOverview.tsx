@@ -4,8 +4,10 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useChartScroll } from '@/hooks/useChartScroll'
 import { useChartTheme } from '@/hooks/useChartTheme'
 import { useElementWidth } from '@/hooks/useElementWidth'
+import { useFocusVisible } from '@/hooks/useFocusVisible'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useOverviewPanels } from '@/hooks/useOverviewPanels'
+import { cn } from '@/lib/cn'
 import { MedianSeries, OverviewMedians } from '@fa/chart-core/overview-stats'
 import { CHART_FONT_SIZE, clamp, getBarWidth, getNowX, getTimeScale, getValueScale } from '@fa/chart-core/plot-geometry'
 import { formatYTick, getPanelTicks, getYDomain } from '@fa/chart-core/scales'
@@ -259,15 +261,19 @@ export function MedianOverview({ panels, series, directions, chance, timeZone, l
     const clipId = useId().replace(/[^\w-]/g, '')
 
     const { ref, width } = useElementWidth<HTMLDivElement>()
+    const { isFocusVisible, onFocus, onBlur } = useFocusVisible()
     const [hoverIndex, setHoverIndex] = useState<number | null>(null)
     const [viewLeft, setViewLeft] = useState(0)
 
     const geometry = useMemo(() => getGeometry(isStacked ? PHONE_SIZE : DESKTOP_SIZE, panels), [isStacked, panels])
     const axisSteps = getSeries(series, panels[0]).steps
-    const times = axisSteps.map((s) => new Date(s))
+    const times = useMemo(() => axisSteps.map((s) => new Date(s)), [axisSteps])
     const contentWidth = getScrollWidth(width, times.length - 1, MIN_SLOT_WIDTH, geometry.marginLeft + MARGIN_RIGHT)
     const plotRight = contentWidth - MARGIN_RIGHT
-    const x = getTimeScale(times, [geometry.marginLeft, Math.max(geometry.marginLeft + 1, plotRight)])
+    const x = useMemo(
+        () => getTimeScale(times, [geometry.marginLeft, Math.max(geometry.marginLeft + 1, plotRight)]),
+        [times, geometry.marginLeft, plotRight],
+    )
     // One crosshair for every panel: each reads the slot nearest the pointer (or now), so a precipitation readout is
     // the 3 hours from that slot, which can be the bar after the one under the line (author, 2026-10-09).
     const readoutIndex = hoverIndex ?? (now ? getNearestIndex(times, now) : 0)
@@ -278,7 +284,7 @@ export function MedianOverview({ panels, series, directions, chance, timeZone, l
     const barWidth = getBarWidth(x, times[0], SLOT_MS)
     const plotWidth = Math.max(0, contentWidth - geometry.marginLeft - MARGIN_RIGHT)
     const slotWidth = times.length > 1 ? x(times[1]) - x(times[0]) : plotWidth
-    const scales = geometry.layout.map((row) => getPanelScale(row, series))
+    const scales = useMemo(() => geometry.layout.map((row) => getPanelScale(row, series)), [geometry, series])
     const initialScrollLeft = getInitialScrollLeft(now ? x(now) : null, {
         slotWidth,
         insetLeft: geometry.marginLeft,
@@ -299,6 +305,202 @@ export function MedianOverview({ panels, series, directions, chance, timeZone, l
         geometry.marginLeft,
         MARGIN_RIGHT,
     ])
+
+    // Everything that does not follow the pointer is built once per data, size or theme change; a hover redraws only
+    // the crosshair, the dots and the labels.
+    const staticLayer = useMemo(
+        () => (
+            <g>
+                <defs>
+                    {geometry.spans.map(({ top, bottom }, i) => (
+                        <clipPath key={top} id={`${clipId}-${i}`}>
+                            <rect
+                                x={geometry.marginLeft}
+                                y={top}
+                                width={plotWidth}
+                                height={bottom - top}
+                                rx={PANEL_RADIUS}
+                            />
+                        </clipPath>
+                    ))}
+                </defs>
+                {geometry.spans.map(({ top, bottom }) => (
+                    <rect
+                        key={top}
+                        x={geometry.marginLeft}
+                        y={top}
+                        width={plotWidth}
+                        height={bottom - top}
+                        rx={PANEL_RADIUS}
+                        fill={theme.grid}
+                        opacity={0.4}
+                    />
+                ))}
+                {nowX !== null &&
+                    geometry.spans.map(({ top, bottom }, i) => (
+                        <rect
+                            key={top}
+                            x={geometry.marginLeft}
+                            y={top}
+                            width={Math.max(0, nowX - geometry.marginLeft)}
+                            height={bottom - top}
+                            fill={theme.grid}
+                            opacity={0.6}
+                            clipPath={`url(#${clipId}-${i})`}
+                        />
+                    ))}
+                {geometry.layout.map(({ variable, bottom }, rowIndex) => {
+                    const s = getSeries(series, variable)
+                    const secondaryVariable = SECONDARY_VARIABLE[variable]
+                    const secondary = (secondaryVariable && series[secondaryVariable]) || null
+                    const points = toPoints(s)
+                    const { y, ticks } = scales[rowIndex]
+
+                    return (
+                        <g key={variable}>
+                            {ticks.map((tick) => (
+                                <line
+                                    key={tick}
+                                    x1={geometry.marginLeft}
+                                    x2={plotRight}
+                                    y1={y(tick)}
+                                    y2={y(tick)}
+                                    stroke={theme.grid}
+                                />
+                            ))}
+                            {variable === Variable.Precip ? (
+                                points.map((p) => {
+                                    const center = x(getSumBarCenter(p[0], SLOT_MS))
+
+                                    if (p[1] === null || center + barWidth / 2 > plotRight) return null
+
+                                    return (
+                                        <rect
+                                            key={p[0].toISOString()}
+                                            x={center - barWidth / 2}
+                                            y={y(p[1])}
+                                            width={barWidth}
+                                            height={Math.max(0, bottom - y(p[1]))}
+                                            rx={2}
+                                            fill={theme.band}
+                                            opacity={0.75}
+                                        />
+                                    )
+                                })
+                            ) : (
+                                <>
+                                    <path
+                                        d={getAreaPath(points, x, y, bottom)}
+                                        fill={theme.band}
+                                        opacity={theme.bandOuterOpacity}
+                                    />
+                                    <path
+                                        d={getLinePath(points, x, y)}
+                                        fill="none"
+                                        stroke={theme.median}
+                                        strokeWidth={2}
+                                        strokeLinecap="round"
+                                    />
+                                    {secondary && (
+                                        <path
+                                            d={getLinePath(toPoints(secondary), x, y)}
+                                            fill="none"
+                                            stroke={theme.median}
+                                            strokeWidth={1.5}
+                                            strokeDasharray={SECONDARY_DASH}
+                                            opacity={0.7}
+                                        />
+                                    )}
+                                </>
+                            )}
+                            {variable === Variable.Precip && (
+                                <g aria-hidden="true">
+                                    {chance.map((c, i) => {
+                                        const center = x(getSumBarCenter(times[i], SLOT_MS))
+                                        const isShown = c !== null && center + barWidth / 2 <= plotRight
+
+                                        return (
+                                            isShown && (
+                                                <text
+                                                    key={axisSteps[i]}
+                                                    x={center}
+                                                    y={bottom + CHANCE_STRIP / 2}
+                                                    dy="0.32em"
+                                                    textAnchor="middle"
+                                                    fontSize={geometry.tickFontSize}
+                                                    fontWeight={c >= 0.5 ? 600 : 400}
+                                                    fill={c >= 0.5 ? theme.foreground : theme.muted}
+                                                >
+                                                    {Math.round(c * 100)}
+                                                </text>
+                                            )
+                                        )
+                                    })}
+                                </g>
+                            )}
+                            {variable === Variable.Wind && directions && (
+                                <WindArrows
+                                    x={x}
+                                    times={times}
+                                    directions={directions}
+                                    y={bottom + ARROW_STRIP / 2 + 2}
+                                    color={theme.foreground}
+                                    mutedColor={theme.muted}
+                                    compassLabels={tc('compass').split(',')}
+                                />
+                            )}
+                        </g>
+                    )
+                })}
+                <DayGrid
+                    x={x}
+                    start={times[0]}
+                    end={times[times.length - 1]}
+                    timeZone={timeZone}
+                    locale={locale}
+                    spans={geometry.spans}
+                    labelYs={[geometry.plotBottom + 5 + geometry.labelFontSize]}
+                    fontSize={geometry.labelFontSize}
+                    lineColor={theme.border}
+                    labelColor={theme.muted}
+                />
+                {nowX !== null && (
+                    <g pointerEvents="none">
+                        {geometry.spans.map(({ top, bottom }) => (
+                            <line
+                                key={top}
+                                x1={nowX}
+                                x2={nowX}
+                                y1={top}
+                                y2={bottom}
+                                stroke={theme.foreground}
+                                strokeDasharray="4 3"
+                            />
+                        ))}
+                    </g>
+                )}
+            </g>
+        ),
+        [
+            geometry,
+            clipId,
+            plotWidth,
+            plotRight,
+            theme,
+            nowX,
+            series,
+            scales,
+            x,
+            barWidth,
+            chance,
+            times,
+            axisSteps,
+            directions,
+            tc,
+            timeZone,
+            locale,
+        ],
+    )
 
     // The hovered time's label clamps to the part of the plot on screen, read when a slot is picked.
     const selectAt = (e: MouseEvent<SVGRectElement>) => {
@@ -376,265 +578,121 @@ export function MedianOverview({ panels, series, directions, chance, timeZone, l
             </div>
             <div
                 ref={ref}
-                className="relative min-w-0 rounded-sm has-[svg:focus-visible]:ring-2 has-[svg:focus-visible]:ring-ring select-none"
+                className={cn('relative min-w-0 rounded-sm select-none', isFocusVisible && 'ring-2 ring-ring')}
             >
                 <div ref={scrollRef} className="overflow-x-auto overscroll-x-contain [scrollbar-width:thin]">
-                    <svg
-                        width={contentWidth}
-                        height={geometry.totalHeight}
-                        role="img"
-                        aria-label={ariaLabel}
-                        tabIndex={0}
-                        onKeyDown={handleKeyDown}
-                        onBlur={() => setHoverIndex(null)}
-                        onPointerDown={() => setHoverIndex(null)}
-                        className="block overflow-visible outline-none"
-                    >
-                        <defs>
-                            {geometry.spans.map(({ top, bottom }, i) => (
-                                <clipPath key={top} id={`${clipId}-${i}`}>
-                                    <rect
-                                        x={geometry.marginLeft}
-                                        y={top}
-                                        width={plotWidth}
-                                        height={bottom - top}
-                                        rx={PANEL_RADIUS}
-                                    />
-                                </clipPath>
-                            ))}
-                        </defs>
-                        {geometry.spans.map(({ top, bottom }) => (
-                            <rect
-                                key={top}
-                                x={geometry.marginLeft}
-                                y={top}
-                                width={plotWidth}
-                                height={bottom - top}
-                                rx={PANEL_RADIUS}
-                                fill={theme.grid}
-                                opacity={0.4}
-                            />
-                        ))}
-                        {nowX !== null &&
-                            geometry.spans.map(({ top, bottom }, i) => (
-                                <rect
-                                    key={top}
-                                    x={geometry.marginLeft}
-                                    y={top}
-                                    width={Math.max(0, nowX - geometry.marginLeft)}
-                                    height={bottom - top}
-                                    fill={theme.grid}
-                                    opacity={0.6}
-                                    clipPath={`url(#${clipId}-${i})`}
-                                />
-                            ))}
-                        {geometry.layout.map(({ variable, bottom }, rowIndex) => {
-                            const s = getSeries(series, variable)
-                            const secondaryVariable = SECONDARY_VARIABLE[variable]
-                            const secondary = (secondaryVariable && series[secondaryVariable]) || null
-                            const points = toPoints(s)
-                            const { y, ticks } = scales[rowIndex]
-                            const hoverValue = hoverIndex === null ? null : getValueAt(s, axisSteps[hoverIndex])
-                            const hoverSecondary =
-                                hoverIndex === null || !secondary ? null : getValueAt(secondary, axisSteps[hoverIndex])
+                    {/* The static drawing sits on its own compositing layer under the interactive one, so a hover
+                        repaints only the crosshair, the dots and the label. */}
+                    <div className="relative" style={{ width: contentWidth }}>
+                        <svg
+                            width={contentWidth}
+                            height={geometry.totalHeight}
+                            aria-hidden="true"
+                            className="pointer-events-none absolute top-0 left-0 overflow-visible will-change-transform"
+                        >
+                            {staticLayer}
+                        </svg>
+                        <svg
+                            width={contentWidth}
+                            height={geometry.totalHeight}
+                            role="img"
+                            aria-label={ariaLabel}
+                            tabIndex={0}
+                            onKeyDown={handleKeyDown}
+                            onFocus={onFocus}
+                            onBlur={() => {
+                                onBlur()
+                                setHoverIndex(null)
+                            }}
+                            onPointerDown={() => setHoverIndex(null)}
+                            className="relative block overflow-visible outline-none"
+                        >
+                            {nowX !== null && isNowLabelShown && (
+                                <text
+                                    x={nowX + 4}
+                                    y={nowLabelY}
+                                    fontSize={geometry.tickFontSize}
+                                    fontWeight={600}
+                                    fill={theme.foreground}
+                                    pointerEvents="none"
+                                >
+                                    {tc('now')}
+                                </text>
+                            )}
+                            {hoverIndex !== null &&
+                                geometry.layout.map(({ variable }, rowIndex) => {
+                                    const secondaryVariable = SECONDARY_VARIABLE[variable]
+                                    const secondary = (secondaryVariable && series[secondaryVariable]) || null
+                                    const value = getValueAt(getSeries(series, variable), axisSteps[hoverIndex])
+                                    const secondValue = secondary ? getValueAt(secondary, axisSteps[hoverIndex]) : null
+                                    const { y } = scales[rowIndex]
 
-                            return (
-                                <g key={variable}>
-                                    {ticks.map((tick) => (
-                                        <line
-                                            key={tick}
-                                            x1={geometry.marginLeft}
-                                            x2={plotRight}
-                                            y1={y(tick)}
-                                            y2={y(tick)}
-                                            stroke={theme.grid}
-                                        />
-                                    ))}
-                                    {variable === Variable.Precip ? (
-                                        points.map((p) => {
-                                            const center = x(getSumBarCenter(p[0], SLOT_MS))
+                                    if (variable === Variable.Precip) return null
 
-                                            if (p[1] === null || center + barWidth / 2 > plotRight) return null
-
-                                            return (
-                                                <rect
-                                                    key={p[0].toISOString()}
-                                                    x={center - barWidth / 2}
-                                                    y={y(p[1])}
-                                                    width={barWidth}
-                                                    height={Math.max(0, bottom - y(p[1]))}
-                                                    rx={2}
-                                                    fill={theme.band}
-                                                    opacity={0.75}
-                                                />
-                                            )
-                                        })
-                                    ) : (
-                                        <>
-                                            <path
-                                                d={getAreaPath(points, x, y, bottom)}
-                                                fill={theme.band}
-                                                opacity={theme.bandOuterOpacity}
-                                            />
-                                            <path
-                                                d={getLinePath(points, x, y)}
-                                                fill="none"
-                                                stroke={theme.median}
-                                                strokeWidth={2}
-                                                strokeLinecap="round"
-                                            />
-                                            {secondary && (
-                                                <path
-                                                    d={getLinePath(toPoints(secondary), x, y)}
-                                                    fill="none"
-                                                    stroke={theme.median}
-                                                    strokeWidth={1.5}
-                                                    strokeDasharray={SECONDARY_DASH}
-                                                    opacity={0.7}
+                                    return (
+                                        <g key={variable} pointerEvents="none">
+                                            {value !== null && value !== undefined && (
+                                                <circle
+                                                    cx={x(times[hoverIndex])}
+                                                    cy={y(value)}
+                                                    r={4}
+                                                    fill={theme.median}
+                                                    stroke={theme.card}
+                                                    strokeWidth={2}
                                                 />
                                             )}
-                                        </>
-                                    )}
-                                    {variable === Variable.Precip && (
-                                        <g aria-hidden="true">
-                                            {chance.map((c, i) => {
-                                                const center = x(getSumBarCenter(times[i], SLOT_MS))
-                                                const isShown = c !== null && center + barWidth / 2 <= plotRight
-
-                                                return (
-                                                    isShown && (
-                                                        <text
-                                                            key={axisSteps[i]}
-                                                            x={center}
-                                                            y={bottom + CHANCE_STRIP / 2}
-                                                            dy="0.32em"
-                                                            textAnchor="middle"
-                                                            fontSize={geometry.tickFontSize}
-                                                            fontWeight={c >= 0.5 ? 600 : 400}
-                                                            fill={c >= 0.5 ? theme.foreground : theme.muted}
-                                                        >
-                                                            {Math.round(c * 100)}
-                                                        </text>
-                                                    )
-                                                )
-                                            })}
+                                            {secondValue !== null && secondValue !== undefined && (
+                                                <circle
+                                                    cx={x(times[hoverIndex])}
+                                                    cy={y(secondValue)}
+                                                    r={3}
+                                                    fill={theme.card}
+                                                    stroke={theme.median}
+                                                    strokeWidth={1.5}
+                                                />
+                                            )}
                                         </g>
-                                    )}
-                                    {variable === Variable.Wind && directions && (
-                                        <WindArrows
-                                            x={x}
-                                            times={times}
-                                            directions={directions}
-                                            y={bottom + ARROW_STRIP / 2 + 2}
-                                            color={theme.foreground}
-                                            mutedColor={theme.muted}
-                                            compassLabels={tc('compass').split(',')}
-                                        />
-                                    )}
-                                    {hoverIndex !== null &&
-                                        hoverValue !== null &&
-                                        hoverValue !== undefined &&
-                                        variable !== Variable.Precip && (
-                                            <circle
-                                                cx={x(times[hoverIndex])}
-                                                cy={y(hoverValue)}
-                                                r={4}
-                                                fill={theme.median}
-                                                stroke={theme.card}
-                                                strokeWidth={2}
-                                                pointerEvents="none"
-                                            />
-                                        )}
-                                    {hoverIndex !== null && hoverSecondary !== null && (
-                                        <circle
-                                            cx={x(times[hoverIndex])}
-                                            cy={y(hoverSecondary)}
-                                            r={3}
-                                            fill={theme.card}
-                                            stroke={theme.median}
-                                            strokeWidth={1.5}
-                                            pointerEvents="none"
-                                        />
-                                    )}
-                                </g>
-                            )
-                        })}
-                        <DayGrid
-                            x={x}
-                            start={times[0]}
-                            end={times[times.length - 1]}
-                            timeZone={timeZone}
-                            locale={locale}
-                            spans={geometry.spans}
-                            labelYs={[geometry.plotBottom + 5 + geometry.labelFontSize]}
-                            fontSize={geometry.labelFontSize}
-                            lineColor={theme.border}
-                            labelColor={theme.muted}
-                        />
-                        {nowX !== null && (
-                            <g pointerEvents="none">
-                                {geometry.spans.map(({ top, bottom }) => (
+                                    )
+                                })}
+                            {hoverIndex !== null && hoverX !== null && (
+                                <text
+                                    x={hoverX}
+                                    y={geometry.plotTop - 7}
+                                    textAnchor="middle"
+                                    fontSize={geometry.labelFontSize}
+                                    fontWeight={600}
+                                    fill={theme.foreground}
+                                    pointerEvents="none"
+                                >
+                                    {formatStepLabel(axisSteps[hoverIndex], timeZone, locale)}
+                                </text>
+                            )}
+                            {hoverIndex !== null &&
+                                geometry.spans.map(({ top, bottom }) => (
                                     <line
                                         key={top}
-                                        x1={nowX}
-                                        x2={nowX}
+                                        x1={x(times[hoverIndex])}
+                                        x2={x(times[hoverIndex])}
                                         y1={top}
                                         y2={bottom}
-                                        stroke={theme.foreground}
-                                        strokeDasharray="4 3"
+                                        stroke={theme.muted}
+                                        pointerEvents="none"
                                     />
                                 ))}
-                                {isNowLabelShown && (
-                                    <text
-                                        x={nowX + 4}
-                                        y={nowLabelY}
-                                        fontSize={geometry.tickFontSize}
-                                        fontWeight={600}
-                                        fill={theme.foreground}
-                                    >
-                                        {tc('now')}
-                                    </text>
-                                )}
-                            </g>
-                        )}
-                        {hoverIndex !== null && hoverX !== null && (
-                            <text
-                                x={hoverX}
-                                y={geometry.plotTop - 7}
-                                textAnchor="middle"
-                                fontSize={geometry.labelFontSize}
-                                fontWeight={600}
-                                fill={theme.foreground}
-                                pointerEvents="none"
-                            >
-                                {formatStepLabel(axisSteps[hoverIndex], timeZone, locale)}
-                            </text>
-                        )}
-                        {hoverIndex !== null &&
-                            geometry.spans.map(({ top, bottom }) => (
-                                <line
-                                    key={top}
-                                    x1={x(times[hoverIndex])}
-                                    x2={x(times[hoverIndex])}
-                                    y1={top}
-                                    y2={bottom}
-                                    stroke={theme.muted}
-                                    pointerEvents="none"
-                                />
-                            ))}
-                        <rect
-                            x={geometry.marginLeft}
-                            y={geometry.plotTop}
-                            width={plotWidth}
-                            height={geometry.plotBottom - geometry.plotTop}
-                            fill="transparent"
-                            style={{ touchAction: 'pan-x pan-y' }}
-                            onPointerDown={handlePlotPointerDown}
-                            onPointerMove={handlePointerMove}
-                            onPointerLeave={(e) => e.pointerType !== 'touch' && setHoverIndex(null)}
-                            onClick={selectAt}
-                        />
-                    </svg>
+                            <rect
+                                x={geometry.marginLeft}
+                                y={geometry.plotTop}
+                                width={plotWidth}
+                                height={geometry.plotBottom - geometry.plotTop}
+                                fill="transparent"
+                                style={{ touchAction: 'pan-x pan-y' }}
+                                onPointerDown={handlePlotPointerDown}
+                                onPointerMove={handlePointerMove}
+                                onPointerLeave={(e) => e.pointerType !== 'touch' && setHoverIndex(null)}
+                                onClick={selectAt}
+                            />
+                        </svg>
+                    </div>
                 </div>
                 {/* The axis stays while the plot scrolls under it: the tick labels on a card-coloured column, and on
                     phones the panel names in the panels' corners. The column starts a pixel early, so a fractional zoom leaves no

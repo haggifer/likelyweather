@@ -8,6 +8,7 @@ import { VariableSwitch } from '@/components/city/VariableSwitch'
 import { ErrorNotice } from '@/components/shell/ErrorNotice'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useNow } from '@/hooks/useNow'
 import { useUrlSync } from '@/hooks/useUrlSync'
 import { useAppDispatch, useAppSelector } from '@/store'
@@ -29,7 +30,7 @@ import { buildSlots, DASHBOARD_HOURS, getChartStart, toSlotLatest } from '@fa/sh
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Loader2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
-import { useMemo } from 'react'
+import { ComponentProps, useMemo } from 'react'
 
 interface SeriesTableProps {
     steps: string[]
@@ -47,6 +48,8 @@ interface SeriesTableProps {
 const STICKY_TIME_CELL =
     'sticky left-0 z-1 bg-card group-hover:bg-[color-mix(in_srgb,var(--color-muted)_50%,var(--color-card))]'
 
+const PHONE_QUERY = '(width < 40rem)'
+
 // On phones the switch stays under the top bar, so another variable is one tap away wherever the page is scrolled.
 const VARIABLE_BAR = (
     <div
@@ -61,6 +64,56 @@ const getReadoutLabel = (step: string, variable: Variable, timeZone: string, loc
     variable === Variable.Precip
         ? formatPeriodLabel(step, getSlotEnd(step), timeZone, locale)
         : formatStepLabel(step, timeZone, locale)
+
+const toHoverIndex = (steps: string[], hoverStep: string | null) => (hoverStep ? steps.indexOf(hoverStep) : -1)
+
+type HoveredChartProps = Omit<ComponentProps<typeof SpaghettiChart>, 'hoverIndex' | 'onHoverIndex'>
+
+// Only the chart and the legend read the hovered step, so a pointer move re-renders them and not the whole dashboard
+// (the tiles, the frame, the other legend), which made a hover cost 50–100 ms on a slow CPU.
+const HoveredChart = (props: HoveredChartProps) => {
+    const dispatch = useAppDispatch()
+    const hoverStep = useAppSelector((s) => s.dashboard.hoverStep)
+
+    const hoverIndex = toHoverIndex(props.steps, hoverStep)
+
+    return (
+        <SpaghettiChart
+            {...props}
+            hoverIndex={hoverIndex >= 0 ? hoverIndex : null}
+            onHoverIndex={(i) => dispatch(setHoverStep(i === null ? null : props.steps[i]))}
+        />
+    )
+}
+
+interface HoveredLegendProps {
+    steps: string[]
+    series: Series[]
+    stats: EnsembleStats
+    directions: (number | null)[] | null
+    variable: Variable
+    timeZone: string
+    locale: string
+    now: Date | null
+}
+
+const HoveredLegend = ({ steps, series, stats, directions, variable, timeZone, locale, now }: HoveredLegendProps) => {
+    const hoverStep = useAppSelector((s) => s.dashboard.hoverStep)
+
+    const isSum = VARIABLE_BY_ID[variable].aggregation === 'sum'
+    const readoutIndex = getReadoutIndex(steps, toHoverIndex(steps, hoverStep), now, isSum)
+
+    return (
+        <ModelLegend
+            series={series}
+            median={stats.median[readoutIndex]}
+            readoutIndex={readoutIndex}
+            readoutLabel={getReadoutLabel(steps[readoutIndex], variable, timeZone, locale)}
+            direction={variable === Variable.Wind ? (directions?.[readoutIndex] ?? null) : null}
+            variable={variable}
+        />
+    )
+}
 
 const SeriesTable = ({
     steps,
@@ -113,11 +166,11 @@ export function Dashboard({ slug }: IProps) {
     const tv = useTranslations('variables')
     const tInline = useTranslations('variablesInline')
     const locale = useLocale()
-    const dispatch = useAppDispatch()
     const now = useNow()
+    // The legend follows every hover, so only the copy for this width is rendered, not a second one hidden by CSS.
+    const isPhone = useMediaQuery(PHONE_QUERY)
     const { isHydrated } = useUrlSync()
     const variable = useAppSelector((s) => s.dashboard.variable)
-    const hoverStep = useAppSelector((s) => s.dashboard.hoverStep)
     const highlighted = useAppSelector((s) => s.dashboard.highlightedModel)
     const hidden = useAppSelector((s) => s.dashboard.hiddenModels)
     const isMedianHidden = useAppSelector((s) => s.dashboard.isMedianHidden)
@@ -144,6 +197,8 @@ export function Dashboard({ slug }: IProps) {
         [latest, variable, timeZone, now],
     )
     const chartNow = anchor ? now : null
+    // A stable list, so the chart's memoized drawing survives renders that did not change the highlighted model.
+    const emphasized = useMemo<ModelId[]>(() => (highlighted ? [highlighted] : []), [highlighted])
 
     if (!city) return null
 
@@ -178,9 +233,6 @@ export function Dashboard({ slug }: IProps) {
     }
 
     const visibleSeries = latest.series.filter((s) => !hidden.includes(s.modelId))
-    const emphasized: ModelId[] = highlighted ? [highlighted] : []
-    const hoverIndex = hoverStep ? latest.steps.indexOf(hoverStep) : -1
-    const readoutIndex = getReadoutIndex(latest.steps, hoverIndex, chartNow, info.aggregation === 'sum')
     const futureRange = getFutureRange(derived.stats.median, latest.steps, now)
     const mostSplit = [...derived.disagreement].sort((a, b) => b.spread - a.spread)[0]
     const summary = t('summary', {
@@ -193,13 +245,15 @@ export function Dashboard({ slug }: IProps) {
         spread: formatSpread(mostSplit?.spread, info.decimals),
     })
     const legend = (
-        <ModelLegend
+        <HoveredLegend
+            steps={latest.steps}
             series={latest.series}
-            median={derived.stats.median[readoutIndex]}
-            readoutIndex={readoutIndex}
-            readoutLabel={getReadoutLabel(latest.steps[readoutIndex], variable, timeZone, locale)}
-            direction={variable === Variable.Wind ? (derived.directions?.[readoutIndex] ?? null) : null}
+            stats={derived.stats}
+            directions={derived.directions}
             variable={variable}
+            timeZone={timeZone}
+            locale={locale}
+            now={chartNow}
         />
     )
 
@@ -224,7 +278,7 @@ export function Dashboard({ slug }: IProps) {
                         />
                     }
                 >
-                    <SpaghettiChart
+                    <HoveredChart
                         steps={latest.steps}
                         series={visibleSeries}
                         stats={derived.stats}
@@ -232,8 +286,6 @@ export function Dashboard({ slug }: IProps) {
                         timeZone={timeZone}
                         locale={locale}
                         ariaLabel={summary}
-                        hoverIndex={hoverIndex >= 0 ? hoverIndex : null}
-                        onHoverIndex={(i) => dispatch(setHoverStep(i === null ? null : latest.steps[i]))}
                         emphasized={emphasized}
                         directions={variable === Variable.Wind ? derived.directions : null}
                         now={chartNow}
@@ -242,9 +294,9 @@ export function Dashboard({ slug }: IProps) {
                     {variable === Variable.Wind && (
                         <p className="mt-1 text-xs text-muted-foreground">{t('windArrows')}</p>
                     )}
-                    <div className="mt-3 border-t pt-3 sm:hidden">{legend}</div>
+                    {isPhone && <div className="mt-3 border-t pt-3 sm:hidden">{legend}</div>}
                 </ChartFrame>
-                <div className="rounded-(--radius) border bg-card p-3 max-sm:hidden">{legend}</div>
+                {!isPhone && <div className="rounded-(--radius) border bg-card p-3 max-sm:hidden">{legend}</div>}
             </div>
             <DisagreementTiles days={derived.disagreement} variable={variable} />
         </div>

@@ -3,8 +3,10 @@
 import { useChartScroll } from '@/hooks/useChartScroll'
 import { useChartTheme } from '@/hooks/useChartTheme'
 import { useElementWidth } from '@/hooks/useElementWidth'
+import { useFocusVisible } from '@/hooks/useFocusVisible'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useNow } from '@/hooks/useNow'
+import { cn } from '@/lib/cn'
 import { useAnimatedDomain } from '@fa/chart-core/hooks/useAnimatedDomain'
 import { CHART_FONT_SIZE, clamp, getBarWidth, getNowX } from '@fa/chart-core/plot-geometry'
 import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
@@ -25,7 +27,7 @@ import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { ScaleTime } from 'd3-scale'
 import { useTranslations } from 'next-intl'
-import { KeyboardEvent, MouseEvent, PointerEvent, useId, useMemo, useState } from 'react'
+import { KeyboardEvent, MouseEvent, PointerEvent, useCallback, useId, useMemo, useState } from 'react'
 import { getArrowStep } from './arrow-keys'
 import { DayGrid } from './DayGrid'
 import { getPointerTime } from './pointer-time'
@@ -43,12 +45,15 @@ interface TooltipRow {
 
 const ARROW_ROW = 26
 const MAX_TICK_WIDTH = 16
+// Laid over the static bar (0.6), so the hovered bar reads at about 0.95, as before the static layer was memoized.
+const HOVERED_BAR_OVERLAY = 0.875
 const HOVER_LABEL_HALF_WIDTH = 34
 const PERIOD_LABEL_HALF_WIDTH = 50
 const UNIT_LABEL_WIDTH = 28
 // The clip reaches past the plot by half the median's 3 px stroke and a pixel more, so a line on the axis's top or
 // bottom value (a humidity or cloud cover of 100 %) shows its whole stroke.
 const CLIP_BLEED = 2.5
+const NO_MODELS: ModelId[] = []
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
 // Phones get a shorter plot so the model list under it stays in view while scrubbing.
 const NARROW_WIDTH = 480
@@ -119,7 +124,7 @@ export function SpaghettiChart({
     ariaLabel,
     hoverIndex,
     onHoverIndex,
-    emphasized = [],
+    emphasized = NO_MODELS,
     directions,
     height: heightProp = 340,
     compact = false,
@@ -134,6 +139,7 @@ export function SpaghettiChart({
     const clipId = useId().replace(/[^\w-]/g, '')
 
     const { ref, width } = useElementWidth<HTMLDivElement>()
+    const { isFocusVisible, onFocus, onBlur } = useFocusVisible()
     const [viewLeft, setViewLeft] = useState(0)
 
     const now = nowProp === undefined ? liveNow : nowProp
@@ -154,11 +160,14 @@ export function SpaghettiChart({
     const plotBottom = height - margin.bottom
     const plotRight = contentWidth - margin.right
     const nowX = getNowX(x, now, margin.left, plotRight)
-    const yTicks = getYTicks(domain, variable, compact ? 3 : 5)
+    const yTicks = useMemo(() => getYTicks(domain, variable, compact ? 3 : 5), [domain, variable, compact])
     const stepMs = times.length > 1 ? times[1].getTime() - times[0].getTime() : 3 * HOUR_MS
     const barWidth = getBarWidth(x, times[0], stepMs)
     const tickWidth = Math.min(barWidth, MAX_TICK_WIDTH)
-    const bars = isBars ? getDrawnBars(times, x, stepMs, barWidth, [margin.left, plotRight]) : []
+    const bars = useMemo(
+        () => (isBars ? getDrawnBars(times, x, stepMs, barWidth, [margin.left, plotRight]) : []),
+        [isBars, times, x, stepMs, barWidth, margin.left, plotRight],
+    )
     // Hovering and stepping stay within the drawn bars.
     const minIndex = isBars && bars.length ? bars[0].i : 0
     const maxIndex = isBars && bars.length ? bars[bars.length - 1].i : times.length - 1
@@ -177,7 +186,7 @@ export function SpaghettiChart({
     const spanLeft = hoverSpan ? Math.max(margin.left, x(hoverSpan[0])) : 0
     const spanRight = hoverSpan ? Math.min(plotRight, x(hoverSpan[1])) : 0
     const tooltipRows = hover !== null ? getTooltipRows(series, hover) : []
-    const isDimmed = (id: ModelId) => emphasized.length > 0 && !emphasized.includes(id)
+    const isDimmed = useCallback((id: ModelId) => emphasized.length > 0 && !emphasized.includes(id), [emphasized])
     const initialScrollLeft = getInitialScrollLeft(now ? x(now) : null, {
         slotWidth: x(times[1] ?? times[0]) - x(times[0]),
         insetLeft: margin.left,
@@ -190,6 +199,178 @@ export function SpaghettiChart({
         margin.left,
         margin.right,
     ])
+
+    const hoveredBar = hover === null ? undefined : bars.find((b) => b.i === hover)
+    // Everything that does not follow the pointer is built once per data, size or theme change, so a hover redraws
+    // only the crosshair, the dots and the label (a pointer move cost 50–100 ms on a slow CPU before).
+    const staticLayer = useMemo(
+        () => (
+            <g>
+                {nowX !== null && (
+                    <rect
+                        x={margin.left}
+                        y={margin.top}
+                        width={Math.max(0, nowX - margin.left)}
+                        height={plotBottom - margin.top}
+                        fill={theme.grid}
+                        opacity={0.45}
+                    />
+                )}
+                {yTicks.map((tick) => (
+                    <line key={tick} x1={margin.left} x2={plotRight} y1={y(tick)} y2={y(tick)} stroke={theme.grid} />
+                ))}
+                <DayGrid
+                    x={x}
+                    start={times[0]}
+                    end={times[times.length - 1]}
+                    timeZone={timeZone}
+                    locale={locale}
+                    spans={[{ top: margin.top, bottom: plotBottom }]}
+                    labelYs={[plotBottom + (compact ? 15 : 18)]}
+                    lineColor={theme.border}
+                    labelColor={theme.muted}
+                    fontSize={CHART_FONT_SIZE}
+                />
+                <defs>
+                    <clipPath id={clipId}>
+                        <rect
+                            x={margin.left}
+                            y={margin.top - CLIP_BLEED}
+                            width={Math.max(0, plotRight - margin.left)}
+                            height={Math.max(0, plotBottom - margin.top + 2 * CLIP_BLEED)}
+                        />
+                    </clipPath>
+                </defs>
+                {/* The bands and median span every model while the y-domain fits the visible ones, so a hidden
+                    outlier's band is cut at the plot edge instead of covering the card header. */}
+                <g clipPath={`url(#${clipId})`}>
+                    {!isBars && <path d={geometry.outerBand} fill={theme.band} opacity={theme.bandOuterOpacity} />}
+                    {!isBars && <path d={geometry.innerBand} fill={theme.band} opacity={theme.bandInnerOpacity} />}
+                    {bars.map(({ i, center }) => {
+                        const median = stats.median[i]
+
+                        return (
+                            <g key={times[i].toISOString()}>
+                                {median !== null && !isMedianHidden && (
+                                    <rect
+                                        x={center - barWidth / 2}
+                                        y={y(median)}
+                                        width={barWidth}
+                                        height={Math.max(0, plotBottom - y(median))}
+                                        rx={2}
+                                        fill={theme.band}
+                                        opacity={0.6}
+                                    />
+                                )}
+                                {series.map((s) => {
+                                    const v = s.values[i]
+
+                                    if (v === null) return null
+
+                                    return (
+                                        <line
+                                            key={s.modelId}
+                                            x1={center - tickWidth / 2}
+                                            x2={center + tickWidth / 2}
+                                            y1={y(v)}
+                                            y2={y(v)}
+                                            stroke={MODEL_BY_ID[s.modelId].color}
+                                            strokeWidth={emphasized.includes(s.modelId) ? 3 : 2}
+                                            strokeDasharray={MODEL_BY_ID[s.modelId].dash}
+                                            strokeLinecap={MODEL_BY_ID[s.modelId].dash ? 'butt' : 'round'}
+                                            opacity={isDimmed(s.modelId) ? 0.15 : 0.9}
+                                        />
+                                    )
+                                })}
+                            </g>
+                        )
+                    })}
+                    {!isBars &&
+                        geometry.lines.map(({ modelId, d }) => (
+                            <path
+                                key={modelId}
+                                d={d}
+                                fill="none"
+                                stroke={MODEL_BY_ID[modelId].color}
+                                strokeWidth={emphasized.includes(modelId) ? 2.5 : 1.5}
+                                strokeDasharray={MODEL_BY_ID[modelId].dash}
+                                strokeLinecap={MODEL_BY_ID[modelId].dash ? 'butt' : 'round'}
+                                opacity={isDimmed(modelId) ? 0.15 : 0.9}
+                            />
+                        ))}
+                    {!isBars && !isMedianHidden && (
+                        <path
+                            d={geometry.median}
+                            fill="none"
+                            stroke={theme.median}
+                            strokeWidth={3}
+                            strokeLinecap="round"
+                        />
+                    )}
+                </g>
+                {nowX !== null && (
+                    <g>
+                        <line
+                            x1={nowX}
+                            x2={nowX}
+                            y1={margin.top}
+                            y2={plotBottom}
+                            stroke={theme.foreground}
+                            strokeDasharray="4 3"
+                        />
+                        <text
+                            x={nowX + 4}
+                            y={margin.top + 10}
+                            fontSize={CHART_FONT_SIZE}
+                            fontWeight={600}
+                            fill={theme.foreground}
+                        >
+                            {t('now')}
+                        </text>
+                    </g>
+                )}
+                {directions && (
+                    <WindArrows
+                        x={x}
+                        times={times}
+                        directions={directions}
+                        y={height - ARROW_ROW / 2 - 2}
+                        color={theme.foreground}
+                        mutedColor={theme.muted}
+                        compassLabels={t('compass').split(',')}
+                    />
+                )}
+            </g>
+        ),
+        [
+            nowX,
+            margin,
+            plotBottom,
+            plotRight,
+            theme,
+            yTicks,
+            x,
+            y,
+            times,
+            timeZone,
+            locale,
+            compact,
+            clipId,
+            isBars,
+            geometry,
+            bars,
+            stats,
+            isMedianHidden,
+            barWidth,
+            tickWidth,
+            series,
+            emphasized,
+            isDimmed,
+            directions,
+            height,
+            t,
+        ],
+    )
 
     const selectAt = (e: MouseEvent<SVGRectElement>) => {
         const at = getPointerTime(e, x, margin.left)
@@ -226,12 +407,37 @@ export function SpaghettiChart({
     }
 
     return (
-        <div
-            ref={ref}
-            className="relative w-full rounded-sm has-[svg:focus-visible]:ring-2 has-[svg:focus-visible]:ring-ring select-none"
-        >
+        <div ref={ref} className={cn('relative w-full rounded-sm select-none', isFocusVisible && 'ring-2 ring-ring')}>
             <div ref={scrollRef} className="overflow-x-auto overscroll-x-contain [scrollbar-width:thin]">
+                {/* Three stacked drawings: the hovered span's shade under everything, the static chart on its own
+                    compositing layer, and the crosshair with the pointer area on top, so a hover repaints only the small
+                    top and bottom drawings and not ten model lines across ten days. */}
                 <div className="relative" style={{ width: contentWidth }}>
+                    <svg
+                        width={contentWidth}
+                        height={height}
+                        aria-hidden="true"
+                        className="pointer-events-none absolute top-0 left-0"
+                    >
+                        {hoverSpan && (
+                            <rect
+                                x={spanLeft}
+                                y={margin.top}
+                                width={Math.max(0, spanRight - spanLeft)}
+                                height={plotBottom - margin.top}
+                                fill={theme.grid}
+                                opacity={0.8}
+                            />
+                        )}
+                    </svg>
+                    <svg
+                        width={contentWidth}
+                        height={height}
+                        aria-hidden="true"
+                        className="pointer-events-none absolute top-0 left-0 overflow-visible will-change-transform"
+                    >
+                        {staticLayer}
+                    </svg>
                     <svg
                         width={contentWidth}
                         height={height}
@@ -239,168 +445,46 @@ export function SpaghettiChart({
                         aria-label={ariaLabel}
                         tabIndex={onHoverIndex ? 0 : -1}
                         onKeyDown={handleKeyDown}
-                        onBlur={() => onHoverIndex?.(null)}
+                        onFocus={onFocus}
+                        onBlur={() => {
+                            onBlur()
+                            onHoverIndex?.(null)
+                        }}
                         onPointerDown={() => onHoverIndex?.(null)}
-                        className="block overflow-visible outline-none"
+                        className="relative block overflow-visible outline-none"
                     >
-                        {nowX !== null && (
-                            <rect
-                                x={margin.left}
-                                y={margin.top}
-                                width={Math.max(0, nowX - margin.left)}
-                                height={plotBottom - margin.top}
-                                fill={theme.grid}
-                                opacity={0.45}
-                            />
-                        )}
-                        {yTicks.map((tick) => (
-                            <line
-                                key={tick}
-                                x1={margin.left}
-                                x2={plotRight}
-                                y1={y(tick)}
-                                y2={y(tick)}
-                                stroke={theme.grid}
-                            />
-                        ))}
-                        <DayGrid
-                            x={x}
-                            start={times[0]}
-                            end={times[times.length - 1]}
-                            timeZone={timeZone}
-                            locale={locale}
-                            spans={[{ top: margin.top, bottom: plotBottom }]}
-                            labelYs={[plotBottom + (compact ? 15 : 18)]}
-                            lineColor={theme.border}
-                            labelColor={theme.muted}
-                            fontSize={CHART_FONT_SIZE}
-                        />
-                        <defs>
-                            <clipPath id={clipId}>
-                                <rect
-                                    x={margin.left}
-                                    y={margin.top - CLIP_BLEED}
-                                    width={Math.max(0, plotRight - margin.left)}
-                                    height={Math.max(0, plotBottom - margin.top + 2 * CLIP_BLEED)}
-                                />
-                            </clipPath>
-                        </defs>
-                        {/* The bands and median span every model while the y-domain fits the visible ones, so a hidden
-                    outlier's band is cut at the plot edge instead of covering the card header. */}
-                        <g clipPath={`url(#${clipId})`}>
-                            {!isBars && (
-                                <path d={geometry.outerBand} fill={theme.band} opacity={theme.bandOuterOpacity} />
-                            )}
-                            {!isBars && (
-                                <path d={geometry.innerBand} fill={theme.band} opacity={theme.bandInnerOpacity} />
-                            )}
-                            {hoverSpan && (
-                                <rect
-                                    x={spanLeft}
-                                    y={margin.top}
-                                    width={Math.max(0, spanRight - spanLeft)}
-                                    height={plotBottom - margin.top}
-                                    fill={theme.grid}
-                                    opacity={0.8}
-                                    pointerEvents="none"
-                                />
-                            )}
-                            {bars.map(({ i, center }) => {
-                                const median = stats.median[i]
-
-                                return (
-                                    <g key={times[i].toISOString()}>
-                                        {median !== null && !isMedianHidden && (
-                                            <rect
-                                                x={center - barWidth / 2}
-                                                y={y(median)}
-                                                width={barWidth}
-                                                height={Math.max(0, plotBottom - y(median))}
-                                                rx={2}
-                                                fill={theme.band}
-                                                opacity={hover === i ? 0.95 : 0.6}
-                                            />
-                                        )}
-                                        {series.map((s) => {
-                                            const v = s.values[i]
-
-                                            if (v === null) return null
-
-                                            return (
-                                                <line
-                                                    key={s.modelId}
-                                                    x1={center - tickWidth / 2}
-                                                    x2={center + tickWidth / 2}
-                                                    y1={y(v)}
-                                                    y2={y(v)}
-                                                    stroke={MODEL_BY_ID[s.modelId].color}
-                                                    strokeWidth={emphasized.includes(s.modelId) ? 3 : 2}
-                                                    strokeDasharray={MODEL_BY_ID[s.modelId].dash}
-                                                    strokeLinecap={MODEL_BY_ID[s.modelId].dash ? 'butt' : 'round'}
-                                                    opacity={isDimmed(s.modelId) ? 0.15 : 0.9}
-                                                />
-                                            )
-                                        })}
-                                    </g>
-                                )
-                            })}
-                            {!isBars &&
-                                geometry.lines.map(({ modelId, d }) => (
-                                    <path
-                                        key={modelId}
-                                        d={d}
-                                        fill="none"
-                                        stroke={MODEL_BY_ID[modelId].color}
-                                        strokeWidth={emphasized.includes(modelId) ? 2.5 : 1.5}
-                                        strokeDasharray={MODEL_BY_ID[modelId].dash}
-                                        strokeLinecap={MODEL_BY_ID[modelId].dash ? 'butt' : 'round'}
-                                        opacity={isDimmed(modelId) ? 0.15 : 0.9}
-                                    />
-                                ))}
-                            {!isBars && !isMedianHidden && (
-                                <path
-                                    d={geometry.median}
-                                    fill="none"
-                                    stroke={theme.median}
-                                    strokeWidth={3}
-                                    strokeLinecap="round"
-                                />
-                            )}
-                        </g>
-                        {nowX !== null && (
-                            <g>
-                                <line
-                                    x1={nowX}
-                                    x2={nowX}
-                                    y1={margin.top}
-                                    y2={plotBottom}
-                                    stroke={theme.foreground}
-                                    strokeDasharray="4 3"
-                                />
-                                <text
-                                    x={nowX + 4}
-                                    y={margin.top + 10}
-                                    fontSize={CHART_FONT_SIZE}
-                                    fontWeight={600}
-                                    fill={theme.foreground}
-                                >
-                                    {t('now')}
-                                </text>
-                            </g>
-                        )}
-                        {directions && (
-                            <WindArrows
-                                x={x}
-                                times={times}
-                                directions={directions}
-                                y={height - ARROW_ROW / 2 - 2}
-                                color={theme.foreground}
-                                mutedColor={theme.muted}
-                                compassLabels={t('compass').split(',')}
-                            />
-                        )}
                         {hover !== null && hoverX !== null && (
                             <g pointerEvents="none">
+                                {hoveredBar && !isMedianHidden && stats.median[hover] !== null && (
+                                    <rect
+                                        x={hoveredBar.center - barWidth / 2}
+                                        y={y(stats.median[hover]!)}
+                                        width={barWidth}
+                                        height={Math.max(0, plotBottom - y(stats.median[hover]!))}
+                                        rx={2}
+                                        fill={theme.band}
+                                        opacity={HOVERED_BAR_OVERLAY}
+                                    />
+                                )}
+                                {hoveredBar &&
+                                    series.map((s) => {
+                                        const v = s.values[hover]
+
+                                        return v === null ? null : (
+                                            <line
+                                                key={s.modelId}
+                                                x1={hoveredBar.center - tickWidth / 2}
+                                                x2={hoveredBar.center + tickWidth / 2}
+                                                y1={y(v)}
+                                                y2={y(v)}
+                                                stroke={MODEL_BY_ID[s.modelId].color}
+                                                strokeWidth={emphasized.includes(s.modelId) ? 3 : 2}
+                                                strokeDasharray={MODEL_BY_ID[s.modelId].dash}
+                                                strokeLinecap={MODEL_BY_ID[s.modelId].dash ? 'butt' : 'round'}
+                                                opacity={isDimmed(s.modelId) ? 0.15 : 0.9}
+                                            />
+                                        )
+                                    })}
                                 {!isBars && (
                                     <line
                                         x1={hoverX}
