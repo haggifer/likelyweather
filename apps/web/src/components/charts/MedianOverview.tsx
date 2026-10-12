@@ -8,7 +8,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { MedianSeries } from '@fa/chart-core/overview-stats'
 import { clamp, getBarWidth, getNowX, getTimeScale, getValueScale } from '@fa/chart-core/plot-geometry'
 import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
-import { getInitialScrollLeft, getMinSlotWidth, getScrollWidth } from '@fa/chart-core/scroll-geometry'
+import { getInitialScrollLeft, getMinSlotWidth, getScrollWidth, getVisibleRange } from '@fa/chart-core/scroll-geometry'
 import { getNearestIndex, getSumBarCenter } from '@fa/chart-core/spaghetti-geometry'
 import { HOUR_MS } from '@fa/shared/constants'
 import { formatNumber, formatStepLabel } from '@fa/shared/format'
@@ -238,6 +238,7 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
 
     const { ref, width } = useElementWidth<HTMLDivElement>()
     const [hoverIndex, setHoverIndex] = useState<number | null>(null)
+    const [viewLeft, setViewLeft] = useState(0)
 
     const geometry = isStacked ? PHONE : DESKTOP
     const axisSteps = series[Variable.Temp].steps
@@ -263,13 +264,14 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
         contentWidth,
         viewportWidth: width,
     })
+    const [visibleLeft, visibleRight] = getVisibleRange(viewLeft, width, [geometry.marginLeft, MARGIN_RIGHT])
     const hoverX =
         hoverIndex === null
             ? null
             : clamp(
                   x(times[hoverIndex]),
-                  geometry.marginLeft + geometry.hoverLabelHalfWidth,
-                  plotRight - geometry.hoverLabelHalfWidth,
+                  visibleLeft + geometry.hoverLabelHalfWidth,
+                  visibleRight - geometry.hoverLabelHalfWidth,
               )
 
     const { ref: scrollRef, reveal } = useChartScroll(`${axisSteps[0]}|${contentWidth}`, initialScrollLeft, [
@@ -277,8 +279,11 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
         MARGIN_RIGHT,
     ])
 
-    const selectAt = (e: MouseEvent<SVGRectElement>) =>
+    // The hovered time's label clamps to the part of the plot on screen, read when a slot is picked.
+    const selectAt = (e: MouseEvent<SVGRectElement>) => {
         setHoverIndex(getNearestIndex(times, getPointerTime(e, x, geometry.marginLeft)))
+        setViewLeft(scrollRef.current?.scrollLeft ?? 0)
+    }
     // A finger's drag scrolls the chart, so touch selects on a tap (`click`) and keeps the selection after the finger
     // lifts, so its readout can be read; a tap outside the plot clears it, and so does a tap elsewhere, which blurs the
     // chart. A mouse follows the pointer and clears on leaving the plot.
@@ -300,6 +305,7 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
         e.preventDefault()
         setHoverIndex(next)
         reveal(x(times[next]))
+        setViewLeft(scrollRef.current?.scrollLeft ?? 0)
     }
 
     return (
@@ -347,7 +353,10 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                     )
                 })}
             </div>
-            <div ref={ref} className="relative min-w-0 select-none">
+            <div
+                ref={ref}
+                className="relative min-w-0 rounded-sm has-[svg:focus-visible]:ring-2 has-[svg:focus-visible]:ring-ring select-none"
+            >
                 <div ref={scrollRef} className="overflow-x-auto overscroll-x-contain [scrollbar-width:thin]">
                     <svg
                         width={contentWidth}
@@ -358,7 +367,7 @@ export function MedianOverview({ series, directions, chance, timeZone, locale, n
                         onKeyDown={handleKeyDown}
                         onBlur={() => setHoverIndex(null)}
                         onPointerDown={() => setHoverIndex(null)}
-                        className="block overflow-visible outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="block overflow-visible outline-none"
                     >
                         <defs>
                             {geometry.spans.map(({ top, bottom }, i) => (

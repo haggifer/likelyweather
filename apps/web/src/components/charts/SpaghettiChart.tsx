@@ -8,7 +8,7 @@ import { useNow } from '@/hooks/useNow'
 import { useAnimatedDomain } from '@fa/chart-core/hooks/useAnimatedDomain'
 import { clamp, getBarWidth, getNowX } from '@fa/chart-core/plot-geometry'
 import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
-import { getInitialScrollLeft, getMinSlotWidth, getScrollWidth } from '@fa/chart-core/scroll-geometry'
+import { getInitialScrollLeft, getMinSlotWidth, getScrollWidth, getVisibleRange } from '@fa/chart-core/scroll-geometry'
 import {
     buildSpaghettiGeometry,
     getNearestIndex,
@@ -25,7 +25,7 @@ import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { ScaleTime } from 'd3-scale'
 import { useTranslations } from 'next-intl'
-import { KeyboardEvent, MouseEvent, PointerEvent, useId, useMemo } from 'react'
+import { KeyboardEvent, MouseEvent, PointerEvent, useId, useMemo, useState } from 'react'
 import { getArrowStep } from './arrow-keys'
 import { DayGrid } from './DayGrid'
 import { getPointerTime } from './pointer-time'
@@ -131,6 +131,7 @@ export function SpaghettiChart({
     const clipId = useId().replace(/[^\w-]/g, '')
 
     const { ref, width } = useElementWidth<HTMLDivElement>()
+    const [viewLeft, setViewLeft] = useState(0)
 
     const now = nowProp === undefined ? liveNow : nowProp
     const height = width < NARROW_WIDTH ? Math.min(heightProp, NARROW_HEIGHT) : heightProp
@@ -166,10 +167,11 @@ export function SpaghettiChart({
     const hoverX = hoverTime ? x(hoverTime) : null
     const hoverLabel = hover === null ? null : getHoverLabel(steps[hover], hoverSpan, timeZone, locale)
     const labelHalfWidth = hoverSpan ? PERIOD_LABEL_HALF_WIDTH : HOVER_LABEL_HALF_WIDTH
+    const [visibleLeft, visibleRight] = getVisibleRange(viewLeft, width, [margin.left, margin.right])
     const hoverLabelX =
         hoverX === null
             ? null
-            : clamp(hoverX, margin.left + UNIT_LABEL_WIDTH + labelHalfWidth, plotRight - labelHalfWidth)
+            : clamp(hoverX, visibleLeft + UNIT_LABEL_WIDTH + labelHalfWidth, visibleRight - labelHalfWidth)
     const spanLeft = hoverSpan ? Math.max(margin.left, x(hoverSpan[0])) : 0
     const spanRight = hoverSpan ? Math.min(plotRight, x(hoverSpan[1])) : 0
     const tooltipRows = hover !== null ? getTooltipRows(series, hover) : []
@@ -192,6 +194,8 @@ export function SpaghettiChart({
         const index = isBars ? getSpanIndex(times, at, stepMs) : getNearestIndex(times, at)
 
         onHoverIndex?.(clamp(index, minIndex, maxIndex))
+        // The hovered time's label clamps to the part of the plot on screen, read when a slot is picked.
+        setViewLeft(scrollRef.current?.scrollLeft ?? 0)
     }
     // A finger's drag scrolls the chart, so touch selects on a tap (`click`) and keeps the selection after the finger
     // lifts, so its readout can be read; a tap outside the plot clears it, and so does a tap elsewhere, which blurs the
@@ -216,10 +220,14 @@ export function SpaghettiChart({
         e.preventDefault()
         onHoverIndex?.(next)
         reveal(x(times[next]))
+        setViewLeft(scrollRef.current?.scrollLeft ?? 0)
     }
 
     return (
-        <div ref={ref} className="relative w-full select-none">
+        <div
+            ref={ref}
+            className="relative w-full rounded-sm has-[svg:focus-visible]:ring-2 has-[svg:focus-visible]:ring-ring select-none"
+        >
             <div ref={scrollRef} className="overflow-x-auto overscroll-x-contain [scrollbar-width:thin]">
                 <div className="relative" style={{ width: contentWidth }}>
                     <svg
@@ -231,7 +239,7 @@ export function SpaghettiChart({
                         onKeyDown={handleKeyDown}
                         onBlur={() => onHoverIndex?.(null)}
                         onPointerDown={() => onHoverIndex?.(null)}
-                        className="block overflow-visible outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="block overflow-visible outline-none"
                     >
                         {nowX !== null && (
                             <rect

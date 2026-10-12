@@ -15,7 +15,7 @@ import { addHours, getLocalDateKey, toIsoMinute } from '@fa/shared/time'
 import { Variable } from '@fa/shared/variables'
 import { scaleLinear } from 'd3-scale'
 import { useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { MouseEvent, useState } from 'react'
 import {
     Bar,
     CartesianGrid,
@@ -137,6 +137,7 @@ export function PrecipPanel({
 
     const { ref, width } = useElementWidth<HTMLDivElement>()
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
+    const [isTooltipReversed, setIsTooltipReversed] = useState(false)
 
     const rows = toRows(steps, series, median, chance)
     // The axis covers every model's tick, not only the median bars, and uses the shared 0.5 / 1 / 2 / 5 mm steps.
@@ -197,6 +198,13 @@ export function PrecipPanel({
             </div>
         </>
     )
+    // The chart is wider than its card, so Recharts' own flip (against the chart's width) would open a tooltip off
+    // screen near the visible right edge; past the middle of what is on screen it opens to the left.
+    const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+        const box = e.currentTarget.getBoundingClientRect()
+
+        setIsTooltipReversed(e.clientX - box.left > box.width / 2)
+    }
     const renderTooltip = ({ active, payload }: TooltipContentProps) => {
         const row = active ? payload?.[0]?.payload : undefined
 
@@ -206,8 +214,15 @@ export function PrecipPanel({
     }
 
     return (
-        <div ref={ref} className="relative [&_.recharts-surface:focus:not(:focus-visible)]:outline-none">
-            <div ref={scrollRef} className="overflow-x-auto overscroll-x-contain [scrollbar-width:thin]">
+        <div
+            ref={ref}
+            className="relative rounded-sm has-[.recharts-surface:focus-visible]:ring-2 has-[.recharts-surface:focus-visible]:ring-ring [&_.recharts-surface:focus]:outline-none"
+        >
+            <div
+                ref={scrollRef}
+                className="overflow-x-auto overscroll-x-contain [scrollbar-width:thin]"
+                onMouseMove={handleMouseMove}
+            >
                 <ComposedChart
                     width={contentWidth}
                     height={height}
@@ -244,6 +259,7 @@ export function PrecipPanel({
                     ))}
                     <Tooltip
                         content={isPhone ? renderNothing : renderTooltip}
+                        reverseDirection={{ x: isTooltipReversed }}
                         cursor={{ fill: theme.grid, opacity: 0.6 }}
                     />
                     <Bar

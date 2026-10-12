@@ -117,6 +117,20 @@ test('the dashboard switches variables and draws precipitation as bars', async (
     await expect(page.locator('main svg[role=img] rect[rx="2"]').first()).toBeAttached()
 })
 
+// The charts scroll inside their cards, which would clip a ring drawn on the chart itself; the ring sits on the frame
+// around the scroller instead, so keyboard focus stays visible.
+test('a focused chart shows its focus ring around the scrolling plot', async ({ page }) => {
+    await page.goto(`/?city=${LONDON}`)
+
+    const chart = page.getByRole('img', { name: /^Median forecast for London/ })
+
+    await chart.focus()
+
+    const shadow = await chart.evaluate((svg) => getComputedStyle(svg.parentElement!.parentElement!).boxShadow)
+
+    expect(shadow).not.toBe('none')
+})
+
 test('an unknown city page says so and offers the search', async ({ page }) => {
     await page.goto('/city/nowhere-xx-1')
 

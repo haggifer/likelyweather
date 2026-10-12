@@ -11,8 +11,10 @@ export function useElementWidth<T extends HTMLElement = HTMLDivElement>(initial 
     const ref = useCallback<RefCallback<T>>((node) => {
         if (!node) return
 
-        setWidth(node.getBoundingClientRect().width || initial)
-        const observer = new ResizeObserver(([entry]) => setWidth(Math.round(entry.contentRect.width)))
+        // Rounded down: a width rounded up past a fractional container would make a chart that fits overflow it by
+        // a fraction of a pixel, and its scroller would show a scrollbar.
+        setWidth(Math.floor(node.getBoundingClientRect().width) || initial)
+        const observer = new ResizeObserver(([entry]) => setWidth(Math.floor(entry.contentRect.width)))
         observer.observe(node)
 
         return () => observer.disconnect()
