@@ -1,10 +1,13 @@
 import { Series } from '@fa/shared/api'
+import { HOUR_MS } from '@fa/shared/constants'
 import { EnsembleStats } from '@fa/shared/ensemble'
 import { ModelId } from '@fa/shared/models'
+import { Variable } from '@fa/shared/variables'
 import { bisector } from 'd3-array'
 import { ScaleLinear, ScaleTime } from 'd3-scale'
 import { area, curveMonotoneX, line } from 'd3-shape'
-import { getTimeScale, getValueScale } from './plot-geometry'
+import { clamp, getTimeScale, getValueScale } from './plot-geometry'
+import { getYDomain } from './scales'
 
 export interface Margin {
     top: number
@@ -23,6 +26,19 @@ export interface SpaghettiGeometry {
     innerBand: string
 }
 
+// A precipitation bar that fits the plot, by its step's index and its centre.
+export interface DrawnBar {
+    i: number
+    center: number
+}
+
+export interface ClipRect {
+    x: number
+    y: number
+    width: number
+    height: number
+}
+
 interface GeometryInput {
     steps: string[]
     series: Series[]
@@ -38,6 +54,21 @@ type Point = [number, number | null]
 type Values = (number | null)[]
 
 type PlotScales = Pick<SpaghettiGeometry, 'x' | 'y' | 'times'>
+
+export const DEFAULT_SPAGHETTI_HEIGHT = 340
+// The row of wind arrows under the plot.
+const ARROW_ROW = 26
+const MAX_TICK_WIDTH = 16
+// The clip reaches past the plot by half the median's 3 px stroke and a pixel more, so a line on the axis's top or
+// bottom value (a humidity or cloud cover of 100 %) shows its whole stroke.
+const CLIP_BLEED = 2.5
+export const BAR_OPACITY = 0.6
+// The selected bar is drawn again over its static copy, which together reach the 0.95 of a selected bar.
+export const SELECTED_BAR_OPACITY = 0.875
+// Phones get a shorter plot so the model list under it stays in view while scrubbing.
+const NARROW_WIDTH = 480
+const NARROW_HEIGHT = 280
+const DEFAULT_STEP_MS = 3 * HOUR_MS
 
 const isDefined = (p: Point) => p[1] !== null
 
@@ -100,3 +131,64 @@ export const getNearestIndex = (times: Date[], at: Date) => {
 // sits on the bar's edge.
 export const getSpanIndex = (times: Date[], at: Date, stepMs: number) =>
     getNearestIndex(times, new Date(at.getTime() - stepMs / 2))
+
+export const getSpaghettiMargin = (compact: boolean, hasArrows: boolean): Margin => ({
+    top: compact ? 14 : 24,
+    right: 12,
+    bottom: (compact ? 22 : 30) + (hasArrows ? ARROW_ROW : 0),
+    left: compact ? 34 : 44,
+})
+
+export const getSpaghettiHeight = (width: number, height: number) =>
+    width < NARROW_WIDTH ? Math.min(height, NARROW_HEIGHT) : height
+
+// The middle of the arrow row at the bottom of a chart `height` tall.
+export const getArrowRowY = (height: number) => height - ARROW_ROW / 2 - 2
+
+export const getSeriesYDomain = (series: Series[], variable: Variable) =>
+    getYDomain(
+        series.flatMap((s) => s.values),
+        variable,
+    )
+
+export const getStepMs = (times: Date[]) =>
+    times.length > 1 ? times[1].getTime() - times[0].getTime() : DEFAULT_STEP_MS
+
+// Each model's amount is a tick across its bar, no wider than this.
+export const getTickWidth = (barWidth: number) => Math.min(barWidth, MAX_TICK_WIDTH)
+
+// Bars that would overflow the plot are not drawn.
+export const getDrawnBars = (
+    times: Date[],
+    x: ScaleTime<number, number>,
+    stepMs: number,
+    barWidth: number,
+    [left, right]: [number, number],
+): DrawnBar[] =>
+    times
+        .map((time, i) => ({ i, center: x(getSumBarCenter(time, stepMs)) }))
+        .filter(({ center }) => center - barWidth / 2 >= left && center + barWidth / 2 <= right)
+
+// Hovering and stepping stay within the drawn bars.
+export const getIndexRange = (bars: DrawnBar[], isBars: boolean, count: number): [number, number] =>
+    isBars && bars.length ? [bars[0].i, bars[bars.length - 1].i] : [0, count - 1]
+
+// The step a pointer at `at` selects: the sum it is over, or the nearest step of a line.
+export const getIndexAt = (times: Date[], at: Date, stepMs: number, isBars: boolean) =>
+    isBars ? getSpanIndex(times, at, stepMs) : getNearestIndex(times, at)
+
+export const getPickedIndex = (
+    times: Date[],
+    at: Date,
+    stepMs: number,
+    isBars: boolean,
+    [min, max]: [number, number],
+) => clamp(getIndexAt(times, at, stepMs, isBars), min, max)
+
+// The bands span every model while the y-domain fits the visible ones, so they are clipped to the plot.
+export const getClipRect = (margin: Margin, plotRight: number, plotBottom: number): ClipRect => ({
+    x: margin.left,
+    y: margin.top - CLIP_BLEED,
+    width: Math.max(0, plotRight - margin.left),
+    height: Math.max(0, plotBottom - margin.top + 2 * CLIP_BLEED),
+})

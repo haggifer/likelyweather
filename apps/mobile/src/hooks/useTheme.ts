@@ -1,5 +1,6 @@
+import { ChartTheme } from '@fa/chart-core/chart-theme'
 import { useColorScheme } from 'react-native'
-import { ChartTheme, getChartTheme } from '../theme/chart-theme'
+import { getChartTheme } from '../theme/chart-theme'
 import { DARK, LIGHT, RADIUS } from '../theme/tokens'
 import { useSettings } from './useSettings'
 

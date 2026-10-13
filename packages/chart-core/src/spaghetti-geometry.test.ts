@@ -2,13 +2,24 @@ import snapshot from '@fa/fixtures/snapshot-kharkiv.json'
 import { computeEnsemble } from '@fa/shared/ensemble'
 import { ModelId } from '@fa/shared/models'
 import { Variable } from '@fa/shared/variables'
+import { getTimeScale } from './plot-geometry'
 import { getYDomain, getYTicks } from './scales'
 import {
     buildSpaghettiGeometry,
+    getArrowRowY,
+    getClipRect,
+    getDrawnBars,
+    getIndexRange,
     getNearestIndex,
+    getPickedIndex,
+    getSeriesYDomain,
+    getSpaghettiHeight,
+    getSpaghettiMargin,
     getSpanIndex,
+    getStepMs,
     getSumBarCenter,
     getSumSpan,
+    getTickWidth,
 } from './spaghetti-geometry'
 
 // A real collector snapshot (Kharkiv, 2026-09-23 12:00 UTC) keeps the path data honest.
@@ -78,5 +89,59 @@ describe('spaghetti geometry', () => {
             times.findIndex((t) => t.toISOString() === '2026-09-23T12:00:00.000Z'),
         )
         expect(getNearestIndex(times, new Date('2030-01-01T00:00Z'))).toBe(times.length - 1)
+    })
+})
+
+describe('spaghetti layout', () => {
+    const threeHours = 3 * 3_600_000
+    const times = ['2026-10-12T00:00Z', '2026-10-12T03:00Z', '2026-10-12T06:00Z'].map((t) => new Date(t))
+    const x = getTimeScale(times, [44, 344])
+
+    it('makes room for the wind arrows under the plot, and less around a compact chart', () => {
+        expect(getSpaghettiMargin(false, true)).toEqual({ top: 24, right: 12, bottom: 56, left: 44 })
+        expect(getSpaghettiMargin(true, false)).toEqual({ top: 14, right: 12, bottom: 22, left: 34 })
+        expect(getArrowRowY(340)).toBe(325)
+    })
+
+    it('shortens the plot on a phone so the model list stays in view', () => {
+        expect(getSpaghettiHeight(360, 340)).toBe(280)
+        expect(getSpaghettiHeight(360, 200)).toBe(200)
+        expect(getSpaghettiHeight(800, 340)).toBe(340)
+    })
+
+    it('fits the y domain to every model', () => {
+        expect(getSeriesYDomain(series, Variable.Temp)).toEqual([5, 25])
+    })
+
+    it('reads the step from the data, and a 3-hour slot for a single step', () => {
+        expect(getStepMs(times)).toBe(threeHours)
+        expect(getStepMs(times.slice(0, 1))).toBe(threeHours)
+    })
+
+    it('caps a model tick at 16 px across a wide bar', () => {
+        expect(getTickWidth(40)).toBe(16)
+        expect(getTickWidth(9)).toBe(9)
+    })
+
+    it('draws only the bars that fit the plot, and keeps the selection on them', () => {
+        const bars = getDrawnBars(times, x, threeHours, 20, [44, 344])
+
+        expect(bars).toEqual([
+            { i: 0, center: 119 },
+            { i: 1, center: 269 },
+        ])
+        expect(getIndexRange(bars, true, times.length)).toEqual([0, 1])
+        expect(getIndexRange([], false, times.length)).toEqual([0, 2])
+        expect(getPickedIndex(times, new Date('2026-10-12T07:00Z'), threeHours, true, [0, 1])).toBe(1)
+        expect(getPickedIndex(times, new Date('2026-10-12T05:00Z'), threeHours, false, [0, 2])).toBe(2)
+    })
+
+    it('clips past the plot by half the median stroke and a pixel', () => {
+        expect(getClipRect({ top: 24, right: 12, bottom: 30, left: 44 }, 344, 310)).toEqual({
+            x: 44,
+            y: 21.5,
+            width: 300,
+            height: 291,
+        })
     })
 })

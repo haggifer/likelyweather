@@ -46,3 +46,7 @@ export const getVisibleRange = (
     viewportWidth: number,
     [insetLeft, insetRight]: [number, number],
 ): [number, number] => [scrollLeft + insetLeft, scrollLeft + viewportWidth - insetRight]
+
+// A label centred on `x`, kept whole inside the visible range so it never slides under the axis or off the edge.
+export const getLabelX = (x: number, [left, right]: [number, number], halfWidth: number) =>
+    clamp(x, left + halfWidth, right - halfWidth)

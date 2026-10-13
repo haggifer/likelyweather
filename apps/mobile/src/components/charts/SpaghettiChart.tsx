@@ -1,23 +1,34 @@
 import { useAnimatedDomain } from '@fa/chart-core/hooks/useAnimatedDomain'
-import { CHART_FONT_SIZE, clamp, getBarWidth, getNowX } from '@fa/chart-core/plot-geometry'
-import { formatYTick, getYDomain, getYTicks } from '@fa/chart-core/scales'
+import { CHART_FONT_SIZE, getBarWidth, getNowX } from '@fa/chart-core/plot-geometry'
+import { formatYTick, getYTicks } from '@fa/chart-core/scales'
 import { getInitialScrollLeft, getScrollWidth, getVisibleRange, MIN_SLOT_WIDTH } from '@fa/chart-core/scroll-geometry'
 import {
+    BAR_OPACITY,
     buildSpaghettiGeometry,
-    getNearestIndex,
-    getSpanIndex,
-    getSumBarCenter,
-    getSumSpan,
+    ClipRect,
+    DEFAULT_SPAGHETTI_HEIGHT,
+    DrawnBar,
+    getArrowRowY,
+    getClipRect,
+    getDrawnBars,
+    getIndexRange,
+    getPickedIndex,
+    getSeriesYDomain,
+    getSpaghettiHeight,
+    getSpaghettiMargin,
+    getStepMs,
+    getTickWidth,
     Margin,
+    SELECTED_BAR_OPACITY,
     SpaghettiGeometry,
 } from '@fa/chart-core/spaghetti-geometry'
+import { getSpaghettiHover, getTooltipRows, UNIT_LABEL_WIDTH } from '@fa/chart-core/spaghetti-hover'
 import { Series } from '@fa/shared/api'
-import { HOUR_MS } from '@fa/shared/constants'
 import { EnsembleStats } from '@fa/shared/ensemble'
-import { formatNumber, formatPeriodLabel, formatStepLabel } from '@fa/shared/format'
-import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
+import { formatNumber } from '@fa/shared/format'
+import { MODEL_BY_ID } from '@fa/shared/models'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
-import { ScaleLinear, ScaleTime } from 'd3-scale'
+import { ScaleLinear } from 'd3-scale'
 import { memo, useId, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
@@ -27,93 +38,19 @@ import { useChartScroll } from '../../hooks/useChartScroll'
 import { useLayoutWidth } from '../../hooks/useLayoutWidth'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { useTheme } from '../../hooks/useTheme'
+import { cn } from '../../lib/cn'
 import { getFontFamily } from '../../theme/fonts'
-import { Text } from '../legacy-ui/Text'
 import { LineSwatch } from '../ui/LineSwatch'
+import { Text } from '../ui/text'
 import { DayGrid } from './DayGrid'
 import { TapSurface } from './TapSurface'
 import { WindArrows } from './WindArrows'
 
-interface DrawnBar {
-    i: number
-    center: number
-}
-
-interface TooltipRow {
-    modelId: ModelId
-    value: number
-}
-
-const ARROW_ROW = 26
-const MAX_TICK_WIDTH = 16
-const HOVER_LABEL_HALF_WIDTH = 34
 const SCROLL_THROTTLE_MS = 100
-const PERIOD_LABEL_HALF_WIDTH = 50
-const UNIT_LABEL_WIDTH = 28
-// The clip reaches past the plot by half the median's 3 px stroke and a pixel more, so a line on the axis's top or
-// bottom value (a humidity or cloud cover of 100 %) shows its whole stroke.
-const CLIP_BLEED = 2.5
 const TOOLTIP_SWATCH_WIDTH = 12
-const BAR_OPACITY = 0.6
-// The selected bar is drawn again over its static copy, which together reach the 0.95 of a selected bar.
-const SELECTED_BAR_OPACITY = 0.875
-// Phones get a shorter plot so the model list under it stays in view while scrubbing, as on the web.
-const NARROW_WIDTH = 480
-const NARROW_HEIGHT = 280
-
-const styles = StyleSheet.create({
-    tooltip: {
-        position: 'absolute',
-        top: 8,
-        minWidth: 150,
-        borderWidth: StyleSheet.hairlineWidth,
-        borderRadius: 8,
-        paddingHorizontal: 10,
-        paddingVertical: 8,
-        gap: 2,
-    },
-    row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-    model: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    small: { fontSize: 12 },
-    strong: { fontSize: 12, fontWeight: '600' },
-    value: { fontWeight: '500' },
-})
-
-const getMargin = (compact: boolean, hasArrows: boolean): Margin => ({
-    top: compact ? 14 : 24,
-    right: 12,
-    bottom: (compact ? 22 : 30) + (hasArrows ? ARROW_ROW : 0),
-    left: compact ? 34 : 44,
-})
-
-const getSeriesYDomain = (series: Series[], variable: Variable) =>
-    getYDomain(
-        series.flatMap((s) => s.values),
-        variable,
-    )
-
-// Bars that would overflow the plot are not drawn.
-const getDrawnBars = (
-    times: Date[],
-    x: ScaleTime<number, number>,
-    stepMs: number,
-    barWidth: number,
-    [left, right]: [number, number],
-): DrawnBar[] =>
-    times
-        .map((time, i) => ({ i, center: x(getSumBarCenter(time, stepMs)) }))
-        .filter(({ center }) => center - barWidth / 2 >= left && center + barWidth / 2 <= right)
-
-const getHoverLabel = (step: string, span: [Date, Date] | null, timeZone: string, locale: string) =>
-    span
-        ? formatPeriodLabel(span[0].toISOString(), span[1].toISOString(), timeZone, locale)
-        : formatStepLabel(step, timeZone, locale)
-
-const getTooltipRows = (series: Series[], index: number) =>
-    series
-        .map((s) => ({ modelId: s.modelId, value: s.values[index] }))
-        .filter((r): r is TooltipRow => r.value !== null)
-        .sort((a, b) => b.value - a.value)
+// Half the cap height of the tick font, so a label centres on its gridline.
+const BASELINE_SHIFT = 3.5
+const TOOLTIP_ROW_CLASS = 'flex-row items-center justify-between gap-3'
 
 interface BarTicksProps {
     series: Series[]
@@ -158,6 +95,7 @@ interface DrawingProps {
     margin: Margin
     height: number
     plotRight: number
+    clip: ClipRect
     nowX: number | null
     directions?: (number | null)[] | null
     timeZone: string
@@ -181,6 +119,7 @@ const SpaghettiDrawing = memo(function SpaghettiDrawing({
     margin,
     height,
     plotRight,
+    clip,
     nowX,
     directions,
     timeZone,
@@ -220,19 +159,12 @@ const SpaghettiDrawing = memo(function SpaghettiDrawing({
                 labelY={plotBottom + (compact ? 15 : 18)}
                 lineColor={chart.border}
                 labelColor={chart.muted}
-                fontSize={CHART_FONT_SIZE}
             />
             <Defs>
                 <ClipPath id={clipId}>
-                    <Rect
-                        x={margin.left}
-                        y={margin.top - CLIP_BLEED}
-                        width={Math.max(0, plotRight - margin.left)}
-                        height={Math.max(0, plotBottom - margin.top + 2 * CLIP_BLEED)}
-                    />
+                    <Rect x={clip.x} y={clip.y} width={clip.width} height={clip.height} />
                 </ClipPath>
             </Defs>
-            {/* The bands span every model while the y-domain fits the visible ones, so they are clipped. */}
             <G clipPath={`url(#${clipId})`}>
                 {!isBars && <Path d={geometry.outerBand} fill={chart.band} opacity={chart.bandOuterOpacity} />}
                 {!isBars && <Path d={geometry.innerBand} fill={chart.band} opacity={chart.bandInnerOpacity} />}
@@ -288,7 +220,7 @@ const SpaghettiDrawing = memo(function SpaghettiDrawing({
                     x={x}
                     times={times}
                     directions={directions}
-                    y={height - ARROW_ROW / 2 - 2}
+                    y={getArrowRowY(height)}
                     color={chart.foreground}
                     mutedColor={chart.muted}
                 />
@@ -329,23 +261,23 @@ export function SpaghettiChart({
     onHoverIndex,
     now,
     directions,
-    height: heightProp = 340,
+    height: heightProp = DEFAULT_SPAGHETTI_HEIGHT,
     compact = false,
     showTooltip = false,
     isMedianHidden = false,
 }: IProps) {
     const t = useTranslations('chart')
-    const { chart, colors } = useTheme()
+    const { chart } = useTheme()
     const isReducedMotion = useReducedMotion()
     const { width, onLayout } = useLayoutWidth()
     const [viewLeft, setViewLeft] = useState(0)
     const clipId = useId().replace(/[^\w-]/g, '')
 
-    const height = width < NARROW_WIDTH ? Math.min(heightProp, NARROW_HEIGHT) : heightProp
+    const height = getSpaghettiHeight(width, heightProp)
     const info = VARIABLE_BY_ID[variable]
     const isBars = variable === Variable.Precip
     const hasArrows = Boolean(directions)
-    const margin = useMemo(() => getMargin(compact, hasArrows), [compact, hasArrows])
+    const margin = useMemo(() => getSpaghettiMargin(compact, hasArrows), [compact, hasArrows])
     const contentWidth = getScrollWidth(width, steps.length - 1, MIN_SLOT_WIDTH, margin.left + margin.right)
     const target = useMemo(() => getSeriesYDomain(series, variable), [series, variable])
     // A refresh of the same variable eases the axis to its new range; another variable jumps.
@@ -361,31 +293,33 @@ export function SpaghettiChart({
     const plotRight = contentWidth - margin.right
     const nowX = getNowX(x, now, margin.left, plotRight)
     const yTicks = useMemo(() => getYTicks(domain, variable, compact ? 3 : 5), [domain, variable, compact])
-    const stepMs = times.length > 1 ? times[1].getTime() - times[0].getTime() : 3 * HOUR_MS
+    const stepMs = getStepMs(times)
     const barWidth = getBarWidth(x, times[0], stepMs)
-    const tickWidth = Math.min(barWidth, MAX_TICK_WIDTH)
+    const tickWidth = getTickWidth(barWidth)
     const bars = useMemo(
         () => (isBars ? getDrawnBars(times, x, stepMs, barWidth, [margin.left, plotRight]) : []),
         [isBars, times, x, stepMs, barWidth, margin.left, plotRight],
     )
-    const minIndex = isBars && bars.length ? bars[0].i : 0
-    const maxIndex = isBars && bars.length ? bars[bars.length - 1].i : times.length - 1
-    const hover = hoverIndex !== null && times[hoverIndex] ? hoverIndex : null
-    const hoverSpan = hover !== null && isBars ? getSumSpan(times[hover], stepMs) : null
-    const hoverTime = hover === null ? null : hoverSpan ? getSumBarCenter(times[hover], stepMs) : times[hover]
-    const hoverX = hoverTime ? x(hoverTime) : null
-    const hoverLabel = hover === null ? null : getHoverLabel(steps[hover], hoverSpan, timeZone, locale)
-    const hoverBar = hover === null ? undefined : bars.find(({ i }) => i === hover)
-    const hoverMedian = hover === null ? null : stats.median[hover]
-    const labelHalfWidth = hoverSpan ? PERIOD_LABEL_HALF_WIDTH : HOVER_LABEL_HALF_WIDTH
-    const [visibleLeft, visibleRight] = getVisibleRange(viewLeft, width, [margin.left, margin.right])
-    const hoverLabelX =
-        hoverX === null
-            ? null
-            : clamp(hoverX, visibleLeft + UNIT_LABEL_WIDTH + labelHalfWidth, visibleRight - labelHalfWidth)
-    const spanLeft = hoverSpan ? Math.max(margin.left, x(hoverSpan[0])) : 0
-    const spanRight = hoverSpan ? Math.min(plotRight, x(hoverSpan[1])) : 0
-    const tooltipRows = hover !== null && showTooltip ? getTooltipRows(series, hover) : []
+    const clip = useMemo(() => getClipRect(margin, plotRight, plotBottom), [margin, plotRight, plotBottom])
+    const indexRange = getIndexRange(bars, isBars, times.length)
+    const visibleRange = getVisibleRange(viewLeft, width, [margin.left, margin.right])
+    const hover = getSpaghettiHover({
+        hoverIndex,
+        steps,
+        times,
+        x,
+        isBars,
+        stepMs,
+        bars,
+        visibleRange,
+        margin,
+        plotRight,
+        timeZone,
+        locale,
+    })
+    const hoverBar = hover?.bar
+    const hoverMedian = hover ? stats.median[hover.index] : null
+    const tooltipRows = hover && showTooltip ? getTooltipRows(series, hover.index) : []
     const plot = { left: margin.left, top: margin.top, right: plotRight, bottom: plotBottom }
     const initialScrollLeft = getInitialScrollLeft(now ? x(now) : null, {
         slotWidth: x(times[1] ?? times[0]) - x(times[0]),
@@ -398,10 +332,7 @@ export function SpaghettiChart({
     const { ref: scrollRef, onContentSizeChange, onScroll, getScrollLeft } = useChartScroll(steps[0], initialScrollLeft)
 
     const handleSelect = (touchX: number) => {
-        const at = x.invert(touchX)
-        const index = isBars ? getSpanIndex(times, at, stepMs) : getNearestIndex(times, at)
-
-        onHoverIndex(clamp(index, minIndex, maxIndex))
+        onHoverIndex(getPickedIndex(times, x.invert(touchX), stepMs, isBars, indexRange))
         // The picked time's label clamps to the part of the chart on screen when it was picked.
         setViewLeft(getScrollLeft())
     }
@@ -422,11 +353,11 @@ export function SpaghettiChart({
                             <TapSurface onSelect={handleSelect} plot={plot} onClear={() => onHoverIndex(null)}>
                                 <Svg width={contentWidth} height={height}>
                                     {/* The picked span's shade goes under the static drawing, as on the web. */}
-                                    {hoverSpan && (
+                                    {hover?.shade && (
                                         <Rect
-                                            x={spanLeft}
+                                            x={hover.shade.left}
                                             y={margin.top}
-                                            width={Math.max(0, spanRight - spanLeft)}
+                                            width={hover.shade.width}
                                             height={plotBottom - margin.top}
                                             fill={chart.grid}
                                             opacity={0.8}
@@ -443,6 +374,7 @@ export function SpaghettiChart({
                                         margin={margin}
                                         height={height}
                                         plotRight={plotRight}
+                                        clip={clip}
                                         nowX={nowX}
                                         directions={directions}
                                         timeZone={timeZone}
@@ -474,7 +406,7 @@ export function SpaghettiChart({
                                             />
                                         </G>
                                     )}
-                                    {nowX !== null && hover === null && (
+                                    {nowX !== null && !hover && (
                                         <SvgText
                                             x={nowX + 4}
                                             y={margin.top + 10}
@@ -485,39 +417,39 @@ export function SpaghettiChart({
                                             {t('now')}
                                         </SvgText>
                                     )}
-                                    {hover !== null && hoverX !== null && (
+                                    {hover && (
                                         <G>
                                             {!isBars && (
                                                 <Line
-                                                    x1={hoverX}
-                                                    x2={hoverX}
+                                                    x1={hover.x}
+                                                    x2={hover.x}
                                                     y1={margin.top}
                                                     y2={plotBottom}
                                                     stroke={chart.muted}
                                                 />
                                             )}
-                                            {!compact && hoverLabelX !== null && (
+                                            {!compact && (
                                                 <SvgText
-                                                    x={hoverLabelX}
+                                                    x={hover.labelX}
                                                     y={margin.top - 8}
                                                     textAnchor="middle"
                                                     fontSize={CHART_FONT_SIZE}
                                                     fontFamily={getFontFamily('600')}
                                                     fill={chart.foreground}
                                                 >
-                                                    {hoverLabel}
+                                                    {hover.label}
                                                 </SvgText>
                                             )}
                                             {!isBars &&
                                                 series.map((s) => {
-                                                    const v = s.values[hover]
+                                                    const v = s.values[hover.index]
 
                                                     if (v === null) return null
 
                                                     return (
                                                         <Circle
                                                             key={s.modelId}
-                                                            cx={hoverX}
+                                                            cx={hover.x}
                                                             cy={y(v)}
                                                             r={3.5}
                                                             fill={MODEL_BY_ID[s.modelId].color}
@@ -528,7 +460,7 @@ export function SpaghettiChart({
                                                 })}
                                             {!isBars && !isMedianHidden && hoverMedian !== null && (
                                                 <Circle
-                                                    cx={hoverX}
+                                                    cx={hover.x}
                                                     cy={y(hoverMedian)}
                                                     r={4.5}
                                                     fill={chart.median}
@@ -540,43 +472,37 @@ export function SpaghettiChart({
                                     )}
                                 </Svg>
                             </TapSurface>
-                            {showTooltip && hover !== null && hoverX !== null && (
+                            {showTooltip && hover && (
                                 <View
                                     pointerEvents="none"
-                                    style={[
-                                        styles.tooltip,
-                                        { backgroundColor: colors.popover, borderColor: colors.border },
-                                        hoverX > contentWidth / 2
-                                            ? { right: contentWidth - hoverX + 10 }
-                                            : { left: hoverX + 10 },
-                                    ]}
+                                    className="absolute top-2 z-10 min-w-40 rounded-md border border-border bg-popover px-2.5 py-2 shadow-md"
+                                    style={
+                                        hover.x > contentWidth / 2
+                                            ? { right: contentWidth - hover.x + 10 }
+                                            : { left: hover.x + 10 }
+                                    }
                                 >
-                                    <Text style={[styles.small, { color: colors['muted-foreground'] }]}>
-                                        {hoverLabel}
-                                    </Text>
-                                    <View style={styles.row}>
-                                        <Text style={[styles.strong, { color: colors.foreground }]}>{t('median')}</Text>
-                                        <Text isTabular style={[styles.strong, { color: colors.foreground }]}>
-                                            {formatNumber(stats.median[hover], info.decimals)}
+                                    <Text className="mb-1 text-xs text-muted-foreground">{hover.label}</Text>
+                                    <View className={cn('mb-1', TOOLTIP_ROW_CLASS)}>
+                                        <Text className="text-xs font-semibold">{t('median')}</Text>
+                                        <Text className="text-xs font-semibold tabular-nums">
+                                            {formatNumber(hoverMedian, info.decimals)}
                                         </Text>
                                     </View>
                                     {/* A dashed swatch and a muted name, as on the web: colour alone would not tell the models apart. */}
                                     {tooltipRows.map((r) => (
-                                        <View key={r.modelId} style={styles.row}>
-                                            <View style={styles.model}>
+                                        <View key={r.modelId} className={TOOLTIP_ROW_CLASS}>
+                                            <View className="flex-row items-center gap-1.5">
                                                 <LineSwatch
                                                     color={MODEL_BY_ID[r.modelId].color}
                                                     dash={MODEL_BY_ID[r.modelId].dash}
                                                     width={TOOLTIP_SWATCH_WIDTH}
                                                 />
-                                                <Text style={[styles.small, { color: colors['muted-foreground'] }]}>
+                                                <Text className="text-xs text-muted-foreground">
                                                     {MODEL_BY_ID[r.modelId].name}
                                                 </Text>
                                             </View>
-                                            <Text
-                                                isTabular
-                                                style={[styles.small, styles.value, { color: colors.foreground }]}
-                                            >
+                                            <Text className="text-xs font-medium tabular-nums">
                                                 {formatNumber(r.value, info.decimals)}
                                             </Text>
                                         </View>
@@ -592,7 +518,7 @@ export function SpaghettiChart({
                             <SvgText
                                 key={tick}
                                 x={margin.left - 6}
-                                y={y(tick) + 3.5}
+                                y={y(tick) + BASELINE_SHIFT}
                                 textAnchor="end"
                                 fontSize={CHART_FONT_SIZE}
                                 fontFamily={getFontFamily('400')}

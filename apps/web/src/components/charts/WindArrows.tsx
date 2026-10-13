@@ -1,7 +1,6 @@
+import { getWindMarks, getWindTransform, WIND_ARROW_PATH, WIND_DOT_RADIUS } from '@fa/chart-core/wind-arrows'
 import { formatWindDirection } from '@fa/shared/format'
 import { ScaleTime } from 'd3-scale'
-
-const ARROW = 'M0,-7 L4,3 L0,1 L-4,3 Z'
 
 interface IProps {
     x: ScaleTime<number, number>
@@ -13,24 +12,20 @@ interface IProps {
     compassLabels: string[]
 }
 
-// Meteorological direction is where the wind comes FROM; the arrow points where it blows to (+180°).
+// Each slot's median wind direction as an arrow, a dot where no model gave one; its title names the direction.
 export function WindArrows({ x, times, directions, y, color, mutedColor, compassLabels }: IProps) {
     return (
         <g aria-hidden="true">
-            {directions.map((deg, i) => {
-                const cx = x(times[i])
-
-                if (deg === null) {
-                    return <circle key={times[i].toISOString()} cx={cx} cy={y} r={1.5} fill={mutedColor} />
-                }
-
-                return (
-                    <g key={times[i].toISOString()} transform={`translate(${cx},${y}) rotate(${deg + 180})`}>
+            {getWindMarks(x, times, directions).map(({ key, x: cx, deg }) =>
+                deg === null ? (
+                    <circle key={key} cx={cx} cy={y} r={WIND_DOT_RADIUS} fill={mutedColor} />
+                ) : (
+                    <g key={key} transform={getWindTransform(cx, y, deg)}>
                         <title>{formatWindDirection(deg, compassLabels)}</title>
-                        <path d={ARROW} fill={color} />
+                        <path d={WIND_ARROW_PATH} fill={color} />
                     </g>
-                )
-            })}
+                ),
+            )}
         </g>
     )
 }

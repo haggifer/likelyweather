@@ -1,15 +1,14 @@
-export interface ChartTheme {
-    foreground: string
-    muted: string
-    border: string
-    card: string
-    grid: string
-    median: string
-    band: string
+import {
+    BAND_INNER_OPACITY,
+    BAND_OUTER_OPACITY,
+    getChartColors,
+    ChartTheme as SharedChartTheme,
+} from '@fa/chart-core/chart-theme'
+
+// The colours both apps' charts draw with, and the ones only the web's draw with.
+export interface ChartTheme extends SharedChartTheme {
     primary: string
     warning: string
-    bandOuterOpacity: number
-    bandInnerOpacity: number
     fontMono: string
 }
 
@@ -24,8 +23,8 @@ export const FALLBACK_CHART_THEME: ChartTheme = {
     band: '#1e5eff',
     primary: '#1e5eff',
     warning: '#b45309',
-    bandOuterOpacity: 0.12,
-    bandInnerOpacity: 0.22,
+    bandOuterOpacity: BAND_OUTER_OPACITY,
+    bandInnerOpacity: BAND_INNER_OPACITY,
     fontMono: 'ui-monospace, monospace',
 }
 
@@ -36,13 +35,7 @@ export const readChartTheme = (): ChartTheme => {
     const readNumber = (name: string, fallback: number) => Number(read(name, String(fallback))) || fallback
 
     return {
-        foreground: read('--foreground', FALLBACK_CHART_THEME.foreground),
-        muted: read('--muted-foreground', FALLBACK_CHART_THEME.muted),
-        border: read('--border', FALLBACK_CHART_THEME.border),
-        card: read('--card', FALLBACK_CHART_THEME.card),
-        grid: read('--chart-grid', FALLBACK_CHART_THEME.grid),
-        median: read('--chart-median', FALLBACK_CHART_THEME.median),
-        band: read('--chart-band', FALLBACK_CHART_THEME.band),
+        ...getChartColors((token, key) => read(`--${token}`, FALLBACK_CHART_THEME[key])),
         primary: read('--primary', FALLBACK_CHART_THEME.primary),
         warning: read('--warning', FALLBACK_CHART_THEME.warning),
         bandOuterOpacity: readNumber('--band-outer-opacity', FALLBACK_CHART_THEME.bandOuterOpacity),

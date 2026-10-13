@@ -1,15 +1,12 @@
 import { BarChart3, Table2 } from 'lucide-react-native'
 import { ReactNode, useState } from 'react'
-import { StyleSheet } from 'react-native'
+import { View } from 'react-native'
 import { useTranslations } from 'use-intl'
-import { useTheme } from '../../hooks/useTheme'
-import { Button } from '../legacy-ui/Button'
-import { Card } from '../legacy-ui/Card'
-import { Text } from '../legacy-ui/Text'
-
-const styles = StyleSheet.create({
-    summary: { fontSize: 12, lineHeight: 17 },
-})
+import { cn } from '../../lib/cn'
+import { Button } from '../ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
+import { Icon } from '../ui/icon'
+import { Text } from '../ui/text'
 
 interface IProps {
     title: string
@@ -25,25 +22,33 @@ interface IProps {
 // The web's ChartFrame: a card with the chart, an optional table view and the text summary last.
 export function ChartFrame({ title, description, summary, table, isFetching = false, children }: IProps) {
     const t = useTranslations('chart')
-    const { colors } = useTheme()
 
     const [isTable, setIsTable] = useState(false)
 
-    const tableToggle = table ? (
-        <Button
-            variant="ghost"
-            icon={isTable ? BarChart3 : Table2}
-            label={isTable ? t('chart') : t('table')}
-            onPress={() => setIsTable((v) => !v)}
-            accessibilityLabel={isTable ? t('showChart') : t('showTable')}
-            isSelected={isTable}
-        />
-    ) : undefined
-
     return (
-        <Card title={title} description={description} action={tableToggle} isDimmed={isFetching}>
-            {isTable && table ? table : children}
-            {summary && <Text style={[styles.summary, { color: colors['muted-foreground'] }]}>{summary}</Text>}
+        <Card className="gap-3 py-4">
+            <CardHeader className="flex-row items-start gap-2 px-4">
+                <View className="flex-1 gap-1">
+                    <CardTitle className="text-base leading-snug">{title}</CardTitle>
+                    {description && <CardDescription>{description}</CardDescription>}
+                </View>
+                {table && (
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onPress={() => setIsTable((v) => !v)}
+                        accessibilityLabel={isTable ? t('showChart') : t('showTable')}
+                        accessibilityState={{ selected: isTable }}
+                    >
+                        <Icon as={isTable ? BarChart3 : Table2} className="size-4" />
+                        <Text>{isTable ? t('chart') : t('table')}</Text>
+                    </Button>
+                )}
+            </CardHeader>
+            <CardContent className={cn('px-4', isFetching && 'opacity-60')}>
+                {isTable && table ? table : children}
+                {summary && <Text className="mt-2 text-xs text-muted-foreground">{summary}</Text>}
+            </CardContent>
         </Card>
     )
 }

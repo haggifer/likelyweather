@@ -8,24 +8,37 @@ import { useFocusVisible } from '@/hooks/useFocusVisible'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useOverviewPanels } from '@/hooks/useOverviewPanels'
 import { cn } from '@/lib/cn'
-import { MedianSeries, OverviewMedians } from '@fa/chart-core/overview-stats'
-import { CHART_FONT_SIZE, clamp, getBarWidth, getNowX, getTimeScale, getValueScale } from '@fa/chart-core/plot-geometry'
-import { formatYTick, getPanelTicks, getYDomain } from '@fa/chart-core/scales'
 import {
-    getInitialScrollLeft,
-    getScrollWidth,
-    getVisibleRange,
-    MIN_ARCHIVE_HOUR_WIDTH,
-    MIN_SLOT_WIDTH,
-} from '@fa/chart-core/scroll-geometry'
-import { getNearestIndex, getSumBarCenter } from '@fa/chart-core/spaghetti-geometry'
-import { HOUR_MS } from '@fa/shared/constants'
+    AXIS_HEIGHT,
+    getArrowY,
+    getChanceLabels,
+    getChanceY,
+    getHoverDots,
+    getOverviewContentWidth,
+    getOverviewFrame,
+    getOverviewLayout,
+    getPanelBars,
+    getPanelHeight,
+    getPanelPaths,
+    getPanelScale,
+    HOVER_STRIP,
+    OVERVIEW_MARGIN_RIGHT,
+    OVERVIEW_SIZE,
+    OverviewSize,
+    PANEL_RADIUS,
+    ROW_GAP,
+    SECONDARY_DASH,
+} from '@fa/chart-core/overview-geometry'
+import { getExtraReadout, getOverviewReadoutIndex, getPanelSeries, getValueAt } from '@fa/chart-core/overview-readouts'
+import { OverviewMedians } from '@fa/chart-core/overview-stats'
+import { CHART_FONT_SIZE, clamp, getNowX } from '@fa/chart-core/plot-geometry'
+import { formatYTick } from '@fa/chart-core/scales'
+import { getInitialScrollLeft, getLabelX, getVisibleRange } from '@fa/chart-core/scroll-geometry'
+import { getNearestIndex } from '@fa/chart-core/spaghetti-geometry'
 import { formatNumber, formatStepLabel } from '@fa/shared/format'
-import { getVisiblePanels, PanelVariable, SECONDARY_VARIABLE } from '@fa/shared/overview-panels'
+import { getVisiblePanels, PanelVariable } from '@fa/shared/overview-panels'
 import { SLOT_HOURS } from '@fa/shared/slots'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
-import { ScaleLinear, ScaleTime } from 'd3-scale'
-import { area, curveMonotoneX, line } from 'd3-shape'
 import { useTranslations } from 'next-intl'
 import { CSSProperties, KeyboardEvent, MouseEvent, PointerEvent, useId, useMemo, useState } from 'react'
 import { getArrowStep } from './arrow-keys'
@@ -33,32 +46,9 @@ import { DayGrid } from './DayGrid'
 import { getPointerTime } from './pointer-time'
 import { WindArrows } from './WindArrows'
 
-interface RowLayout {
-    variable: PanelVariable
-    top: number
-    bottom: number
-    height: number
-}
-
-interface ChartSize {
-    heights: Record<PanelVariable, number>
-    marginLeft: number
-    tickFontSize: number
-    labelFontSize: number
-    hoverLabelHalfWidth: number
+interface ChartSize extends OverviewSize {
     isNowLabelAbove: boolean
 }
-
-interface ChartGeometry extends ChartSize {
-    rows: { variable: PanelVariable; height: number }[]
-    layout: RowLayout[]
-    spans: { top: number; bottom: number }[]
-    plotTop: number
-    plotBottom: number
-    totalHeight: number
-}
-
-type Point = [Date, number | null]
 
 interface SkeletonProps {
     panels?: PanelVariable[]
@@ -66,30 +56,9 @@ interface SkeletonProps {
     isArchive?: boolean
 }
 
-// The chance of rain sits under the precipitation bars like the direction arrows under the wind, a few pixels below the
-// bars' baseline so its "%" clears the axis's 0; the panel grows by it, so the bars keep their room.
-const CHANCE_GAP = 4
-const CHANCE_STRIP = 18
-const CHANCE_ROOM = CHANCE_GAP + CHANCE_STRIP
-
-// On a phone the overview is the landing page's main content, so its panels are taller and its text larger than in
-// the desktop column (author, 2026-10-09); the readouts above the chart leave it the full width. Text is 11 px on both
-// (author, 2026-10-12).
-const DESKTOP_SIZE: ChartSize = {
-    heights: {
-        [Variable.Temp]: 104,
-        [Variable.Wind]: 100,
-        [Variable.Pressure]: 80,
-        [Variable.Precip]: 80,
-        [Variable.Humidity]: 80,
-        [Variable.Cloud]: 80,
-    },
-    marginLeft: 36,
-    tickFontSize: CHART_FONT_SIZE,
-    labelFontSize: CHART_FONT_SIZE,
-    hoverLabelHalfWidth: 34,
-    isNowLabelAbove: false,
-}
+// On a phone the overview is the landing page's main content, so its panels are taller than in the desktop column
+// (author, 2026-10-09); the readouts above the chart leave it the full width.
+const DESKTOP_SIZE: ChartSize = { ...OVERVIEW_SIZE, isNowLabelAbove: false }
 const PHONE_SIZE: ChartSize = {
     heights: {
         [Variable.Temp]: 120,
@@ -100,23 +69,11 @@ const PHONE_SIZE: ChartSize = {
         [Variable.Cloud]: 92,
     },
     marginLeft: 40,
-    tickFontSize: CHART_FONT_SIZE,
-    labelFontSize: CHART_FONT_SIZE,
     hoverLabelHalfWidth: 36,
     // The panel names sit in the panels' top-left corner, where the "now" line always is right after a fetch; above
     // the panels the label centres on its line like the hovered time (author, 2026-10-13).
     isNowLabelAbove: true,
 }
-const ROW_GAP = 14
-const ROW_PAD = 6
-const ARROW_STRIP = 20
-// Feels-like and gusts are drawn as a second, dashed line in the panel of the variable they belong to.
-const SECONDARY_DASH = '5 3'
-const HOVER_STRIP = 20
-const AXIS_HEIGHT = 22
-const MARGIN_RIGHT = 8
-const PANEL_RADIUS = 4
-const SLOT_MS = SLOT_HOURS * HOUR_MS
 // Phones stack the readouts in a two-column grid above a full-width chart; from `sm` they form a column beside it, one
 // per panel. The column's gap and padding match ROW_GAP, HOVER_STRIP and AXIS_HEIGHT.
 const GRID = 'grid grid-cols-1 gap-y-3 sm:grid-cols-[minmax(8rem,12rem)_minmax(0,1fr)] sm:gap-x-4'
@@ -126,89 +83,10 @@ const COLUMN_GAP = 16
 const SKELETON_GAP = 24
 const SKELETON_READOUT_REACH = SKELETON_GAP - COLUMN_GAP - DESKTOP_SIZE.marginLeft
 
-const getChanceRoom = (variable: PanelVariable, hasChance: boolean) =>
-    variable === Variable.Precip && hasChance ? CHANCE_ROOM : 0
-
-const getPanelHeight = (size: ChartSize, variable: PanelVariable, hasChance: boolean) =>
-    size.heights[variable] + getChanceRoom(variable, hasChance)
-
-const getLayout = (rows: ChartGeometry['rows'], hasChance: boolean) =>
-    rows.reduce<RowLayout[]>((layout, row) => {
-        const previous = layout[layout.length - 1]
-        const top = previous ? previous.top + previous.height + ROW_GAP : HOVER_STRIP
-        const strip = row.variable === Variable.Wind ? ARROW_STRIP : getChanceRoom(row.variable, hasChance)
-
-        return [
-            ...layout,
-            { variable: row.variable, top, height: row.height, bottom: top + row.height - ROW_PAD - strip },
-        ]
-    }, [])
-
-// The reader's panels, stacked in their order (`overview-panels.ts`).
-const getGeometry = (size: ChartSize, panels: PanelVariable[], hasChance: boolean): ChartGeometry => {
-    const rows = panels.map((variable) => ({ variable, height: getPanelHeight(size, variable, hasChance) }))
-    const layout = getLayout(rows, hasChance)
-    const last = layout[layout.length - 1]
-    const plotBottom = last.top + last.height
-
-    return {
-        ...size,
-        rows,
-        layout,
-        spans: layout.map(({ top, height }) => ({ top, bottom: top + height })),
-        plotTop: layout[0].top,
-        plotBottom,
-        totalHeight: plotBottom + AXIS_HEIGHT,
-    }
-}
-
-const isDefined = (p: Point) => p[1] !== null
-
-const EMPTY_SERIES: MedianSeries = { steps: [], values: [] }
-
-// The chart only draws panels whose series were fetched; a missing one draws empty rather than failing.
-const getSeries = (series: OverviewMedians, variable: PanelVariable) => series[variable] ?? EMPTY_SERIES
-
-const getValueAt = (s: MedianSeries, step: string) => {
-    const index = s.steps.indexOf(step)
-
-    return index >= 0 ? s.values[index] : null
-}
-
-// Gusts outrun the mean wind, so a wind panel showing them takes the gusts' axis steps.
-const getPanelDomain = (variable: PanelVariable, s: MedianSeries, secondary: MedianSeries | null) => {
-    const hasSecondary = Boolean(secondary?.values.some((v) => v !== null))
-    const scaleVariable = hasSecondary && variable === Variable.Wind ? Variable.Gusts : variable
-    const values = hasSecondary ? [...s.values, ...secondary!.values] : s.values
-
-    return { domain: getYDomain(values, scaleVariable), scaleVariable }
-}
-
-// A panel's value axis: the scale and the ticks its gridlines and its pinned labels share.
-const getPanelScale = (row: RowLayout, series: OverviewMedians) => {
-    const secondaryVariable = SECONDARY_VARIABLE[row.variable]
-    const secondary = (secondaryVariable && series[secondaryVariable]) || null
-    const { domain, scaleVariable } = getPanelDomain(row.variable, getSeries(series, row.variable), secondary)
-
-    return { y: getValueScale(domain, [row.bottom, row.top + ROW_PAD]), ticks: getPanelTicks(domain, scaleVariable) }
-}
-
-const toPoints = (s: MedianSeries): Point[] => s.steps.map((step, i) => [new Date(step), s.values[i]])
-
-const getAreaPath = (points: Point[], x: ScaleTime<number, number>, y: ScaleLinear<number, number>, bottom: number) =>
-    area<Point>()
-        .defined(isDefined)
-        .x((p) => x(p[0]))
-        .y0(bottom)
-        .y1((p) => y(p[1] as number))
-        .curve(curveMonotoneX)(points) ?? ''
-
-const getLinePath = (points: Point[], x: ScaleTime<number, number>, y: ScaleLinear<number, number>) =>
-    line<Point>()
-        .defined(isDefined)
-        .x((p) => x(p[0]))
-        .y((p) => y(p[1] as number))
-        .curve(curveMonotoneX)(points) ?? ''
+const getGeometry = (size: ChartSize, panels: PanelVariable[], hasChance: boolean) => ({
+    ...size,
+    ...getOverviewLayout(size.heights, panels, hasChance),
+})
 
 // The chart column's blocks are inset by the tick-label margin, so they cover exactly the panel backgrounds; the
 // readout blocks reach across the tick labels to leave a SKELETON_GAP between the two columns. It renders before the
@@ -228,7 +106,7 @@ export function MedianOverviewSkeleton({ panels, isArchive = false }: SkeletonPr
                         className="h-[3.5625rem] sm:mr-(--reach) sm:h-(--row-h)"
                         style={
                             {
-                                '--row-h': `${getPanelHeight(DESKTOP_SIZE, variable, !isArchive)}px`,
+                                '--row-h': `${getPanelHeight(DESKTOP_SIZE.heights, variable, !isArchive)}px`,
                                 '--reach': `${SKELETON_READOUT_REACH}px`,
                             } as CSSProperties
                         }
@@ -245,11 +123,11 @@ export function MedianOverviewSkeleton({ panels, isArchive = false }: SkeletonPr
                         className="ml-(--phone-left) h-(--phone-h) sm:ml-(--left) sm:h-(--row-h)"
                         style={
                             {
-                                '--row-h': `${getPanelHeight(DESKTOP_SIZE, variable, !isArchive)}px`,
-                                '--phone-h': `${getPanelHeight(PHONE_SIZE, variable, !isArchive)}px`,
+                                '--row-h': `${getPanelHeight(DESKTOP_SIZE.heights, variable, !isArchive)}px`,
+                                '--phone-h': `${getPanelHeight(PHONE_SIZE.heights, variable, !isArchive)}px`,
                                 '--left': `${DESKTOP_SIZE.marginLeft}px`,
                                 '--phone-left': `${PHONE_SIZE.marginLeft}px`,
-                                marginRight: MARGIN_RIGHT,
+                                marginRight: OVERVIEW_MARGIN_RIGHT,
                             } as CSSProperties
                         }
                     />
@@ -304,54 +182,38 @@ export function MedianOverview({
     const [viewLeft, setViewLeft] = useState(0)
 
     const hasChance = chance !== null
-    const stepMs = isArchive ? HOUR_MS : SLOT_MS
     const geometry = useMemo(
         () => getGeometry(isStacked ? PHONE_SIZE : DESKTOP_SIZE, panels, hasChance),
         [isStacked, panels, hasChance],
     )
-    const axisSteps = getSeries(series, panels[0]).steps
+    const axisSteps = getPanelSeries(series, panels[0]).steps
     const times = useMemo(() => axisSteps.map((s) => new Date(s)), [axisSteps])
-    const contentWidth = getScrollWidth(
-        width,
-        times.length - 1,
-        isArchive ? MIN_ARCHIVE_HOUR_WIDTH : MIN_SLOT_WIDTH,
-        geometry.marginLeft + MARGIN_RIGHT,
+    const contentWidth = getOverviewContentWidth(width, times.length, geometry.marginLeft, isArchive)
+    const frame = useMemo(
+        () => getOverviewFrame(times, geometry.marginLeft, contentWidth, isArchive),
+        [times, geometry.marginLeft, contentWidth, isArchive],
     )
-    const plotRight = contentWidth - MARGIN_RIGHT
-    const x = useMemo(
-        () => getTimeScale(times, [geometry.marginLeft, Math.max(geometry.marginLeft + 1, plotRight)]),
-        [times, geometry.marginLeft, plotRight],
-    )
-    // One crosshair for every panel: each reads the slot nearest the pointer (or now), so a precipitation readout is
-    // the 3 hours from that slot, which can be the bar after the one under the line (author, 2026-10-09).
-    const readoutIndex = hoverIndex ?? (now ? getNearestIndex(times, now) : 0)
+    const { x, plotRight, plotWidth, slotWidth } = frame
+    const readoutIndex = getOverviewReadoutIndex(times, hoverIndex, now)
     const readoutTime = axisSteps[readoutIndex]
     const nowX = getNowX(x, now, geometry.marginLeft, plotRight)
-    const nowLabelY = geometry.isNowLabelAbove ? geometry.plotTop - 7 : geometry.plotTop + geometry.tickFontSize
+    const nowLabelY = geometry.isNowLabelAbove ? geometry.plotTop - 7 : geometry.plotTop + CHART_FONT_SIZE
     const isNowLabelShown = !geometry.isNowLabelAbove || hoverIndex === null
-    const barWidth = getBarWidth(x, times[0], stepMs)
-    const plotWidth = Math.max(0, contentWidth - geometry.marginLeft - MARGIN_RIGHT)
-    const slotWidth = times.length > 1 ? x(times[1]) - x(times[0]) : plotWidth
-    const scales = useMemo(() => geometry.layout.map((row) => getPanelScale(row, series)), [geometry, series])
+    const scales = useMemo(() => geometry.rows.map((row) => getPanelScale(row, series)), [geometry, series])
+    const hoverDots = hoverIndex === null ? [] : getHoverDots(geometry.rows, scales, series, axisSteps[hoverIndex])
     const initialScrollLeft = getInitialScrollLeft(now ? x(now) : null, {
         slotWidth,
         insetLeft: geometry.marginLeft,
         contentWidth,
         viewportWidth: width,
     })
-    const [visibleLeft, visibleRight] = getVisibleRange(viewLeft, width, [geometry.marginLeft, MARGIN_RIGHT])
-    const hoverX =
-        hoverIndex === null
-            ? null
-            : clamp(
-                  x(times[hoverIndex]),
-                  visibleLeft + geometry.hoverLabelHalfWidth,
-                  visibleRight - geometry.hoverLabelHalfWidth,
-              )
+    const visibleRange = getVisibleRange(viewLeft, width, [geometry.marginLeft, OVERVIEW_MARGIN_RIGHT])
+    const crosshairX = hoverIndex === null ? null : x(times[hoverIndex])
+    const hoverX = crosshairX === null ? null : getLabelX(crosshairX, visibleRange, geometry.hoverLabelHalfWidth)
 
     const { ref: scrollRef, reveal } = useChartScroll(`${axisSteps[0]}|${contentWidth}`, initialScrollLeft, [
         geometry.marginLeft,
-        MARGIN_RIGHT,
+        OVERVIEW_MARGIN_RIGHT,
     ])
 
     // Everything that does not follow the pointer is built once per data, size or theme change; a hover redraws only
@@ -397,12 +259,10 @@ export function MedianOverview({
                             clipPath={`url(#${clipId}-${i})`}
                         />
                     ))}
-                {geometry.layout.map(({ variable, bottom }, rowIndex) => {
-                    const s = getSeries(series, variable)
-                    const secondaryVariable = SECONDARY_VARIABLE[variable]
-                    const secondary = (secondaryVariable && series[secondaryVariable]) || null
-                    const points = toPoints(s)
+                {geometry.rows.map((row, rowIndex) => {
+                    const { variable, bottom } = row
                     const { y, ticks } = scales[rowIndex]
+                    const paths = variable === Variable.Precip ? null : getPanelPaths(row, series, x, y)
 
                     return (
                         <g key={variable}>
@@ -416,42 +276,19 @@ export function MedianOverview({
                                     stroke={theme.grid}
                                 />
                             ))}
-                            {variable === Variable.Precip ? (
-                                points.map((p) => {
-                                    const center = x(getSumBarCenter(p[0], stepMs))
-
-                                    if (p[1] === null || center + barWidth / 2 > plotRight) return null
-
-                                    return (
-                                        <rect
-                                            key={p[0].toISOString()}
-                                            x={center - barWidth / 2}
-                                            y={y(p[1])}
-                                            width={barWidth}
-                                            height={Math.max(0, bottom - y(p[1]))}
-                                            rx={2}
-                                            fill={theme.band}
-                                            opacity={0.75}
-                                        />
-                                    )
-                                })
-                            ) : (
+                            {paths ? (
                                 <>
+                                    <path d={paths.area} fill={theme.band} opacity={theme.bandOuterOpacity} />
                                     <path
-                                        d={getAreaPath(points, x, y, bottom)}
-                                        fill={theme.band}
-                                        opacity={theme.bandOuterOpacity}
-                                    />
-                                    <path
-                                        d={getLinePath(points, x, y)}
+                                        d={paths.line}
                                         fill="none"
                                         stroke={theme.median}
                                         strokeWidth={2}
                                         strokeLinecap="round"
                                     />
-                                    {secondary && (
+                                    {paths.secondary !== null && (
                                         <path
-                                            d={getLinePath(toPoints(secondary), x, y)}
+                                            d={paths.secondary}
                                             fill="none"
                                             stroke={theme.median}
                                             strokeWidth={1.5}
@@ -460,30 +297,36 @@ export function MedianOverview({
                                         />
                                     )}
                                 </>
+                            ) : (
+                                getPanelBars(row, series, x, y, frame).map((bar) => (
+                                    <rect
+                                        key={bar.key}
+                                        x={bar.x}
+                                        y={bar.y}
+                                        width={bar.width}
+                                        height={bar.height}
+                                        rx={2}
+                                        fill={theme.band}
+                                        opacity={0.75}
+                                    />
+                                ))
                             )}
-                            {variable === Variable.Precip && (
+                            {variable === Variable.Precip && chance && (
                                 <g aria-hidden="true">
-                                    {chance?.map((c, i) => {
-                                        const center = x(getSumBarCenter(times[i], stepMs))
-                                        const isShown = c !== null && center + barWidth / 2 <= plotRight
-
-                                        return (
-                                            isShown && (
-                                                <text
-                                                    key={axisSteps[i]}
-                                                    x={center}
-                                                    y={bottom + CHANCE_GAP + CHANCE_STRIP / 2}
-                                                    dy="0.32em"
-                                                    textAnchor="middle"
-                                                    fontSize={geometry.tickFontSize}
-                                                    fontWeight={c >= 0.5 ? 600 : 400}
-                                                    fill={c >= 0.5 ? theme.foreground : theme.muted}
-                                                >
-                                                    {Math.round(c * 100)}
-                                                </text>
-                                            )
-                                        )
-                                    })}
+                                    {getChanceLabels(chance, times, x, frame).map((label) => (
+                                        <text
+                                            key={label.key}
+                                            x={label.x}
+                                            y={getChanceY(bottom)}
+                                            dy="0.32em"
+                                            textAnchor="middle"
+                                            fontSize={CHART_FONT_SIZE}
+                                            fontWeight={label.isLikely ? 600 : 400}
+                                            fill={label.isLikely ? theme.foreground : theme.muted}
+                                        >
+                                            {label.text}
+                                        </text>
+                                    ))}
                                 </g>
                             )}
                             {variable === Variable.Wind && directions && (
@@ -491,7 +334,7 @@ export function MedianOverview({
                                     x={x}
                                     times={times}
                                     directions={directions}
-                                    y={bottom + ARROW_STRIP / 2 + 2}
+                                    y={getArrowY(bottom)}
                                     color={theme.foreground}
                                     mutedColor={theme.muted}
                                     compassLabels={tc('compass').split(',')}
@@ -507,8 +350,7 @@ export function MedianOverview({
                     timeZone={timeZone}
                     locale={locale}
                     spans={geometry.spans}
-                    labelYs={[geometry.plotBottom + 5 + geometry.labelFontSize]}
-                    fontSize={geometry.labelFontSize}
+                    labelYs={[geometry.plotBottom + 5 + CHART_FONT_SIZE]}
                     lineColor={theme.border}
                     labelColor={theme.muted}
                 />
@@ -539,11 +381,9 @@ export function MedianOverview({
             series,
             scales,
             x,
-            barWidth,
-            stepMs,
+            frame,
             chance,
             times,
-            axisSteps,
             directions,
             tc,
             timeZone,
@@ -584,29 +424,10 @@ export function MedianOverview({
     return (
         <div className={GRID}>
             <div className={READOUTS}>
-                {geometry.layout.map(({ variable, height }) => {
+                {geometry.rows.map(({ variable, height }) => {
                     const info = VARIABLE_BY_ID[variable]
-                    const s = getSeries(series, variable)
-                    const value = getValueAt(s, readoutTime)
-                    const isSum = variable === Variable.Precip
-                    const secondaryVariable = SECONDARY_VARIABLE[variable]
-                    const chanceValue = chance?.[readoutIndex] ?? null
-                    const extra = secondaryVariable
-                        ? t('secondary', {
-                              name: tv(secondaryVariable),
-                              value: formatNumber(
-                                  getValueAt(series[secondaryVariable] ?? EMPTY_SERIES, readoutTime),
-                                  VARIABLE_BY_ID[secondaryVariable].decimals,
-                              ),
-                              unit: VARIABLE_BY_ID[secondaryVariable].unit,
-                          })
-                        : isSum && chance
-                          ? t('secondary', {
-                                name: tcity('chanceOfRain'),
-                                value: formatNumber(chanceValue === null ? null : chanceValue * 100, 0),
-                                unit: '%',
-                            })
-                          : null
+                    const value = getValueAt(getPanelSeries(series, variable), readoutTime)
+                    const extra = getExtraReadout(variable, series, chance, readoutTime, readoutIndex)
 
                     return (
                         <div
@@ -618,14 +439,22 @@ export function MedianOverview({
                             <span className="text-xl leading-tight font-semibold sm:text-2xl">
                                 {formatNumber(value, info.decimals)}
                                 <span className="ml-1 text-sm font-normal whitespace-nowrap text-muted-foreground">
-                                    {isSum
+                                    {variable === Variable.Precip
                                         ? isArchive
                                             ? t('perHourPast', { unit: info.unit })
                                             : t('perSlot', { unit: info.unit, hours: SLOT_HOURS })
                                         : info.unit}
                                 </span>
                             </span>
-                            {extra && <span className="text-xs text-muted-foreground">{extra}</span>}
+                            {extra && (
+                                <span className="text-xs text-muted-foreground">
+                                    {t('secondary', {
+                                        name: extra.variable ? tv(extra.variable) : tcity('chanceOfRain'),
+                                        value: extra.value,
+                                        unit: extra.unit,
+                                    })}
+                                </span>
+                            )}
                         </div>
                     )
                 })}
@@ -666,7 +495,7 @@ export function MedianOverview({
                                     x={geometry.isNowLabelAbove ? nowX : nowX + 4}
                                     y={nowLabelY}
                                     textAnchor={geometry.isNowLabelAbove ? 'middle' : 'start'}
-                                    fontSize={geometry.tickFontSize}
+                                    fontSize={CHART_FONT_SIZE}
                                     fontWeight={600}
                                     fill={theme.foreground}
                                     pointerEvents="none"
@@ -674,47 +503,25 @@ export function MedianOverview({
                                     {tc('now')}
                                 </text>
                             )}
-                            {hoverIndex !== null &&
-                                geometry.layout.map(({ variable }, rowIndex) => {
-                                    const secondaryVariable = SECONDARY_VARIABLE[variable]
-                                    const secondary = (secondaryVariable && series[secondaryVariable]) || null
-                                    const value = getValueAt(getSeries(series, variable), axisSteps[hoverIndex])
-                                    const secondValue = secondary ? getValueAt(secondary, axisSteps[hoverIndex]) : null
-                                    const { y } = scales[rowIndex]
-
-                                    if (variable === Variable.Precip) return null
-
-                                    return (
-                                        <g key={variable} pointerEvents="none">
-                                            {value !== null && value !== undefined && (
-                                                <circle
-                                                    cx={x(times[hoverIndex])}
-                                                    cy={y(value)}
-                                                    r={4}
-                                                    fill={theme.median}
-                                                    stroke={theme.card}
-                                                    strokeWidth={2}
-                                                />
-                                            )}
-                                            {secondValue !== null && secondValue !== undefined && (
-                                                <circle
-                                                    cx={x(times[hoverIndex])}
-                                                    cy={y(secondValue)}
-                                                    r={3}
-                                                    fill={theme.card}
-                                                    stroke={theme.median}
-                                                    strokeWidth={1.5}
-                                                />
-                                            )}
-                                        </g>
-                                    )
-                                })}
+                            {crosshairX !== null &&
+                                hoverDots.map(({ key, cy, isSecondary }) => (
+                                    <circle
+                                        key={key}
+                                        cx={crosshairX}
+                                        cy={cy}
+                                        r={isSecondary ? 3 : 4}
+                                        fill={isSecondary ? theme.card : theme.median}
+                                        stroke={isSecondary ? theme.median : theme.card}
+                                        strokeWidth={isSecondary ? 1.5 : 2}
+                                        pointerEvents="none"
+                                    />
+                                ))}
                             {hoverIndex !== null && hoverX !== null && (
                                 <text
                                     x={hoverX}
                                     y={geometry.plotTop - 7}
                                     textAnchor="middle"
-                                    fontSize={geometry.labelFontSize}
+                                    fontSize={CHART_FONT_SIZE}
                                     fontWeight={600}
                                     fill={theme.foreground}
                                     pointerEvents="none"
@@ -722,12 +529,12 @@ export function MedianOverview({
                                     {formatStepLabel(axisSteps[hoverIndex], timeZone, locale)}
                                 </text>
                             )}
-                            {hoverIndex !== null &&
+                            {crosshairX !== null &&
                                 geometry.spans.map(({ top, bottom }) => (
                                     <line
                                         key={top}
-                                        x1={x(times[hoverIndex])}
-                                        x2={x(times[hoverIndex])}
+                                        x1={crosshairX}
+                                        x2={crosshairX}
                                         y1={top}
                                         y2={bottom}
                                         stroke={theme.muted}
@@ -759,7 +566,7 @@ export function MedianOverview({
                     className="pointer-events-none absolute top-0 left-0 overflow-visible"
                 >
                     <rect x={-1} width={geometry.marginLeft + 1} height={geometry.totalHeight} fill={theme.card} />
-                    {geometry.layout.map(({ variable, bottom }, rowIndex) => (
+                    {geometry.rows.map(({ variable, bottom }, rowIndex) => (
                         <g key={variable}>
                             {scales[rowIndex].ticks.map((tick) => (
                                 <text
@@ -768,7 +575,7 @@ export function MedianOverview({
                                     y={scales[rowIndex].y(tick)}
                                     dy="0.32em"
                                     textAnchor="end"
-                                    fontSize={geometry.tickFontSize}
+                                    fontSize={CHART_FONT_SIZE}
                                     fill={theme.muted}
                                 >
                                     {formatYTick(tick)}
@@ -777,10 +584,10 @@ export function MedianOverview({
                             {variable === Variable.Precip && chance && (
                                 <text
                                     x={geometry.marginLeft - 6}
-                                    y={bottom + CHANCE_GAP + CHANCE_STRIP / 2}
+                                    y={getChanceY(bottom)}
                                     dy="0.32em"
                                     textAnchor="end"
-                                    fontSize={geometry.tickFontSize}
+                                    fontSize={CHART_FONT_SIZE}
                                     fill={theme.muted}
                                 >
                                     %
@@ -789,12 +596,12 @@ export function MedianOverview({
                         </g>
                     ))}
                     {isStacked &&
-                        geometry.layout.map(({ variable, top }) => (
+                        geometry.rows.map(({ variable, top }) => (
                             <text
                                 key={variable}
                                 x={geometry.marginLeft + 6}
-                                y={top + geometry.tickFontSize + 2}
-                                fontSize={geometry.tickFontSize}
+                                y={top + CHART_FONT_SIZE + 2}
+                                fontSize={CHART_FONT_SIZE}
                                 fontWeight={600}
                                 fill={theme.muted}
                                 stroke={theme.card}

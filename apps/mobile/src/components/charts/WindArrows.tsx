@@ -1,7 +1,6 @@
+import { getWindMarks, getWindTransform, WIND_ARROW_PATH, WIND_DOT_RADIUS } from '@fa/chart-core/wind-arrows'
 import { ScaleTime } from 'd3-scale'
 import { Circle, G, Path } from 'react-native-svg'
-
-const ARROW = 'M0,-7 L4,3 L0,1 L-4,3 Z'
 
 interface IProps {
     x: ScaleTime<number, number>
@@ -12,22 +11,19 @@ interface IProps {
     mutedColor: string
 }
 
-// Meteorological direction is where the wind comes from; the arrow points where it blows to (+180°).
+// Each slot's median wind direction as an arrow, a dot where no model gave one.
 export function WindArrows({ x, times, directions, y, color, mutedColor }: IProps) {
     return (
         <G>
-            {directions.map((deg, i) => {
-                const cx = x(times[i])
-
-                if (deg === null)
-                    return <Circle key={times[i].toISOString()} cx={cx} cy={y} r={1.5} fill={mutedColor} />
-
-                return (
-                    <G key={times[i].toISOString()} transform={`translate(${cx},${y}) rotate(${deg + 180})`}>
-                        <Path d={ARROW} fill={color} />
+            {getWindMarks(x, times, directions).map(({ key, x: cx, deg }) =>
+                deg === null ? (
+                    <Circle key={key} cx={cx} cy={y} r={WIND_DOT_RADIUS} fill={mutedColor} />
+                ) : (
+                    <G key={key} transform={getWindTransform(cx, y, deg)}>
+                        <Path d={WIND_ARROW_PATH} fill={color} />
                     </G>
-                )
-            })}
+                ),
+            )}
         </G>
     )
 }

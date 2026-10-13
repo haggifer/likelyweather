@@ -1,4 +1,5 @@
-import { getDayLabel } from '@fa/chart-core/day-labels'
+import { getDayLabels } from '@fa/chart-core/day-labels'
+import { CHART_FONT_SIZE } from '@fa/chart-core/plot-geometry'
 import { getLocalMidnights } from '@fa/shared/format'
 import { ScaleTime } from 'd3-scale'
 import { useMemo } from 'react'
@@ -7,22 +8,6 @@ interface Span {
     top: number
     bottom: number
 }
-
-interface DayLabel {
-    key: string
-    x: number
-    text: string
-}
-
-type DayLabelInput = Pick<IProps, 'x' | 'start' | 'end' | 'timeZone' | 'locale'> & { fontSize: number }
-
-const getDayLabels = (midnights: Date[], { x, start, end, timeZone, locale, fontSize }: DayLabelInput): DayLabel[] =>
-    [start, ...midnights].flatMap((from, i, all) => {
-        const to = all[i + 1] ?? end
-        const text = getDayLabel(from.toISOString(), x(to) - x(from), timeZone, locale, fontSize)
-
-        return text ? [{ key: from.toISOString(), x: (x(from) + x(to)) / 2, text }] : []
-    })
 
 interface IProps {
     x: ScaleTime<number, number>
@@ -49,7 +34,7 @@ export function DayGrid({
     labelYs,
     lineColor,
     labelColor,
-    fontSize = 11,
+    fontSize = CHART_FONT_SIZE,
 }: IProps) {
     const midnights = useMemo(() => getLocalMidnights(start, end, timeZone), [start, end, timeZone])
     const labels = getDayLabels(midnights, { x, start, end, timeZone, locale, fontSize })

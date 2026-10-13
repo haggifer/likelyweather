@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { getInitialScrollLeft, getRevealScrollLeft, getScrollWidth, getVisibleRange } from './scroll-geometry'
+import {
+    getInitialScrollLeft,
+    getLabelX,
+    getRevealScrollLeft,
+    getScrollWidth,
+    getVisibleRange,
+} from './scroll-geometry'
 
 describe('getScrollWidth', () => {
     it('keeps the container width when the slots fit', () => {
@@ -55,5 +61,16 @@ describe('getVisibleRange', () => {
 
     it('follows the scroll, so labels clamp to what is on screen', () => {
         expect(getVisibleRange(500, 390, [36, 8])).toEqual([536, 882])
+    })
+})
+
+describe('getLabelX', () => {
+    it('centres a label on its point inside the visible range', () => {
+        expect(getLabelX(200, [36, 382], 34)).toBe(200)
+    })
+
+    it('keeps the whole label inside the range near either edge', () => {
+        expect(getLabelX(40, [36, 382], 34)).toBe(70)
+        expect(getLabelX(380, [36, 382], 34)).toBe(348)
     })
 })
