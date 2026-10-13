@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
     output: 'standalone',
     outputFileTracingRoot: path.resolve(import.meta.dirname, '../..'),
     // Workspace packages ship TypeScript source.
-    transpilePackages: ['@fa/shared', '@fa/messages', '@fa/api-client', '@fa/chart-core'],
+    transpilePackages: ['@fa/shared', '@fa/messages', '@fa/api-client', '@fa/chart-core', '@fa/hooks'],
     poweredByHeader: false,
 }
 

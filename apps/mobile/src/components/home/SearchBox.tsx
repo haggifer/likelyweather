@@ -1,6 +1,7 @@
 import { getErrorKind } from '@fa/api-client/error-kind'
 import { useGeocode } from '@fa/api-client/hooks/useGeocode'
 import { useTrackCity } from '@fa/api-client/hooks/useTrackCity'
+import { useDebouncedValue } from '@fa/hooks/useDebouncedValue'
 import { GeocodeResponse, GeocodeResult, Locale } from '@fa/shared/api'
 import { SEARCH_DEBOUNCE_MS } from '@fa/shared/constants'
 import { getCityLabel } from '@fa/shared/format'
@@ -19,7 +20,6 @@ import {
     View,
 } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
-import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { usePlaces } from '../../hooks/usePlaces'
 import { useTheme } from '../../hooks/useTheme'
 import { placesStore } from '../../lib/places-store'

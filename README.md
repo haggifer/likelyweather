@@ -104,6 +104,7 @@ packages/
   messages/       the five message catalogs and their loader
   db/             Prisma schema, migrations (weekly Forecast partitions), seed, partition maintenance
   chart-core/     DOM-free chart geometry: scales, ticks, day labels, spaghetti paths
+  hooks/          React hooks both apps share, with no DOM or React Native code (view logic above the kits)
   fixtures/       real upstream responses and a collector snapshot for tests
 ```
 
@@ -115,7 +116,7 @@ What is built and what is still planned.
 - **API:** Express 5 REST on AWS Lambda (Web Adapter) behind CloudFront, with the same zod contract.
 - **Data:** Prisma on Postgres (Neon) with forecasts partitioned by issue time; Redis (Upstash) for the geocode and payload caches, rate limits, the quota and the daily retention claim.
 - **Collection:** on demand only, in the API, when a city is opened and its stored forecast is 3 hours old; nothing runs on a schedule but the Android widget's 3-hourly redraw, which reads like an open.
-- **Infrastructure and tooling:** one AWS CDK stack; a pnpm and Turborepo monorepo (`apps/web`, `apps/api`, `apps/mobile`, `apps/e2e`, `packages/shared`, `packages/api-client`, `packages/chart-core`, `packages/messages`, `packages/db`, `packages/fixtures`, `infra`); CI runs lint, knip, typecheck, tests, the catalog check, end-to-end tests, the build and `cdk synth`.
+- **Infrastructure and tooling:** one AWS CDK stack; a pnpm and Turborepo monorepo (`apps/web`, `apps/api`, `apps/mobile`, `apps/e2e`, `packages/shared`, `packages/api-client`, `packages/chart-core`, `packages/hooks`, `packages/messages`, `packages/db`, `packages/fixtures`, `infra`); CI runs lint, knip, typecheck, tests, the catalog check, end-to-end tests, the build and `cdk synth`.
 - **Not built:** a daily Gemini Flash brief with a claim checker.
 
 The web app runs on Lambda instead of Amplify. Truth, skill scores, the scoreboard and the evolution view are out of the MVP.
@@ -146,7 +147,7 @@ The ones a newcomer is most likely to undo by accident:
 - **Forecasts are fetched on demand, with one scheduled reader.** Opening a city fetches it when its stored forecast is 3 hours old (`isRefreshDue`, shared with the UI's Refresh); a PARTIAL run is retried after 15 minutes, and a fetch that got nothing waits 15 minutes before the next; everyone else then reads the stored one. The Android widget is the one scheduled reader: Android redraws it every 3 hours, the age at which a stored run is refreshed, through the same `/latest` route, so it costs its owner's quota and nobody else's. A scheduled collector refreshed cities nobody opened and was removed; don't add one back for a feature without weighing that cost.
 - **Limits and the quota count per client: an IPv4 address or an IPv6 /64.** An IPv4-mapped address counts as IPv4, and a global daily cap protects the free upstream tiers. Keying IPv6 by the full address would let one /64 rotate through endless fresh quotas.
 - **The mobile app and the web's phone layout stay in sync.** Every change to what a phone shows or does lands in both apps, so neither drifts into a second product; only platform features (the widget, the "Get the app" bar, the landing page's pitch, which an installed app doesn't need) stay one-sided.
-- **The mobile app shares code, not UI.** It consumes `@fa/shared`, `@fa/api-client`, `@fa/chart-core` and `@fa/messages`; its components are React Native, and its colours come from tokens generated from `globals.css`. Both apps run the React version the Expo SDK pins (19.2.3), so the shared packages resolve one React; upgrade React with the Expo SDK. Shared packages declare `react` only as a peer.
+- **The mobile app shares code and one UI library family with the web** (2026-10-13). Component code can't be shared without react-native-web (Radix renders DOM), so each app has its own kit from the same family, shadcn/ui on the web and React Native Reusables in the app, with the same component names, variants and props, and the app's Uniwind theme generated from `globals.css`. Everything above the kits is shared: `@fa/shared`, `@fa/api-client`, `@fa/chart-core`, `@fa/hooks` and `@fa/messages`. Both apps run the React version the Expo SDK pins (19.2.3), so the shared packages resolve one React; upgrade React with the Expo SDK. Shared packages declare `react` only as a peer.
 
 ## Data and attribution
 

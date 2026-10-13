@@ -45,6 +45,9 @@
             "ignoreDependencies": ["@prisma/client"],
         },
         "packages/fixtures": {},
+        "packages/hooks": {
+            "includeEntryExports": true,
+        },
         "packages/messages": {
             "includeEntryExports": true,
         },
