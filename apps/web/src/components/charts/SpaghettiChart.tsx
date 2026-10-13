@@ -139,7 +139,7 @@ export function SpaghettiChart({
     const clipId = useId().replace(/[^\w-]/g, '')
 
     const { ref, width } = useElementWidth<HTMLDivElement>()
-    const { isFocusVisible, onFocus, onBlur } = useFocusVisible()
+    const { isFocusVisible, onFocus, onBlur, onKeyDown: showFocus } = useFocusVisible()
     const [viewLeft, setViewLeft] = useState(0)
 
     const now = nowProp === undefined ? liveNow : nowProp
@@ -401,6 +401,7 @@ export function SpaghettiChart({
         const next = clamp(current + step, minIndex, maxIndex)
 
         e.preventDefault()
+        showFocus()
         onHoverIndex?.(next)
         reveal(x(times[next]))
         setViewLeft(scrollRef.current?.scrollLeft ?? 0)

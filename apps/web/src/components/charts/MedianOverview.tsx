@@ -280,7 +280,7 @@ export function MedianOverview({
     const clipId = useId().replace(/[^\w-]/g, '')
 
     const { ref, width } = useElementWidth<HTMLDivElement>()
-    const { isFocusVisible, onFocus, onBlur } = useFocusVisible()
+    const { isFocusVisible, onFocus, onBlur, onKeyDown: showFocus } = useFocusVisible()
     const [hoverIndex, setHoverIndex] = useState<number | null>(null)
     const [viewLeft, setViewLeft] = useState(0)
 
@@ -545,6 +545,7 @@ export function MedianOverview({
         const next = clamp(readoutIndex + step, 0, times.length - 1)
 
         e.preventDefault()
+        showFocus()
         setHoverIndex(next)
         reveal(x(times[next]))
         setViewLeft(scrollRef.current?.scrollLeft ?? 0)
