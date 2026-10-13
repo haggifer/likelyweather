@@ -67,11 +67,24 @@ describe('ArchivePeriodPicker', () => {
         expect(screen.getByRole('button', { name: 'Monday, September 7, 2026' })).toBeDisabled()
     })
 
+    it('steps a year at a time, stopping at yesterday', async () => {
+        await openPicker(jest.fn())
+        await fireEvent.press(screen.getByRole('button', { name: en.archive.previousYear }))
+
+        expect(screen.getByText('October 2025')).toBeOnTheScreen()
+
+        await fireEvent.press(screen.getByRole('button', { name: en.archive.nextMonth }))
+        await fireEvent.press(screen.getByRole('button', { name: en.archive.nextYear }))
+
+        expect(screen.getByText('October 2026')).toBeOnTheScreen()
+    })
+
     it('offers nothing after yesterday', async () => {
         await openPicker(jest.fn())
 
         expect(screen.getByRole('button', { name: 'Monday, October 12, 2026' })).toBeDisabled()
         expect(screen.getByRole('button', { name: en.archive.nextMonth })).toBeDisabled()
+        expect(screen.getByRole('button', { name: en.archive.nextYear })).toBeDisabled()
         expect(screen.getByText(en.archive.limit.replace('{days}', '12'))).toBeOnTheScreen()
     })
 })

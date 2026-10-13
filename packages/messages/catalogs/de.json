@@ -230,6 +230,8 @@
         "periodValue": "Zeitraum: {range}",
         "previousMonth": "Vorheriger Monat",
         "nextMonth": "Nächster Monat",
+        "previousYear": "Vorheriges Jahr",
+        "nextYear": "Nächstes Jahr",
         "limit": "Bis zu {days} Tage, von 1940 bis gestern.",
         "fetching": "Vergangenes Wetter für {name} wird geladen…",
         "unavailable": "Für diesen Zeitraum gibt es keine Daten zum vergangenen Wetter.",

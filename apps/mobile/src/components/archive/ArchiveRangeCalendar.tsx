@@ -1,7 +1,7 @@
 import { ArchiveDayState, useArchiveRangeState } from '@fa/hooks/useArchiveRangeState'
 import { ARCHIVE_MAX_DAYS, ArchiveRange } from '@fa/shared/archive'
 import { CalendarDate } from '@internationalized/date'
-import { ChevronLeft, ChevronRight } from 'lucide-react-native'
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, LucideIcon } from 'lucide-react-native'
 import { View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { cn } from '../../lib/cn'
@@ -27,6 +27,19 @@ const getDayTextClassName = ({ isSelected, isRangeStart, isRangeEnd, isToday }: 
         (isRangeStart || isRangeEnd) && 'text-primary-foreground',
     )
 
+interface PageButtonProps {
+    label: string
+    icon: LucideIcon
+    isDisabled: boolean
+    onPress: () => void
+}
+
+const PageButton = ({ label, icon, isDisabled, onPress }: PageButtonProps) => (
+    <Button variant="ghost" size="icon" accessibilityLabel={label} disabled={isDisabled} onPress={onPress}>
+        <Icon as={icon} className="size-4" />
+    </Button>
+)
+
 interface IProps {
     range: ArchiveRange
     latest: string
@@ -45,6 +58,10 @@ export function ArchiveRangeCalendar({ range, latest, onChange }: IProps) {
         locale,
         onChange,
     })
+
+    // A year step stops at 1940-01-01 or at yesterday, so it is offered as long as a month step is.
+    const isPreviousInvalid = state.isPreviousVisibleRangeInvalid()
+    const isNextInvalid = state.isNextVisibleRangeInvalid()
 
     // A press moves the calendar's focus too, as a click does on the web, so the half-picked period is that one day.
     const handleDay = (date: CalendarDate) => {
@@ -75,28 +92,43 @@ export function ArchiveRangeCalendar({ range, latest, onChange }: IProps) {
 
     return (
         <View className="gap-2" role="group" accessibilityLabel={t('period')}>
-            <View className="flex-row items-center justify-between gap-2">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    accessibilityLabel={t('previousMonth')}
-                    disabled={state.isPreviousVisibleRangeInvalid()}
-                    onPress={() => state.focusPreviousPage()}
+            {/* A long title wraps rather than widening the calendar, so paging never moves the arrows. */}
+            <View className="flex-row items-center justify-between gap-1">
+                <View className="flex-row">
+                    <PageButton
+                        label={t('previousYear')}
+                        icon={ChevronsLeft}
+                        isDisabled={isPreviousInvalid}
+                        onPress={() => state.focusPreviousSection(true)}
+                    />
+                    <PageButton
+                        label={t('previousMonth')}
+                        icon={ChevronLeft}
+                        isDisabled={isPreviousInvalid}
+                        onPress={() => state.focusPreviousPage()}
+                    />
+                </View>
+                <Text
+                    className="flex-1 text-center text-sm leading-4 font-medium"
+                    accessibilityRole="header"
+                    accessibilityLiveRegion="polite"
                 >
-                    <Icon as={ChevronLeft} className="size-4" />
-                </Button>
-                <Text className="text-sm font-medium" accessibilityRole="header" accessibilityLiveRegion="polite">
                     {title}
                 </Text>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    accessibilityLabel={t('nextMonth')}
-                    disabled={state.isNextVisibleRangeInvalid()}
-                    onPress={() => state.focusNextPage()}
-                >
-                    <Icon as={ChevronRight} className="size-4" />
-                </Button>
+                <View className="flex-row">
+                    <PageButton
+                        label={t('nextMonth')}
+                        icon={ChevronRight}
+                        isDisabled={isNextInvalid}
+                        onPress={() => state.focusNextPage()}
+                    />
+                    <PageButton
+                        label={t('nextYear')}
+                        icon={ChevronsRight}
+                        isDisabled={isNextInvalid}
+                        onPress={() => state.focusNextSection(true)}
+                    />
+                </View>
             </View>
             <View>
                 <View className="flex-row justify-center" importantForAccessibility="no-hide-descendants">
