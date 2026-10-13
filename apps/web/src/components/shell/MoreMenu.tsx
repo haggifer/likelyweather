@@ -6,12 +6,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Archive, BookOpen, Menu } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 const ICONS = { archive: <Archive />, methodology: <BookOpen /> }
 
 // The header's pages on phones, where the inline links (`MainNav`) do not fit.
 export function MoreMenu() {
     const t = useTranslations('nav')
+    const pathname = usePathname()
 
     return (
         <DropdownMenu>
@@ -28,7 +30,7 @@ export function MoreMenu() {
             <DropdownMenuContent align="end" className="w-48">
                 {NAV_LINKS.map(({ href, key }) => (
                     <DropdownMenuItem key={href} asChild>
-                        <Link href={href}>
+                        <Link href={href} aria-current={pathname === href ? 'page' : undefined}>
                             {ICONS[key]} {t(key)}
                         </Link>
                     </DropdownMenuItem>
