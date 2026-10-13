@@ -65,22 +65,25 @@ interface HoverDot {
     isSecondary: boolean
 }
 
+// The chance of rain sits under the precipitation bars like the direction arrows under the wind, a few pixels below the
+// bars' baseline so its "%" clears the axis's 0; the panel's height includes it, so the bars keep their room.
+const CHANCE_GAP = 4
+const CHANCE_STRIP = 18
+const CHANCE_ROOM = CHANCE_GAP + CHANCE_STRIP
+
 // The web's phone layout: readouts in a two-column grid above, the reader's panels stacked below in the same order,
 // each named inside its panel.
 const PANEL_HEIGHT: Record<PanelVariable, number> = {
     [Variable.Temp]: 104,
     [Variable.Wind]: 100,
     [Variable.Pressure]: 80,
-    [Variable.Precip]: 80 + 18,
+    [Variable.Precip]: 80 + CHANCE_ROOM,
     [Variable.Humidity]: 80,
     [Variable.Cloud]: 80,
 }
 const ROW_GAP = 14
 const ROW_PAD = 6
 const ARROW_STRIP = 20
-// The chance of rain sits under the precipitation bars like the direction arrows under the wind; the panel's height
-// above includes it, so the bars keep their room.
-const CHANCE_STRIP = 18
 // Feels-like and gusts are drawn as a second, dashed line in the panel of the variable they belong to.
 const SECONDARY_DASH = '5 3'
 const HOVER_STRIP = 20
@@ -107,7 +110,7 @@ const styles = StyleSheet.create({
 })
 
 const getStripHeight = (variable: PanelVariable) =>
-    variable === Variable.Wind ? ARROW_STRIP : variable === Variable.Precip ? CHANCE_STRIP : 0
+    variable === Variable.Wind ? ARROW_STRIP : variable === Variable.Precip ? CHANCE_ROOM : 0
 
 const toRows = (panels: PanelVariable[]) =>
     panels.reduce<RowLayout[]>((rows, variable) => {
@@ -306,7 +309,7 @@ const PanelDrawing = ({
                     slotMs={SLOT_MS}
                     barWidth={barWidth}
                     plotRight={plotRight}
-                    y={bottom + CHANCE_STRIP / 2}
+                    y={bottom + CHANCE_GAP + CHANCE_STRIP / 2}
                     fontSize={CHART_FONT_SIZE}
                     color={chart.foreground}
                     mutedColor={chart.muted}
@@ -708,7 +711,7 @@ export function MedianOverview({
                                     {variable === Variable.Precip && chance && (
                                         <SvgText
                                             x={MARGIN.left - 6}
-                                            y={bottom + CHANCE_STRIP / 2 + BASELINE_SHIFT}
+                                            y={bottom + CHANCE_GAP + CHANCE_STRIP / 2 + BASELINE_SHIFT}
                                             textAnchor="end"
                                             fontSize={CHART_FONT_SIZE}
                                             fontFamily={getFontFamily('400')}

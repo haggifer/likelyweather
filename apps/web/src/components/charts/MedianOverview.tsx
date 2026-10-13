@@ -58,6 +58,12 @@ interface SkeletonProps {
     panels?: PanelVariable[]
 }
 
+// The chance of rain sits under the precipitation bars like the direction arrows under the wind, a few pixels below the
+// bars' baseline so its "%" clears the axis's 0; the panel's height includes it, so the bars keep their room.
+const CHANCE_GAP = 4
+const CHANCE_STRIP = 18
+const CHANCE_ROOM = CHANCE_GAP + CHANCE_STRIP
+
 // On a phone the overview is the landing page's main content, so its panels are taller and its text larger than in
 // the desktop column (author, 2026-10-09); the readouts above the chart leave it the full width. Text is 11 px on both
 // (author, 2026-10-12).
@@ -66,7 +72,7 @@ const DESKTOP_SIZE: ChartSize = {
         [Variable.Temp]: 104,
         [Variable.Wind]: 100,
         [Variable.Pressure]: 80,
-        [Variable.Precip]: 80 + 18,
+        [Variable.Precip]: 80 + CHANCE_ROOM,
         [Variable.Humidity]: 80,
         [Variable.Cloud]: 80,
     },
@@ -81,7 +87,7 @@ const PHONE_SIZE: ChartSize = {
         [Variable.Temp]: 120,
         [Variable.Wind]: 115,
         [Variable.Pressure]: 92,
-        [Variable.Precip]: 92 + 18,
+        [Variable.Precip]: 92 + CHANCE_ROOM,
         [Variable.Humidity]: 92,
         [Variable.Cloud]: 92,
     },
@@ -95,9 +101,6 @@ const PHONE_SIZE: ChartSize = {
 const ROW_GAP = 14
 const ROW_PAD = 6
 const ARROW_STRIP = 20
-// The chance of rain sits under the precipitation bars like the direction arrows under the wind; the panel's height
-// above includes it, so the bars keep their room.
-const CHANCE_STRIP = 18
 // Feels-like and gusts are drawn as a second, dashed line in the panel of the variable they belong to.
 const SECONDARY_DASH = '5 3'
 const HOVER_STRIP = 20
@@ -118,7 +121,7 @@ const getLayout = (rows: ChartGeometry['rows']) =>
     rows.reduce<RowLayout[]>((layout, row) => {
         const previous = layout[layout.length - 1]
         const top = previous ? previous.top + previous.height + ROW_GAP : HOVER_STRIP
-        const strip = row.variable === Variable.Wind ? ARROW_STRIP : row.variable === Variable.Precip ? CHANCE_STRIP : 0
+        const strip = row.variable === Variable.Wind ? ARROW_STRIP : row.variable === Variable.Precip ? CHANCE_ROOM : 0
 
         return [
             ...layout,
@@ -443,7 +446,7 @@ export function MedianOverview({
                                                 <text
                                                     key={axisSteps[i]}
                                                     x={center}
-                                                    y={bottom + CHANCE_STRIP / 2}
+                                                    y={bottom + CHANCE_GAP + CHANCE_STRIP / 2}
                                                     dy="0.32em"
                                                     textAnchor="middle"
                                                     fontSize={geometry.tickFontSize}
@@ -747,7 +750,7 @@ export function MedianOverview({
                             {variable === Variable.Precip && chance && (
                                 <text
                                     x={geometry.marginLeft - 6}
-                                    y={bottom + CHANCE_STRIP / 2}
+                                    y={bottom + CHANCE_GAP + CHANCE_STRIP / 2}
                                     dy="0.32em"
                                     textAnchor="end"
                                     fontSize={geometry.tickFontSize}
