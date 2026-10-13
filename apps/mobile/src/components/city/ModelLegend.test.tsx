@@ -1,8 +1,8 @@
 import en from '@fa/messages/catalogs/en.json'
 import { Series } from '@fa/shared/api'
-import { ModelId } from '@fa/shared/models'
+import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { Variable } from '@fa/shared/variables'
-import { render, screen } from '@testing-library/react-native'
+import { fireEvent, render, screen } from '@testing-library/react-native'
 import { ComponentProps } from 'react'
 import { IntlProvider } from 'use-intl'
 import { ModelLegend } from './ModelLegend'
@@ -48,8 +48,23 @@ describe('ModelLegend', () => {
     it('says whether the median is hidden', async () => {
         await renderLegend({ isMedianHidden: true })
 
-        const eye = screen.getByRole('togglebutton', { name: en.legend.showMedian })
+        expect(screen.getByRole('switch', { name: en.legend.showMedian })).toBeChecked()
+    })
 
-        expect(eye.props.accessibilityState).toMatchObject({ checked: true })
+    it('hides a model with its eye and offers to show every model again', async () => {
+        const onToggleHidden = jest.fn()
+        const onReset = jest.fn()
+
+        await renderLegend({ hidden: [ModelId.Gfs], onToggleHidden, onReset })
+        await fireEvent.press(
+            screen.getByRole('button', { name: en.legend.hide.replace('{model}', MODEL_BY_ID[ModelId.EcmwfIfs].name) }),
+        )
+        await fireEvent.press(screen.getByRole('button', { name: en.legend.reset }))
+
+        expect(onToggleHidden).toHaveBeenCalledWith(ModelId.EcmwfIfs)
+        expect(onReset).toHaveBeenCalled()
+        expect(
+            screen.getByRole('button', { name: en.legend.show.replace('{model}', MODEL_BY_ID[ModelId.Gfs].name) }),
+        ).toBeOnTheScreen()
     })
 })

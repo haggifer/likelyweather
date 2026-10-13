@@ -1,26 +1,21 @@
 import { isNotFound } from '@fa/api-client/api'
 import { useCity } from '@fa/api-client/hooks/useCity'
-import { useLatest } from '@fa/api-client/hooks/useLatest'
-import {
-    formatSpread,
-    getDashboardStats,
-    getFutureRange,
-    getReadoutIndex,
-    getSlotEnd,
-} from '@fa/chart-core/dashboard-stats'
+import { getReadoutIndex } from '@fa/chart-core/dashboard-stats'
+import { useDashboardData } from '@fa/hooks/useDashboardData'
 import { City, Series } from '@fa/shared/api'
+import { getReadoutLabel } from '@fa/shared/dashboard'
 import { EnsembleStats } from '@fa/shared/ensemble'
-import { formatDateKey, formatNumber, formatPeriodLabel, formatStepLabel, getCityName } from '@fa/shared/format'
+import { getCityName } from '@fa/shared/format'
 import { ModelId } from '@fa/shared/models'
-import { buildSlots, DASHBOARD_HOURS, getChartStart, toSlotLatest } from '@fa/shared/slots'
+import { toggleItem } from '@fa/shared/toggle-item'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ReactNode, useEffect, useMemo, useState } from 'react'
-import { StyleSheet, View } from 'react-native'
+import { View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { ChartFrame } from '../components/charts/ChartFrame'
 import { SpaghettiChart } from '../components/charts/SpaghettiChart'
-import { CityHeader, HEADER_BUTTON_SIZE } from '../components/city/CityHeader'
+import { CityHeader } from '../components/city/CityHeader'
 import { CityTitle } from '../components/city/CityTitle'
 import { DashboardSkeleton } from '../components/city/DashboardSkeleton'
 import { DisagreementTiles } from '../components/city/DisagreementTiles'
@@ -28,48 +23,25 @@ import { ModelLegend } from '../components/city/ModelLegend'
 import { SeriesTable } from '../components/city/SeriesTable'
 import { VariableSwitch } from '../components/city/VariableSwitch'
 import { SearchBox } from '../components/home/SearchBox'
-import { Skeleton } from '../components/legacy-ui/Skeleton'
-import { Text } from '../components/legacy-ui/Text'
 import { ErrorNotice } from '../components/ui/ErrorNotice'
 import { LoadingStatus } from '../components/ui/LoadingStatus'
 import { ScreenScroll } from '../components/ui/ScreenScroll'
+import { Skeleton } from '../components/ui/skeleton'
+import { Text } from '../components/ui/text'
 import { useNow } from '../hooks/useNow'
 import { useSelectedVariable } from '../hooks/useSelectedVariable'
-import { useTheme } from '../hooks/useTheme'
 import { getSlugTitle } from '../lib/city-slug'
 import { setSelectedCity } from '../lib/selected-city-store'
 
-const GAP = 12
-// The switch sticks under the native header; its bar keeps 8 px of page colour around it while content scrolls under,
-// the web's `py-2` pinned bar.
-const BAR_PADDING = 8
-const REFRESH_PLACEHOLDER_WIDTH = 104
+// ScreenScroll adds the navigation bar's height to the content's bottom padding, which it reads from this style.
+const CONTENT_STYLE = { padding: 16, paddingTop: 8, gap: 12 }
 // The header is the scroll's first child and the variable bar its second, the one that sticks.
 const STICKY_INDICES = [1]
-
-const styles = StyleSheet.create({
-    content: { padding: 16, paddingTop: 8, gap: GAP },
-    bar: { marginHorizontal: -16, paddingHorizontal: 16, paddingVertical: BAR_PADDING },
-    header: { gap: 8 },
-    note: { fontSize: 12, lineHeight: 17 },
-    legend: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 12 },
-    notFound: { alignItems: 'center', gap: 12, paddingVertical: 32 },
-    notFoundTitle: { fontSize: 18, fontWeight: '600', textAlign: 'center' },
-    notFoundBody: { fontSize: 14, textAlign: 'center' },
-    search: { alignSelf: 'stretch' },
-})
 
 interface Selection {
     variable: Variable
     step: string
 }
-
-const toggle = (list: ModelId[], id: ModelId) => (list.includes(id) ? list.filter((m) => m !== id) : [...list, id])
-
-const getReadoutLabel = (step: string, variable: Variable, timeZone: string, locale: string) =>
-    variable === Variable.Precip
-        ? formatPeriodLabel(step, getSlotEnd(step), timeZone, locale)
-        : formatStepLabel(step, timeZone, locale)
 
 // The slug names the place while the city itself is loading, missing or failing, so the screen always has its heading.
 const SlugHeading = ({ slug, children }: { slug: string; children?: ReactNode }) => {
@@ -84,15 +56,13 @@ const SlugHeading = ({ slug, children }: { slug: string; children?: ReactNode })
     )
 }
 
-const VariableBar = ({ value, onChange }: { value: Variable; onChange: (variable: Variable) => void }) => {
-    const { colors } = useTheme()
-
-    return (
-        <View style={[styles.bar, { backgroundColor: colors.background }]}>
-            <VariableSwitch value={value} onChange={onChange} />
-        </View>
-    )
-}
+// The switch sticks under the native header; its bar keeps the web's `py-2` of page colour around it while content
+// scrolls under.
+const VariableBar = ({ value, onChange }: { value: Variable; onChange: (variable: Variable) => void }) => (
+    <View className="-mx-4 bg-background px-4 py-2">
+        <VariableSwitch value={value} onChange={onChange} />
+    </View>
+)
 
 interface SelectableChartProps {
     steps: string[]
@@ -132,7 +102,6 @@ const SelectableChart = ({
     onReset,
 }: SelectableChartProps) => {
     const t = useTranslations('dashboard')
-    const { colors } = useTheme()
 
     const [selection, setSelection] = useState<Selection | null>(null)
 
@@ -162,9 +131,9 @@ const SelectableChart = ({
                 isMedianHidden={isMedianHidden}
             />
             {variable === Variable.Wind && (
-                <Text style={[styles.note, { color: colors['muted-foreground'] }]}>{t('windArrows')}</Text>
+                <Text className="text-xs leading-[1.0625rem] text-muted-foreground">{t('windArrows')}</Text>
             )}
-            <View style={[styles.legend, { borderTopColor: colors.border }]}>
+            <View className="border-t border-border pt-3">
                 <ModelLegend
                     series={series}
                     median={stats.median[readoutIndex]}
@@ -201,23 +170,17 @@ const Dashboard = ({ city }: DashboardProps) => {
     const [hidden, setHidden] = useState<ModelId[]>([])
     const [isMedianHidden, setIsMedianHidden] = useState(false)
 
-    const latestQuery = useLatest(city.slug, variable)
-    const precipQuery = useLatest(city.slug, Variable.Precip)
+    const {
+        latestQuery,
+        precipQuery,
+        latest,
+        derived,
+        summary: summaryValues,
+        retry,
+    } = useDashboardData(city.slug, variable, { now, locale })
 
     const info = VARIABLE_BY_ID[variable]
     const timeZone = city.timezone
-    // The precipitation query is shared by every variable, so its run anchors the chart.
-    const anchorRun = precipQuery.data ?? latestQuery.data
-    const anchor = useMemo(() => (anchorRun ? getChartStart(anchorRun, timeZone) : null), [anchorRun, timeZone])
-    const slots = useMemo(() => (anchor ? buildSlots(anchor, DASHBOARD_HOURS) : null), [anchor])
-    const latest = useMemo(
-        () => (latestQuery.data && slots ? toSlotLatest(latestQuery.data, slots, info.aggregation) : null),
-        [latestQuery.data, slots, info.aggregation],
-    )
-    const derived = useMemo(
-        () => (latest ? getDashboardStats(latest, variable, timeZone, now) : null),
-        [latest, variable, timeZone, now],
-    )
     // A stable list, so the chart's memoized drawing survives renders that did not hide or show a model.
     const visibleSeries = useMemo(
         () => latest?.series.filter((s) => !hidden.includes(s.modelId)) ?? [],
@@ -228,51 +191,37 @@ const Dashboard = ({ city }: DashboardProps) => {
         setSelectedCity(slug)
         router.replace(`/city/${slug}`)
     }
-    const handleRetry = () => {
-        void latestQuery.refetch()
-        void precipQuery.refetch()
-    }
     const handleReset = () => {
         setHidden([])
         setIsMedianHidden(false)
     }
-    const handleToggleHidden = (id: ModelId) => setHidden((list) => toggle(list, id))
+    const handleToggleHidden = (id: ModelId) => setHidden((list) => toggleItem(list, id))
     const handleToggleMedian = () => setIsMedianHidden((v) => !v)
 
-    if (!latest || !derived) {
+    if (!latest || !derived || !summaryValues) {
         return (
             <ScreenScroll
-                contentContainerStyle={styles.content}
+                contentContainerStyle={CONTENT_STYLE}
                 stickyHeaderIndices={STICKY_INDICES}
                 keyboardShouldPersistTaps="handled"
             >
                 <CityHeader city={city} onSelectCity={handleSwitchCity} />
                 <VariableBar value={variable} onChange={setVariable} />
                 {latestQuery.isError || precipQuery.isError ? (
-                    <ErrorNotice error={latestQuery.error ?? precipQuery.error} onRetry={handleRetry} />
+                    <ErrorNotice error={latestQuery.error ?? precipQuery.error} onRetry={retry} />
                 ) : (
                     <LoadingStatus label={t('fetching', { name: getCityName(city, locale) })} />
                 )}
-                <DashboardSkeleton gap={GAP} />
+                <DashboardSkeleton />
             </ScreenScroll>
         )
     }
 
-    const futureRange = getFutureRange(derived.stats.median, latest.steps, now)
-    const mostSplit = [...derived.disagreement].sort((a, b) => b.spread - a.spread)[0]
-    const summary = t('summary', {
-        variable: tInline(variable),
-        count: latest.series.length,
-        min: formatNumber(futureRange.min, info.decimals),
-        max: formatNumber(futureRange.max, info.decimals),
-        unit: info.unit,
-        day: mostSplit ? formatDateKey(mostSplit.day, locale, { weekday: 'long' }) : '–',
-        spread: formatSpread(mostSplit?.spread, info.decimals),
-    })
+    const summary = t('summary', { variable: tInline(variable), ...summaryValues })
 
     return (
         <ScreenScroll
-            contentContainerStyle={styles.content}
+            contentContainerStyle={CONTENT_STYLE}
             stickyHeaderIndices={STICKY_INDICES}
             keyboardShouldPersistTaps="handled"
         >
@@ -320,7 +269,6 @@ const Dashboard = ({ city }: DashboardProps) => {
 export function CityScreen() {
     const tCity = useTranslations('city')
     const router = useRouter()
-    const { colors } = useTheme()
     const { slug } = useLocalSearchParams<{ slug: string }>()
 
     const { data: city, error, refetch } = useCity(slug)
@@ -332,14 +280,12 @@ export function CityScreen() {
 
     if (error && isNotFound(error)) {
         return (
-            <ScreenScroll contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+            <ScreenScroll contentContainerStyle={CONTENT_STYLE} keyboardShouldPersistTaps="handled">
                 <SlugHeading slug={slug} />
-                <View style={styles.notFound}>
-                    <Text style={[styles.notFoundTitle, { color: colors.foreground }]}>{tCity('notFound')}</Text>
-                    <Text style={[styles.notFoundBody, { color: colors['muted-foreground'] }]}>
-                        {tCity('notFoundBody')}
-                    </Text>
-                    <View style={styles.search}>
+                <View className="items-center gap-3 py-8">
+                    <Text className="text-center text-lg font-semibold">{tCity('notFound')}</Text>
+                    <Text className="text-center text-sm text-muted-foreground">{tCity('notFoundBody')}</Text>
+                    <View className="self-stretch">
                         <SearchBox onSelectCity={(next) => router.replace(`/city/${next}`)} />
                     </View>
                 </View>
@@ -349,29 +295,26 @@ export function CityScreen() {
 
     if (error) {
         return (
-            <ScreenScroll contentContainerStyle={styles.content}>
+            <ScreenScroll contentContainerStyle={CONTENT_STYLE}>
                 <SlugHeading slug={slug} />
                 <ErrorNotice error={error} onRetry={() => void refetch()} />
             </ScreenScroll>
         )
     }
 
+    // The header's two lines (name with star and pencil, then Refresh), the switch and the cards.
     if (!city) {
         return (
-            <ScreenScroll contentContainerStyle={styles.content} scrollEnabled={false}>
-                <View style={styles.header}>
+            <ScreenScroll contentContainerStyle={CONTENT_STYLE} scrollEnabled={false}>
+                <View className="gap-2">
                     <SlugHeading slug={slug}>
-                        <Skeleton width={HEADER_BUTTON_SIZE} height={HEADER_BUTTON_SIZE} />
-                        <Skeleton width={HEADER_BUTTON_SIZE} height={HEADER_BUTTON_SIZE} />
+                        <Skeleton className="size-9" />
+                        <Skeleton className="size-9" />
                     </SlugHeading>
-                    <Skeleton
-                        width={REFRESH_PLACEHOLDER_WIDTH}
-                        height={HEADER_BUTTON_SIZE}
-                        style={{ alignSelf: 'flex-end' }}
-                    />
+                    <Skeleton className="h-9 w-[6.5rem] self-end" />
                 </View>
-                <Skeleton height={HEADER_BUTTON_SIZE} />
-                <DashboardSkeleton gap={GAP} />
+                <Skeleton className="h-9" />
+                <DashboardSkeleton />
             </ScreenScroll>
         )
     }

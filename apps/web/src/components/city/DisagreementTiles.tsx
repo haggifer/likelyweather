@@ -1,15 +1,13 @@
 'use client'
 
-import { StatusChip } from '@/components/shell/StatusChip'
-import { ChipTone } from '@/components/types'
+import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { formatSpread } from '@fa/chart-core/dashboard-stats'
-import { DayDisagreement, DisagreementLabel } from '@fa/shared/ensemble'
+import { formatSpread } from '@fa/shared/dashboard'
+import { DayDisagreement } from '@fa/shared/ensemble'
 import { formatDateKey, formatNumber } from '@fa/shared/format'
+import { DISAGREEMENT_TONE } from '@fa/shared/status-tone'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { useLocale, useTranslations } from 'next-intl'
-
-const TONES: Record<DisagreementLabel, ChipTone> = { agree: ChipTone.Ok, mixed: ChipTone.Warn, split: ChipTone.Fail }
 
 interface IProps {
     days: DayDisagreement[]
@@ -55,9 +53,9 @@ export function DisagreementTiles({ days, variable }: IProps) {
                             {formatSpread(d.spread, decimals)}
                             <span className="ml-1 text-xs font-normal text-muted-foreground">{unit}</span>
                         </span>
-                        <StatusChip tone={TONES[d.label]} className="self-start">
+                        <Badge variant={DISAGREEMENT_TONE[d.label]} className="self-start">
                             {t(d.label)}
-                        </StatusChip>
+                        </Badge>
                     </div>
                 ))}
                 {!days.length && <p className="text-sm text-muted-foreground">{t('empty')}</p>}

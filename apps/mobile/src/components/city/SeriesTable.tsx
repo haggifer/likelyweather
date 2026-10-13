@@ -2,25 +2,18 @@ import { Series } from '@fa/shared/api'
 import { EnsembleStats } from '@fa/shared/ensemble'
 import { formatNumber, formatStepLabel } from '@fa/shared/format'
 import { MODEL_BY_ID } from '@fa/shared/models'
-import { ScrollView, StyleSheet, View } from 'react-native'
+import { ScrollView, View } from 'react-native'
 import { useTranslations } from 'use-intl'
-import { useTheme } from '../../hooks/useTheme'
-import { Text } from '../legacy-ui/Text'
+import { cn } from '../../lib/cn'
+import { Text } from '../ui/text'
 
-const TIME_WIDTH = 92
-const CELL_WIDTH = 64
-// The web's `max-h-[26.25rem]`: the table scrolls inside the card instead of stretching the page by 33 rows.
-const MAX_HEIGHT = 420
-
-const styles = StyleSheet.create({
-    frame: { maxHeight: MAX_HEIGHT },
-    table: { flexDirection: 'row' },
-    row: { flexDirection: 'row', minHeight: 32, alignItems: 'center' },
-    time: { width: TIME_WIDTH, fontSize: 12 },
-    cell: { width: CELL_WIDTH, fontSize: 12, textAlign: 'right' },
-    head: { fontWeight: '600' },
-    headRow: { height: 40 },
-})
+// The kit has no table: rows are views with the web table's bottom border, the time column 92 px and the others 64.
+const ROW_CLASS = 'min-h-8 flex-row items-center border-b border-border'
+const HEAD_ROW_CLASS = cn(ROW_CLASS, 'h-10')
+const TIME_CLASS = 'w-[5.75rem] text-xs'
+const CELL_CLASS = 'w-16 text-right text-xs'
+// Inter's tabular figures also widen hyphens, so the model names in the head keep the proportional ones.
+const VALUE_CLASS = cn(CELL_CLASS, 'tabular-nums')
 
 interface IProps {
     steps: string[]
@@ -31,45 +24,41 @@ interface IProps {
     locale: string
 }
 
-// The chart's numbers: the rows scroll inside a capped frame, and the model columns scroll sideways while the time
-// column stays put.
+// The chart's numbers: the rows scroll inside a frame capped like the web's `max-h-[26.25rem]` instead of stretching
+// the page by 81 rows, and the model columns scroll sideways while the time column stays put.
 export function SeriesTable({ steps, series, stats, decimals, timeZone, locale }: IProps) {
     const t = useTranslations('dashboard')
-    const { colors } = useTheme()
-
-    const text = { color: colors.foreground }
-    const border = { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }
 
     return (
-        <ScrollView style={styles.frame} nestedScrollEnabled>
-            <View style={styles.table}>
+        <ScrollView className="max-h-[26.25rem]" nestedScrollEnabled>
+            <View className="flex-row">
                 <View>
-                    <View style={[styles.row, styles.headRow, border]}>
-                        <Text style={[styles.time, styles.head, text]}>{t('time')}</Text>
+                    <View className={HEAD_ROW_CLASS}>
+                        <Text className={cn(TIME_CLASS, 'font-semibold')}>{t('time')}</Text>
                     </View>
                     {steps.map((step) => (
-                        <View key={step} style={[styles.row, border]}>
-                            <Text style={[styles.time, text]}>{formatStepLabel(step, timeZone, locale)}</Text>
+                        <View key={step} className={ROW_CLASS}>
+                            <Text className={TIME_CLASS}>{formatStepLabel(step, timeZone, locale)}</Text>
                         </View>
                     ))}
                 </View>
                 <ScrollView horizontal nestedScrollEnabled>
                     <View>
-                        <View style={[styles.row, styles.headRow, border]}>
-                            <Text style={[styles.cell, styles.head, text]}>{t('median')}</Text>
+                        <View className={HEAD_ROW_CLASS}>
+                            <Text className={cn(CELL_CLASS, 'font-semibold')}>{t('median')}</Text>
                             {series.map((s) => (
-                                <Text key={s.modelId} style={[styles.cell, styles.head, text]} numberOfLines={2}>
+                                <Text key={s.modelId} className={cn(CELL_CLASS, 'font-semibold')} numberOfLines={2}>
                                     {MODEL_BY_ID[s.modelId].name}
                                 </Text>
                             ))}
                         </View>
                         {steps.map((step, i) => (
-                            <View key={step} style={[styles.row, border]}>
-                                <Text isTabular style={[styles.cell, styles.head, text]}>
+                            <View key={step} className={ROW_CLASS}>
+                                <Text className={cn(VALUE_CLASS, 'font-semibold')}>
                                     {formatNumber(stats.median[i], decimals)}
                                 </Text>
                                 {series.map((s) => (
-                                    <Text key={s.modelId} isTabular style={[styles.cell, text]}>
+                                    <Text key={s.modelId} className={VALUE_CLASS}>
                                         {formatNumber(s.values[i], decimals)}
                                     </Text>
                                 ))}

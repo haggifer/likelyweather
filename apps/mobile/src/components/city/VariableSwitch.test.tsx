@@ -1,18 +1,17 @@
 import en from '@fa/messages/catalogs/en.json'
 import { Variable, VARIABLES } from '@fa/shared/variables'
-import { render, screen } from '@testing-library/react-native'
-import { StyleSheet } from 'react-native'
+import { fireEvent, render, screen } from '@testing-library/react-native'
 import { IntlProvider } from 'use-intl'
 import { VariableSwitch } from './VariableSwitch'
 
-const renderSwitch = (value: Variable) =>
+const renderSwitch = (value: Variable, onChange = jest.fn()) =>
     render(
         <IntlProvider locale="en" messages={en}>
-            <VariableSwitch value={value} onChange={jest.fn()} />
+            <VariableSwitch value={value} onChange={onChange} />
         </IntlProvider>,
     )
 
-const getFlex = (name: string) => StyleSheet.flatten(screen.getByRole('radio', { name }).props.style).flex
+const getClassName = (name: string): string => screen.getByRole('radio', { name }).props.className
 
 describe('VariableSwitch', () => {
     it('offers every variable by name', async () => {
@@ -27,7 +26,18 @@ describe('VariableSwitch', () => {
 
         expect(screen.getByText(en.variables.humidity)).toBeOnTheScreen()
         expect(screen.queryByText(en.variables.temp)).toBeNull()
-        expect(getFlex(en.variables.humidity)).toBe(3.4)
-        expect(getFlex(en.variables.temp)).toBe(1)
+        expect(screen.getByRole('radio', { name: en.variables.humidity })).toBeChecked()
+        expect(getClassName(en.variables.humidity)).toContain('flex-[3.4]')
+        expect(getClassName(en.variables.temp)).toContain('flex-1')
+    })
+
+    it('switches on a tap and keeps the selected variable when it is tapped again', async () => {
+        const onChange = jest.fn()
+
+        await renderSwitch(Variable.Temp, onChange)
+        await fireEvent.press(screen.getByRole('radio', { name: en.variables.temp }))
+        await fireEvent.press(screen.getByRole('radio', { name: en.variables.wind }))
+
+        expect(onChange.mock.calls).toEqual([[Variable.Wind]])
     })
 })

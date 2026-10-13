@@ -7,20 +7,12 @@ import { useAppDispatch, useAppSelector } from '@/store'
 import { setHighlightedModel, showAllModels, toggleHiddenModel, toggleMedian } from '@/store/dashboard-slice'
 import { Series } from '@fa/shared/api'
 import { formatNumber, formatWindDirection } from '@fa/shared/format'
+import { getLegendRows } from '@fa/shared/legend-rows'
 import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Eye, EyeOff } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { memo } from 'react'
-
-const getLegendRows = (series: Series[], readoutIndex: number, hidden: ModelId[]) =>
-    series
-        .map((s) => ({
-            modelId: s.modelId,
-            value: s.values[readoutIndex] ?? null,
-            isHidden: hidden.includes(s.modelId),
-        }))
-        .sort((a, b) => Number(a.isHidden) - Number(b.isHidden) || (b.value ?? -Infinity) - (a.value ?? -Infinity))
 
 interface RowProps {
     modelId: ModelId
@@ -33,7 +25,7 @@ const EYE = <Eye />
 const EYE_OFF = <EyeOff />
 
 // One model's row; a hover re-renders only the rows whose value text changed (author's lag report, 2026-10-12).
-const LegendRow = memo(function LegendRow({ modelId, value, isHidden }: RowProps) {
+const ModelRow = memo(function ModelRow({ modelId, value, isHidden }: RowProps) {
     const t = useTranslations('legend')
     const dispatch = useAppDispatch()
 
@@ -155,7 +147,7 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
             </div>
             <ul className="grid grid-cols-2 gap-x-3 gap-y-0.5 lg:grid-cols-1">
                 {rows.map(({ modelId, value, isHidden }) => (
-                    <LegendRow
+                    <ModelRow
                         key={modelId}
                         modelId={modelId}
                         value={isHidden ? '' : formatNumber(value, decimals)}

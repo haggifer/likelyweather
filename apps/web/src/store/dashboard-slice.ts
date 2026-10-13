@@ -1,4 +1,5 @@
 import { ModelId } from '@fa/shared/models'
+import { toggleItem } from '@fa/shared/toggle-item'
 import { Variable } from '@fa/shared/variables'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
@@ -18,8 +19,6 @@ const initialState: DashboardState = {
     isMedianHidden: false,
 }
 
-const toggle = (list: ModelId[], id: ModelId) => (list.includes(id) ? list.filter((m) => m !== id) : [...list, id])
-
 const dashboardSlice = createSlice({
     name: 'dashboard',
     initialState,
@@ -35,7 +34,7 @@ const dashboardSlice = createSlice({
             state.highlightedModel = action.payload
         },
         toggleHiddenModel: (state, action: PayloadAction<ModelId>) => {
-            state.hiddenModels = toggle(state.hiddenModels, action.payload)
+            state.hiddenModels = toggleItem(state.hiddenModels, action.payload)
         },
         toggleMedian: (state) => {
             state.isMedianHidden = !state.isMedianHidden

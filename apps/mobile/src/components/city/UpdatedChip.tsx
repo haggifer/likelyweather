@@ -1,15 +1,11 @@
-import { REFRESH_AFTER_HOURS, STALE_AFTER_HOURS } from '@fa/shared/constants'
-import { formatStepLabel, formatTime } from '@fa/shared/format'
-import { getAgeHours } from '@fa/shared/time'
+import { getForecastAge, getForecastTitleValues } from '@fa/shared/forecast-age'
 import { ClockAlert } from 'lucide-react-native'
-import { Pressable } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
-import { useTheme } from '../../hooks/useTheme'
 import { showSnackbar } from '../../lib/snackbar-store'
-import { StatusChip } from '../legacy-ui/StatusChip'
-
-const CLOCK: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
-const ICON_SIZE = 20
+import { Badge } from '../ui/badge'
+import { Button } from '../ui/button'
+import { Icon } from '../ui/icon'
+import { Text } from '../ui/text'
 
 interface IProps {
     fetchedAt: string
@@ -25,37 +21,36 @@ interface IProps {
 export function UpdatedChip({ fetchedAt, now, issueTime, timeZone, isCompact = false }: IProps) {
     const t = useTranslations('city')
     const locale = useLocale()
-    const { colors } = useTheme()
 
-    const hours = getAgeHours(fetchedAt, now)
-    const isStale = hours > STALE_AFTER_HOURS
+    const { hours, isShown, isStale, tone } = getForecastAge(fetchedAt, now)
     const label = t('forecastAge', { hours })
     const chip = isCompact ? (
-        <ClockAlert size={ICON_SIZE} color={colors.warning} />
+        <Icon as={ClockAlert} className="text-warning" />
     ) : (
-        <StatusChip tone={isStale ? 'warn' : 'ok'} label={label} />
+        <Badge variant={tone}>
+            <Text className="tabular-nums">{label}</Text>
+        </Badge>
     )
 
-    if (hours < REFRESH_AFTER_HOURS) return null
+    if (!isShown) return null
 
     if (!issueTime || !timeZone) return chip
 
-    const runTimes = t('forecastTitle', {
-        time: formatStepLabel(issueTime, timeZone, locale),
-        utc: `${formatTime(issueTime, 'UTC', locale, CLOCK)} UTC`,
-        fetched: formatStepLabel(fetchedAt, timeZone, locale),
-    })
+    const runTimes = t('forecastTitle', getForecastTitleValues(issueTime, fetchedAt, timeZone, locale))
     const details = isStale ? `${runTimes} ${t('forecastOldTitle')}` : runTimes
 
     return (
-        <Pressable
+        <Button
+            variant="ghost"
+            // The compact clock takes the web's phone box; the chip keeps its pill's own size.
+            size={isCompact ? 'icon-sm' : 'default'}
             onPress={() => showSnackbar(isCompact ? `${label}. ${details}` : details)}
             hitSlop={8}
-            accessibilityRole="button"
             accessibilityLabel={label}
             accessibilityHint={details}
+            className={isCompact ? undefined : 'h-auto rounded-full px-0'}
         >
             {chip}
-        </Pressable>
+        </Button>
     )
 }

@@ -10,10 +10,10 @@ import {
     Wind,
     WindArrowDown,
 } from 'lucide-react-native'
-import { Pressable, StyleSheet, View } from 'react-native'
 import { useTranslations } from 'use-intl'
-import { useTheme } from '../../hooks/useTheme'
-import { Text } from '../legacy-ui/Text'
+import { cn } from '../../lib/cn'
+import { Text } from '../ui/text'
+import { ToggleGroup, ToggleGroupIcon, ToggleGroupItem } from '../ui/toggle-group'
 
 const ICONS: Record<Variable, LucideIcon> = {
     [Variable.Temp]: Thermometer,
@@ -26,13 +26,7 @@ const ICONS: Record<Variable, LucideIcon> = {
     [Variable.Cloud]: Cloud,
 }
 
-const styles = StyleSheet.create({
-    group: { flexDirection: 'row', borderWidth: 1, overflow: 'hidden' },
-    item: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', minHeight: 36 },
-    // The named segment takes the room its label needs, the web's `flex-[3.4]`; a longer name ends in an ellipsis.
-    selected: { flex: 3.4, paddingHorizontal: 8 },
-    label: { flexShrink: 1, fontSize: 13, fontWeight: '500' },
-})
+const LAST_INDEX = VARIABLES.length - 1
 
 interface IProps {
     value: Variable
@@ -40,49 +34,43 @@ interface IProps {
 }
 
 // The web's phone layout: eight segments, only the selected one named and without its icon; the others show their
-// icon and keep their accessible name.
+// icon and keep their accessible name. The named segment takes the room its label needs, the web's `flex-[3.4]`; a
+// longer name ends in an ellipsis.
 export function VariableSwitch({ value, onChange }: IProps) {
     const t = useTranslations('variables')
-    const { colors, radius } = useTheme()
 
     return (
-        <View
-            style={[
-                styles.group,
-                { borderColor: colors.border, borderRadius: radius * 0.8, backgroundColor: colors.card },
-            ]}
-            accessibilityRole="radiogroup"
+        <ToggleGroup
+            type="single"
+            variant="outline"
+            value={value}
+            // A tap on the selected segment would clear the group; the switch always keeps one variable.
+            onValueChange={(next) => next && onChange(next as Variable)}
             accessibilityLabel={t('label')}
+            className="w-full bg-card"
         >
             {VARIABLES.map(({ id }, i) => {
-                const Icon = ICONS[id]
                 const isSelected = id === value
-                const color = isSelected ? colors['accent-foreground'] : colors['muted-foreground']
 
                 return (
-                    <Pressable
+                    <ToggleGroupItem
                         key={id}
-                        onPress={() => onChange(id)}
-                        accessibilityRole="radio"
+                        value={id}
+                        isFirst={i === 0}
+                        isLast={i === LAST_INDEX}
                         accessibilityLabel={t(id)}
-                        // A radio's state is `checked`, read as checked or not checked, like the web's radio group.
-                        accessibilityState={{ checked: isSelected }}
-                        style={[
-                            styles.item,
-                            i > 0 && { borderLeftWidth: 1, borderLeftColor: colors.border },
-                            isSelected && [styles.selected, { backgroundColor: colors.accent }],
-                        ]}
+                        className={cn('h-9 min-w-0 border-border', isSelected ? 'flex-[3.4] px-2' : 'flex-1 px-0')}
                     >
                         {isSelected ? (
-                            <Text numberOfLines={1} style={[styles.label, { color }]}>
+                            <Text numberOfLines={1} className="shrink text-[0.8125rem]">
                                 {t(id)}
                             </Text>
                         ) : (
-                            <Icon size={16} color={color} />
+                            <ToggleGroupIcon as={ICONS[id]} className="text-muted-foreground" />
                         )}
-                    </Pressable>
+                    </ToggleGroupItem>
                 )
             })}
-        </View>
+        </ToggleGroup>
     )
 }

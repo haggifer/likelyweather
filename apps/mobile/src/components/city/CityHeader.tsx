@@ -5,50 +5,20 @@ import { getCityRegion } from '@fa/shared/city-region'
 import { getCityName } from '@fa/shared/format'
 import { Variable } from '@fa/shared/variables'
 import { useIsFetching, useQueryClient } from '@tanstack/react-query'
-import { LucideIcon, Pencil, X } from 'lucide-react-native'
+import { Pencil, X } from 'lucide-react-native'
 import { useState } from 'react'
-import { Pressable, StyleSheet, View } from 'react-native'
+import { View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { useNow } from '../../hooks/useNow'
-import { useTheme } from '../../hooks/useTheme'
 import { SearchBox } from '../home/SearchBox'
+import { Button } from '../ui/button'
+import { Icon } from '../ui/icon'
 import { CityTitle } from './CityTitle'
 import { FavoriteToggle } from './FavoriteToggle'
 import { RefreshButton } from './RefreshButton'
 import { UpdatedChip } from './UpdatedChip'
 
-// The web's `pointer-coarse:size-9` targets.
-export const HEADER_BUTTON_SIZE = 36
-
-const styles = StyleSheet.create({
-    header: { gap: 8 },
-    status: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end', gap: 8 },
-    switcher: { flexDirection: 'row', alignItems: 'flex-start', gap: 6 },
-    search: { flex: 1 },
-    button: { width: HEADER_BUTTON_SIZE, height: HEADER_BUTTON_SIZE, alignItems: 'center', justifyContent: 'center' },
-    close: { marginTop: 6 },
-})
-
-interface IconButtonProps {
-    icon: LucideIcon
-    label: string
-    onPress: () => void
-}
-
-const IconButton = ({ icon: Icon, label, onPress }: IconButtonProps) => {
-    const { colors } = useTheme()
-
-    return (
-        <Pressable
-            onPress={onPress}
-            accessibilityRole="button"
-            accessibilityLabel={label}
-            style={({ pressed }) => [styles.button, pressed && { opacity: 0.7 }]}
-        >
-            <Icon size={20} color={colors['muted-foreground']} />
-        </Pressable>
-    )
-}
+const STAR_SIZE = 20
 
 interface IProps {
     city: City
@@ -80,26 +50,39 @@ export function CityHeader({ city, onSelectCity }: IProps) {
 
     if (isSwitching) {
         return (
-            <View style={styles.switcher}>
-                <View style={styles.search}>
+            <View className="flex-row items-start gap-1.5">
+                <View className="flex-1">
                     <SearchBox initialQuery={name} autoFocus onDismiss={handleClose} onSelectCity={onSelectCity} />
                 </View>
-                <View style={styles.close}>
-                    <IconButton icon={X} label={ts('close')} onPress={handleClose} />
-                </View>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onPress={handleClose}
+                    accessibilityLabel={ts('close')}
+                    className="mt-1.5"
+                >
+                    <Icon as={X} className="text-muted-foreground" />
+                </Button>
             </View>
         )
     }
 
     return (
-        <View style={styles.header}>
+        <View className="gap-2">
             <CityTitle name={name} region={getCityRegion(city, locale)} countryCode={city.countryCode}>
-                <View style={styles.button}>
-                    <FavoriteToggle place={city} size={20} />
+                <View className="size-9 items-center justify-center">
+                    <FavoriteToggle place={city} size={STAR_SIZE} />
                 </View>
-                <IconButton icon={Pencil} label={t('change')} onPress={() => setIsSwitching(true)} />
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onPress={() => setIsSwitching(true)}
+                    accessibilityLabel={t('change')}
+                >
+                    <Icon as={Pencil} className="text-muted-foreground" />
+                </Button>
             </CityTitle>
-            <View style={styles.status}>
+            <View className="flex-row flex-wrap items-center justify-end gap-2">
                 {latest && (
                     <UpdatedChip
                         fetchedAt={latest.fetchedAt}

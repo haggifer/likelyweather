@@ -1,7 +1,7 @@
-import { getDashboardStats, getEnsembleStats } from '@fa/chart-core/dashboard-stats'
 import { getNearestIndex } from '@fa/chart-core/spaghetti-geometry'
 import { LatestResponse } from '@fa/shared/api'
 import { HOUR_MS } from '@fa/shared/constants'
+import { getDashboardStats, getEnsembleStats } from '@fa/shared/dashboard'
 import { DisagreementLabel } from '@fa/shared/ensemble'
 import { Place } from '@fa/shared/places'
 import { buildSlots, getChartStart, getSlotStart, SLOT_HOURS, toSlotLatest } from '@fa/shared/slots'

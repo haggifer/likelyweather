@@ -13,20 +13,13 @@ import { useNow } from '@/hooks/useNow'
 import { useUrlSync } from '@/hooks/useUrlSync'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { setHoverStep } from '@/store/dashboard-slice'
-import { useCity } from '@fa/api-client/hooks/useCity'
-import { useLatest } from '@fa/api-client/hooks/useLatest'
-import {
-    formatSpread,
-    getDashboardStats,
-    getFutureRange,
-    getReadoutIndex,
-    getSlotEnd,
-} from '@fa/chart-core/dashboard-stats'
+import { getReadoutIndex } from '@fa/chart-core/dashboard-stats'
+import { useDashboardData } from '@fa/hooks/useDashboardData'
 import { Series } from '@fa/shared/api'
+import { getReadoutLabel } from '@fa/shared/dashboard'
 import { EnsembleStats } from '@fa/shared/ensemble'
-import { formatDateKey, formatNumber, formatPeriodLabel, formatStepLabel, getCityName } from '@fa/shared/format'
+import { formatNumber, formatStepLabel, getCityName } from '@fa/shared/format'
 import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
-import { buildSlots, DASHBOARD_HOURS, getChartStart, toSlotLatest } from '@fa/shared/slots'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Loader2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
@@ -59,11 +52,6 @@ const VARIABLE_BAR = (
         <VariableSwitch className="max-sm:w-full" />
     </div>
 )
-
-const getReadoutLabel = (step: string, variable: Variable, timeZone: string, locale: string) =>
-    variable === Variable.Precip
-        ? formatPeriodLabel(step, getSlotEnd(step), timeZone, locale)
-        : formatStepLabel(step, timeZone, locale)
 
 const toHoverIndex = (steps: string[], hoverStep: string | null) => (hoverStep ? steps.indexOf(hoverStep) : -1)
 
@@ -175,28 +163,22 @@ export function Dashboard({ slug }: IProps) {
     const hidden = useAppSelector((s) => s.dashboard.hiddenModels)
     const isMedianHidden = useAppSelector((s) => s.dashboard.isMedianHidden)
 
-    const { data: city } = useCity(slug)
-    const latestQuery = useLatest(slug, variable, isHydrated)
-    const precipQuery = useLatest(slug, Variable.Precip, isHydrated)
+    const {
+        city,
+        latestQuery,
+        precipQuery,
+        latest,
+        derived,
+        summary: summaryValues,
+        retry,
+    } = useDashboardData(slug, variable, {
+        now,
+        locale,
+        isEnabled: isHydrated,
+    })
 
     const info = VARIABLE_BY_ID[variable]
     const timeZone = city?.timezone ?? 'UTC'
-    // The precipitation query is shared by every variable, so its run anchors the chart; a newer run re-anchors it.
-    const anchorRun = precipQuery.data ?? latestQuery.data
-    const anchor = useMemo(
-        () => (city && anchorRun ? getChartStart(anchorRun, city.timezone) : null),
-        [city, anchorRun],
-    )
-    const slots = useMemo(() => (anchor ? buildSlots(anchor, DASHBOARD_HOURS) : null), [anchor])
-    const latest = useMemo(
-        () => (latestQuery.data && slots ? toSlotLatest(latestQuery.data, slots, info.aggregation) : null),
-        [latestQuery.data, slots, info.aggregation],
-    )
-    const derived = useMemo(
-        () => (latest && now ? getDashboardStats(latest, variable, timeZone, now) : null),
-        [latest, variable, timeZone, now],
-    )
-    const chartNow = anchor ? now : null
     // A stable list, so the chart's memoized drawing survives renders that did not change the highlighted model.
     const emphasized = useMemo<ModelId[]>(() => (highlighted ? [highlighted] : []), [highlighted])
 
@@ -204,18 +186,12 @@ export function Dashboard({ slug }: IProps) {
 
     const cityName = getCityName(city, locale)
 
-    if (!latest || !derived || !now) {
+    if (!latest || !derived || !summaryValues || !now) {
         return (
             <div className="flex flex-col gap-(--card-gap)">
                 {VARIABLE_BAR}
                 {latestQuery.isError || precipQuery.isError ? (
-                    <ErrorNotice
-                        error={latestQuery.error ?? precipQuery.error}
-                        onRetry={() => {
-                            void latestQuery.refetch()
-                            void precipQuery.refetch()
-                        }}
-                    />
+                    <ErrorNotice error={latestQuery.error ?? precipQuery.error} onRetry={retry} />
                 ) : (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground" role="status">
                         <Loader2 className="size-4 animate-spin" />
@@ -233,17 +209,7 @@ export function Dashboard({ slug }: IProps) {
     }
 
     const visibleSeries = latest.series.filter((s) => !hidden.includes(s.modelId))
-    const futureRange = getFutureRange(derived.stats.median, latest.steps, now)
-    const mostSplit = [...derived.disagreement].sort((a, b) => b.spread - a.spread)[0]
-    const summary = t('summary', {
-        variable: tInline(variable),
-        count: latest.series.length,
-        min: formatNumber(futureRange.min, info.decimals),
-        max: formatNumber(futureRange.max, info.decimals),
-        unit: info.unit,
-        day: mostSplit ? formatDateKey(mostSplit.day, locale, { weekday: 'long' }) : '–',
-        spread: formatSpread(mostSplit?.spread, info.decimals),
-    })
+    const summary = t('summary', { variable: tInline(variable), ...summaryValues })
     const legend = (
         <HoveredLegend
             steps={latest.steps}
@@ -253,7 +219,7 @@ export function Dashboard({ slug }: IProps) {
             variable={variable}
             timeZone={timeZone}
             locale={locale}
-            now={chartNow}
+            now={now}
         />
     )
 
@@ -288,7 +254,7 @@ export function Dashboard({ slug }: IProps) {
                         ariaLabel={summary}
                         emphasized={emphasized}
                         directions={variable === Variable.Wind ? derived.directions : null}
-                        now={chartNow}
+                        now={now}
                         isMedianHidden={isMedianHidden}
                     />
                     {variable === Variable.Wind && (

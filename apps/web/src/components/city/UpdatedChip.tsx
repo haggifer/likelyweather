@@ -1,16 +1,12 @@
 'use client'
 
 import { Hint } from '@/components/shell/Hint'
-import { StatusChip } from '@/components/shell/StatusChip'
-import { ChipTone } from '@/components/types'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/cn'
-import { REFRESH_AFTER_HOURS, STALE_AFTER_HOURS } from '@fa/shared/constants'
-import { formatStepLabel, formatTime } from '@fa/shared/format'
-import { getAgeHours } from '@fa/shared/time'
+import { getForecastAge, getForecastTitleValues } from '@fa/shared/forecast-age'
 import { ClockAlert } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
-
-const CLOCK: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
 
 interface IProps {
     issueTime: string
@@ -29,18 +25,12 @@ export function UpdatedChip({ issueTime, fetchedAt, timeZone, now, isIconOnPhone
     const t = useTranslations('city')
     const locale = useLocale()
 
-    const hours = now ? getAgeHours(fetchedAt, now) : 0
+    const { hours, isShown, isStale, tone } = getForecastAge(fetchedAt, now)
 
-    if (hours < REFRESH_AFTER_HOURS) return null
+    if (!isShown) return null
 
-    const isStale = hours > STALE_AFTER_HOURS
     const age = t('forecastAge', { hours })
-    const title = t('forecastTitle', {
-        time: formatStepLabel(issueTime, timeZone, locale),
-        utc: `${formatTime(issueTime, 'UTC', locale, CLOCK)} UTC`,
-        fetched: formatStepLabel(fetchedAt, timeZone, locale),
-    })
-
+    const title = t('forecastTitle', getForecastTitleValues(issueTime, fetchedAt, timeZone, locale))
     const details = isStale ? `${title} ${t('forecastOldTitle')}` : title
 
     return (
@@ -52,23 +42,21 @@ export function UpdatedChip({ issueTime, fetchedAt, timeZone, now, isIconOnPhone
                 </>
             }
         >
-            <button
-                type="button"
+            {/* The chip is the hint's trigger: a button with no fill of its own, round like the badge it holds. */}
+            <Button
+                variant="ghost"
                 aria-label={isIconOnPhones ? age : undefined}
                 className={cn(
-                    'shrink-0 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    isIconOnPhones && 'max-sm:flex max-sm:size-8 max-sm:items-center max-sm:justify-center',
+                    'h-auto shrink-0 rounded-full border-0 p-0 hover:bg-transparent dark:hover:bg-transparent',
+                    isIconOnPhones && 'max-sm:size-8',
                     className,
                 )}
             >
-                <StatusChip
-                    tone={isStale ? ChipTone.Warn : ChipTone.Ok}
-                    className={cn('h-7', isIconOnPhones && 'max-sm:hidden')}
-                >
+                <Badge variant={tone} className={cn('h-7', isIconOnPhones && 'max-sm:hidden')}>
                     {age}
-                </StatusChip>
+                </Badge>
                 {isIconOnPhones && <ClockAlert aria-hidden="true" className="size-5 text-warning sm:hidden" />}
-            </button>
+            </Button>
         </Hint>
     )
 }
