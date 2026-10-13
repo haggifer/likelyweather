@@ -23,6 +23,10 @@
             "dependsOn": ["build"],
             "passThroughEnv": ["DATABASE_URL"]
         },
+        "@fa/api#test": {
+            "dependsOn": ["^build", "@fa/db#test"],
+            "passThroughEnv": ["DATABASE_URL"]
+        },
         "@fa/db#lint": {
             "dependsOn": ["build"]
         }
