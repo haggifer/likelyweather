@@ -37,6 +37,7 @@ interface IProps {
 // so the period settles for a moment before it is asked for.
 const RANGE_DEBOUNCE_MS = 700
 const RANGE_SEPARATOR = '|'
+const DATE_FORMAT: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' }
 
 const toRangeKey = (range: ArchiveRange | null) => (range ? `${range.from}${RANGE_SEPARATOR}${range.to}` : null)
 
@@ -88,10 +89,49 @@ export function ArchiveCard({ slug }: IProps) {
         () => (archive.data && slots ? getArchiveDirections(archive.data, slots) : null),
         [archive.data, slots],
     )
+    const name = city ? getCityName(city, locale) : null
+    const region = city ? getCityRegion(city, locale) : null
+    const shown = archive.data ?? null
 
     const handleRange = (next: ArchiveRange) => setSettings((s) => ({ ...s, range: next }))
     const handlePanels = (update: (panels: OverviewPanels) => OverviewPanels) =>
         setSettings((s) => ({ ...s, panels: update(s.panels) }))
+    const renderArchive = () => {
+        if (archive.error && !shown) {
+            return <ErrorNotice error={archive.error} onRetry={() => void archive.refetch()} />
+        }
+
+        if (shown && isEmptyArchive(shown)) {
+            return <p className="py-10 text-center text-sm text-muted-foreground">{t('unavailable')}</p>
+        }
+
+        if (!shown || !series || !city) {
+            return (
+                <div role="status" aria-label={t('fetching', { name: name ?? '' })}>
+                    <MedianOverviewSkeleton panels={visible} />
+                </div>
+            )
+        }
+
+        return (
+            <MedianOverview
+                key={`${shown.from}${RANGE_SEPARATOR}${shown.to}`}
+                panels={visible}
+                series={series}
+                directions={directions}
+                chance={null}
+                timeZone={city.timezone}
+                locale={locale}
+                now={null}
+                isArchive
+                ariaLabel={t('aria', {
+                    name: name ?? '',
+                    from: formatDateKey(shown.from, locale, DATE_FORMAT),
+                    to: formatDateKey(shown.to, locale, DATE_FORMAT),
+                })}
+            />
+        )
+    }
 
     if (cityError) {
         return (
@@ -102,10 +142,6 @@ export function ArchiveCard({ slug }: IProps) {
             </Card>
         )
     }
-
-    const name = city ? getCityName(city, locale) : null
-    const region = city ? getCityRegion(city, locale) : null
-    const shown = archive.data ?? null
 
     return (
         <Card data-bleed className="gap-0 max-sm:pt-3">
@@ -140,40 +176,7 @@ export function ArchiveCard({ slug }: IProps) {
                         onChange={handleRange}
                     />
                 )}
-                {archive.error && !shown && (
-                    <ErrorNotice error={archive.error} onRetry={() => void archive.refetch()} />
-                )}
-                {shown && isEmptyArchive(shown) && (
-                    <p className="py-10 text-center text-sm text-muted-foreground">{t('unavailable')}</p>
-                )}
-                {shown && !isEmptyArchive(shown) && series && city ? (
-                    <MedianOverview
-                        key={`${shown.from}${RANGE_SEPARATOR}${shown.to}`}
-                        panels={visible}
-                        series={series}
-                        directions={directions}
-                        chance={null}
-                        timeZone={city.timezone}
-                        locale={locale}
-                        now={null}
-                        isArchive
-                        ariaLabel={t('aria', {
-                            name: name ?? '',
-                            from: formatDateKey(shown.from, locale, {
-                                day: 'numeric',
-                                month: 'short',
-                                year: 'numeric',
-                            }),
-                            to: formatDateKey(shown.to, locale, { day: 'numeric', month: 'short', year: 'numeric' }),
-                        })}
-                    />
-                ) : (
-                    !archive.error && (
-                        <div role="status" aria-label={t('fetching', { name: name ?? '' })}>
-                            <MedianOverviewSkeleton panels={visible} />
-                        </div>
-                    )
-                )}
+                {renderArchive()}
                 <p className="text-xs text-muted-foreground">{t('source')}</p>
             </CardContent>
         </Card>
