@@ -31,7 +31,7 @@ export function ArchiveView() {
                     <PlaceChips places={places} chips={chips} slug={slug} onSelect={handleSelect} />
                 </div>
             </section>
-            <section className="mx-auto w-full max-w-5xl max-sm:-mx-4 max-sm:w-auto">
+            <section className="mx-auto w-full max-w-[70rem] max-sm:-mx-4 max-sm:w-auto">
                 {slug ? (
                     <ArchiveCard key={slug} slug={slug} />
                 ) : (

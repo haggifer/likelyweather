@@ -43,7 +43,7 @@ export function Landing() {
                     <PlaceChips places={places} chips={chips} slug={slug} onSelect={(next) => void setSlug(next)} />
                 </div>
             </section>
-            <section className="mx-auto w-full max-w-5xl max-sm:-mx-4 max-sm:w-auto">
+            <section className="mx-auto w-full max-w-[70rem] max-sm:-mx-4 max-sm:w-auto">
                 {slug ? <CityOverview key={slug} slug={slug} /> : <OverviewCardSkeleton status={to('loading')} />}
             </section>
         </div>
