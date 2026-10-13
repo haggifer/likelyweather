@@ -5,6 +5,7 @@ import {
     getArchiveHours,
     getDefaultArchiveRange,
     getLatestArchiveDate,
+    isArchiveDate,
     isValidArchiveRange,
 } from './archive'
 
@@ -41,6 +42,18 @@ describe('archive ranges', () => {
 
         expect(kolkata.start.toISOString()).toBe('2026-10-09T18:00:00.000Z')
         expect(kolkata.end.toISOString()).toBe('2026-10-10T19:00:00.000Z')
+    })
+})
+
+describe('isArchiveDate', () => {
+    it('takes only real days from 1940 to yesterday, so a year still being typed is never applied', () => {
+        expect(isArchiveDate('2026-10-05', '2026-10-11')).toBe(true)
+        expect(isArchiveDate('1940-01-01', '2026-10-11')).toBe(true)
+        expect(isArchiveDate('0002-10-05', '2026-10-11')).toBe(false)
+        expect(isArchiveDate('2026-10-12', '2026-10-11')).toBe(false)
+        expect(isArchiveDate('2026-02-30', '2026-10-11')).toBe(false)
+        expect(isArchiveDate('20201-10-05', '2026-10-11')).toBe(false)
+        expect(isArchiveDate('', '2026-10-11')).toBe(false)
     })
 })
 

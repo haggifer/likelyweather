@@ -1,4 +1,10 @@
-import { adjustArchiveRange, ARCHIVE_FIRST_DATE, ARCHIVE_MAX_DAYS, ArchiveRange } from '@fa/shared/archive'
+import {
+    adjustArchiveRange,
+    ARCHIVE_FIRST_DATE,
+    ARCHIVE_MAX_DAYS,
+    ArchiveRange,
+    isArchiveDate,
+} from '@fa/shared/archive'
 import { DAY_MS } from '@fa/shared/constants'
 import { Minus, Plus } from 'lucide-react-native'
 import { useState } from 'react'
@@ -11,7 +17,6 @@ import { Text } from '../ui/Text'
 
 type RangeEnd = 'from' | 'to'
 
-const DATE_KEY = /^\d{4}-\d{2}-\d{2}$/
 const DATE_LENGTH = 10
 
 const styles = StyleSheet.create({
@@ -35,10 +40,6 @@ const styles = StyleSheet.create({
 const shiftDate = (dateKey: string, days: number) =>
     new Date(Date.parse(`${dateKey}T00:00:00Z`) + days * DAY_MS).toISOString().slice(0, 10)
 
-// A real calendar day: the pattern alone lets 2026-02-31 through.
-const isDateKey = (text: string) =>
-    DATE_KEY.test(text) && !Number.isNaN(Date.parse(text)) && shiftDate(text, 0) === text
-
 // The number pad has no dash, so the dashes are put in while the reader types the digits.
 const toDateText = (text: string) => {
     const digits = text.replace(/\D/g, '').slice(0, 8)
@@ -53,7 +54,7 @@ interface FieldProps {
     onChange: (end: RangeEnd, value: string) => void
 }
 
-// The field keeps what the reader types until it is a whole date; a date set from outside (a button, the other end
+// The field keeps what the reader types until it is a date the archive has (a real day from 1940 to yesterday); a date set from outside (a button, the other end
 // dragging this one along) replaces it.
 const DateField = ({ end, value, latest, onChange }: FieldProps) => {
     const t = useTranslations('archive')
@@ -74,7 +75,7 @@ const DateField = ({ end, value, latest, onChange }: FieldProps) => {
 
         setDraft(next)
 
-        if (isDateKey(next)) onChange(end, next)
+        if (isArchiveDate(next, latest)) onChange(end, next)
     }
     const handleBlur = () => setDraft(value)
 

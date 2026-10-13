@@ -38,6 +38,16 @@ describe('ArchivePeriodPicker', () => {
         expect(onChange).not.toHaveBeenCalled()
     })
 
+    it('keeps a whole date outside 1940 to yesterday as typed instead of applying it', async () => {
+        const onChange = jest.fn()
+        await renderPicker(onChange)
+
+        await fireEvent.changeText(screen.getByLabelText(en.archive.from), '19000505')
+
+        expect(onChange).not.toHaveBeenCalled()
+        expect(screen.getByLabelText(en.archive.from).props.value).toBe('1900-05-05')
+    })
+
     it('moves an end a day with its buttons, never past yesterday', async () => {
         const onChange = jest.fn()
         await renderPicker(onChange)

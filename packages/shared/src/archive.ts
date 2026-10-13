@@ -52,6 +52,11 @@ export const getDefaultArchiveRange = (now: Date, timeZone: string): ArchiveRang
 const isDateKey = (value: string) =>
     DATE_KEY.test(value) && new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) === value
 
+// A date the picker may apply: a real day from 1940 to yesterday. A date input reports the year as it is typed
+// (`0002-10-05`), and applying that would clamp the period to 1940 and spend a request on it.
+export const isArchiveDate = (value: string, latest: string) =>
+    isDateKey(value) && value >= ARCHIVE_FIRST_DATE && value <= latest
+
 export const isValidArchiveRange = (range: ArchiveRange, latest: string) =>
     isDateKey(range.from) &&
     isDateKey(range.to) &&

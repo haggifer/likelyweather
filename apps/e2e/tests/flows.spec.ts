@@ -145,6 +145,12 @@ test('the archive shows past weather for a city and keeps the chosen period', as
     await page.reload()
     await expect(page.getByLabel('From', { exact: true })).toHaveValue('2026-01-01')
 
+    // Chrome reports a year as it is typed (`0002`); the period waits for a date the archive has.
+    await from.fill('0002-01-01')
+    await expect(page.getByLabel('To', { exact: true })).toHaveValue('2026-01-12')
+    await from.blur()
+    await expect(from).toHaveValue('2026-01-01')
+
     if (!isMobile) {
         await expect(
             page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Archive' }),
