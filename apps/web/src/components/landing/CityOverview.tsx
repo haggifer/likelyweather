@@ -13,19 +13,18 @@ import { LatestResponse } from '@fa/shared/api'
 import { getCityName } from '@fa/shared/format'
 import { getPanelDataVariables, getVisiblePanels, PanelVariable } from '@fa/shared/overview-panels'
 import { getChartStart } from '@fa/shared/slots'
-import { OverviewVariable } from '@fa/shared/variables'
+import { OVERVIEW_VARIABLES } from '@fa/shared/variables'
 import { UseQueryResult } from '@tanstack/react-query'
 import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 import { toast } from 'sonner'
 
-const getHourlyByVariable = (variables: OverviewVariable[], results: UseQueryResult<LatestResponse, Error>[]) =>
+const getHourlyByVariable = (results: UseQueryResult<LatestResponse, Error>[]) =>
     Object.fromEntries(
-        variables.flatMap((variable, i) => (results[i].data ? [[variable, results[i].data]] : [])),
+        OVERVIEW_VARIABLES.flatMap((variable, i) => (results[i].data ? [[variable, results[i].data]] : [])),
     ) as OverviewHourly
 
-// A panel is drawn once its series and its second line have arrived, so showing another panel keeps the card (and the
-// open panel menu) in place while that panel's series loads.
+// A panel is drawn once its series and its second line have arrived.
 const getReadyPanels = (panels: PanelVariable[], hourly: OverviewHourly) =>
     panels.filter((panel) => getPanelDataVariables([panel]).every((variable) => hourly[variable]))
 
@@ -41,15 +40,13 @@ export function CityOverview({ slug }: IProps) {
     const { panels } = useOverviewPanels()
 
     const visible = useMemo(() => getVisiblePanels(panels), [panels])
-    // Only what the shown panels draw is fetched; showing another panel fetches its series then.
-    const variables = useMemo(() => getPanelDataVariables(visible), [visible])
 
     const { data: city, error, refetch: refetchCity } = useCity(slug)
-    const results = useHourlyAll(slug, variables, Boolean(city))
+    const results = useHourlyAll(slug, Boolean(city))
 
     // An error with data still in place is a failed Refresh: the chart stays and the handler reports the failure.
     const failed = results.find((r) => r.isError && !r.data)
-    const hourly = getHourlyByVariable(variables, results)
+    const hourly = getHourlyByVariable(results)
     const readyPanels = getReadyPanels(visible, hourly)
     const isEmpty = results.some((r) => r.data && !r.data.steps.length)
     const anchorRun = results.find((r) => r.data)?.data

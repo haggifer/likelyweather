@@ -6,7 +6,7 @@ import { LatestResponse } from '@fa/shared/api'
 import { getCityName } from '@fa/shared/format'
 import { getPanelDataVariables, getVisiblePanels, PanelVariable } from '@fa/shared/overview-panels'
 import { getChartStart } from '@fa/shared/slots'
-import { OverviewVariable } from '@fa/shared/variables'
+import { OVERVIEW_VARIABLES } from '@fa/shared/variables'
 import { UseQueryResult } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import { StyleSheet } from 'react-native'
@@ -26,14 +26,12 @@ const styles = StyleSheet.create({
     notice: { fontSize: 14, lineHeight: 21, textAlign: 'center', paddingVertical: 40 },
 })
 
-const getHourlyByVariable = (
-    variables: OverviewVariable[],
-    results: UseQueryResult<LatestResponse, Error>[],
-): OverviewHourly =>
-    Object.fromEntries(variables.flatMap((variable, i) => (results[i].data ? [[variable, results[i].data]] : [])))
+const getHourlyByVariable = (results: UseQueryResult<LatestResponse, Error>[]): OverviewHourly =>
+    Object.fromEntries(
+        OVERVIEW_VARIABLES.flatMap((variable, i) => (results[i].data ? [[variable, results[i].data]] : [])),
+    )
 
-// A panel is drawn once its series and its second line have arrived, so showing another panel keeps the card in place
-// while that panel's series loads, as on the web.
+// A panel is drawn once its series and its second line have arrived, as on the web.
 const getReadyPanels = (panels: PanelVariable[], hourly: OverviewHourly) =>
     panels.filter((panel) => getPanelDataVariables([panel]).every((variable) => hourly[variable]))
 
@@ -51,12 +49,10 @@ export function CityOverview({ slug }: IProps) {
 
     const [isCustomizing, setIsCustomizing] = useState(false)
 
-    // Only the shown panels' series are asked for, so a hidden panel costs no request.
     const visible = useMemo(() => getVisiblePanels(panels), [panels])
-    const variables = useMemo(() => getPanelDataVariables(visible), [visible])
 
     const { data: city, error, refetch: refetchCity, fetchStatus: cityFetchStatus } = useCity(slug)
-    const results = useHourlyAll(slug, variables, Boolean(city))
+    const results = useHourlyAll(slug, Boolean(city))
 
     // An error with data still in place is a failed Refresh: the chart stays and the handler reports the failure.
     const failed = results.find((r) => r.isError && !r.data)
@@ -71,7 +67,7 @@ export function CityOverview({ slug }: IProps) {
         () => (timeZone && anchorRun ? getChartStart(anchorRun, timeZone) : null),
         [anchorRun, timeZone],
     )
-    const hourly = getHourlyByVariable(variables, results)
+    const hourly = getHourlyByVariable(results)
     const readyPanels = getReadyPanels(visible, hourly)
     // Refresh settles the variables one by one; the widgets must get them as one run, so the effect waits until
     // nothing is fetching and follows every fetch time rather than `hourly`, whose identity changes every render.

@@ -132,6 +132,26 @@ test('a focused chart shows its focus ring around the scrolling plot', async ({ 
     expect(shadow).not.toBe('none')
 })
 
+// Every overview series arrives with the first load: asking for one later would collect a newer run for that panel
+// alone once the stored one is 3 hours old.
+test('showing a hidden overview panel draws it without another request', async ({ page }) => {
+    await page.goto(`/?city=${LONDON}`)
+    await expect(page.getByRole('img', { name: /^Median forecast for London/ })).toBeVisible()
+
+    const requests: string[] = []
+
+    page.on('request', (request) => {
+        if (request.url().includes('/latest')) requests.push(request.url())
+    })
+    await page.getByRole('button', { name: 'Choose panels' }).click()
+    await page.getByRole('checkbox', { name: 'Humidity' }).check()
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('dialog', { name: 'Overview panels' })).toBeHidden()
+
+    await expect(page.getByText('Humidity', { exact: true })).toBeVisible()
+    expect(requests).toEqual([])
+})
+
 test('the archive shows past weather for a city and keeps the chosen period', async ({ page, isMobile }) => {
     await page.goto(`/archive?city=${LONDON}`)
 
@@ -144,6 +164,12 @@ test('the archive shows past weather for a city and keeps the chosen period', as
     await expect(page.getByRole('img', { name: /1 Jan 2026 to 12 Jan 2026/ })).toBeVisible()
     await page.reload()
     await expect(page.getByLabel('From', { exact: true })).toHaveValue('2026-01-01')
+
+    // Chrome reports a year as it is typed (`0002`); the period waits for a date the archive has.
+    await from.fill('0002-01-01')
+    await expect(page.getByLabel('To', { exact: true })).toHaveValue('2026-01-12')
+    await from.blur()
+    await expect(from).toHaveValue('2026-01-01')
 
     // Chrome reports a year as it is typed (`0002`); the period waits for a date the archive has.
     await from.fill('0002-01-01')
