@@ -12,9 +12,14 @@ import { useNow } from '@/hooks/useNow'
 import { useArchive } from '@fa/api-client/hooks/useArchive'
 import { useCity } from '@fa/api-client/hooks/useCity'
 import { getArchiveHourlySeries } from '@fa/chart-core/archive-stats'
-import { useDebouncedValue } from '@fa/hooks/useDebouncedValue'
-import { ArchiveResponse, City } from '@fa/shared/api'
-import { ArchiveRange, getDefaultArchiveRange, getLatestArchiveDate, isValidArchiveRange } from '@fa/shared/archive'
+import {
+    ARCHIVE_LABEL_DATE_FORMAT,
+    ArchiveRange,
+    getArchiveRangeKey,
+    getLatestArchiveDate,
+    isEmptyArchive,
+    resolveArchiveRange,
+} from '@fa/shared/archive'
 import { getCityRegion } from '@fa/shared/city-region'
 import { formatDateKey, getCityName } from '@fa/shared/format'
 import { getVisiblePanels, OverviewPanels } from '@fa/shared/overview-panels'
@@ -26,30 +31,6 @@ interface IProps {
     slug: string
 }
 
-// Typing a date in the picker passes through other valid dates, and each new period could cost the viewer a request,
-// so the period settles for a moment before it is asked for.
-const RANGE_DEBOUNCE_MS = 700
-const RANGE_SEPARATOR = '|'
-const DATE_FORMAT: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' }
-
-const toRangeKey = (range: ArchiveRange | null) => (range ? `${range.from}${RANGE_SEPARATOR}${range.to}` : null)
-
-const fromRangeKey = (key: string | null): ArchiveRange | null => {
-    if (!key) return null
-
-    const [from, to] = key.split(RANGE_SEPARATOR)
-
-    return { from, to }
-}
-
-// The stored period, or the week up to yesterday when there is none or it is no longer one the API accepts.
-const resolveRange = (stored: ArchiveRange | null, now: Date, city: City): ArchiveRange =>
-    stored && isValidArchiveRange(stored, getLatestArchiveDate(now, city.timezone))
-        ? stored
-        : getDefaultArchiveRange(now, city.timezone)
-
-const isEmptyArchive = (archive: ArchiveResponse) => archive.values.temp.every((v) => v === null)
-
 // A city's past weather drawn like the forecast overview: the reader's panels (the archive keeps its own choice), the
 // period picker and the source.
 export function ArchiveCard({ slug }: IProps) {
@@ -60,10 +41,10 @@ export function ArchiveCard({ slug }: IProps) {
 
     const { data: city, error: cityError, refetch: refetchCity } = useCity(slug)
 
-    const range = city && now ? resolveRange(settings.range, now, city) : null
-    const requested = fromRangeKey(useDebouncedValue(toRangeKey(range), RANGE_DEBOUNCE_MS))
+    // The calendar applies a period only once both ends are picked, so it is asked for at once.
+    const range = city && now ? resolveArchiveRange(settings.range, now, city.timezone) : null
 
-    const archive = useArchive(city ? slug : null, requested)
+    const archive = useArchive(city ? slug : null, range)
 
     const visible = useMemo(() => getVisiblePanels(settings.panels), [settings.panels])
     const series = useMemo(() => (archive.data ? getArchiveHourlySeries(archive.data) : null), [archive.data])
@@ -94,7 +75,7 @@ export function ArchiveCard({ slug }: IProps) {
 
         return (
             <MedianOverview
-                key={`${shown.from}${RANGE_SEPARATOR}${shown.to}`}
+                key={getArchiveRangeKey(shown)}
                 panels={visible}
                 series={series}
                 directions={directions}
@@ -105,8 +86,8 @@ export function ArchiveCard({ slug }: IProps) {
                 isArchive
                 ariaLabel={t('aria', {
                     name: name ?? '',
-                    from: formatDateKey(shown.from, locale, DATE_FORMAT),
-                    to: formatDateKey(shown.to, locale, DATE_FORMAT),
+                    from: formatDateKey(shown.from, locale, ARCHIVE_LABEL_DATE_FORMAT),
+                    to: formatDateKey(shown.to, locale, ARCHIVE_LABEL_DATE_FORMAT),
                 })}
             />
         )
@@ -144,7 +125,7 @@ export function ArchiveCard({ slug }: IProps) {
             </CardHeader>
             <CardContent className="flex flex-col gap-1">
                 {range && now && city && (
-                    <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
+                    <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
                         <ArchivePeriodPicker
                             range={range}
                             latest={getLatestArchiveDate(now, city.timezone)}

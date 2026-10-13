@@ -1,14 +1,13 @@
 'use client'
 
-import {
-    adjustArchiveRange,
-    ARCHIVE_FIRST_DATE,
-    ARCHIVE_MAX_DAYS,
-    ArchiveRange,
-    isArchiveDate,
-} from '@fa/shared/archive'
-import { useTranslations } from 'next-intl'
+import { ArchiveRangeCalendar } from '@/components/archive/ArchiveRangeCalendar'
+import { Button } from '@/components/ui/button'
+import { Popover, PopoverPanel, PopoverTrigger } from '@/components/ui/popover'
+import { ArchiveRange, formatArchiveRange } from '@fa/shared/archive'
+import { CalendarDays } from 'lucide-react'
+import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
+import { I18nProvider } from 'react-aria/I18nProvider'
 
 interface IProps {
     range: ArchiveRange
@@ -16,50 +15,39 @@ interface IProps {
     onChange: (range: ArchiveRange) => void
 }
 
-type RangeEnd = 'from' | 'to'
-
-const INPUT =
-    'h-9 rounded-md border bg-background px-2 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:h-10'
-const ENDS: RangeEnd[] = ['from', 'to']
-
-// Two dates, up to 12 days apart, from 1940 to yesterday (`ARCHIVE_MAX_DAYS`): moving one end drags the other along
-// when the period would grow past the limit, so the period is always one the API accepts. A field keeps what the
-// reader types (Chrome reports `0002-10-05` while the year is typed) until it is a date the archive has, and drops it
-// on blur.
+// The period as DD.MM.YYYY – DD.MM.YYYY on a button that opens the range calendar. The second tap of a period applies
+// it and closes the calendar, so each period costs at most one request and nothing waits for the reader to settle.
 export function ArchivePeriodPicker({ range, latest, onChange }: IProps) {
     const t = useTranslations('archive')
+    const locale = useLocale()
 
-    const [drafts, setDrafts] = useState<Partial<Record<RangeEnd, string>>>({})
+    const [isOpen, setIsOpen] = useState(false)
 
-    const handleChange = (end: RangeEnd, value: string) => {
-        if (!isArchiveDate(value, latest)) {
-            setDrafts((d) => ({ ...d, [end]: value }))
-            return
-        }
+    const period = formatArchiveRange(range)
 
-        setDrafts((d) => ({ ...d, [end]: undefined }))
-        onChange(adjustArchiveRange({ ...range, [end]: value }, end, latest))
+    const handleChange = (next: ArchiveRange) => {
+        setIsOpen(false)
+        onChange(next)
     }
-    const handleBlur = (end: RangeEnd) => setDrafts((d) => ({ ...d, [end]: undefined }))
 
     return (
-        <fieldset className="flex flex-wrap items-end gap-x-3 gap-y-2">
-            <legend className="sr-only">{t('period')}</legend>
-            {ENDS.map((end) => (
-                <label key={end} className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
-                    {t(end)}
-                    <input
-                        type="date"
-                        min={ARCHIVE_FIRST_DATE}
-                        max={latest}
-                        value={drafts[end] ?? range[end]}
-                        onChange={(e) => handleChange(end, e.target.value)}
-                        onBlur={() => handleBlur(end)}
-                        className={INPUT}
-                    />
-                </label>
-            ))}
-            <p className="pb-2 text-xs text-muted-foreground">{t('limit', { days: ARCHIVE_MAX_DAYS })}</p>
-        </fieldset>
+        <Popover open={isOpen} onOpenChange={setIsOpen}>
+            <PopoverTrigger asChild>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    aria-label={t('periodValue', { range: period })}
+                    className="tabular-nums pointer-coarse:h-10"
+                >
+                    <CalendarDays />
+                    {period}
+                </Button>
+            </PopoverTrigger>
+            <PopoverPanel align="start" className="w-auto">
+                <I18nProvider locale={locale}>
+                    <ArchiveRangeCalendar range={range} latest={latest} onChange={handleChange} />
+                </I18nProvider>
+            </PopoverPanel>
+        </Popover>
     )
 }

@@ -1,3 +1,4 @@
+import type { ArchiveResponse } from './api'
 import { DAY_MS, HOUR_MS } from './constants'
 import { getLocalMidnight } from './format'
 import { getLocalDateKey } from './time'
@@ -13,8 +14,11 @@ export interface ArchiveRange {
 export const ARCHIVE_MAX_DAYS = 12
 // ERA5 starts in 1940.
 export const ARCHIVE_FIRST_DATE = '1940-01-01'
+// How a chart's label speaks the period's ends; the period itself reads DD.MM.YYYY (`formatArchiveRange`).
+export const ARCHIVE_LABEL_DATE_FORMAT: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' }
 const DEFAULT_DAYS = 7
 const DATE_KEY = /^\d{4}-\d{2}-\d{2}$/
+const RANGE_SEPARATOR = '|'
 
 // The stored hourly fields and the Historical Weather API variables they come from. Feels-like is Open-Meteo's own
 // apparent temperature here, the formula the forecasts use at ingest.
@@ -52,11 +56,6 @@ export const getDefaultArchiveRange = (now: Date, timeZone: string): ArchiveRang
 const isDateKey = (value: string) =>
     DATE_KEY.test(value) && new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) === value
 
-// A date the picker may apply: a real day from 1940 to yesterday. A date input reports the year as it is typed
-// (`0002-10-05`), and applying that would clamp the period to 1940 and spend a request on it.
-export const isArchiveDate = (value: string, latest: string) =>
-    isDateKey(value) && value >= ARCHIVE_FIRST_DATE && value <= latest
-
 export const isValidArchiveRange = (range: ArchiveRange, latest: string) =>
     isDateKey(range.from) &&
     isDateKey(range.to) &&
@@ -65,26 +64,28 @@ export const isValidArchiveRange = (range: ArchiveRange, latest: string) =>
     range.to <= latest &&
     countArchiveDays(range) <= ARCHIVE_MAX_DAYS
 
-const clampDate = (date: string, latest: string) =>
-    date < ARCHIVE_FIRST_DATE ? ARCHIVE_FIRST_DATE : date > latest ? latest : date
+// The stored period, or the week up to yesterday when there is none or it is no longer one the API accepts.
+export const resolveArchiveRange = (stored: ArchiveRange | null, now: Date, timeZone: string): ArchiveRange =>
+    stored && isValidArchiveRange(stored, getLatestArchiveDate(now, timeZone))
+        ? stored
+        : getDefaultArchiveRange(now, timeZone)
 
-// After the reader moves one end of the period, the other follows so the period stays in order, inside 1940 to
-// yesterday and at most 12 days long.
-export const adjustArchiveRange = (range: ArchiveRange, moved: 'from' | 'to', latest: string): ArchiveRange => {
-    const span = ARCHIVE_MAX_DAYS - 1
+// One string per period, for keying what is drawn from it.
+export const getArchiveRangeKey = ({ from, to }: ArchiveRange) => `${from}${RANGE_SEPARATOR}${to}`
 
-    if (moved === 'from') {
-        const from = clampDate(range.from, latest)
-        const to = clampDate(range.to, latest)
+// DD.MM.YYYY in every language (author, 2026-10-13), built from the key itself rather than `Intl`, whose order and
+// separators change with the locale.
+export const formatArchiveDate = (dateKey: string) => {
+    const [year, month, day] = dateKey.split('-')
 
-        return { from, to: to < from ? from : to > addDays(from, span) ? addDays(from, span) : to }
-    }
-
-    const to = clampDate(range.to, latest)
-    const from = clampDate(range.from, latest)
-
-    return { from: from > to ? to : from < addDays(to, -span) ? addDays(to, -span) : from, to }
+    return `${day}.${month}.${year}`
 }
+
+export const formatArchiveRange = ({ from, to }: ArchiveRange) =>
+    `${formatArchiveDate(from)} – ${formatArchiveDate(to)}`
+
+// A period the archive has no hours for: the hours come back, all empty.
+export const isEmptyArchive = ({ values }: Pick<ArchiveResponse, 'values'>) => values.temp.every((v) => v === null)
 
 // The UTC hours the local days cover, start included and end excluded, widened to whole hours for zones that are a
 // half hour off UTC, since the archive is hourly in UTC.

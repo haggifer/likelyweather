@@ -1,65 +1,31 @@
 import { useArchive } from '@fa/api-client/hooks/useArchive'
 import { useCity } from '@fa/api-client/hooks/useCity'
 import { getArchiveHourlySeries } from '@fa/chart-core/archive-stats'
-import { useDebouncedValue } from '@fa/hooks/useDebouncedValue'
-import { ArchiveResponse, City } from '@fa/shared/api'
-import { ArchiveRange, getDefaultArchiveRange, getLatestArchiveDate, isValidArchiveRange } from '@fa/shared/archive'
+import {
+    ARCHIVE_LABEL_DATE_FORMAT,
+    ArchiveRange,
+    getArchiveRangeKey,
+    getLatestArchiveDate,
+    isEmptyArchive,
+    resolveArchiveRange,
+} from '@fa/shared/archive'
 import { getCityRegion } from '@fa/shared/city-region'
 import { formatDateKey, getCityName } from '@fa/shared/format'
 import { getVisiblePanels, OverviewPanels } from '@fa/shared/overview-panels'
-import { SlidersHorizontal } from 'lucide-react-native'
-import { useMemo, useState } from 'react'
-import { StyleSheet, View } from 'react-native'
+import { useMemo } from 'react'
+import { View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { useArchiveSettings } from '../../hooks/useArchiveSettings'
 import { useNow } from '../../hooks/useNow'
-import { useTheme } from '../../hooks/useTheme'
 import { MedianOverview, MedianOverviewSkeleton } from '../charts/MedianOverview'
 import { FavoriteToggle } from '../city/FavoriteToggle'
-import { OverviewPanelsSheet } from '../home/OverviewPanelsSheet'
-import { Button } from '../legacy-ui/Button'
-import { Card } from '../legacy-ui/Card'
-import { Text } from '../legacy-ui/Text'
+import { OverviewPanelsMenu } from '../home/OverviewPanelsMenu'
+import { Card, CardContent, CardHeader } from '../ui/card'
 import { ErrorNotice } from '../ui/ErrorNotice'
 import { FlagIcon } from '../ui/FlagIcon'
 import { LoadingStatus } from '../ui/LoadingStatus'
+import { Text } from '../ui/text'
 import { ArchivePeriodPicker } from './ArchivePeriodPicker'
-
-// Typing a date passes through other valid dates, and each new period could cost the viewer a request, so the period
-// settles for a moment before it is asked for, as on the web.
-const RANGE_DEBOUNCE_MS = 700
-const RANGE_SEPARATOR = '|'
-const DATE_FORMAT: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' }
-
-const styles = StyleSheet.create({
-    titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 36 },
-    title: { flex: 1, fontSize: 19, fontWeight: '700' },
-    region: { fontSize: 15, fontWeight: '500' },
-    notice: { fontSize: 14, lineHeight: 21, textAlign: 'center', paddingVertical: 40 },
-    source: { fontSize: 12, lineHeight: 17 },
-    panels: { alignSelf: 'flex-end' },
-    // Tighter than a card's usual gap (author, 2026-10-13), the picker a little apart from the title, as on the web.
-    card: { gap: 4 },
-    picker: { marginTop: 8, gap: 8 },
-})
-
-const toRangeKey = (range: ArchiveRange | null) => (range ? `${range.from}${RANGE_SEPARATOR}${range.to}` : null)
-
-const fromRangeKey = (key: string | null): ArchiveRange | null => {
-    if (!key) return null
-
-    const [from, to] = key.split(RANGE_SEPARATOR)
-
-    return { from, to }
-}
-
-// The stored period, or the week up to yesterday when there is none or it is no longer one the API accepts.
-const resolveRange = (stored: ArchiveRange | null, now: Date, city: City): ArchiveRange =>
-    stored && isValidArchiveRange(stored, getLatestArchiveDate(now, city.timezone))
-        ? stored
-        : getDefaultArchiveRange(now, city.timezone)
-
-const isEmptyArchive = (archive: ArchiveResponse) => archive.values.temp.every((v) => v === null)
 
 interface IProps {
     slug: string
@@ -72,19 +38,14 @@ export function ArchiveCard({ slug }: IProps) {
     const to = useTranslations('overview')
     const locale = useLocale()
     const now = useNow()
-    const { colors } = useTheme()
     const { settings, setSettings } = useArchiveSettings()
-
-    const [isCustomizing, setIsCustomizing] = useState(false)
 
     const { data: city, error: cityError, refetch: refetchCity } = useCity(slug)
 
-    const range = city ? resolveRange(settings.range, now, city) : null
-    const debouncedKey = useDebouncedValue(toRangeKey(range), RANGE_DEBOUNCE_MS)
-    // The first period is asked for at once; only later changes wait for the reader to settle.
-    const requested = fromRangeKey(debouncedKey ?? toRangeKey(range))
+    // The calendar applies a period only once both ends are picked, so it is asked for at once.
+    const range = city ? resolveArchiveRange(settings.range, now, city.timezone) : null
 
-    const archive = useArchive(city ? slug : null, requested)
+    const archive = useArchive(city ? slug : null, range)
 
     const visible = useMemo(() => getVisiblePanels(settings.panels), [settings.panels])
     const series = useMemo(() => (archive.data ? getArchiveHourlySeries(archive.data) : null), [archive.data])
@@ -96,8 +57,6 @@ export function ArchiveCard({ slug }: IProps) {
     const handleRange = (next: ArchiveRange) => setSettings((s) => ({ ...s, range: next }))
     const handlePanels = (update: (panels: OverviewPanels) => OverviewPanels) =>
         setSettings((s) => ({ ...s, panels: update(s.panels) }))
-    const handleCustomize = () => setIsCustomizing(true)
-    const handleCloseCustomize = () => setIsCustomizing(false)
 
     const renderChart = () => {
         if (archive.error && !shown) {
@@ -106,7 +65,7 @@ export function ArchiveCard({ slug }: IProps) {
 
         if (shown && isEmptyArchive(shown)) {
             return (
-                <Text style={[styles.notice, { color: colors['muted-foreground'] }]} accessibilityLiveRegion="polite">
+                <Text className="py-10 text-center text-sm text-muted-foreground" accessibilityLiveRegion="polite">
                     {t('unavailable')}
                 </Text>
             )
@@ -122,7 +81,7 @@ export function ArchiveCard({ slug }: IProps) {
 
         return (
             <MedianOverview
-                key={`${shown.from}${RANGE_SEPARATOR}${shown.to}`}
+                key={getArchiveRangeKey(shown)}
                 panels={visible}
                 series={series}
                 directions={directions}
@@ -133,8 +92,8 @@ export function ArchiveCard({ slug }: IProps) {
                 isArchive
                 accessibilityLabel={t('aria', {
                     name,
-                    from: formatDateKey(shown.from, locale, DATE_FORMAT),
-                    to: formatDateKey(shown.to, locale, DATE_FORMAT),
+                    from: formatDateKey(shown.from, locale, ARCHIVE_LABEL_DATE_FORMAT),
+                    to: formatDateKey(shown.to, locale, ARCHIVE_LABEL_DATE_FORMAT),
                 })}
             />
         )
@@ -142,59 +101,46 @@ export function ArchiveCard({ slug }: IProps) {
 
     if (cityError) {
         return (
-            <Card>
-                <ErrorNotice error={cityError} onRetry={() => void refetchCity()} />
+            <Card className="py-10">
+                <CardContent>
+                    <ErrorNotice error={cityError} onRetry={() => void refetchCity()} />
+                </CardContent>
             </Card>
         )
     }
 
-    // The sheet lives beside the card, so it stays open whatever the card shows while a period loads.
     return (
-        <>
-            <Card style={styles.card}>
-                <View style={styles.titleRow}>
-                    {city ? (
-                        <>
-                            <FlagIcon countryCode={city.countryCode} width={24} />
-                            <Text style={[styles.title, { color: colors.foreground }]}>
-                                {name}
-                                {region ? (
-                                    <Text style={[styles.region, { color: colors['muted-foreground'] }]}>
-                                        , {region}
-                                    </Text>
-                                ) : null}
-                            </Text>
-                            <FavoriteToggle place={city} />
-                        </>
-                    ) : (
-                        <LoadingStatus label={to('loading')} />
-                    )}
-                </View>
+        <Card className="gap-0 pt-3 pb-4">
+            <CardHeader className="min-h-9 flex-row items-center gap-2.5 px-4">
+                {city ? (
+                    <>
+                        <FlagIcon countryCode={city.countryCode} width={24} />
+                        <Text className="flex-1 text-lg font-bold tracking-tight">
+                            {name}
+                            {region ? (
+                                <Text className="text-lg font-medium text-muted-foreground">, {region}</Text>
+                            ) : null}
+                        </Text>
+                        <FavoriteToggle place={city} />
+                    </>
+                ) : (
+                    <LoadingStatus label={to('loading')} />
+                )}
+            </CardHeader>
+            <CardContent className="gap-1 px-4">
                 {range && city && (
-                    <View style={styles.picker}>
+                    <View className="mt-2 flex-row flex-wrap items-start justify-between gap-3">
                         <ArchivePeriodPicker
                             range={range}
                             latest={getLatestArchiveDate(now, city.timezone)}
                             onChange={handleRange}
                         />
-                        <Button
-                            icon={SlidersHorizontal}
-                            label={to('panels')}
-                            variant="outline"
-                            onPress={handleCustomize}
-                            style={styles.panels}
-                        />
+                        <OverviewPanelsMenu panels={settings.panels} onChange={handlePanels} className="ml-auto" />
                     </View>
                 )}
                 {renderChart()}
-                <Text style={[styles.source, { color: colors['muted-foreground'] }]}>{t('source')}</Text>
-            </Card>
-            <OverviewPanelsSheet
-                panels={settings.panels}
-                onChange={handlePanels}
-                isOpen={isCustomizing}
-                onClose={handleCloseCustomize}
-            />
-        </>
+                <Text className="text-xs text-muted-foreground">{t('source')}</Text>
+            </CardContent>
+        </Card>
     )
 }

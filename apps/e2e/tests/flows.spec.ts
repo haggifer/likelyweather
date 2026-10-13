@@ -182,24 +182,31 @@ test('a panel moves by keyboard with its handle, and Escape cancels a move witho
     await expect(rows.nth(1).getByRole('button', { name: 'Show Temperature' })).toBeVisible()
 })
 
-test('the archive shows past weather for a city and keeps the chosen period', async ({ page, isMobile }) => {
+test('the archive picks its period on a range calendar, capped at twelve days, and keeps it', async ({
+    page,
+    isMobile,
+}) => {
     await page.goto(`/archive?city=${LONDON}`)
 
     await expect(page.getByRole('img', { name: /^Past weather for London/ })).toBeVisible()
 
-    const from = page.getByLabel('From', { exact: true })
+    const trigger = page.getByRole('button', { name: /^Period: / })
 
-    await from.fill('2026-01-01')
-    await expect(page.getByLabel('To', { exact: true })).toHaveValue('2026-01-12')
+    await trigger.click()
+
+    for (let i = 0; i < 36 && !(await page.getByRole('heading', { name: 'January 2026' }).isVisible()); i++) {
+        await page.getByRole('button', { name: 'Previous month' }).click()
+    }
+
+    await page.getByRole('button', { name: /January 1, 2026/ }).click()
+    // The first tap leaves the eleven days after it; later days are disabled.
+    await expect(page.getByRole('button', { name: /January 13, 2026/ })).toHaveAttribute('aria-disabled', 'true')
+    await page.getByRole('button', { name: /January 12, 2026/ }).click()
+
+    await expect(trigger).toHaveAccessibleName('Period: 01.01.2026 – 12.01.2026')
     await expect(page.getByRole('img', { name: /1 Jan 2026 to 12 Jan 2026/ })).toBeVisible()
     await page.reload()
-    await expect(page.getByLabel('From', { exact: true })).toHaveValue('2026-01-01')
-
-    // Chrome reports a year as it is typed (`0002`); the period waits for a date the archive has.
-    await from.fill('0002-01-01')
-    await expect(page.getByLabel('To', { exact: true })).toHaveValue('2026-01-12')
-    await from.blur()
-    await expect(from).toHaveValue('2026-01-01')
+    await expect(page.getByRole('button', { name: 'Period: 01.01.2026 – 12.01.2026' })).toBeVisible()
 
     if (!isMobile) {
         await expect(

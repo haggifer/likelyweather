@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest'
+import type { ArchiveResponse } from './api'
 import {
-    adjustArchiveRange,
     countArchiveDays,
+    formatArchiveDate,
+    formatArchiveRange,
     getArchiveHours,
+    getArchiveRangeKey,
     getDefaultArchiveRange,
     getLatestArchiveDate,
-    isArchiveDate,
+    isEmptyArchive,
     isValidArchiveRange,
+    resolveArchiveRange,
 } from './archive'
 
 const NOW = new Date('2026-10-12T18:00:00Z')
@@ -45,44 +49,55 @@ describe('archive ranges', () => {
     })
 })
 
-describe('isArchiveDate', () => {
-    it('takes only real days from 1940 to yesterday, so a year still being typed is never applied', () => {
-        expect(isArchiveDate('2026-10-05', '2026-10-11')).toBe(true)
-        expect(isArchiveDate('1940-01-01', '2026-10-11')).toBe(true)
-        expect(isArchiveDate('0002-10-05', '2026-10-11')).toBe(false)
-        expect(isArchiveDate('2026-10-12', '2026-10-11')).toBe(false)
-        expect(isArchiveDate('2026-02-30', '2026-10-11')).toBe(false)
-        expect(isArchiveDate('20201-10-05', '2026-10-11')).toBe(false)
-        expect(isArchiveDate('', '2026-10-11')).toBe(false)
+describe('resolveArchiveRange', () => {
+    it('keeps a stored period the API still accepts', () => {
+        const stored = { from: '2026-09-30', to: '2026-10-11' }
+
+        expect(resolveArchiveRange(stored, NOW, 'Europe/London')).toBe(stored)
+    })
+
+    it('falls back to the week up to yesterday without a period or with one the API no longer accepts', () => {
+        const week = { from: '2026-10-05', to: '2026-10-11' }
+
+        expect(resolveArchiveRange(null, NOW, 'Europe/London')).toEqual(week)
+        expect(resolveArchiveRange({ from: '2026-10-10', to: '2026-10-12' }, NOW, 'Europe/London')).toEqual(week)
+        expect(resolveArchiveRange({ from: '2026-09-01', to: '2026-09-20' }, NOW, 'Europe/London')).toEqual(week)
     })
 })
 
-describe('adjustArchiveRange', () => {
-    const LATEST = '2026-10-11'
+describe('formatArchiveRange', () => {
+    it('reads DD.MM.YYYY whatever the language', () => {
+        expect(formatArchiveDate('1940-01-01')).toBe('01.01.1940')
+        expect(formatArchiveRange({ from: '2026-10-06', to: '2026-10-12' })).toBe('06.10.2026 – 12.10.2026')
+    })
+})
 
-    it('moves the other end to keep at most twelve days in order', () => {
-        expect(adjustArchiveRange({ from: '2026-09-01', to: '2026-10-11' }, 'from', LATEST)).toEqual({
-            from: '2026-09-01',
-            to: '2026-09-12',
-        })
-        expect(adjustArchiveRange({ from: '2026-09-01', to: '2026-10-11' }, 'to', LATEST)).toEqual({
-            from: '2026-09-30',
-            to: '2026-10-11',
-        })
-        expect(adjustArchiveRange({ from: '2026-10-08', to: '2026-10-05' }, 'from', LATEST)).toEqual({
-            from: '2026-10-08',
-            to: '2026-10-08',
-        })
+describe('getArchiveRangeKey', () => {
+    it('tells periods apart', () => {
+        expect(getArchiveRangeKey({ from: '2026-10-06', to: '2026-10-12' })).toBe('2026-10-06|2026-10-12')
+        expect(getArchiveRangeKey({ from: '2026-10-06', to: '2026-10-11' })).not.toBe(
+            getArchiveRangeKey({ from: '2026-10-06', to: '2026-10-12' }),
+        )
+    })
+})
+
+describe('isEmptyArchive', () => {
+    const withTemps = (temp: (number | null)[]): Pick<ArchiveResponse, 'values'> => ({
+        values: {
+            temp,
+            feels: [],
+            wind: [],
+            gusts: [],
+            windDir: [],
+            pressure: [],
+            precip: [],
+            humidity: [],
+            cloud: [],
+        },
     })
 
-    it('keeps both ends between 1940 and yesterday', () => {
-        expect(adjustArchiveRange({ from: '2026-10-20', to: '2026-10-25' }, 'from', LATEST)).toEqual({
-            from: '2026-10-11',
-            to: '2026-10-11',
-        })
-        expect(adjustArchiveRange({ from: '1900-01-01', to: '1940-01-05' }, 'from', LATEST)).toEqual({
-            from: '1940-01-01',
-            to: '1940-01-05',
-        })
+    it('is empty only when no hour has a temperature', () => {
+        expect(isEmptyArchive(withTemps([null, null]))).toBe(true)
+        expect(isEmptyArchive(withTemps([null, 4.2]))).toBe(false)
     })
 })

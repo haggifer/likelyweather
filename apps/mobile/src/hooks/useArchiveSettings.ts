@@ -1,5 +1,6 @@
+import { ArchiveSettings } from '@fa/shared/archive-settings'
 import { useSyncExternalStore } from 'react'
-import { ArchiveSettings, archiveSettingsStore } from '../lib/archive-settings-store'
+import { archiveSettingsStore } from '../lib/archive-settings-store'
 
 export interface UseArchiveSettingsResult {
     settings: ArchiveSettings
