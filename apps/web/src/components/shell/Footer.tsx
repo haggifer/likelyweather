@@ -1,3 +1,4 @@
+import { ATTRIBUTION_URLS } from '@fa/shared/attribution'
 import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 import { ReactNode } from 'react'
@@ -19,8 +20,8 @@ export async function Footer() {
             <div className="mx-auto flex max-w-[87.5rem] flex-wrap items-center gap-x-4 gap-y-1 px-4 py-4 sm:px-(--pane-padding)">
                 <p>
                     {t.rich('attribution', {
-                        openMeteo: (chunks) => renderExternalLink('https://open-meteo.com/', chunks),
-                        metno: (chunks) => renderExternalLink('https://api.met.no/', chunks),
+                        openMeteo: (chunks) => renderExternalLink(ATTRIBUTION_URLS.openMeteo, chunks),
+                        metno: (chunks) => renderExternalLink(ATTRIBUTION_URLS.metno, chunks),
                     })}
                 </p>
                 <nav className="ml-auto flex flex-wrap gap-x-4 gap-y-1">

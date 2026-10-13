@@ -1,18 +1,16 @@
 import { QuotaResponse, QuotaResponseSchema } from '@fa/shared/api'
+import { isQuotaCurrent } from '@fa/shared/quota'
 
 const STORAGE_KEY = 'fa.quota'
 const QUOTA_EVENT = 'quotachange'
 
 let current: QuotaResponse | null | undefined
 
-// A count whose reset time has passed is yesterday's; the first request of the day starts from the server's answer.
-const isCurrent = (quota: QuotaResponse, now: Date) => new Date(quota.resetsAt) > now
-
 const readQuota = (): QuotaResponse | null => {
     try {
         const parsed = QuotaResponseSchema.safeParse(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null'))
 
-        return parsed.success && isCurrent(parsed.data, new Date()) ? parsed.data : null
+        return parsed.success && isQuotaCurrent(parsed.data, new Date()) ? parsed.data : null
     } catch {
         return null
     }

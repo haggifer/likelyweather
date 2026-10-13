@@ -1,13 +1,10 @@
 import { LineSwatch } from '@/components/shell/LineSwatch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { RAIN_THRESHOLD_MM } from '@fa/shared/constants'
+import { METHODOLOGY_SECTIONS, METHODOLOGY_VALUES, toParagraphs } from '@fa/shared/methodology'
 import { MODELS } from '@fa/shared/models'
 import { VARIABLES } from '@fa/shared/variables'
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
-
-const SECTIONS = ['sources', 'median', 'disagreement', 'limits'] as const
-const METHODOLOGY_VALUES = { rain: RAIN_THRESHOLD_MM }
 
 export const generateMetadata = async (): Promise<Metadata> => {
     const tNav = await getTranslations('nav')
@@ -25,17 +22,15 @@ export default async function MethodologyPage() {
                 <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
                 <p className="mt-2 text-muted-foreground">{t('intro')}</p>
             </div>
-            {SECTIONS.map((section) => (
+            {METHODOLOGY_SECTIONS.map((section) => (
                 <Card key={section} className="gap-2">
                     <CardHeader>
                         <CardTitle className="text-lg font-semibold">{t(`${section}.title`)}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-2 text-sm leading-relaxed">
-                        {t(`${section}.body`, METHODOLOGY_VALUES)
-                            .split('\n')
-                            .map((paragraph) => (
-                                <p key={paragraph}>{paragraph}</p>
-                            ))}
+                        {toParagraphs(t(`${section}.body`, METHODOLOGY_VALUES)).map((paragraph) => (
+                            <p key={paragraph}>{paragraph}</p>
+                        ))}
                         {section === 'sources' && (
                             <ul className="mt-1 grid gap-1 sm:grid-cols-2">
                                 {MODELS.map((m) => (

@@ -1,92 +1,96 @@
 import { useQuota } from '@fa/api-client/hooks/useQuota'
-import { Locale, LOCALES } from '@fa/shared/api'
+import { LOCALES } from '@fa/shared/api'
+import { ATTRIBUTION_URLS } from '@fa/shared/attribution'
 import { formatClockTime, getCityName, getViewerTimeZone } from '@fa/shared/format'
+import { LANGUAGE_NAMES } from '@fa/shared/languages'
+import { getQuotaStatus } from '@fa/shared/quota'
 import Constants from 'expo-constants'
 import { useRouter } from 'expo-router'
-import { Check, ChevronRight, ExternalLink } from 'lucide-react-native'
+import { ChevronRight, ExternalLink } from 'lucide-react-native'
 import { ReactNode, useSyncExternalStore } from 'react'
-import { Linking, Pressable, StyleSheet, View } from 'react-native'
+import { Linking, View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
-import { Card } from '../components/legacy-ui/Card'
-import { Skeleton } from '../components/legacy-ui/Skeleton'
-import { Text } from '../components/legacy-ui/Text'
+import { Button } from '../components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
+import { Icon } from '../components/ui/icon'
+import { Progress } from '../components/ui/progress'
+import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group'
 import { ScreenScroll } from '../components/ui/ScreenScroll'
+import { Skeleton } from '../components/ui/skeleton'
+import { Text } from '../components/ui/text'
 import { useSettings } from '../hooks/useSettings'
-import { useTheme } from '../hooks/useTheme'
-import { LanguageSetting, settingsStore, ThemeSetting } from '../lib/settings'
-import { getLegalUrl, METNO_URL, OPEN_METEO_URL, REPO_URL } from '../lib/web-links'
+import { LanguageSetting, settingsStore, THEME_SETTINGS } from '../lib/settings'
+import { getLegalUrl, REPO_URL } from '../lib/web-links'
 import { widgetBindings } from '../widget/widget-store'
 
-// Each language by its own name, as in the web's language menu.
-const LANGUAGE_NAMES: Record<Locale, string> = {
-    [Locale.Uk]: 'Українська',
-    [Locale.En]: 'English',
-    [Locale.Es]: 'Español',
-    [Locale.De]: 'Deutsch',
-    [Locale.Fr]: 'Français',
-}
-const THEMES: ThemeSetting[] = ['system', 'light', 'dark']
+const LANGUAGE_SETTINGS: LanguageSetting[] = ['system', ...LOCALES]
 const THEME_KEYS = { system: 'themeSystem', light: 'themeLight', dark: 'themeDark' } as const
-const LOW_SHARE = 0.2
+const SMALL = 'text-xs text-muted-foreground'
+// The radio's own circle is small; the row around it is finger-sized.
+const RADIO_HIT_SLOP = 14
 
-const styles = StyleSheet.create({
-    content: { padding: 16, gap: 16 },
-    row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 44 },
-    rowText: { flex: 1, fontSize: 14 },
-    text: { fontSize: 14, lineHeight: 20 },
-    small: { fontSize: 12, lineHeight: 17 },
-    quota: { gap: 8 },
-    meter: { height: 6, borderRadius: 3, overflow: 'hidden' },
-    link: { textDecorationLine: 'underline' },
-})
+const setLanguage = (value: string) => {
+    const language = LANGUAGE_SETTINGS.find((option) => option === value)
 
-interface OptionProps {
+    if (language) settingsStore.set((current) => ({ ...current, language }))
+}
+
+const setTheme = (value: string) => {
+    const theme = THEME_SETTINGS.find((option) => option === value)
+
+    if (theme) settingsStore.set((current) => ({ ...current, theme }))
+}
+
+const openUrl = (url: string) => void Linking.openURL(url)
+
+const renderLink = (url: string) => (chunks: ReactNode) => (
+    <Text className={`${SMALL} underline`} onPress={() => openUrl(url)} role="link">
+        {chunks}
+    </Text>
+)
+
+interface SectionProps {
+    title: string
+    children: ReactNode
+}
+
+const Section = ({ title, children }: SectionProps) => (
+    <Card className="gap-3 py-4">
+        <CardHeader className="px-4">
+            <CardTitle className="text-sm">{title}</CardTitle>
+        </CardHeader>
+        <CardContent className="gap-3 px-4">{children}</CardContent>
+    </Card>
+)
+
+interface RadioRowProps {
+    value: string
     label: string
-    isSelected: boolean
-    onPress: () => void
+    onSelect: (value: string) => void
 }
 
-const Option = ({ label, isSelected, onPress }: OptionProps) => {
-    const { colors } = useTheme()
+// The radio carries the name for TalkBack; the label beside it takes taps without being read a second time.
+const RadioRow = ({ value, label, onSelect }: RadioRowProps) => (
+    <View className="min-h-11 flex-row items-center gap-3">
+        <RadioGroupItem value={value} aria-label={label} hitSlop={RADIO_HIT_SLOP} />
+        <Text accessible={false} onPress={() => onSelect(value)} className="flex-1 py-3 text-sm">
+            {label}
+        </Text>
+    </View>
+)
 
-    return (
-        <Pressable
-            onPress={onPress}
-            style={styles.row}
-            accessibilityRole="radio"
-            accessibilityState={{ selected: isSelected }}
-        >
-            <Text style={[styles.rowText, { color: colors.foreground }]}>{label}</Text>
-            {isSelected && <Check size={18} color={colors.primary} />}
-        </Pressable>
-    )
-}
-
-interface LinkProps {
+interface LinkRowProps {
     label: string
     onPress: () => void
     isExternal?: boolean
 }
 
-const LinkRow = ({ label, onPress, isExternal = false }: LinkProps) => {
-    const { colors } = useTheme()
-    const Icon = isExternal ? ExternalLink : ChevronRight
-
-    return (
-        <Pressable onPress={onPress} style={styles.row} accessibilityRole="link">
-            <Text style={[styles.rowText, { color: colors.foreground }]}>{label}</Text>
-            <Icon size={18} color={colors['muted-foreground']} />
-        </Pressable>
-    )
-}
-
-const renderLink = (url: string) => (chunks: ReactNode) => (
-    <Text style={styles.link} onPress={() => void Linking.openURL(url)} accessibilityRole="link">
-        {chunks}
-    </Text>
+const LinkRow = ({ label, onPress, isExternal = false }: LinkRowProps) => (
+    <Button variant="ghost" role="link" onPress={onPress} className="h-auto min-h-11 justify-between rounded-none px-0">
+        <Text className="text-sm font-normal">{label}</Text>
+        <Icon as={isExternal ? ExternalLink : ChevronRight} className="size-[1.125rem] text-muted-foreground" />
+    </Button>
 )
-
-const Section = ({ title, children }: { title: string; children: ReactNode }) => <Card title={title}>{children}</Card>
 
 // Language and theme (kept on the device), the day's request quota, the widgets' cities and the legal links.
 export function SettingsScreen() {
@@ -98,112 +102,88 @@ export function SettingsScreen() {
     const locale = useLocale()
     const router = useRouter()
     const settings = useSettings()
-    const { colors } = useTheme()
     const bindings = useSyncExternalStore(widgetBindings.subscribe, widgetBindings.get)
 
     const { data: quota } = useQuota()
 
     const widgetCities = [...new Set(Object.values(bindings).map((city) => getCityName(city, locale)))]
-    const left = quota ? Math.max(0, quota.limit - quota.used) : null
-    const share = quota && left !== null ? left / quota.limit : 1
+    const quotaStatus = quota ? getQuotaStatus(quota) : null
+    const quotaValue = quota && quotaStatus ? tq('value', { left: quotaStatus.left, limit: quota.limit }) : ''
     const version = Constants.expoConfig?.version ?? ''
     const repoUrl = REPO_URL
 
-    const setLanguage = (language: LanguageSetting) => settingsStore.set((current) => ({ ...current, language }))
-    const setTheme = (theme: ThemeSetting) => settingsStore.set((current) => ({ ...current, theme }))
-
     return (
-        <ScreenScroll contentContainerStyle={styles.content} style={{ backgroundColor: colors.background }}>
+        <ScreenScroll className="bg-background" contentContainerClassName="gap-4 p-4">
             <Section title={t('language')}>
-                <Option
-                    label={t('languageSystem')}
-                    isSelected={settings.language === 'system'}
-                    onPress={() => setLanguage('system')}
-                />
-                {LOCALES.map((option) => (
-                    <Option
-                        key={option}
-                        label={LANGUAGE_NAMES[option]}
-                        isSelected={settings.language === option}
-                        onPress={() => setLanguage(option)}
-                    />
-                ))}
+                <RadioGroup value={settings.language} onValueChange={setLanguage} aria-label={t('language')}>
+                    {LANGUAGE_SETTINGS.map((option) => (
+                        <RadioRow
+                            key={option}
+                            value={option}
+                            label={option === 'system' ? t('languageSystem') : LANGUAGE_NAMES[option]}
+                            onSelect={setLanguage}
+                        />
+                    ))}
+                </RadioGroup>
             </Section>
             <Section title={t('theme')}>
-                {THEMES.map((option) => (
-                    <Option
-                        key={option}
-                        label={t(THEME_KEYS[option])}
-                        isSelected={settings.theme === option}
-                        onPress={() => setTheme(option)}
-                    />
-                ))}
+                <RadioGroup value={settings.theme} onValueChange={setTheme} aria-label={t('theme')}>
+                    {THEME_SETTINGS.map((option) => (
+                        <RadioRow key={option} value={option} label={t(THEME_KEYS[option])} onSelect={setTheme} />
+                    ))}
+                </RadioGroup>
             </Section>
             <Section title={t('quota')}>
-                {quota && left !== null ? (
-                    <View
-                        style={styles.quota}
-                        accessible
-                        accessibilityRole="progressbar"
-                        accessibilityLabel={tq('value', { left, limit: quota.limit })}
-                        accessibilityValue={{ min: 0, max: quota.limit, now: left }}
-                    >
-                        <Text isTabular style={[styles.text, { color: colors.foreground }]}>
-                            {tq('value', { left, limit: quota.limit })}
+                {quota && quotaStatus ? (
+                    <View className="gap-2">
+                        {/* The bar below reads the same count to TalkBack. */}
+                        <Text aria-hidden className="text-sm tabular-nums">
+                            {quotaValue}
                         </Text>
-                        <View style={[styles.meter, { backgroundColor: colors.muted }]}>
-                            <View
-                                style={{
-                                    height: '100%',
-                                    width: `${share * 100}%`,
-                                    backgroundColor: share <= LOW_SHARE ? colors.warning : colors.primary,
-                                }}
-                            />
-                        </View>
-                        <Text isTabular style={[styles.small, { color: colors['muted-foreground'] }]}>
-                            {tq('resets', {
-                                time: formatClockTime(quota.resetsAt, getViewerTimeZone(), locale),
-                            })}
+                        <Progress
+                            value={Math.round(quotaStatus.share * 100)}
+                            aria-label={tq('label')}
+                            getValueLabel={() => quotaValue}
+                            className="h-1.5 bg-muted"
+                            indicatorClassName={quotaStatus.isLow ? 'bg-warning' : 'bg-primary'}
+                        />
+                        <Text className={`${SMALL} tabular-nums`}>
+                            {tq('resets', { time: formatClockTime(quota.resetsAt, getViewerTimeZone(), locale) })}
                         </Text>
                     </View>
                 ) : (
                     // The same three lines as the answer, so nothing moves when it arrives.
-                    <View style={styles.quota}>
-                        <Skeleton height={20} width="70%" />
-                        <Skeleton height={6} radius={3} />
-                        <Skeleton height={17} width="40%" />
+                    <View className="gap-2">
+                        <Skeleton className="h-5 w-[70%]" />
+                        <Skeleton className="h-1.5 rounded-full" />
+                        <Skeleton className="h-4 w-[40%]" />
                     </View>
                 )}
             </Section>
             <Section title={t('widgets')}>
                 {widgetCities.length ? (
                     widgetCities.map((city) => (
-                        <Text key={city} style={[styles.text, { color: colors.foreground }]}>
+                        <Text key={city} className="text-sm">
                             {t('widgetCity', { city })}
                         </Text>
                     ))
                 ) : (
-                    <Text style={[styles.text, { color: colors.foreground }]}>{t('widgetsNone')}</Text>
+                    <Text className="text-sm">{t('widgetsNone')}</Text>
                 )}
-                <Text style={[styles.small, { color: colors['muted-foreground'] }]}>{t('widgetsHint')}</Text>
+                <Text className={SMALL}>{t('widgetsHint')}</Text>
             </Section>
             <Section title={t('about')}>
                 <LinkRow label={tn('methodology')} onPress={() => router.push('/methodology')} />
-                <LinkRow
-                    label={tl('privacy')}
-                    onPress={() => void Linking.openURL(getLegalUrl('privacy', locale))}
-                    isExternal
-                />
-                <LinkRow
-                    label={tl('terms')}
-                    onPress={() => void Linking.openURL(getLegalUrl('terms', locale))}
-                    isExternal
-                />
-                {repoUrl && <LinkRow label={tf('repo')} onPress={() => void Linking.openURL(repoUrl)} isExternal />}
-                <Text style={[styles.small, { color: colors['muted-foreground'] }]}>
-                    {tf.rich('attribution', { openMeteo: renderLink(OPEN_METEO_URL), metno: renderLink(METNO_URL) })}
+                <LinkRow label={tl('privacy')} onPress={() => openUrl(getLegalUrl('privacy', locale))} isExternal />
+                <LinkRow label={tl('terms')} onPress={() => openUrl(getLegalUrl('terms', locale))} isExternal />
+                {repoUrl && <LinkRow label={tf('repo')} onPress={() => openUrl(repoUrl)} isExternal />}
+                <Text className={SMALL}>
+                    {tf.rich('attribution', {
+                        openMeteo: renderLink(ATTRIBUTION_URLS.openMeteo),
+                        metno: renderLink(ATTRIBUTION_URLS.metno),
+                    })}
                 </Text>
-                <Text style={[styles.small, { color: colors['muted-foreground'] }]}>{t('version', { version })}</Text>
+                <Text className={SMALL}>{t('version', { version })}</Text>
             </Section>
         </ScreenScroll>
     )

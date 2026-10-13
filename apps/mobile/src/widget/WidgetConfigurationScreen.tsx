@@ -3,40 +3,24 @@ import { City } from '@fa/shared/api'
 import { getCityLabel } from '@fa/shared/format'
 import { getPlaceList, Place } from '@fa/shared/places'
 import { useState } from 'react'
-import { ActivityIndicator, Pressable, StyleSheet } from 'react-native'
+import { ActivityIndicator, View } from 'react-native'
 import { WidgetConfigurationScreenProps } from 'react-native-android-widget'
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import { IntlProvider, useLocale, useTranslations } from 'use-intl'
-import { Text } from '../components/legacy-ui/Text'
+import { Button } from '../components/ui/button'
 import { FlagIcon } from '../components/ui/FlagIcon'
 import { ScreenScroll } from '../components/ui/ScreenScroll'
+import { Text } from '../components/ui/text'
+// Android opens this screen without the app's root layout, which loads the kit's styles everywhere else.
+import '../global.css'
 import { useAppFonts } from '../hooks/useAppFonts'
+import { useAppliedTheme } from '../hooks/useAppliedTheme'
 import { usePlaces } from '../hooks/usePlaces'
-import { useTheme } from '../hooks/useTheme'
 import { CATALOGS } from '../lib/catalogs'
 import { WidgetCity } from './widget-model'
 import { refreshWidget, toWidgetCity } from './widget-render'
 import { widgetBindings } from './widget-store'
 import { getAppLocale } from './widget-translator'
-
-const styles = StyleSheet.create({
-    screen: { flex: 1 },
-    content: { padding: 20, gap: 8 },
-    title: { fontSize: 20, fontWeight: '700', marginBottom: 8 },
-    row: {
-        minHeight: 48,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        paddingHorizontal: 12,
-        borderRadius: 8,
-        borderWidth: 1,
-    },
-    rowText: { flex: 1, fontSize: 15 },
-    cancelText: { fontSize: 15 },
-    text: { fontSize: 14, lineHeight: 20 },
-    cancel: { alignSelf: 'flex-end', padding: 12 },
-})
 
 // A stored place has no time zone, which the widget needs for local days; the city record has it. Without the
 // network the zone stays unknown until the widget's first refresh that reaches the server.
@@ -53,7 +37,6 @@ const PlacePicker = ({ widgetInfo, renderWidget, setResult }: WidgetConfiguratio
     const t = useTranslations('widget')
     const locale = useLocale()
     const places = usePlaces()
-    const { colors } = useTheme()
 
     const [pending, setPending] = useState<number | null>(null)
 
@@ -70,32 +53,34 @@ const PlacePicker = ({ widgetInfo, renderWidget, setResult }: WidgetConfiguratio
     }
 
     return (
-        <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: colors.background }]}>
-            <ScreenScroll contentContainerStyle={styles.content}>
-                <Text style={[styles.title, { color: colors.foreground }]}>{t('configureTitle')}</Text>
-                {!list.length && (
-                    <Text style={[styles.text, { color: colors['muted-foreground'] }]}>{t('configureEmpty')}</Text>
-                )}
-                {list.map((place) => (
-                    <Pressable
-                        key={place.id}
-                        onPress={() => void handlePick(place)}
-                        disabled={pending !== null}
-                        accessibilityRole="button"
-                        style={[styles.row, { borderColor: colors.border, backgroundColor: colors.card }]}
-                    >
-                        <FlagIcon countryCode={place.countryCode} />
-                        <Text style={[styles.rowText, { color: colors.foreground }]} numberOfLines={1}>
-                            {getCityLabel(place, locale)}
-                        </Text>
-                        {pending === place.id && <ActivityIndicator color={colors.primary} />}
-                    </Pressable>
-                ))}
-                <Pressable onPress={() => setResult('cancel')} style={styles.cancel} accessibilityRole="button">
-                    <Text style={[styles.cancelText, { color: colors.primary }]}>{t('cancel')}</Text>
-                </Pressable>
-            </ScreenScroll>
-        </SafeAreaView>
+        <View className="flex-1 bg-background">
+            <SafeAreaView edges={['top']} style={{ flex: 1 }}>
+                <ScreenScroll contentContainerClassName="gap-2 p-5">
+                    <Text role="heading" className="mb-2 text-xl font-bold">
+                        {t('configureTitle')}
+                    </Text>
+                    {!list.length && <Text className="text-sm text-muted-foreground">{t('configureEmpty')}</Text>}
+                    {list.map((place) => (
+                        <Button
+                            key={place.id}
+                            variant="outline"
+                            onPress={() => void handlePick(place)}
+                            disabled={pending !== null}
+                            className="h-auto min-h-12 justify-start gap-2 bg-card px-3"
+                        >
+                            <FlagIcon countryCode={place.countryCode} />
+                            <Text numberOfLines={1} className="flex-1 text-[0.9375rem] font-normal">
+                                {getCityLabel(place, locale)}
+                            </Text>
+                            {pending === place.id && <ActivityIndicator colorClassName="accent-primary" />}
+                        </Button>
+                    ))}
+                    <Button variant="link" onPress={() => setResult('cancel')} className="h-12 self-end px-3">
+                        <Text className="text-[0.9375rem]">{t('cancel')}</Text>
+                    </Button>
+                </ScreenScroll>
+            </SafeAreaView>
+        </View>
     )
 }
 
@@ -103,6 +88,7 @@ const PlacePicker = ({ widgetInfo, renderWidget, setResult }: WidgetConfiguratio
 // its safe-area provider; with no header above it, the screen keeps clear of the status bar itself.
 export function WidgetConfigurationScreen(props: WidgetConfigurationScreenProps) {
     const isFontReady = useAppFonts()
+    useAppliedTheme()
 
     const locale = getAppLocale()
 

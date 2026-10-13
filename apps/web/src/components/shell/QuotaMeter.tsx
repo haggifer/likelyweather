@@ -1,12 +1,11 @@
 'use client'
 
 import { Hint } from '@/components/shell/Hint'
+import { Progress } from '@/components/ui/progress'
 import { useStoredQuota } from '@/hooks/useStoredQuota'
-import { cn } from '@/lib/cn'
 import { formatClockTime, getViewerTimeZone } from '@fa/shared/format'
+import { getQuotaStatus } from '@fa/shared/quota'
 import { useLocale, useTranslations } from 'next-intl'
-
-const LOW_SHARE = 0.2
 
 // Requests left today out of the daily quota. The reset time is shown in the viewer's own time zone.
 export function QuotaMeter() {
@@ -17,10 +16,10 @@ export function QuotaMeter() {
 
     if (!data) return null
 
-    const left = Math.max(0, data.limit - data.used)
-    const share = left / data.limit
+    const { left, share, isLow } = getQuotaStatus(data)
     const resetsAt = formatClockTime(data.resetsAt, getViewerTimeZone(), locale)
 
+    // The meter speaks for the bar inside it, which stays out of the accessibility tree.
     return (
         <Hint content={t('resets', { time: resetsAt })}>
             <div
@@ -34,15 +33,12 @@ export function QuotaMeter() {
                 className="flex items-center gap-2 rounded-md px-1.5 py-1 text-xs text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
                 <span className="hidden sm:inline">{t('short')}</span>
-                <span className="hidden h-1.5 w-16 overflow-hidden rounded-full bg-muted sm:block">
-                    <span
-                        className={cn(
-                            'block h-full rounded-full transition-[width]',
-                            share <= LOW_SHARE ? 'bg-warning' : 'bg-primary',
-                        )}
-                        style={{ width: `${share * 100}%` }}
-                    />
-                </span>
+                <Progress
+                    value={share * 100}
+                    aria-hidden="true"
+                    className="hidden h-1.5 w-16 sm:flex"
+                    indicatorClassName={isLow ? 'bg-warning' : 'bg-primary'}
+                />
                 <span className="font-medium text-foreground tabular-nums">
                     {left}/{data.limit}
                 </span>

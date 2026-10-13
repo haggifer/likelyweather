@@ -11,20 +11,12 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE_S } from '@/i18n/locale-cookie'
 import { cn } from '@/lib/cn'
-import { Locale, LOCALES } from '@fa/shared/api'
+import { LOCALES } from '@fa/shared/api'
+import { LANGUAGE_NAMES } from '@fa/shared/languages'
 import { Languages } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
-
-// Endonyms: each language is listed in its own name so a reader can always find theirs.
-const LANGUAGE_NAMES: Record<Locale, string> = {
-    [Locale.Uk]: 'Українська',
-    [Locale.En]: 'English',
-    [Locale.Es]: 'Español',
-    [Locale.De]: 'Deutsch',
-    [Locale.Fr]: 'Français',
-}
 
 export function LanguageSwitch() {
     const t = useTranslations('shell')

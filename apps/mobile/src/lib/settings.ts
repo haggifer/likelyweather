@@ -12,7 +12,7 @@ export interface Settings {
 }
 
 const DEFAULT_SETTINGS: Settings = { language: 'system', theme: 'system', overviewPanels: DEFAULT_OVERVIEW_PANELS }
-const THEMES: ThemeSetting[] = ['system', 'light', 'dark']
+export const THEME_SETTINGS: ThemeSetting[] = ['system', 'light', 'dark']
 
 const isLanguage = (value: unknown): value is LanguageSetting => value === 'system' || LOCALES.includes(value as Locale)
 
@@ -22,7 +22,7 @@ const parseSettings = (raw: string | null): Settings => {
 
         return {
             language: isLanguage(stored?.language) ? stored.language : DEFAULT_SETTINGS.language,
-            theme: THEMES.includes(stored?.theme) ? stored.theme : DEFAULT_SETTINGS.theme,
+            theme: THEME_SETTINGS.includes(stored?.theme) ? stored.theme : DEFAULT_SETTINGS.theme,
             overviewPanels: normalizeOverviewPanels(stored?.overviewPanels),
         }
     } catch {

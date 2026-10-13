@@ -1,3 +1,5 @@
+import { createPersistedValue, KeyValueStorage } from '@fa/shared/persisted-value'
+
 export interface StoredValue<T> {
     getSnapshot: () => T
     getServerSnapshot: () => T
@@ -5,52 +7,34 @@ export interface StoredValue<T> {
     set: (update: (current: T) => T) => void
 }
 
-// A setting kept as JSON under one local-storage key, for `useSyncExternalStore`: parsed once and cached, so the same
-// object comes back until it changes; `parse` repairs whatever is stored (an older version, or nothing). The server
-// can't read the viewer's storage, so it renders `fallback`, and the stored value applies right after hydration.
-// Another tab's change arrives through the `storage` event.
+// Read through a function each time: `localStorage` itself throws where the browser blocks storage.
+const LOCAL_STORAGE: KeyValueStorage = {
+    getItem: (key) => localStorage.getItem(key),
+    setItem: (key, value) => localStorage.setItem(key, value),
+}
+
+// A setting kept in local storage for `useSyncExternalStore` (the shared contract in `@fa/shared/persisted-value`).
+// The server can't read the viewer's storage, so it renders `fallback`, and the stored value applies right after
+// hydration. Another tab's change arrives through the `storage` event.
 export const createStoredValue = <T>(key: string, parse: (raw: string | null) => T, fallback: T): StoredValue<T> => {
-    const changeEvent = `${key}:change`
-    let current: T | null = null
-
-    const read = () => {
-        try {
-            return parse(localStorage.getItem(key))
-        } catch {
-            return parse(null)
-        }
-    }
-
-    const getSnapshot = () => (current ??= read())
+    const value = createPersistedValue(LOCAL_STORAGE, key, parse)
 
     const subscribe = (onChange: () => void) => {
         const handleStorage = (e: StorageEvent) => {
             if (e.key !== key) return
 
-            current = null
+            value.reload()
             onChange()
         }
 
-        window.addEventListener(changeEvent, onChange)
+        const unsubscribe = value.subscribe(onChange)
         window.addEventListener('storage', handleStorage)
 
         return () => {
-            window.removeEventListener(changeEvent, onChange)
+            unsubscribe()
             window.removeEventListener('storage', handleStorage)
         }
     }
 
-    const set = (update: (value: T) => T) => {
-        current = update(getSnapshot())
-
-        try {
-            localStorage.setItem(key, JSON.stringify(current))
-        } catch {
-            // storage can be blocked; the change still applies until the page is reloaded
-        }
-
-        window.dispatchEvent(new Event(changeEvent))
-    }
-
-    return { getSnapshot, getServerSnapshot: () => fallback, subscribe, set }
+    return { getSnapshot: value.get, getServerSnapshot: () => fallback, subscribe, set: value.set }
 }

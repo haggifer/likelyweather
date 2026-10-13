@@ -1,31 +1,23 @@
-import { dismissSnackbar, getSnackbar, showSnackbar, subscribeSnackbar } from './snackbar-store'
+import { toast } from 'sonner-native'
+import { dismissSnackbar, getSnackbar, showSnackbar } from './snackbar-store'
+
+jest.mock('sonner-native', () => ({ toast: { custom: jest.fn(), dismiss: jest.fn() } }))
+
+const mockCustom = jest.mocked(toast.custom)
+
+const getOptions = () => mockCustom.mock.lastCall?.[1]
 
 describe('snackbar store', () => {
-    beforeEach(() => jest.useFakeTimers())
-
     afterEach(() => {
         dismissSnackbar()
-        jest.useRealTimers()
+        jest.clearAllMocks()
     })
 
-    it('shows a message and closes it after four seconds', () => {
-        const onChange = jest.fn()
-        const unsubscribe = subscribeSnackbar(onChange)
-
-        showSnackbar('Up to date')
+    it('shows a message as a toast for four seconds', () => {
+        const id = showSnackbar('Up to date')
 
         expect(getSnackbar()?.message).toBe('Up to date')
-
-        jest.advanceTimersByTime(3999)
-
-        expect(getSnackbar()).not.toBeNull()
-
-        jest.advanceTimersByTime(1)
-
-        expect(getSnackbar()).toBeNull()
-        expect(onChange).toHaveBeenCalledTimes(2)
-
-        unsubscribe()
+        expect(getOptions()).toMatchObject({ id, duration: 4000 })
     })
 
     it('keeps a message with actions for six seconds and at most two actions', () => {
@@ -34,32 +26,30 @@ describe('snackbar store', () => {
         showSnackbar('Far away', [action, action, action])
 
         expect(getSnackbar()?.actions).toHaveLength(2)
+        expect(getOptions()?.duration).toBe(6000)
+    })
 
-        jest.advanceTimersByTime(5999)
+    it('forgets the message when the toast closes on its own', () => {
+        const id = showSnackbar('Up to date')
 
-        expect(getSnackbar()).not.toBeNull()
-
-        jest.advanceTimersByTime(1)
+        getOptions()?.onAutoClose?.(id)
 
         expect(getSnackbar()).toBeNull()
     })
 
-    it('replaces the message on screen, and the old timer never closes the new one', () => {
-        showSnackbar('First')
-        jest.advanceTimersByTime(3000)
+    it('replaces the message on screen, and closing the old one never closes the new one', () => {
+        const first = showSnackbar('First')
+        const second = showSnackbar('Second')
 
-        const id = showSnackbar('Second')
+        expect(toast.dismiss).toHaveBeenCalledWith(first)
 
-        jest.advanceTimersByTime(1500)
+        dismissSnackbar(first)
 
-        expect(getSnackbar()?.message).toBe('Second')
+        expect(getSnackbar()?.id).toBe(second)
 
-        dismissSnackbar(id - 1)
-
-        expect(getSnackbar()?.id).toBe(id)
-
-        dismissSnackbar(id)
+        dismissSnackbar(second)
 
         expect(getSnackbar()).toBeNull()
+        expect(toast.dismiss).toHaveBeenLastCalledWith(second)
     })
 })

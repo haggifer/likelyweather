@@ -1,4 +1,5 @@
 import { toAnchorId } from '@/components/legal/anchor'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { MDXComponents } from 'mdx/types'
 import type { ReactNode } from 'react'
 
@@ -34,13 +35,13 @@ const COMPONENTS: MDXComponents = {
                 {children}
             </a>
         ),
-    table: ({ children }) => (
-        <div className="my-4 overflow-x-auto">
-            <table className="w-full border-collapse text-left text-[0.8125rem]">{children}</table>
-        </div>
-    ),
-    th: ({ children }) => <th className="border-b px-2 py-1.5 font-semibold">{children}</th>,
-    td: ({ children }) => <td className="border-b px-2 py-1.5 align-top">{children}</td>,
+    // The kit's table, with its cells wrapping: the legal tables hold sentences.
+    table: ({ children }) => <Table className="my-4 text-[0.8125rem]">{children}</Table>,
+    thead: ({ children }) => <TableHeader>{children}</TableHeader>,
+    tbody: ({ children }) => <TableBody>{children}</TableBody>,
+    tr: ({ children }) => <TableRow className="hover:bg-transparent">{children}</TableRow>,
+    th: ({ children }) => <TableHead className="h-auto py-1.5 font-semibold whitespace-normal">{children}</TableHead>,
+    td: ({ children }) => <TableCell className="py-1.5 align-top whitespace-normal">{children}</TableCell>,
 }
 
 export const useMDXComponents = (): MDXComponents => COMPONENTS

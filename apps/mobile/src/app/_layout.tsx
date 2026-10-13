@@ -3,17 +3,17 @@ import { PortalHost } from '@rn-primitives/portal'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { getLocales } from 'expo-localization'
 import { Stack } from 'expo-router'
-import { useEffect } from 'react'
-import { Appearance, StatusBar } from 'react-native'
+import { StatusBar } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import { Uniwind } from 'uniwind'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Toaster } from 'sonner-native'
 import { IntlProvider, useTranslations } from 'use-intl'
 import { HeaderBackground } from '../components/shell/HeaderBackground'
 import { MoreMenu } from '../components/shell/MoreMenu'
 import { Wordmark } from '../components/shell/Wordmark'
-import { SnackbarHost } from '../components/ui/SnackbarHost'
 import '../global.css'
 import { useAppFonts } from '../hooks/useAppFonts'
+import { useAppliedTheme } from '../hooks/useAppliedTheme'
 import { useSettings } from '../hooks/useSettings'
 import { useTheme } from '../hooks/useTheme'
 import { CATALOGS } from '../lib/catalogs'
@@ -22,11 +22,15 @@ import { dropExpiredQuota } from '../lib/quota-reset'
 import { resolveLocale } from '../lib/settings'
 import { getFontFamily } from '../theme/fonts'
 
+// The snackbars' place: as far above the navigation bar as from the screen's sides.
+const TOAST_MARGIN = 16
+
 // The stack lives inside the IntlProvider so screen titles come from the catalogs too.
 const AppStack = () => {
     const tm = useTranslations('mobile')
     const ta = useTranslations('archive')
     const { colors, isDark } = useTheme()
+    const insets = useSafeAreaInsets()
 
     return (
         <>
@@ -49,7 +53,7 @@ const AppStack = () => {
                 <Stack.Screen name="settings" options={{ title: tm('settings') }} />
                 <Stack.Screen name="+not-found" options={{ title: '' }} />
             </Stack>
-            <SnackbarHost />
+            <Toaster position="bottom-center" offset={insets.bottom + TOAST_MARGIN} swipeToDismissDirection="left" />
             <PortalHost />
         </>
     )
@@ -58,15 +62,9 @@ const AppStack = () => {
 export default function RootLayout() {
     const settings = useSettings()
     const isFontReady = useAppFonts()
+    useAppliedTheme()
 
     const locale = resolveLocale(settings.language, getLocales()[0]?.languageCode)
-
-    // The kit's styles (Uniwind) and the native parts (alerts, the keyboard, the navigation bar) follow the app's theme
-    // setting.
-    useEffect(() => {
-        Uniwind.setTheme(settings.theme)
-        Appearance.setColorScheme(settings.theme === 'system' ? 'unspecified' : settings.theme)
-    }, [settings.theme])
 
     // Inter loads from the bundle in a moment; drawing before it would show every screen in the system font first.
     if (!isFontReady) return null

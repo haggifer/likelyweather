@@ -1,25 +1,19 @@
 import { CloudSun } from 'lucide-react-native'
-import { StyleSheet, View } from 'react-native'
-import { useTheme } from '../../hooks/useTheme'
-import { Text } from '../legacy-ui/Text'
+import { View } from 'react-native'
+import { Icon } from '../ui/icon'
+import { Text } from '../ui/text'
 
 const BRAND = 'Forecast Arena'
-
-const styles = StyleSheet.create({
-    mark: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    word: { fontSize: 15, lineHeight: 16, fontWeight: '700', letterSpacing: -0.2 },
-})
+const WORD = 'text-[0.9375rem] leading-4 font-bold tracking-tight'
 
 // The web top bar's brand: the cloud-sun logo and the name on two lines.
 export function Wordmark() {
-    const { colors } = useTheme()
-
     return (
-        <View style={styles.mark} accessible accessibilityRole="header" accessibilityLabel={BRAND}>
-            <CloudSun size={32} strokeWidth={1.75} color={colors.primary} />
+        <View className="flex-row items-center gap-2" accessible role="heading" aria-label={BRAND}>
+            <Icon as={CloudSun} strokeWidth={1.75} className="size-8 text-primary" />
             <View>
-                <Text style={[styles.word, { color: colors.foreground }]}>Forecast</Text>
-                <Text style={[styles.word, { color: colors.foreground }]}>Arena</Text>
+                <Text className={WORD}>Forecast</Text>
+                <Text className={WORD}>Arena</Text>
             </View>
         </View>
     )

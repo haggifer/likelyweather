@@ -4,8 +4,6 @@ const WEB_ORIGIN = 'https://dom3g5nxr3yi9.cloudfront.net'
 export const API_ORIGIN = process.env.EXPO_PUBLIC_API_ORIGIN || WEB_ORIGIN
 // Set when the repository is public, like the web footer's NEXT_PUBLIC_REPO_URL.
 export const REPO_URL = process.env.EXPO_PUBLIC_REPO_URL || null
-export const OPEN_METEO_URL = 'https://open-meteo.com/'
-export const METNO_URL = 'https://api.met.no/'
 
 // The site's chrome follows its own language cookie, which the browser opened from the app does not have, so the
 // link names the app's language.

@@ -1,29 +1,32 @@
 import { getErrorKind } from '@fa/api-client/error-kind'
-import { RefreshCw } from 'lucide-react-native'
-import { StyleSheet, View } from 'react-native'
+import { CircleAlert, RefreshCw } from 'lucide-react-native'
+import { View } from 'react-native'
 import { useTranslations } from 'use-intl'
-import { useTheme } from '../../hooks/useTheme'
-import { Button } from '../legacy-ui/Button'
-import { Text } from '../legacy-ui/Text'
-
-const styles = StyleSheet.create({
-    notice: { alignItems: 'center', gap: 12, paddingVertical: 24 },
-    text: { fontSize: 14, textAlign: 'center' },
-})
+import { Alert, AlertDescription } from './alert'
+import { Button } from './button'
+import { Icon } from './icon'
+import { Text } from './text'
 
 interface IProps {
     error: unknown
     onRetry?: () => void
 }
 
+// The web's ErrorNotice: the kit's alert with the error's copy, and a way to try again under it.
 export function ErrorNotice({ error, onRetry }: IProps) {
     const t = useTranslations('errors')
-    const { colors } = useTheme()
 
     return (
-        <View style={styles.notice} accessibilityRole="alert">
-            <Text style={[styles.text, { color: colors['muted-foreground'] }]}>{t(getErrorKind(error))}</Text>
-            {onRetry && <Button variant="outline" icon={RefreshCw} label={t('retry')} onPress={onRetry} />}
-        </View>
+        <Alert icon={CircleAlert}>
+            <AlertDescription>{t(getErrorKind(error))}</AlertDescription>
+            {onRetry && (
+                <View className="ml-0.5 items-start pb-1.5 pl-6">
+                    <Button variant="outline" size="sm" onPress={onRetry}>
+                        <Icon as={RefreshCw} className="size-4" />
+                        <Text>{t('retry')}</Text>
+                    </Button>
+                </View>
+            )}
+        </Alert>
     )
 }

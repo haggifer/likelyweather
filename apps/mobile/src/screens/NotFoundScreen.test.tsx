@@ -15,7 +15,7 @@ describe('NotFoundScreen', () => {
             </IntlProvider>,
         )
 
-        expect(screen.getByRole('header', { name: en.notFound.title })).toBeOnTheScreen()
+        expect(screen.getByRole('heading', { name: en.notFound.title })).toBeOnTheScreen()
 
         await fireEvent.press(screen.getByRole('button', { name: en.notFound.home }))
 
