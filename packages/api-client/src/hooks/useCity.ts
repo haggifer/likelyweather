@@ -1,13 +1,13 @@
 import { City } from '@fa/shared/api'
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { apiGet, isNotFound } from '../api'
-import { MINUTE } from '../latest-query'
 
+// A city's record never changes once it is tracked, so it is asked for once per cache.
 export function useCity(slug: string): UseQueryResult<City, Error> {
     return useQuery({
         queryKey: ['city', slug],
         queryFn: () => apiGet<City>(`/cities/${slug}`),
-        staleTime: 5 * MINUTE,
+        staleTime: Infinity,
         retry: (count, error) => count < 2 && !isNotFound(error),
     })
 }

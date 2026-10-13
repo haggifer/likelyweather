@@ -35,6 +35,10 @@ export const getAgeHours = (from: string | Date, now: Date) =>
 // and shows the age chip, from the same moment.
 export const isRefreshDue = (fetchedAt: string, now: Date) => getAgeHours(fetchedAt, now) >= REFRESH_AFTER_HOURS
 
+// How long a stored forecast stays fresh in the client's cache: until the moment Refresh is offered.
+export const getMsUntilRefreshDue = (fetchedAt: string, now: Date) =>
+    Math.max(0, new Date(fetchedAt).getTime() + REFRESH_AFTER_HOURS * HOUR_MS - now.getTime())
+
 export const buildSteps = (start: Date, end: Date, stepHours = STEP_HOURS) => {
     const steps: string[] = []
 
