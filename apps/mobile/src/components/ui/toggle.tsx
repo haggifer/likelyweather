@@ -3,7 +3,6 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import * as React from 'react'
 import { Platform } from 'react-native'
 import { cn } from '../../lib/cn'
-import { Icon } from './icon'
 import { TextClassContext } from './text'
 
 const toggleVariants = cva(
@@ -66,9 +65,4 @@ function Toggle({
     )
 }
 
-function ToggleIcon({ className, ...props }: React.ComponentProps<typeof Icon>) {
-    const textClass = React.useContext(TextClassContext)
-    return <Icon className={cn('size-4 shrink-0', textClass, className)} {...props} />
-}
-
-export { Toggle, ToggleIcon, toggleVariants }
+export { Toggle, toggleVariants }

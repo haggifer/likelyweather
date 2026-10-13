@@ -7,7 +7,8 @@ function Card({ className, ...props }: React.ComponentProps<typeof View> & React
         <TextClassContext.Provider value="text-card-foreground">
             <View
                 className={cn(
-                    'bg-card border-border flex flex-col gap-6 rounded-xl border py-6 shadow-sm shadow-black/5',
+                    // The web card's spacing (--card-spacing, 16 px).
+                    'bg-card border-border flex flex-col gap-4 rounded-xl border py-4 shadow-sm shadow-black/5',
                     className,
                 )}
                 {...props}
@@ -17,7 +18,7 @@ function Card({ className, ...props }: React.ComponentProps<typeof View> & React
 }
 
 function CardHeader({ className, ...props }: React.ComponentProps<typeof View> & React.RefAttributes<View>) {
-    return <View className={cn('flex flex-col gap-1.5 px-6', className)} {...props} />
+    return <View className={cn('flex flex-col gap-1 px-4', className)} {...props} />
 }
 
 function CardTitle({ className, ref, ...props }: React.ComponentProps<typeof Text> & React.RefAttributes<typeof Text>) {
@@ -26,7 +27,7 @@ function CardTitle({ className, ref, ...props }: React.ComponentProps<typeof Tex
             ref={ref}
             role="heading"
             aria-level={3}
-            className={cn('font-semibold leading-none', className)}
+            className={cn('text-base leading-snug font-medium', className)}
             {...props}
         />
     )
@@ -40,11 +41,7 @@ function CardDescription({
 }
 
 function CardContent({ className, ...props }: React.ComponentProps<typeof View> & React.RefAttributes<View>) {
-    return <View className={cn('px-6', className)} {...props} />
+    return <View className={cn('px-4', className)} {...props} />
 }
 
-function CardFooter({ className, ...props }: React.ComponentProps<typeof View> & React.RefAttributes<View>) {
-    return <View className={cn('flex flex-row items-center px-6', className)} {...props} />
-}
-
-export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
+export { Card, CardContent, CardDescription, CardHeader, CardTitle }

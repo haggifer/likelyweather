@@ -1,5 +1,6 @@
 import { Platform, TextInput } from 'react-native'
 import { cn } from '../../lib/cn'
+import { getFontFamily } from '../../theme/fonts'
 
 function Input({ className, ...props }: React.ComponentProps<typeof TextInput> & React.RefAttributes<TextInput>) {
     return (
@@ -23,6 +24,8 @@ function Input({ className, ...props }: React.ComponentProps<typeof TextInput> &
             // Uniwind takes the placeholder colour from an accent class, not from `placeholder:`.
             placeholderTextColorClassName="accent-muted-foreground"
             {...props}
+            // The app's Inter, as the kit's Text sets it: a text field takes no weight classes.
+            style={[{ fontFamily: getFontFamily('400') }, props.style]}
         />
     )
 }
