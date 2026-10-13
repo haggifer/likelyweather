@@ -35,7 +35,8 @@ const styles = StyleSheet.create({
         borderWidth: StyleSheet.hairlineWidth,
         boxShadow: '0 8px 24px -8px rgba(15, 23, 42, 0.3)',
     },
-    item: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 44, paddingHorizontal: 12 },
+    // Finger-sized rows (author, 2026-10-13), like the web's phone menu.
+    item: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 48, paddingHorizontal: 16 },
     label: { fontSize: 14 },
 })
 

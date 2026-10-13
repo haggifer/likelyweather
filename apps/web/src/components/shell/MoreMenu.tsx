@@ -9,6 +9,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const ICONS = { forecast: <CloudSun />, archive: <Archive />, methodology: <BookOpen /> }
+// Finger-sized rows (author, 2026-10-13), like the app's menu.
+const ITEM = 'min-h-12 gap-2.5 px-4'
 
 // The header's pages on phones, where the inline links (`MainNav`) do not fit.
 export function MoreMenu() {
@@ -29,7 +31,7 @@ export function MoreMenu() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
                 {NAV_LINKS.map(({ href, key }) => (
-                    <DropdownMenuItem key={href} asChild>
+                    <DropdownMenuItem key={href} asChild className={ITEM}>
                         <Link href={href} aria-current={isCurrentNavLink(href, pathname) ? 'page' : undefined}>
                             {ICONS[key]} {t(key)}
                         </Link>
