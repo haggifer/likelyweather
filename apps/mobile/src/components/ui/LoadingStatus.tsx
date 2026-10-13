@@ -1,6 +1,6 @@
 import { ActivityIndicator, StyleSheet, View } from 'react-native'
 import { useTheme } from '../../hooks/useTheme'
-import { Text } from './Text'
+import { Text } from '../legacy-ui/Text'
 
 const styles = StyleSheet.create({
     status: { flexDirection: 'row', alignItems: 'center', gap: 8 },

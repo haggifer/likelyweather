@@ -1,7 +1,7 @@
 import { CloudSun } from 'lucide-react-native'
 import { StyleSheet, View } from 'react-native'
 import { useTheme } from '../../hooks/useTheme'
-import { Text } from '../ui/Text'
+import { Text } from '../legacy-ui/Text'
 
 const BRAND = 'Forecast Arena'
 

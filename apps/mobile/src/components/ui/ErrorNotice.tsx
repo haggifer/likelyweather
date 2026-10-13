@@ -3,8 +3,8 @@ import { RefreshCw } from 'lucide-react-native'
 import { StyleSheet, View } from 'react-native'
 import { useTranslations } from 'use-intl'
 import { useTheme } from '../../hooks/useTheme'
-import { Button } from './Button'
-import { Text } from './Text'
+import { Button } from '../legacy-ui/Button'
+import { Text } from '../legacy-ui/Text'
 
 const styles = StyleSheet.create({
     notice: { alignItems: 'center', gap: 12, paddingVertical: 24 },

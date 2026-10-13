@@ -3,10 +3,10 @@ import { MODELS } from '@fa/shared/models'
 import { VARIABLES } from '@fa/shared/variables'
 import { StyleSheet, View } from 'react-native'
 import { useTranslations } from 'use-intl'
-import { Card } from '../components/ui/Card'
+import { Card } from '../components/legacy-ui/Card'
+import { Text } from '../components/legacy-ui/Text'
 import { LineSwatch } from '../components/ui/LineSwatch'
 import { ScreenScroll } from '../components/ui/ScreenScroll'
-import { Text } from '../components/ui/Text'
 import { useTheme } from '../hooks/useTheme'
 
 const SECTIONS = ['sources', 'median', 'disagreement', 'limits'] as const

@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 import { Modal, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native'
 import { useTranslations } from 'use-intl'
 import { useTheme } from '../../hooks/useTheme'
-import { Text } from '../ui/Text'
+import { Text } from '../legacy-ui/Text'
 
 interface Anchor {
     top: number

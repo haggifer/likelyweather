@@ -3,7 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSnackbar } from '../../hooks/useSnackbar'
 import { useTheme } from '../../hooks/useTheme'
 import { dismissSnackbar, SnackbarAction } from '../../lib/snackbar-store'
-import { Text } from './Text'
+import { Text } from '../legacy-ui/Text'
 
 const MARGIN = 16
 

@@ -3,9 +3,9 @@ import { ReactNode, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import { useTranslations } from 'use-intl'
 import { useTheme } from '../../hooks/useTheme'
-import { Button } from '../ui/Button'
-import { Card } from '../ui/Card'
-import { Text } from '../ui/Text'
+import { Button } from '../legacy-ui/Button'
+import { Card } from '../legacy-ui/Card'
+import { Text } from '../legacy-ui/Text'
 
 const styles = StyleSheet.create({
     summary: { fontSize: 12, lineHeight: 17 },

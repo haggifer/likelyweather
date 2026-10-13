@@ -1,8 +1,8 @@
 import { ReactNode } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useTheme } from '../../hooks/useTheme'
+import { Text } from '../legacy-ui/Text'
 import { FlagIcon } from '../ui/FlagIcon'
-import { Text } from '../ui/Text'
 
 const styles = StyleSheet.create({
     row: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 48 },

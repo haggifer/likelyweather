@@ -1,5 +1,5 @@
 import { View } from 'react-native'
-import { Skeleton } from '../ui/Skeleton'
+import { Skeleton } from '../legacy-ui/Skeleton'
 
 // The loaded cards' heights on a phone: the chart card with its two-column model list and summary, then the row of day
 // tiles, so nothing jumps when the forecast arrives.

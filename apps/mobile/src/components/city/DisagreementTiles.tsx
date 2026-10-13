@@ -5,9 +5,9 @@ import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { useTheme } from '../../hooks/useTheme'
-import { Card } from '../ui/Card'
-import { ChipTone, StatusChip } from '../ui/StatusChip'
-import { Text } from '../ui/Text'
+import { Card } from '../legacy-ui/Card'
+import { ChipTone, StatusChip } from '../legacy-ui/StatusChip'
+import { Text } from '../legacy-ui/Text'
 
 const TONES: Record<DisagreementLabel, ChipTone> = { agree: 'ok', mixed: 'warn', split: 'fail' }
 const TILE_WIDTH = 112

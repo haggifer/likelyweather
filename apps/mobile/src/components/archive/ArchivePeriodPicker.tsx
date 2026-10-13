@@ -12,8 +12,8 @@ import { StyleSheet, TextInput, View } from 'react-native'
 import { useTranslations } from 'use-intl'
 import { useTheme } from '../../hooks/useTheme'
 import { getFontFamily } from '../../theme/fonts'
-import { Button } from '../ui/Button'
-import { Text } from '../ui/Text'
+import { Button } from '../legacy-ui/Button'
+import { Text } from '../legacy-ui/Text'
 
 type RangeEnd = 'from' | 'to'
 

@@ -1,8 +1,8 @@
 import { useRouter } from 'expo-router'
 import { StyleSheet, View } from 'react-native'
 import { useTranslations } from 'use-intl'
-import { Button } from '../components/ui/Button'
-import { Text } from '../components/ui/Text'
+import { Button } from '../components/legacy-ui/Button'
+import { Text } from '../components/legacy-ui/Text'
 import { useTheme } from '../hooks/useTheme'
 
 const styles = StyleSheet.create({

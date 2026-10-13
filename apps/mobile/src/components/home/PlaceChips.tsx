@@ -2,8 +2,8 @@ import { MAX_PLACES, Place } from '@fa/shared/places'
 import { StyleSheet, View } from 'react-native'
 import { useTranslations } from 'use-intl'
 import { useTheme } from '../../hooks/useTheme'
-import { Skeleton } from '../ui/Skeleton'
-import { Text } from '../ui/Text'
+import { Skeleton } from '../legacy-ui/Skeleton'
+import { Text } from '../legacy-ui/Text'
 import { PlaceChip } from './PlaceChip'
 
 const CHIP_PLACEHOLDERS = Array.from({ length: MAX_PLACES }, (_, i) => i)

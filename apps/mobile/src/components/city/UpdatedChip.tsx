@@ -6,7 +6,7 @@ import { Pressable } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { useTheme } from '../../hooks/useTheme'
 import { showSnackbar } from '../../lib/snackbar-store'
-import { StatusChip } from '../ui/StatusChip'
+import { StatusChip } from '../legacy-ui/StatusChip'
 
 const CLOCK: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
 const ICON_SIZE = 20

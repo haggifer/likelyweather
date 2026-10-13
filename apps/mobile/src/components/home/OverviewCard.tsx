@@ -22,12 +22,12 @@ import { MedianOverview, MedianOverviewSkeleton } from '../charts/MedianOverview
 import { FavoriteToggle } from '../city/FavoriteToggle'
 import { RefreshButton } from '../city/RefreshButton'
 import { UpdatedChip } from '../city/UpdatedChip'
-import { Button } from '../ui/Button'
-import { Card } from '../ui/Card'
+import { Button } from '../legacy-ui/Button'
+import { Card } from '../legacy-ui/Card'
+import { Skeleton } from '../legacy-ui/Skeleton'
+import { Text } from '../legacy-ui/Text'
 import { FlagIcon } from '../ui/FlagIcon'
 import { LoadingStatus } from '../ui/LoadingStatus'
-import { Skeleton } from '../ui/Skeleton'
-import { Text } from '../ui/Text'
 
 const styles = StyleSheet.create({
     titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },

@@ -13,7 +13,7 @@ import {
 import { Pressable, StyleSheet, View } from 'react-native'
 import { useTranslations } from 'use-intl'
 import { useTheme } from '../../hooks/useTheme'
-import { Text } from '../ui/Text'
+import { Text } from '../legacy-ui/Text'
 
 const ICONS: Record<Variable, LucideIcon> = {
     [Variable.Temp]: Thermometer,

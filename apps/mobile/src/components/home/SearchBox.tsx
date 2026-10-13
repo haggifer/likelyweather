@@ -25,8 +25,8 @@ import { useTheme } from '../../hooks/useTheme'
 import { placesStore } from '../../lib/places-store'
 import { showSnackbar } from '../../lib/snackbar-store'
 import { getFontFamily } from '../../theme/fonts'
+import { Text } from '../legacy-ui/Text'
 import { FlagIcon } from '../ui/FlagIcon'
-import { Text } from '../ui/Text'
 import { LocateButton } from './LocateButton'
 
 const MIN_QUERY = 3

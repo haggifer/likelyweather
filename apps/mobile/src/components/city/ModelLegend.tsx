@@ -9,8 +9,8 @@ import Svg, { Line } from 'react-native-svg'
 import { useTranslations } from 'use-intl'
 import { useTheme } from '../../hooks/useTheme'
 import { DARK, LIGHT } from '../../theme/tokens'
+import { Text } from '../legacy-ui/Text'
 import { LineSwatch } from '../ui/LineSwatch'
-import { Text } from '../ui/Text'
 
 interface LegendRow {
     modelId: ModelId

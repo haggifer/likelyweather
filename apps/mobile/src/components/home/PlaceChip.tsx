@@ -4,8 +4,8 @@ import { Pressable, StyleSheet, View } from 'react-native'
 import { useLocale } from 'use-intl'
 import { useTheme } from '../../hooks/useTheme'
 import { FavoriteToggle } from '../city/FavoriteToggle'
+import { Text } from '../legacy-ui/Text'
 import { FlagIcon } from '../ui/FlagIcon'
-import { Text } from '../ui/Text'
 
 const styles = StyleSheet.create({
     chip: {

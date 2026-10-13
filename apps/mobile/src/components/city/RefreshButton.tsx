@@ -2,7 +2,7 @@ import { REFRESH_AFTER_HOURS } from '@fa/shared/constants'
 import { RefreshCw } from 'lucide-react-native'
 import { useTranslations } from 'use-intl'
 import { showSnackbar } from '../../lib/snackbar-store'
-import { Button } from '../ui/Button'
+import { Button } from '../legacy-ui/Button'
 
 interface IProps {
     isAvailable: boolean

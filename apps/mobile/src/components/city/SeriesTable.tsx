@@ -5,7 +5,7 @@ import { MODEL_BY_ID } from '@fa/shared/models'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import { useTranslations } from 'use-intl'
 import { useTheme } from '../../hooks/useTheme'
-import { Text } from '../ui/Text'
+import { Text } from '../legacy-ui/Text'
 
 const TIME_WIDTH = 92
 const CELL_WIDTH = 64
