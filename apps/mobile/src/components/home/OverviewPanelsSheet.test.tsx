@@ -1,11 +1,23 @@
 import en from '@fa/messages/catalogs/en.json'
 import { DEFAULT_OVERVIEW_PANELS } from '@fa/shared/overview-panels'
 import { Variable } from '@fa/shared/variables'
-import { fireEvent, render, screen } from '@testing-library/react-native'
-import { IntlProvider } from 'use-intl'
+import { act, fireEvent, render, screen } from '@testing-library/react-native'
+import { State } from 'react-native-gesture-handler'
+import { fireGestureHandler, getByGestureTestId } from 'react-native-gesture-handler/jest-utils'
+import { createTranslator, IntlProvider } from 'use-intl'
 import { useOverviewPanels } from '../../hooks/useOverviewPanels'
 import { settingsStore } from '../../lib/settings'
 import { OverviewPanelsSheet } from './OverviewPanelsSheet'
+
+// The worklet runtime and the gesture handler's root have no native module under Jest; the libraries' own mocks stand
+// in, and run the drag's worklets on the JS thread.
+jest.mock('react-native-worklets', () => jest.requireActual('react-native-worklets/src/mock'))
+jest.mock('react-native-reanimated', () => jest.requireActual('react-native-reanimated/mock'))
+jest.mock('react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule', () =>
+    jest.requireActual('react-native-gesture-handler/lib/commonjs/mocks/mocks'),
+)
+
+const t = createTranslator({ locale: 'en', messages: en, namespace: 'overview' })
 
 const BoundSheet = () => {
     const { panels, setPanels } = useOverviewPanels()
@@ -20,31 +32,22 @@ const renderSheet = () =>
         </IntlProvider>,
     )
 
+const getHandle = (name: string) => screen.getByLabelText(t('dragPanel', { name }))
+
 describe('OverviewPanelsSheet', () => {
     beforeEach(() => settingsStore.set((settings) => ({ ...settings, overviewPanels: DEFAULT_OVERVIEW_PANELS })))
 
-    it('shows humidity and moves it up, keeping the choice in the settings', async () => {
+    it('shows and hides a panel with its eye', async () => {
         await renderSheet()
 
-        const humidity = screen.getByRole('checkbox', { name: en.variables.humidity })
+        await fireEvent.press(screen.getByRole('button', { name: t('showPanel', { name: en.variables.humidity }) }))
 
-        expect(humidity).not.toBeChecked()
+        expect(settingsStore.get().overviewPanels.hidden).toEqual([Variable.Cloud])
 
-        await fireEvent.press(humidity)
-        await fireEvent.press(screen.getByRole('button', { name: 'Move Humidity up' }))
+        await fireEvent.press(screen.getByRole('button', { name: t('hidePanel', { name: en.variables.wind }) }))
 
-        expect(screen.getByRole('checkbox', { name: en.variables.humidity })).toBeChecked()
-        expect(settingsStore.get().overviewPanels).toEqual({
-            order: [
-                Variable.Temp,
-                Variable.Wind,
-                Variable.Pressure,
-                Variable.Humidity,
-                Variable.Precip,
-                Variable.Cloud,
-            ],
-            hidden: [Variable.Cloud],
-        })
+        expect(settingsStore.get().overviewPanels.hidden).toEqual([Variable.Cloud, Variable.Wind])
+        expect(screen.getByRole('button', { name: t('showPanel', { name: en.variables.wind }) })).toBeEnabled()
     })
 
     it('keeps the last shown panel and restores the default on Reset', async () => {
@@ -54,11 +57,60 @@ describe('OverviewPanelsSheet', () => {
         }))
         await renderSheet()
 
-        expect(screen.getByRole('checkbox', { name: en.variables.temp })).toBeDisabled()
-        expect(screen.getByRole('button', { name: 'Move Temperature up' })).toBeDisabled()
+        expect(screen.getByRole('button', { name: t('hidePanel', { name: en.variables.temp }) })).toBeDisabled()
 
         await fireEvent.press(screen.getByRole('button', { name: en.overview.resetPanels }))
 
         expect(settingsStore.get().overviewPanels).toEqual(DEFAULT_OVERVIEW_PANELS)
+    })
+
+    it('moves a panel with the screen reader actions, offering only the possible ones', async () => {
+        await renderSheet()
+
+        expect(getHandle(en.variables.temp).props.accessibilityActions).toEqual([
+            { name: 'moveDown', label: t('moveDown', { name: en.variables.temp }) },
+        ])
+
+        await fireEvent(getHandle(en.variables.humidity), 'accessibilityAction', {
+            nativeEvent: { actionName: 'moveUp' },
+        })
+        await fireEvent(getHandle(en.variables.temp), 'accessibilityAction', {
+            nativeEvent: { actionName: 'moveDown' },
+        })
+
+        expect(settingsStore.get().overviewPanels.order).toEqual([
+            Variable.Wind,
+            Variable.Temp,
+            Variable.Pressure,
+            Variable.Humidity,
+            Variable.Precip,
+            Variable.Cloud,
+        ])
+        expect(getHandle(en.variables.cloud).props.accessibilityActions).toEqual([
+            { name: 'moveUp', label: t('moveUp', { name: en.variables.cloud }) },
+        ])
+    })
+
+    it('drops a dragged panel in the slot it is let go over', async () => {
+        await renderSheet()
+
+        // Cloud starts in the last of six 48 px rows; 190 px up leaves it nearest the second.
+        await act(() =>
+            fireGestureHandler(getByGestureTestId(`drag-${Variable.Cloud}`), [
+                { state: State.BEGAN, translationY: 0 },
+                { state: State.ACTIVE, translationY: -60 },
+                { state: State.ACTIVE, translationY: -190 },
+                { state: State.END, translationY: -190 },
+            ]),
+        )
+
+        expect(settingsStore.get().overviewPanels.order).toEqual([
+            Variable.Temp,
+            Variable.Cloud,
+            Variable.Wind,
+            Variable.Pressure,
+            Variable.Precip,
+            Variable.Humidity,
+        ])
     })
 })

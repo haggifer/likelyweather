@@ -40,6 +40,7 @@ const styles = StyleSheet.create({
 })
 
 // The English buttons' widths; other languages differ by a few pixels at most.
+const PANELS_WIDTH = 36
 const REFRESH_WIDTH = 104
 const DETAILS_WIDTH = 134
 const NO_BREAK_SPACE = ' '
@@ -48,7 +49,7 @@ interface SkeletonProps {
     status: string
 }
 
-// The loaded card's rows, the web's OverviewCardSkeleton: the status in the title's place, the two buttons, then the
+// The loaded card's rows, the web's OverviewCardSkeleton: the status in the title's place, the three buttons, then the
 // reader's readouts and panels, so nothing moves when the data arrives.
 export function OverviewCardSkeleton({ status }: SkeletonProps) {
     const { panels } = useOverviewPanels()
@@ -64,6 +65,7 @@ export function OverviewCardSkeleton({ status }: SkeletonProps) {
             <View style={styles.actions}>
                 <View style={styles.grow} />
                 <Skeleton height={36} width={REFRESH_WIDTH} />
+                <Skeleton height={36} width={PANELS_WIDTH} />
                 <Skeleton height={36} width={DETAILS_WIDTH} />
             </View>
             <MedianOverviewSkeleton panels={visible} />
@@ -108,14 +110,6 @@ export function OverviewCard({ city, panels, hourly, run, anchor, now, isFetchin
                         <Text style={[styles.region, { color: colors['muted-foreground'] }]}>, {region}</Text>
                     ) : null}
                 </Text>
-                {/* In the title row with the star: a third button in the row below would push Open details onto a line of
-                its own on a phone. */}
-                <Button
-                    icon={SlidersHorizontal}
-                    variant="ghost"
-                    onPress={onCustomize}
-                    accessibilityLabel={t('customize')}
-                />
                 <FavoriteToggle place={city} />
             </View>
             <View style={styles.actions}>
@@ -125,6 +119,13 @@ export function OverviewCard({ city, panels, hourly, run, anchor, now, isFetchin
                     isAvailable={isRefreshOffered(run.fetchedAt, now)}
                     isFetching={isFetching}
                     onRefresh={onRefresh}
+                />
+                {/* Icon-only: with a label, a third button would push Open details onto a line of its own on a phone. */}
+                <Button
+                    icon={SlidersHorizontal}
+                    variant="outline"
+                    onPress={onCustomize}
+                    accessibilityLabel={t('customize')}
                 />
                 <Button endIcon={ArrowRight} label={t('details')} onPress={() => router.push(`/city/${city.slug}`)} />
             </View>

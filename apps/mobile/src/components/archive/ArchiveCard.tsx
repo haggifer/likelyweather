@@ -43,6 +43,7 @@ const styles = StyleSheet.create({
     region: { fontSize: 15, fontWeight: '500' },
     notice: { fontSize: 14, lineHeight: 21, textAlign: 'center', paddingVertical: 40 },
     source: { fontSize: 12, lineHeight: 17 },
+    panels: { alignSelf: 'flex-end' },
 })
 
 const toRangeKey = (range: ArchiveRange | null) => (range ? `${range.from}${RANGE_SEPARATOR}${range.to}` : null)
@@ -176,12 +177,6 @@ export function ArchiveCard({ slug }: IProps) {
                                     </Text>
                                 ) : null}
                             </Text>
-                            <Button
-                                icon={SlidersHorizontal}
-                                variant="ghost"
-                                onPress={handleCustomize}
-                                accessibilityLabel={to('customize')}
-                            />
                             <FavoriteToggle place={city} />
                         </>
                     ) : (
@@ -189,11 +184,20 @@ export function ArchiveCard({ slug }: IProps) {
                     )}
                 </View>
                 {range && city && (
-                    <ArchivePeriodPicker
-                        range={range}
-                        latest={getLatestArchiveDate(now, city.timezone)}
-                        onChange={handleRange}
-                    />
+                    <>
+                        <ArchivePeriodPicker
+                            range={range}
+                            latest={getLatestArchiveDate(now, city.timezone)}
+                            onChange={handleRange}
+                        />
+                        <Button
+                            icon={SlidersHorizontal}
+                            label={to('panels')}
+                            variant="outline"
+                            onPress={handleCustomize}
+                            style={styles.panels}
+                        />
+                    </>
                 )}
                 {renderChart()}
                 <Text style={[styles.source, { color: colors['muted-foreground'] }]}>{t('source')}</Text>
