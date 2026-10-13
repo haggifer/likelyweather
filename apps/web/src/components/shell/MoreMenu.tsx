@@ -1,14 +1,14 @@
 'use client'
 
-import { NAV_LINKS } from '@/components/shell/MainNav'
+import { isCurrentNavLink, NAV_LINKS } from '@/components/shell/MainNav'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Archive, BookOpen, Menu } from 'lucide-react'
+import { Archive, BookOpen, CloudSun, Menu } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-const ICONS = { archive: <Archive />, methodology: <BookOpen /> }
+const ICONS = { forecast: <CloudSun />, archive: <Archive />, methodology: <BookOpen /> }
 
 // The header's pages on phones, where the inline links (`MainNav`) do not fit.
 export function MoreMenu() {
@@ -30,7 +30,7 @@ export function MoreMenu() {
             <DropdownMenuContent align="end" className="w-48">
                 {NAV_LINKS.map(({ href, key }) => (
                     <DropdownMenuItem key={href} asChild>
-                        <Link href={href} aria-current={pathname === href ? 'page' : undefined}>
+                        <Link href={href} aria-current={isCurrentNavLink(href, pathname) ? 'page' : undefined}>
                             {ICONS[key]} {t(key)}
                         </Link>
                     </DropdownMenuItem>

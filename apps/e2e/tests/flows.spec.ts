@@ -195,6 +195,20 @@ test('the archive shows past weather for a city and keeps the chosen period', as
     }
 })
 
+test('the header marks Forecast as the current page on the landing and on a city dashboard', async ({
+    page,
+    isMobile,
+}) => {
+    test.skip(isMobile, 'phones reach the pages through the menu')
+
+    const forecast = page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Forecast' })
+
+    for (const path of ['/', `/city/${KYIV}`]) {
+        await page.goto(path)
+        await expect(forecast).toHaveAttribute('aria-current', 'page')
+    }
+})
+
 test('an unknown city page says so and offers the search', async ({ page }) => {
     await page.goto('/city/nowhere-xx-1')
 

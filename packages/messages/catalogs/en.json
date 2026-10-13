@@ -18,6 +18,7 @@
     },
     "nav": {
         "main": "Main",
+        "forecast": "Forecast",
         "archive": "Archive",
         "more": "More pages",
         "methodology": "Methodology"

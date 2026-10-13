@@ -1,5 +1,5 @@
-import { Href, useRouter } from 'expo-router'
-import { Archive, BookOpen, LucideIcon, Menu, Settings } from 'lucide-react-native'
+import { Href, usePathname, useRouter } from 'expo-router'
+import { Archive, BookOpen, CloudSun, LucideIcon, Menu, Settings } from 'lucide-react-native'
 import { useRef, useState } from 'react'
 import { Modal, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native'
 import { useTranslations } from 'use-intl'
@@ -12,12 +12,14 @@ interface Anchor {
 }
 
 interface MenuItem {
-    key: 'archive' | 'methodology' | 'settings'
+    key: 'forecast' | 'archive' | 'methodology' | 'settings'
     icon: LucideIcon
     href: Href
 }
 
+const HOME: Href = '/'
 const ITEMS: MenuItem[] = [
+    { key: 'forecast', icon: CloudSun, href: HOME },
     { key: 'archive', icon: Archive, href: '/archive' },
     { key: 'methodology', icon: BookOpen, href: '/methodology' },
     { key: 'settings', icon: Settings, href: '/settings' },
@@ -37,27 +39,39 @@ const styles = StyleSheet.create({
     label: { fontSize: 14 },
 })
 
-// The web header's pages (the Archive, then Methodology), on every screen's header; Settings joins them because the app
-// has no top-bar controls for language and theme.
+// The web header's pages (Forecast, the Archive, then Methodology), on every screen's header; Settings joins them
+// because the app has no top-bar controls for language and theme.
 export function MoreMenu() {
     const t = useTranslations('nav')
     const tm = useTranslations('mobile')
     const router = useRouter()
+    const pathname = usePathname()
     const { width } = useWindowDimensions()
     const { colors, radius } = useTheme()
 
     const triggerRef = useRef<View>(null)
     const [anchor, setAnchor] = useState<Anchor | null>(null)
 
-    const labels = { archive: t('archive'), methodology: t('methodology'), settings: tm('settings') }
+    const labels = {
+        forecast: t('forecast'),
+        archive: t('archive'),
+        methodology: t('methodology'),
+        settings: tm('settings'),
+    }
 
     // The menu hangs from the button wherever the header puts it.
     const handleOpen = () =>
         triggerRef.current?.measureInWindow((x, y, w, h) => setAnchor({ top: y + h + GAP, right: width - x - w }))
     const handleClose = () => setAnchor(null)
+    // Forecast goes back to Home rather than stacking a second one.
     const handleNavigate = (href: Href) => {
         setAnchor(null)
-        router.push(href)
+
+        if (href !== HOME) {
+            router.push(href)
+        } else if (pathname !== HOME) {
+            router.dismissTo(HOME)
+        }
     }
 
     return (
