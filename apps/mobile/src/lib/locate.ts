@@ -1,10 +1,10 @@
 import { apiGet, apiPost } from '@fa/api-client/api'
-import { City, GeocodeResponse, GeocodeResult, Locale, NearestResponse, TrackResponse } from '@fa/shared/api'
-import { Coordinates, getDistanceKm, isNearEnough } from '@fa/shared/geo'
+import { GeocodeResponse, GeocodeResult, Locale, NearestResponse, TrackResponse } from '@fa/shared/api'
+import { isQueryReady } from '@fa/shared/city-search'
+import { Coordinates, getDistanceKm } from '@fa/shared/geo'
+import { LocateResult, toLocateResult } from '@fa/shared/locate'
 import { Place, toPlace } from '@fa/shared/places'
 import { getPlaceName, getRoundedPosition } from './position'
-
-export type LocateResult = { kind: 'open'; place: Place } | { kind: 'far'; city: City; distanceKm: number }
 
 // The device's geocoder names the town; the same name exists on several continents (Odessa, Paris), so only a
 // namesake this close to the device can be the viewer's.
@@ -35,15 +35,13 @@ const findPlaceByName = async (name: string, locale: Locale, position: Coordinat
 
 export const locateCity = async (locale: Locale): Promise<LocateResult> => {
     const position = await getRoundedPosition()
-    const { city, distanceKm } = await apiGet<NearestResponse>('/cities/nearest', {
-        lat: position.lat,
-        lon: position.lon,
-    })
+    const nearest = await apiGet<NearestResponse>('/cities/nearest', { lat: position.lat, lon: position.lon })
+    const result = toLocateResult(nearest)
 
-    if (isNearEnough(distanceKm)) return { kind: 'open', place: toPlace(city) }
+    if (result.kind === 'open') return result
 
     const name = await getPlaceName(position)
-    const place = name && name.length >= 3 ? await findPlaceByName(name, locale, position) : null
+    const place = name && isQueryReady(name) ? await findPlaceByName(name, locale, position) : null
 
-    return place ? { kind: 'open', place } : { kind: 'far', city, distanceKm }
+    return place ? { kind: 'open', place } : result
 }

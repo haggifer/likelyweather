@@ -12,18 +12,11 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useOverviewPanels } from '@/hooks/useOverviewPanels'
 import { cn } from '@/lib/cn'
 import { isRefreshOffered } from '@fa/api-client/refresh-due'
-import {
-    getOverviewChance,
-    getOverviewDirections,
-    getOverviewMedians,
-    OverviewHourly,
-} from '@fa/chart-core/overview-stats'
+import { getOverviewRun, getOverviewSeries, OverviewHourly } from '@fa/chart-core/overview-stats'
 import { City } from '@fa/shared/api'
 import { getCityRegion } from '@fa/shared/city-region'
 import { getCityName } from '@fa/shared/format'
 import { PanelVariable } from '@fa/shared/overview-panels'
-import { buildSlots } from '@fa/shared/slots'
-import { Variable } from '@fa/shared/variables'
 import { ArrowRight, Loader2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
@@ -73,9 +66,6 @@ interface IProps {
     onRefresh?: () => void
 }
 
-// The runs of the shown panels come from one fetch, so any of them carries the run's times and model count.
-const getRun = (hourly: OverviewHourly, panels: PanelVariable[]) => hourly[panels[0]]!
-
 // `anchor` is the local 3-hour slot the run was fetched in, where the chart starts.
 export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, onRefresh }: IProps) {
     const t = useTranslations('overview')
@@ -84,13 +74,11 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, on
 
     const name = getCityName(city, locale)
     const region = getCityRegion(city, locale)
-    const run = getRun(hourly, panels)
+    // The card is drawn once the first shown panel's run has arrived.
+    const run = getOverviewRun(hourly, panels)!
     const isOutdated = isRefreshOffered(run.fetchedAt, now)
     const modelCount = run.series.length
-    const slots = useMemo(() => buildSlots(anchor), [anchor])
-    const medians = useMemo(() => getOverviewMedians(hourly, slots), [hourly, slots])
-    const directions = useMemo(() => getOverviewDirections(hourly[Variable.Wind], slots), [hourly, slots])
-    const chance = useMemo(() => getOverviewChance(hourly[Variable.Precip], slots), [hourly, slots])
+    const { medians, directions, chance } = useMemo(() => getOverviewSeries(hourly, anchor), [hourly, anchor])
 
     return (
         <Card data-bleed className={cn(CARD, 'transition-opacity', isFetching && 'opacity-70')}>

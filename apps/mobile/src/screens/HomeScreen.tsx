@@ -1,7 +1,7 @@
+import { useStarters } from '@fa/hooks/useStarters'
 import { DEFAULT_PLACES, getPlaceChips, getStarterPlaces } from '@fa/shared/places'
 import { useLocalSearchParams } from 'expo-router'
 import { useEffect } from 'react'
-import { StyleSheet } from 'react-native'
 import { useTranslations } from 'use-intl'
 import { CityOverview } from '../components/home/CityOverview'
 import { OverviewCardSkeleton } from '../components/home/OverviewCard'
@@ -10,14 +10,8 @@ import { SearchBox } from '../components/home/SearchBox'
 import { ScreenScroll } from '../components/ui/ScreenScroll'
 import { usePlaces } from '../hooks/usePlaces'
 import { useSelectedCity } from '../hooks/useSelectedCity'
-import { useStarters } from '../hooks/useStarters'
-import { useTheme } from '../hooks/useTheme'
 import { placesStore } from '../lib/places-store'
 import { setSelectedCity } from '../lib/selected-city-store'
-
-const styles = StyleSheet.create({
-    content: { padding: 16, gap: 16 },
-})
 
 // The landing page on a phone without the web's hero, which an installed app has no need to pitch: search, the
 // viewer's chips and the selected city's ten-day overview. Picking a city switches the overview in place, as on the
@@ -26,7 +20,6 @@ export function HomeScreen() {
     const t = useTranslations('overview')
     const places = usePlaces()
     const selected = useSelectedCity()
-    const { colors } = useTheme()
     const params = useLocalSearchParams<{ city?: string }>()
 
     // Nothing stored yet reads back as the shared defaults object itself, which marks a first launch.
@@ -48,9 +41,9 @@ export function HomeScreen() {
 
     return (
         <ScreenScroll
-            contentContainerStyle={styles.content}
+            className="bg-background"
+            contentContainerClassName="gap-4 p-4"
             keyboardShouldPersistTaps="handled"
-            style={{ backgroundColor: colors.background }}
         >
             <SearchBox onSelectCity={setSelectedCity} isLocateShown />
             <PlaceChips chips={chips} slug={slug} onSelect={setSelectedCity} />

@@ -1,6 +1,7 @@
 import { LatestResponse } from '@fa/shared/api'
 import { computeChanceOfRain, computeEnsemble, computeMedianDirection } from '@fa/shared/ensemble'
-import { toSlotSeries } from '@fa/shared/slots'
+import { getPanelDataVariables, PanelVariable } from '@fa/shared/overview-panels'
+import { buildSlots, toSlotSeries } from '@fa/shared/slots'
 import { OVERVIEW_VARIABLES, OverviewVariable, Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 
 export interface MedianSeries {
@@ -12,6 +13,17 @@ export interface MedianSeries {
 export type OverviewHourly = Partial<Record<OverviewVariable, LatestResponse>>
 
 export type OverviewMedians = Partial<Record<OverviewVariable, MedianSeries>>
+
+export interface OverviewSeries {
+    medians: OverviewMedians
+    directions: (number | null)[] | null
+    chance: (number | null)[]
+}
+
+// A query result of `useHourlyAll`, one per overview variable in `OVERVIEW_VARIABLES` order.
+interface HourlyResult {
+    data?: LatestResponse
+}
 
 const toSlots = ({ steps, series }: LatestResponse, slots: string[], variable: Variable) =>
     series.map((s) => toSlotSeries(steps, s.values, slots, VARIABLE_BY_ID[variable].aggregation))
@@ -37,7 +49,7 @@ export const getOverviewMedians = (hourly: OverviewHourly, slots: string[]): Ove
         }),
     )
 
-export const getOverviewDirections = (wind: LatestResponse | undefined, slots: string[]) =>
+const getOverviewDirections = (wind: LatestResponse | undefined, slots: string[]) =>
     wind?.directions
         ? computeMedianDirection(
               wind.directions.map((d) => toSlotSeries(wind.steps, d.values, slots, 'instant')),
@@ -47,3 +59,30 @@ export const getOverviewDirections = (wind: LatestResponse | undefined, slots: s
 
 export const getOverviewChance = (precip: LatestResponse | undefined, slots: string[]) =>
     precip ? computeChanceOfRain(toSlots(precip, slots, Variable.Precip), slots.length) : []
+
+export const getHourlyByVariable = (results: HourlyResult[]): OverviewHourly =>
+    Object.fromEntries(
+        OVERVIEW_VARIABLES.flatMap((variable, i) => {
+            const data = results[i]?.data
+
+            return data ? [[variable, data]] : []
+        }),
+    )
+
+// A panel is drawn once its series and its second line have arrived.
+export const getReadyPanels = (panels: PanelVariable[], hourly: OverviewHourly) =>
+    panels.filter((panel) => getPanelDataVariables([panel]).every((variable) => hourly[variable]))
+
+// The runs of the shown panels come from one fetch, so any of them carries the run's times and model count.
+export const getOverviewRun = (hourly: OverviewHourly, panels: PanelVariable[]) => hourly[panels[0]]
+
+// Everything the overview chart draws, from the local 3-hour slot the run was fetched in (`anchor`).
+export const getOverviewSeries = (hourly: OverviewHourly, anchor: Date): OverviewSeries => {
+    const slots = buildSlots(anchor)
+
+    return {
+        medians: getOverviewMedians(hourly, slots),
+        directions: getOverviewDirections(hourly[Variable.Wind], slots),
+        chance: getOverviewChance(hourly[Variable.Precip], slots),
+    }
+}

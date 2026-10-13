@@ -64,16 +64,18 @@ const PanelRow = ({ variable, isShown, isToggleDisabled, onToggle }: RowProps) =
             style={{ transform: CSS.Translate.toString(transform), transition }}
             className={cn('flex items-center gap-1 rounded-md', isDragging && 'relative z-10 bg-muted shadow-sm')}
         >
-            <button
+            <Button
                 ref={setActivatorNodeRef}
                 type="button"
+                variant="ghost"
+                size="icon"
                 {...attributes}
                 {...listeners}
                 aria-label={t('dragPanel', { name })}
-                className="flex size-8 shrink-0 cursor-grab touch-none items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing pointer-coarse:size-10"
+                className="cursor-grab touch-none rounded-md text-muted-foreground active:cursor-grabbing pointer-coarse:size-10"
             >
                 <GripVertical className="size-4" />
-            </button>
+            </Button>
             <span className={cn('min-w-0 flex-1', !isShown && 'text-muted-foreground')}>{name}</span>
             <Button
                 variant="ghost"

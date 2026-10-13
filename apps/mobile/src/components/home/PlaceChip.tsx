@@ -1,26 +1,12 @@
 import { getCityName } from '@fa/shared/format'
 import { Place } from '@fa/shared/places'
-import { Pressable, StyleSheet, View } from 'react-native'
+import { View } from 'react-native'
 import { useLocale } from 'use-intl'
-import { useTheme } from '../../hooks/useTheme'
+import { cn } from '../../lib/cn'
 import { FavoriteToggle } from '../city/FavoriteToggle'
-import { Text } from '../legacy-ui/Text'
+import { Button } from '../ui/button'
 import { FlagIcon } from '../ui/FlagIcon'
-
-const styles = StyleSheet.create({
-    chip: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        borderWidth: 1,
-        borderRadius: 999,
-        paddingLeft: 12,
-        paddingRight: 10,
-        minHeight: 36,
-    },
-    city: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    name: { fontSize: 13, fontWeight: '500', flexShrink: 0 },
-})
+import { Text } from '../ui/text'
 
 interface IProps {
     place: Place
@@ -28,38 +14,34 @@ interface IProps {
     onSelect: (slug: string) => void
 }
 
-// The city and its star are two targets in one pill.
+// The city and its star are two targets in one pill, as on the web: the city is a ghost button without its own border
+// or fill, which the pill draws.
 export function PlaceChip({ place, isSelected, onSelect }: IProps) {
     const locale = useLocale()
-    const { colors } = useTheme()
 
     const name = getCityName(place, locale)
 
     return (
         <View
-            style={[
-                styles.chip,
-                {
-                    backgroundColor: isSelected ? colors.primary : colors.card,
-                    borderColor: isSelected ? colors.primary : colors.border,
-                },
-            ]}
+            className={cn(
+                'flex-row items-center rounded-full border border-border bg-card pr-2.5',
+                isSelected && 'border-primary bg-primary',
+            )}
         >
-            <Pressable
+            <Button
+                variant="ghost"
                 onPress={() => onSelect(place.slug)}
-                accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
-                hitSlop={{ top: 6, bottom: 6 }}
-                style={styles.city}
+                className="h-9 gap-1.5 rounded-l-full rounded-r-none border-0 pr-1.5 pl-3 active:bg-transparent active:opacity-70 dark:active:bg-transparent"
             >
                 <FlagIcon countryCode={place.countryCode} />
                 <Text
                     numberOfLines={1}
-                    style={[styles.name, { color: isSelected ? colors['primary-foreground'] : colors.foreground }]}
+                    className={cn('text-[0.8125rem] font-medium', isSelected && 'text-primary-foreground')}
                 >
                     {name}
                 </Text>
-            </Pressable>
+            </Button>
             <FavoriteToggle place={place} size={16} tone={isSelected ? 'inverse' : 'default'} />
         </View>
     )

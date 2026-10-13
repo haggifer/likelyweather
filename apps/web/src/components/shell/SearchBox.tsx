@@ -7,23 +7,19 @@ import { usePlaces } from '@/hooks/usePlaces'
 import { cn } from '@/lib/cn'
 import { updatePlaces } from '@/lib/places-store'
 import { getErrorKind } from '@fa/api-client/error-kind'
-import { useGeocode } from '@fa/api-client/hooks/useGeocode'
-import { useTrackCity } from '@fa/api-client/hooks/useTrackCity'
-import { useDebouncedValue } from '@fa/hooks/useDebouncedValue'
-import { City, GeocodeResult, Locale } from '@fa/shared/api'
-import { SEARCH_DEBOUNCE_MS } from '@fa/shared/constants'
+import { useCitySearch } from '@fa/hooks/useCitySearch'
+import { GeocodeResult, Locale } from '@fa/shared/api'
+import { getResultLabel, SearchStatus } from '@fa/shared/city-search'
 import { getCityLabel } from '@fa/shared/format'
-import { addRecent, getPlaceList, isFavorite, Place, Places, rankByFavorite, toPlace } from '@fa/shared/places'
+import { addRecent, getPlaceList, isFavorite, Place, Places } from '@fa/shared/places'
 import { Command as CommandPrimitive } from 'cmdk'
 import { Loader2, Search, Star } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { KeyboardEvent as ReactKeyboardEvent, useEffect, useRef, useState } from 'react'
+import { KeyboardEvent as ReactKeyboardEvent, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 
-const MIN_QUERY = 3
-
-const byPopulation = (a: GeocodeResult, b: GeocodeResult) => (b.population ?? 0) - (a.population ?? 0)
+const STATUS = 'px-3 py-2 text-xs text-muted-foreground'
 
 const FavoriteMark = ({ places, id }: { places: Places | null; id: number }) =>
     places && isFavorite(places, id) ? (
@@ -59,23 +55,12 @@ export function SearchBox({
     const places = usePlaces()
 
     const inputRef = useRef<HTMLInputElement>(null)
-    const [query, setQuery] = useState(initialQuery)
-    const [isOpen, setIsOpen] = useState(false)
 
-    const isEdited = query !== initialQuery
-    const debounced = useDebouncedValue(isEdited ? query.trim() : '', SEARCH_DEBOUNCE_MS)
-    const { data, isFetching, isError, error } = useGeocode(debounced, locale)
-    const track = useTrackCity()
-
-    const sorted = [...(data?.results ?? [])].sort(byPopulation)
-    const results = places ? rankByFavorite(sorted, places) : sorted
-    const isQueryReady = query.trim().length >= MIN_QUERY
-    const isPlacesView = Boolean(places) && (!isEdited || !query.trim())
-    const isListShown = isOpen && (isPlacesView || (isEdited && query.trim().length > 0))
+    const search = useCitySearch({ initialQuery, locale, places })
 
     const closeList = () => {
-        setIsOpen(false)
-        setQuery('')
+        search.setIsOpen(false)
+        search.setQuery('')
         inputRef.current?.blur()
     }
 
@@ -84,49 +69,65 @@ export function SearchBox({
         else router.push(`/city/${slug}`)
     }
 
-    const handleSelect = (place: GeocodeResult) => {
-        track.mutate(place.id, {
-            onSuccess: ({ slug }) => {
-                updatePlaces((current) => addRecent(current, toPlace({ ...place, slug })))
-                closeList()
-                goToCity(slug)
-            },
-            onError: (error) => {
-                console.error(error)
-                toast.error(te(getErrorKind(error)))
-            },
-        })
-    }
-
     // A place in the list is already tracked and keeps its position, like a chip.
     const handleSelectPlace = (place: Place) => {
         closeList()
         goToCity(place.slug)
     }
 
-    const handleSelectNearest = (city: City) => {
-        updatePlaces((current) => addRecent(current, toPlace(city)))
-        closeList()
-        goToCity(city.slug)
+    // A new pick, or the located city, becomes the newest recent place.
+    const handleSelectNew = (place: Place) => {
+        updatePlaces((current) => addRecent(current, place))
+        handleSelectPlace(place)
     }
+
+    const handleSelectResult = (result: GeocodeResult) =>
+        search.pickResult(result, {
+            onPicked: handleSelectNew,
+            onError: (error) => {
+                console.error(error)
+                toast.error(te(getErrorKind(error)))
+            },
+        })
 
     const handleKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
         if (e.key !== 'Escape') return
 
-        setIsOpen(false)
+        search.setIsOpen(false)
         onDismiss?.()
     }
 
     const handleValueChange = (value: string) => {
-        setQuery(value)
-        setIsOpen(true)
+        search.setQuery(value)
+        search.setIsOpen(true)
     }
 
     const handleBlur = () =>
         setTimeout(() => {
-            setIsOpen(false)
+            search.setIsOpen(false)
             onDismiss?.()
         }, 150)
+
+    const renderStatus = () => {
+        switch (search.status) {
+            case SearchStatus.Hint:
+                return <div className={STATUS}>{t('hint')}</div>
+            case SearchStatus.Searching:
+                return (
+                    <div className={cn(STATUS, 'flex items-center gap-2')}>
+                        <Loader2 className="size-3.5 animate-spin" /> {t('searching')}
+                    </div>
+                )
+            case SearchStatus.Error:
+                return <div className={cn(STATUS, 'text-destructive')}>{te(getErrorKind(search.error))}</div>
+            case SearchStatus.Offline:
+                return <div className={STATUS}>{te('offline')}</div>
+            case SearchStatus.Empty:
+                return <CommandEmpty>{t('empty')}</CommandEmpty>
+            default:
+                return null
+        }
+    }
 
     useEffect(() => {
         if (!autoFocus) return
@@ -145,29 +146,29 @@ export function SearchBox({
                 <Search className="size-4.5 shrink-0 text-muted-foreground" aria-hidden="true" />
                 <CommandPrimitive.Input
                     ref={inputRef}
-                    value={query}
+                    value={search.query}
                     onValueChange={handleValueChange}
-                    onFocus={() => setIsOpen(true)}
+                    onFocus={() => search.setIsOpen(true)}
                     onBlur={handleBlur}
                     placeholder={t('placeholder')}
                     aria-label={t('label')}
                     className="h-full min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground"
                 />
-                {track.isPending && <Loader2 className="size-4 shrink-0 animate-spin text-muted-foreground" />}
+                {search.isTracking && <Loader2 className="size-4 shrink-0 animate-spin text-muted-foreground" />}
                 {isLocateShown && (
-                    <LocateButton onSelect={handleSelectNearest} onSearch={() => inputRef.current?.focus()} />
+                    <LocateButton onLocated={handleSelectNew} onSearch={() => inputRef.current?.focus()} />
                 )}
             </div>
             {/* Always rendered, only hidden: the input's aria-controls points at this list. */}
             <div
                 className={cn(
                     'absolute top-full right-0 left-0 z-50 mt-1.5 overflow-hidden rounded-lg border bg-popover text-left shadow-lg',
-                    !isListShown && 'hidden',
+                    !search.isListShown && 'hidden',
                 )}
             >
                 {/* Phones show five rows (heading, 5 × 2 rem, padding), so the keyboard never covers an option. */}
                 <CommandList className="max-sm:max-h-[12.25rem]">
-                    {isPlacesView && places && (
+                    {search.isPlacesView && places && (
                         <CommandGroup heading={t('places')}>
                             {getPlaceList(places).map((place) => (
                                 <CommandItem
@@ -184,36 +185,21 @@ export function SearchBox({
                             ))}
                         </CommandGroup>
                     )}
-                    {!isPlacesView && !isQueryReady && (
-                        <div className="px-3 py-2 text-xs text-muted-foreground">{t('hint')}</div>
-                    )}
-                    {!isPlacesView && isQueryReady && isFetching && !results.length && (
-                        <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">
-                            <Loader2 className="size-3.5 animate-spin" /> {t('searching')}
-                        </div>
-                    )}
-                    {!isPlacesView && isQueryReady && isError && (
-                        <div className="px-3 py-2 text-xs text-destructive">{te(getErrorKind(error))}</div>
-                    )}
-                    {!isPlacesView && isQueryReady && !isFetching && !isError && (
-                        <CommandEmpty>{t('empty')}</CommandEmpty>
-                    )}
-                    {!isPlacesView && results.length > 0 && (
+                    {!search.isPlacesView && renderStatus()}
+                    {!search.isPlacesView && search.results.length > 0 && (
                         <CommandGroup heading={t('results')}>
-                            {results.map((place) => (
+                            {search.results.map((result) => (
                                 <CommandItem
-                                    key={place.id}
-                                    value={String(place.id)}
-                                    onSelect={() => handleSelect(place)}
+                                    key={result.id}
+                                    value={String(result.id)}
+                                    onSelect={() => handleSelectResult(result)}
                                     onMouseDown={(e) => e.preventDefault()}
-                                    disabled={track.isPending}
+                                    disabled={search.isTracking}
                                     className="flex items-center gap-2"
                                 >
-                                    <FlagIcon countryCode={place.countryCode} />
-                                    <span className="truncate">
-                                        {[place.name, place.admin1, place.country].filter(Boolean).join(', ')}
-                                    </span>
-                                    <FavoriteMark places={places} id={place.id} />
+                                    <FlagIcon countryCode={result.countryCode} />
+                                    <span className="truncate">{getResultLabel(result)}</span>
+                                    <FavoriteMark places={places} id={result.id} />
                                 </CommandItem>
                             ))}
                         </CommandGroup>

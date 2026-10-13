@@ -1,4 +1,4 @@
-import { apiGet, ApiRequestError } from '@fa/api-client/api'
+import { apiGet, apiPost, ApiRequestError } from '@fa/api-client/api'
 import en from '@fa/messages/catalogs/en.json'
 import { GeocodeResult } from '@fa/shared/api'
 import { DEFAULT_PLACES, Place } from '@fa/shared/places'
@@ -34,7 +34,9 @@ const toResult = (name: string, id: number): GeocodeResult => ({
 })
 
 const renderSearch = (onSelectCity = jest.fn(), initialQuery?: string) => {
-    const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } })
+    const client = new QueryClient({
+        defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { gcTime: Infinity } },
+    })
 
     return render(
         <QueryClientProvider client={client}>
@@ -52,7 +54,10 @@ describe('SearchBox', () => {
         placesStore.set(() => ({ favorites: [], recents: Array.from({ length: 20 }, (_, i) => toPlace(i)) })),
     )
 
-    afterEach(() => jest.mocked(apiGet).mockReset())
+    afterEach(() => {
+        jest.mocked(apiGet).mockReset()
+        jest.mocked(apiPost).mockReset()
+    })
 
     // After the last test has unmounted, so no mounted box re-renders outside act().
     afterAll(() => placesStore.set(() => DEFAULT_PLACES))
@@ -83,6 +88,27 @@ describe('SearchBox', () => {
 
         await fireEvent.changeText(getField(), 'Paris')
         await waitFor(() => expect(screen.getByText('Paris, France')).toBeOnTheScreen())
+    })
+
+    it('stores a picked result and opens it as the newest recent place', async () => {
+        const onSelectCity = jest.fn()
+
+        jest.mocked(apiGet).mockResolvedValue({ results: [toResult('Lyon', 2), toResult('Paris', 3)] })
+        jest.mocked(apiPost).mockResolvedValue({ slug: 'paris-fr-3' })
+
+        await renderSearch(onSelectCity)
+        await fireEvent(getField(), 'focus')
+        await fireEvent.changeText(getField(), 'Pa')
+
+        expect(screen.getByText(en.search.hint)).toBeOnTheScreen()
+
+        await fireEvent.changeText(getField(), 'Paris')
+        await waitFor(() => expect(screen.getByText('Lyon, France')).toBeOnTheScreen())
+        await fireEvent.press(screen.getByText('Paris, France'))
+
+        await waitFor(() => expect(onSelectCity).toHaveBeenCalledWith('paris-fr-3'))
+        expect(apiPost).toHaveBeenCalledWith('/cities/track', { geocodeId: 3 })
+        expect(placesStore.get().recents[0]).toMatchObject({ id: 3, slug: 'paris-fr-3' })
     })
 
     it('closes the list when the field loses focus', async () => {

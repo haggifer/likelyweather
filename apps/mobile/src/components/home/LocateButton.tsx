@@ -1,16 +1,17 @@
 import { getErrorKind } from '@fa/api-client/error-kind'
 import { Locale } from '@fa/shared/api'
-import { getCityName } from '@fa/shared/format'
-import { formatDistanceKm } from '@fa/shared/geo'
+import { getLocateFarValues } from '@fa/shared/locate'
 import { Place, toPlace } from '@fa/shared/places'
 import { onlineManager } from '@tanstack/react-query'
 import { LocateFixed } from 'lucide-react-native'
-import { ActivityIndicator, Pressable } from 'react-native'
+import { ActivityIndicator } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { useLocateCity } from '../../hooks/useLocateCity'
 import { useTheme } from '../../hooks/useTheme'
 import { PositionError } from '../../lib/position'
 import { showSnackbar } from '../../lib/snackbar-store'
+import { Button } from '../ui/button'
+import { Icon } from '../ui/icon'
 
 interface IProps {
     onLocated: (place: Place) => void
@@ -40,16 +41,10 @@ export function LocateButton({ onLocated, onSearch }: IProps) {
                     return
                 }
 
-                showSnackbar(
-                    t('locateFar', {
-                        name: getCityName(result.city, locale),
-                        km: formatDistanceKm(result.distanceKm, locale),
-                    }),
-                    [
-                        { label: t('locateSearch'), onPress: onSearch },
-                        { label: t('locateUse'), onPress: () => onLocated(toPlace(result.city)) },
-                    ],
-                )
+                showSnackbar(t('locateFar', getLocateFarValues(result.city, result.distanceKm, locale)), [
+                    { label: t('locateSearch'), onPress: onSearch },
+                    { label: t('locateUse'), onPress: () => onLocated(toPlace(result.city)) },
+                ])
             },
             onError: (error) =>
                 showSnackbar(error instanceof PositionError ? t('locateUnavailable') : te(getErrorKind(error))),
@@ -57,19 +52,19 @@ export function LocateButton({ onLocated, onSearch }: IProps) {
     }
 
     return (
-        <Pressable
+        <Button
+            variant="ghost"
+            size="icon"
             onPress={handlePress}
             disabled={locate.isPending}
-            accessibilityRole="button"
             accessibilityLabel={t('locate')}
-            accessibilityState={{ busy: locate.isPending }}
-            style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}
+            accessibilityState={{ busy: locate.isPending, disabled: locate.isPending }}
         >
             {locate.isPending ? (
                 <ActivityIndicator size="small" color={colors['muted-foreground']} />
             ) : (
-                <LocateFixed size={20} color={colors['muted-foreground']} />
+                <Icon as={LocateFixed} className="size-5 text-muted-foreground" />
             )}
-        </Pressable>
+        </Button>
     )
 }

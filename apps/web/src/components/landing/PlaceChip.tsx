@@ -1,6 +1,7 @@
 'use client'
 
 import { FlagIcon } from '@/components/shell/FlagIcon'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/cn'
 import { updatePlaces } from '@/lib/places-store'
 import { getCityName } from '@fa/shared/format'
@@ -8,7 +9,9 @@ import { Place, togglePlace } from '@fa/shared/places'
 import { Star } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 
-const FOCUS_RING = 'outline-none focus-visible:ring-2 focus-visible:ring-ring'
+// The two halves of the pill are ghost buttons without their own border, fill or height: the pill draws them.
+const CHIP_PART =
+    'h-auto rounded-none border-0 py-1 text-[0.8125rem] hover:bg-transparent pointer-coarse:py-2 dark:hover:bg-transparent'
 
 const getStarTone = (isPinned: boolean, isSelected: boolean) => {
     if (isPinned) return 'fill-favorite-fill text-favorite'
@@ -30,6 +33,7 @@ export function PlaceChip({ place, isSelected, isPinned, onSelect }: IProps) {
 
     const name = getCityName(place, locale)
     const starLabel = t(isPinned ? 'unpinCity' : 'pinCity', { name })
+    const hoverText = isSelected ? 'hover:text-primary-foreground' : 'hover:text-primary'
 
     const handleToggle = () => updatePlaces((current) => togglePlace(current, place))
 
@@ -40,29 +44,27 @@ export function PlaceChip({ place, isSelected, isPinned, onSelect }: IProps) {
                 isSelected && 'border-primary bg-primary text-primary-foreground',
             )}
         >
-            <button
+            <Button
                 type="button"
+                variant="ghost"
                 onClick={() => onSelect(place.slug)}
                 aria-pressed={isSelected}
-                className={cn(
-                    'inline-flex items-center gap-1.5 rounded-l-full py-1 pr-1 pl-3 transition-colors pointer-coarse:py-2',
-                    FOCUS_RING,
-                    !isSelected && 'hover:text-primary',
-                )}
+                className={cn(CHIP_PART, 'gap-1.5 rounded-l-full pr-1 pl-3', hoverText)}
             >
                 <FlagIcon countryCode={place.countryCode} />
                 {name}
-            </button>
-            <button
+            </Button>
+            <Button
                 type="button"
+                variant="ghost"
                 onClick={handleToggle}
                 aria-pressed={isPinned}
                 aria-label={starLabel}
                 title={starLabel}
-                className={cn('rounded-r-full py-1 pr-2.5 pl-1 pointer-coarse:py-2', FOCUS_RING)}
+                className={cn(CHIP_PART, 'rounded-r-full pr-2.5 pl-1', hoverText)}
             >
                 <Star className={cn('size-4', getStarTone(isPinned, isSelected))} aria-hidden="true" />
-            </button>
+            </Button>
         </span>
     )
 }

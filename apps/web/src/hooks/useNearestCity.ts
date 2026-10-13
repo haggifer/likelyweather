@@ -2,6 +2,7 @@ import { getRoundedPosition } from '@/lib/nearest'
 import { apiGet } from '@fa/api-client/api'
 import { NearestResponse } from '@fa/shared/api'
 import { Coordinates } from '@fa/shared/geo'
+import { LocateResult, toLocateResult } from '@fa/shared/locate'
 import { useMutation, UseMutationResult } from '@tanstack/react-query'
 
 export class PositionError extends Error {}
@@ -17,6 +18,6 @@ const fetchNearest = ({ lat, lon }: Coordinates) => apiGet<NearestResponse>('/ci
 
 // User-triggered, so a mutation: asks the browser for the position, then the API for the nearest stored city. A
 // `PositionError` means the browser could not say where the viewer is; anything else came from the API.
-export function useNearestCity(): UseMutationResult<NearestResponse, Error, void> {
-    return useMutation({ mutationFn: () => getPosition().then(fetchNearest) })
+export function useNearestCity(): UseMutationResult<LocateResult, Error, void> {
+    return useMutation({ mutationFn: () => getPosition().then(fetchNearest).then(toLocateResult) })
 }
