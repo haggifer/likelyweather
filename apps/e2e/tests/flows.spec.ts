@@ -152,6 +152,23 @@ test('showing a hidden overview panel draws it without another request', async (
     expect(requests).toEqual([])
 })
 
+test('the panel menu keeps keyboard focus on the arrows while a panel moves', async ({ page }) => {
+    await page.goto(`/?city=${LONDON}`)
+    await page.getByRole('button', { name: 'Choose panels' }).click()
+
+    const up = page.getByRole('button', { name: 'Move Temperature up' })
+    const down = page.getByRole('button', { name: 'Move Temperature down' })
+
+    await down.focus()
+    await page.keyboard.press('Enter')
+    await expect(down).toBeFocused()
+    await up.focus()
+    await page.keyboard.press('Enter')
+    // Back at the top, the up arrow is disabled, so focus moves to the down arrow.
+    await expect(up).toBeDisabled()
+    await expect(down).toBeFocused()
+})
+
 test('the archive shows past weather for a city and keeps the chosen period', async ({ page, isMobile }) => {
     await page.goto(`/archive?city=${LONDON}`)
 
@@ -164,12 +181,6 @@ test('the archive shows past weather for a city and keeps the chosen period', as
     await expect(page.getByRole('img', { name: /1 Jan 2026 to 12 Jan 2026/ })).toBeVisible()
     await page.reload()
     await expect(page.getByLabel('From', { exact: true })).toHaveValue('2026-01-01')
-
-    // Chrome reports a year as it is typed (`0002`); the period waits for a date the archive has.
-    await from.fill('0002-01-01')
-    await expect(page.getByLabel('To', { exact: true })).toHaveValue('2026-01-12')
-    await from.blur()
-    await expect(from).toHaveValue('2026-01-01')
 
     // Chrome reports a year as it is typed (`0002`); the period waits for a date the archive has.
     await from.fill('0002-01-01')

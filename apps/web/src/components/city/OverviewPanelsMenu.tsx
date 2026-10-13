@@ -13,6 +13,10 @@ import {
 } from '@fa/shared/overview-panels'
 import { ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { RefCallback, useRef } from 'react'
+import { flushSync } from 'react-dom'
+
+type MoveStep = -1 | 1
 
 interface IProps {
     panels: OverviewPanels
@@ -26,9 +30,29 @@ export function OverviewPanelsMenu({ panels, onChange: setPanels, className }: I
     const t = useTranslations('overview')
     const tv = useTranslations('variables')
 
+    const arrowsRef = useRef(new Map<string, HTMLButtonElement>())
+
     const visibleCount = getVisiblePanels(panels).length
 
-    const handleMove = (variable: PanelVariable, step: -1 | 1) => setPanels((p) => movePanel(p, variable, step))
+    const bindArrow =
+        (variable: PanelVariable, step: MoveStep): RefCallback<HTMLButtonElement> =>
+        (node) => {
+            const key = `${variable}${step}`
+
+            if (node) arrowsRef.current.set(key, node)
+
+            return () => void arrowsRef.current.delete(key)
+        }
+    // Reordering moves the row's element, which drops keyboard focus; it returns to the arrow just pressed, or to the
+    // other one when the row reached the end and that arrow turned disabled.
+    const handleMove = (variable: PanelVariable, step: MoveStep) => {
+        const to = panels.order.indexOf(variable) + step
+        const isAtEnd = to === 0 || to === panels.order.length - 1
+        const focusStep = isAtEnd ? -step : step
+
+        flushSync(() => setPanels((p) => movePanel(p, variable, step)))
+        arrowsRef.current.get(`${variable}${focusStep}`)?.focus()
+    }
 
     return (
         <Popover>
@@ -65,6 +89,7 @@ export function OverviewPanelsMenu({ panels, onChange: setPanels, className }: I
                                 <Button
                                     variant="ghost"
                                     size="icon-sm"
+                                    ref={bindArrow(variable, -1)}
                                     aria-label={t('moveUp', { name })}
                                     disabled={i === 0}
                                     onClick={() => handleMove(variable, -1)}
@@ -74,6 +99,7 @@ export function OverviewPanelsMenu({ panels, onChange: setPanels, className }: I
                                 <Button
                                     variant="ghost"
                                     size="icon-sm"
+                                    ref={bindArrow(variable, 1)}
                                     aria-label={t('moveDown', { name })}
                                     disabled={i === panels.order.length - 1}
                                     onClick={() => handleMove(variable, 1)}
