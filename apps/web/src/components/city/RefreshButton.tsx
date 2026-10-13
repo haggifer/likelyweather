@@ -11,13 +11,22 @@ interface IProps {
     isAvailable: boolean
     isFetching?: boolean
     onRefresh?: () => void
+    // A phone row with room for icons only keeps the label for screen readers.
+    isIconOnPhones?: boolean
     className?: string
     wrapperClassName?: string
 }
 
 // Refresh is offered once the data on screen is REFRESH_AFTER_HOURS old, when its age chip appears; before that it
 // is disabled and its hint says why.
-export function RefreshButton({ isAvailable, isFetching = false, onRefresh, className, wrapperClassName }: IProps) {
+export function RefreshButton({
+    isAvailable,
+    isFetching = false,
+    onRefresh,
+    isIconOnPhones = false,
+    className,
+    wrapperClassName,
+}: IProps) {
     const t = useTranslations('city')
     const isEnabled = isAvailable && Boolean(onRefresh)
     const button = (
@@ -29,7 +38,8 @@ export function RefreshButton({ isAvailable, isFetching = false, onRefresh, clas
             title={isEnabled ? t('refreshTitle') : undefined}
             className={className}
         >
-            <RefreshCw className={cn(isFetching && 'animate-spin')} /> {t('refresh')}
+            <RefreshCw className={cn(isFetching && 'animate-spin')} />
+            <span className={cn(isIconOnPhones && 'max-sm:sr-only')}>{t('refresh')}</span>
         </Button>
     )
 

@@ -33,16 +33,14 @@ const styles = StyleSheet.create({
     titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     title: { flex: 1, fontSize: 19, fontWeight: '700' },
     region: { fontSize: 15, fontWeight: '500' },
-    actions: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8 },
-    grow: { flex: 1 },
+    // The age, Refresh and Panels are icons, and Open details takes the rest of the row (author, 2026-10-13).
+    actions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    details: { flex: 1 },
     // A zero-width line of title text keeps the skeleton's status row at the title's height.
     titleStrut: { width: 0, marginRight: -8, fontSize: 19, fontWeight: '700' },
 })
 
-// The English buttons' widths; other languages differ by a few pixels at most.
-const PANELS_WIDTH = 36
-const REFRESH_WIDTH = 104
-const DETAILS_WIDTH = 134
+const ICON_BUTTON = 36
 const NO_BREAK_SPACE = ' '
 
 interface SkeletonProps {
@@ -63,10 +61,11 @@ export function OverviewCardSkeleton({ status }: SkeletonProps) {
                 <LoadingStatus label={status} />
             </View>
             <View style={styles.actions}>
-                <View style={styles.grow} />
-                <Skeleton height={36} width={REFRESH_WIDTH} />
-                <Skeleton height={36} width={PANELS_WIDTH} />
-                <Skeleton height={36} width={DETAILS_WIDTH} />
+                <Skeleton height={ICON_BUTTON} width={ICON_BUTTON} />
+                <Skeleton height={ICON_BUTTON} width={ICON_BUTTON} />
+                <View style={styles.details}>
+                    <Skeleton height={ICON_BUTTON} />
+                </View>
             </View>
             <MedianOverviewSkeleton panels={visible} />
         </Card>
@@ -113,21 +112,31 @@ export function OverviewCard({ city, panels, hourly, run, anchor, now, isFetchin
                 <FavoriteToggle place={city} />
             </View>
             <View style={styles.actions}>
-                <UpdatedChip fetchedAt={run.fetchedAt} issueTime={run.issueTime} timeZone={city.timezone} now={now} />
-                <View style={styles.grow} />
+                <UpdatedChip
+                    fetchedAt={run.fetchedAt}
+                    issueTime={run.issueTime}
+                    timeZone={city.timezone}
+                    now={now}
+                    isCompact
+                />
                 <RefreshButton
+                    isIconOnly
                     isAvailable={isRefreshOffered(run.fetchedAt, now)}
                     isFetching={isFetching}
                     onRefresh={onRefresh}
                 />
-                {/* Icon-only: with a label, a third button would push Open details onto a line of its own on a phone. */}
                 <Button
                     icon={SlidersHorizontal}
                     variant="outline"
                     onPress={onCustomize}
                     accessibilityLabel={t('customize')}
                 />
-                <Button endIcon={ArrowRight} label={t('details')} onPress={() => router.push(`/city/${city.slug}`)} />
+                <Button
+                    endIcon={ArrowRight}
+                    label={t('details')}
+                    onPress={() => router.push(`/city/${city.slug}`)}
+                    style={styles.details}
+                />
             </View>
             <MedianOverview
                 key={city.slug}

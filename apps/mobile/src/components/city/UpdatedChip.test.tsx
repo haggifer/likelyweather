@@ -32,6 +32,24 @@ describe('UpdatedChip', () => {
         expect(getSnackbar()?.message).toContain('00:00 UTC')
     })
 
+    it('turns into an icon that tells its age in the snackbar', async () => {
+        await renderInEnglish(
+            <UpdatedChip
+                fetchedAt="2026-10-09T07:00:00Z"
+                issueTime="2026-10-09T00:00:00Z"
+                timeZone="Europe/Kyiv"
+                now={NOW}
+                isCompact
+            />,
+        )
+
+        expect(screen.queryByText('5 hours old')).toBeNull()
+
+        await fireEvent.press(screen.getByRole('button', { name: '5 hours old' }))
+
+        expect(getSnackbar()?.message).toMatch(/^5 hours old\. .*00:00 UTC/)
+    })
+
     it('stays hidden while the data is fresh', async () => {
         await renderInEnglish(<UpdatedChip fetchedAt="2026-10-09T11:00:00Z" now={NOW} />)
 

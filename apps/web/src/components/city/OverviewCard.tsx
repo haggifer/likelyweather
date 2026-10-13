@@ -37,7 +37,9 @@ interface SkeletonProps {
 const CARD = 'gap-0 max-sm:pt-3'
 const ACTIONS =
     'flex items-center gap-2 max-sm:col-span-2 max-sm:col-start-1 max-sm:row-start-2 max-sm:mt-2 max-sm:mb-3 max-sm:w-full max-sm:justify-self-stretch'
+// On phones the age, Refresh and Panels are icons, and Open details takes the rest of the row (author, 2026-10-13).
 const PHONE_BUTTON = 'max-sm:h-8 max-sm:flex-1 max-sm:text-sm'
+const PHONE_ICON = 'shrink-0 max-sm:size-8 max-sm:px-0'
 const TITLE = 'flex min-w-0 items-center gap-2.5 text-lg tracking-tight sm:text-xl'
 
 // Same header and panel structure as the loaded card, so nothing moves when the data arrives.
@@ -50,7 +52,7 @@ export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
             </CardTitle>
             <CardAction className={ACTIONS}>
                 <Skeleton className="hidden h-7 w-28 rounded-full lg:block" />
-                <Skeleton className="h-7 w-22 max-sm:h-8 max-sm:flex-1" />
+                <Skeleton className="h-7 w-22 max-sm:size-8" />
                 <Skeleton className="h-7 w-20 max-sm:size-8" />
                 <Skeleton className="h-7 w-30 max-sm:h-8 max-sm:flex-1" />
             </CardAction>
@@ -107,19 +109,21 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, on
                         fetchedAt={run.fetchedAt}
                         timeZone={city.timezone}
                         now={now}
+                        isIconOnPhones
                     />
                     <RefreshButton
                         isAvailable={isOutdated}
                         isFetching={isFetching}
                         onRefresh={onRefresh}
-                        className={cn(PHONE_BUTTON, 'max-sm:w-full')}
-                        wrapperClassName="max-sm:flex-1"
+                        isIconOnPhones
+                        className={PHONE_ICON}
+                        wrapperClassName="shrink-0"
                     />
                     <OverviewPanelsMenu
                         panels={storedPanels}
                         onChange={setPanels}
                         isLabelHiddenOnPhones
-                        className="shrink-0 max-sm:size-8 max-sm:px-0"
+                        className={PHONE_ICON}
                     />
                     <Button asChild size="sm" className={PHONE_BUTTON}>
                         <Link href={`/city/${city.slug}`}>
