@@ -661,8 +661,9 @@ export function MedianOverview({
                                     />
                                     {nowX !== null && (
                                         <SvgText
-                                            x={nowX + 4}
-                                            y={layout.plotTop - 6}
+                                            x={nowX}
+                                            y={layout.plotTop - 7}
+                                            textAnchor="middle"
                                             fontSize={CHART_FONT_SIZE}
                                             fontFamily={getFontFamily('600')}
                                             fill={chart.foreground}

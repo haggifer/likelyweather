@@ -103,7 +103,8 @@ const PHONE_SIZE: ChartSize = {
     tickFontSize: CHART_FONT_SIZE,
     labelFontSize: CHART_FONT_SIZE,
     hoverLabelHalfWidth: 36,
-    // The panel names sit in the panels' top-left corner, where the "now" line always is right after a fetch.
+    // The panel names sit in the panels' top-left corner, where the "now" line always is right after a fetch; above
+    // the panels the label centres on its line like the hovered time (author, 2026-10-13).
     isNowLabelAbove: true,
 }
 const ROW_GAP = 14
@@ -662,8 +663,9 @@ export function MedianOverview({
                         >
                             {nowX !== null && isNowLabelShown && (
                                 <text
-                                    x={nowX + 4}
+                                    x={geometry.isNowLabelAbove ? nowX : nowX + 4}
                                     y={nowLabelY}
+                                    textAnchor={geometry.isNowLabelAbove ? 'middle' : 'start'}
                                     fontSize={geometry.tickFontSize}
                                     fontWeight={600}
                                     fill={theme.foreground}
