@@ -1,6 +1,6 @@
 import { parseDate } from '@internationalized/date'
 import { describe, expect, it } from 'vitest'
-import { isOutsideArchiveSpan, toArchiveRange, toCalendarRange } from './archive-calendar'
+import { isCityToday, isOutsideArchiveSpan, toArchiveRange, toCalendarRange } from './archive-calendar'
 
 describe('archive calendar ranges', () => {
     it('converts the period to calendar dates and back', () => {
@@ -25,5 +25,12 @@ describe('isOutsideArchiveSpan', () => {
         expect(isOutsideArchiveSpan(parseDate('2026-10-11'), anchor)).toBe(false)
         expect(isOutsideArchiveSpan(parseDate('2026-10-12'), anchor)).toBe(true)
         expect(isOutsideArchiveSpan(parseDate('2026-09-29'), anchor)).toBe(true)
+    })
+})
+
+describe('isCityToday', () => {
+    it("marks the city's today, the day after the archive's last day, whatever the viewer's date", () => {
+        expect(isCityToday(parseDate('2026-10-13'), '2026-10-12')).toBe(true)
+        expect(isCityToday(parseDate('2026-10-14'), '2026-10-12')).toBe(false)
     })
 })

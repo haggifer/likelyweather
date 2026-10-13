@@ -5,7 +5,6 @@ import {
     GregorianCalendar,
     isSameDay,
     isSameMonth,
-    isToday,
     parseDate,
     startOfWeek,
 } from '@internationalized/date'
@@ -18,6 +17,7 @@ import {
 import {
     ARCHIVE_FIRST_DAY_OF_WEEK,
     CalendarRange,
+    isCityToday,
     isOutsideArchiveSpan,
     toArchiveRange,
     toCalendarRange,
@@ -77,7 +77,7 @@ const getWeekDays = (state: RangeCalendarState, locale: string, formatter: DateF
 const getWeeks = (state: RangeCalendarState) =>
     Array.from({ length: state.getWeeksInMonth() }, (_, i) => state.getDatesInWeek(i))
 
-const getDayState = (state: RangeCalendarState, date: CalendarDate): ArchiveDayState => {
+const getDayState = (state: RangeCalendarState, date: CalendarDate, latest: string): ArchiveDayState => {
     const range = state.highlightedRange
 
     return {
@@ -86,7 +86,7 @@ const getDayState = (state: RangeCalendarState, date: CalendarDate): ArchiveDayS
         isRangeEnd: Boolean(range && isSameDay(date, range.end)),
         isDisabled: state.isCellDisabled(date) || state.isCellUnavailable(date),
         isOutsideMonth: !isSameMonth(date, state.visibleRange.start),
-        isToday: isToday(date, state.timeZone),
+        isToday: isCityToday(date, latest),
     }
 }
 
@@ -127,7 +127,7 @@ export function useArchiveRangeState({
         title,
         weekDays,
         weeks,
-        getDayState: (date) => getDayState(state, date),
+        getDayState: (date) => getDayState(state, date, latest),
         getDayLabel: (date) => formatters.day.format(date.toDate(state.timeZone)),
     }
 }

@@ -1,5 +1,5 @@
 import { ARCHIVE_MAX_DAYS, ArchiveRange } from '@fa/shared/archive'
-import { CalendarDate, DateValue, DayOfWeek, parseDate, toCalendarDate } from '@internationalized/date'
+import { CalendarDate, DateValue, DayOfWeek, isSameDay, parseDate, toCalendarDate } from '@internationalized/date'
 
 // The archive period as the calendar holds it: whole days, both ends included.
 export interface CalendarRange {
@@ -30,3 +30,6 @@ export const isOutsideArchiveSpan = (date: DateValue, anchor: CalendarDate | nul
 
     return days < 0 || days > ARCHIVE_MAX_DAYS - 1
 }
+
+// Today in the city, not on the viewer's clock: the archive ends yesterday in the city (`getLatestArchiveDate`).
+export const isCityToday = (date: CalendarDate, latest: string) => isSameDay(date, parseDate(latest).add({ days: 1 }))
