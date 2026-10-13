@@ -1,3 +1,7 @@
+// react-native-android-widget calls these components as plain functions, outside React, where the hook the React
+// Compiler adds (`useMemoCache`) throws and the widget never draws.
+'use no memo'
+
 import { REFRESH_AFTER_HOURS, STALE_AFTER_HOURS } from '@fa/shared/constants'
 import { DisagreementLabel } from '@fa/shared/ensemble'
 import { formatNumber, getCityName } from '@fa/shared/format'
