@@ -12,15 +12,9 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { useNow } from '@/hooks/useNow'
 import { useArchive } from '@fa/api-client/hooks/useArchive'
 import { useCity } from '@fa/api-client/hooks/useCity'
-import { getArchiveDirections, getArchiveSeries } from '@fa/chart-core/archive-stats'
+import { getArchiveHourlySeries } from '@fa/chart-core/archive-stats'
 import { ArchiveResponse, City } from '@fa/shared/api'
-import {
-    ArchiveRange,
-    getArchiveSlots,
-    getDefaultArchiveRange,
-    getLatestArchiveDate,
-    isValidArchiveRange,
-} from '@fa/shared/archive'
+import { ArchiveRange, getDefaultArchiveRange, getLatestArchiveDate, isValidArchiveRange } from '@fa/shared/archive'
 import { getCityRegion } from '@fa/shared/city-region'
 import { formatDateKey, getCityName } from '@fa/shared/format'
 import { getVisiblePanels, OverviewPanels } from '@fa/shared/overview-panels'
@@ -72,18 +66,8 @@ export function ArchiveCard({ slug }: IProps) {
     const archive = useArchive(city ? slug : null, requested)
 
     const visible = useMemo(() => getVisiblePanels(settings.panels), [settings.panels])
-    const slots = useMemo(
-        () => (archive.data && city ? getArchiveSlots(archive.data, city.timezone) : null),
-        [archive.data, city],
-    )
-    const series = useMemo(
-        () => (archive.data && slots ? getArchiveSeries(archive.data, slots) : null),
-        [archive.data, slots],
-    )
-    const directions = useMemo(
-        () => (archive.data && slots ? getArchiveDirections(archive.data, slots) : null),
-        [archive.data, slots],
-    )
+    const series = useMemo(() => (archive.data ? getArchiveHourlySeries(archive.data) : null), [archive.data])
+    const directions = archive.data?.values.windDir ?? null
     const name = city ? getCityName(city, locale) : null
     const region = city ? getCityRegion(city, locale) : null
     const shown = archive.data ?? null
@@ -158,9 +142,9 @@ export function ArchiveCard({ slug }: IProps) {
                     )}
                 </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col gap-4">
+            <CardContent className="flex flex-col gap-1">
                 {range && now && city && (
-                    <div className="flex flex-wrap items-end justify-between gap-3">
+                    <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
                         <ArchivePeriodPicker
                             range={range}
                             latest={getLatestArchiveDate(now, city.timezone)}
@@ -169,7 +153,7 @@ export function ArchiveCard({ slug }: IProps) {
                         <OverviewPanelsMenu
                             panels={settings.panels}
                             onChange={handlePanels}
-                            className="mb-1 shrink-0 pointer-coarse:mb-0 pointer-coarse:h-10"
+                            className="mb-1 ml-auto shrink-0 pointer-coarse:mb-0 pointer-coarse:h-10"
                         />
                     </div>
                 )}

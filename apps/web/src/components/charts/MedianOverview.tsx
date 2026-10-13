@@ -11,7 +11,13 @@ import { cn } from '@/lib/cn'
 import { MedianSeries, OverviewMedians } from '@fa/chart-core/overview-stats'
 import { CHART_FONT_SIZE, clamp, getBarWidth, getNowX, getTimeScale, getValueScale } from '@fa/chart-core/plot-geometry'
 import { formatYTick, getPanelTicks, getYDomain } from '@fa/chart-core/scales'
-import { getInitialScrollLeft, getScrollWidth, getVisibleRange, MIN_SLOT_WIDTH } from '@fa/chart-core/scroll-geometry'
+import {
+    getInitialScrollLeft,
+    getScrollWidth,
+    getVisibleRange,
+    MIN_ARCHIVE_HOUR_WIDTH,
+    MIN_SLOT_WIDTH,
+} from '@fa/chart-core/scroll-geometry'
 import { getNearestIndex, getSumBarCenter } from '@fa/chart-core/spaghetti-geometry'
 import { HOUR_MS } from '@fa/shared/constants'
 import { formatNumber, formatStepLabel } from '@fa/shared/format'
@@ -56,10 +62,12 @@ type Point = [Date, number | null]
 
 interface SkeletonProps {
     panels?: PanelVariable[]
+    // The archive's precipitation panel has no chance-of-rain strip.
+    isArchive?: boolean
 }
 
 // The chance of rain sits under the precipitation bars like the direction arrows under the wind, a few pixels below the
-// bars' baseline so its "%" clears the axis's 0; the panel's height includes it, so the bars keep their room.
+// bars' baseline so its "%" clears the axis's 0; the panel grows by it, so the bars keep their room.
 const CHANCE_GAP = 4
 const CHANCE_STRIP = 18
 const CHANCE_ROOM = CHANCE_GAP + CHANCE_STRIP
@@ -72,7 +80,7 @@ const DESKTOP_SIZE: ChartSize = {
         [Variable.Temp]: 104,
         [Variable.Wind]: 100,
         [Variable.Pressure]: 80,
-        [Variable.Precip]: 80 + CHANCE_ROOM,
+        [Variable.Precip]: 80,
         [Variable.Humidity]: 80,
         [Variable.Cloud]: 80,
     },
@@ -87,7 +95,7 @@ const PHONE_SIZE: ChartSize = {
         [Variable.Temp]: 120,
         [Variable.Wind]: 115,
         [Variable.Pressure]: 92,
-        [Variable.Precip]: 92 + CHANCE_ROOM,
+        [Variable.Precip]: 92,
         [Variable.Humidity]: 92,
         [Variable.Cloud]: 92,
     },
@@ -117,11 +125,17 @@ const COLUMN_GAP = 16
 const SKELETON_GAP = 24
 const SKELETON_READOUT_REACH = SKELETON_GAP - COLUMN_GAP - DESKTOP_SIZE.marginLeft
 
-const getLayout = (rows: ChartGeometry['rows']) =>
+const getChanceRoom = (variable: PanelVariable, hasChance: boolean) =>
+    variable === Variable.Precip && hasChance ? CHANCE_ROOM : 0
+
+const getPanelHeight = (size: ChartSize, variable: PanelVariable, hasChance: boolean) =>
+    size.heights[variable] + getChanceRoom(variable, hasChance)
+
+const getLayout = (rows: ChartGeometry['rows'], hasChance: boolean) =>
     rows.reduce<RowLayout[]>((layout, row) => {
         const previous = layout[layout.length - 1]
         const top = previous ? previous.top + previous.height + ROW_GAP : HOVER_STRIP
-        const strip = row.variable === Variable.Wind ? ARROW_STRIP : row.variable === Variable.Precip ? CHANCE_ROOM : 0
+        const strip = row.variable === Variable.Wind ? ARROW_STRIP : getChanceRoom(row.variable, hasChance)
 
         return [
             ...layout,
@@ -130,9 +144,9 @@ const getLayout = (rows: ChartGeometry['rows']) =>
     }, [])
 
 // The reader's panels, stacked in their order (`overview-panels.ts`).
-const getGeometry = (size: ChartSize, panels: PanelVariable[]): ChartGeometry => {
-    const rows = panels.map((variable) => ({ variable, height: size.heights[variable] }))
-    const layout = getLayout(rows)
+const getGeometry = (size: ChartSize, panels: PanelVariable[], hasChance: boolean): ChartGeometry => {
+    const rows = panels.map((variable) => ({ variable, height: getPanelHeight(size, variable, hasChance) }))
+    const layout = getLayout(rows, hasChance)
     const last = layout[layout.length - 1]
     const plotBottom = last.top + last.height
 
@@ -198,7 +212,7 @@ const getLinePath = (points: Point[], x: ScaleTime<number, number>, y: ScaleLine
 // The chart column's blocks are inset by the tick-label margin, so they cover exactly the panel backgrounds; the
 // readout blocks reach across the tick labels to leave a SKELETON_GAP between the two columns. It renders before the
 // media query is known, so CSS picks the phone or desktop geometry, and with the reader's panels.
-export function MedianOverviewSkeleton({ panels }: SkeletonProps) {
+export function MedianOverviewSkeleton({ panels, isArchive = false }: SkeletonProps) {
     const { panels: stored } = useOverviewPanels()
 
     // The overview's own choice unless a page with its own panels (the archive) passes them.
@@ -213,7 +227,7 @@ export function MedianOverviewSkeleton({ panels }: SkeletonProps) {
                         className="h-[3.5625rem] sm:mr-(--reach) sm:h-(--row-h)"
                         style={
                             {
-                                '--row-h': `${DESKTOP_SIZE.heights[variable]}px`,
+                                '--row-h': `${getPanelHeight(DESKTOP_SIZE, variable, !isArchive)}px`,
                                 '--reach': `${SKELETON_READOUT_REACH}px`,
                             } as CSSProperties
                         }
@@ -230,8 +244,8 @@ export function MedianOverviewSkeleton({ panels }: SkeletonProps) {
                         className="ml-(--phone-left) h-(--phone-h) sm:ml-(--left) sm:h-(--row-h)"
                         style={
                             {
-                                '--row-h': `${DESKTOP_SIZE.heights[variable]}px`,
-                                '--phone-h': `${PHONE_SIZE.heights[variable]}px`,
+                                '--row-h': `${getPanelHeight(DESKTOP_SIZE, variable, !isArchive)}px`,
+                                '--phone-h': `${getPanelHeight(PHONE_SIZE, variable, !isArchive)}px`,
                                 '--left': `${DESKTOP_SIZE.marginLeft}px`,
                                 '--phone-left': `${PHONE_SIZE.marginLeft}px`,
                                 marginRight: MARGIN_RIGHT,
@@ -254,7 +268,7 @@ interface IProps {
     locale: string
     now: Date | null
     ariaLabel: string
-    // Past weather: precipitation reads as the 3 hours from the slot, not the next 3 hours.
+    // Past weather, hour by hour: precipitation reads as the hour from the step.
     isArchive?: boolean
 }
 
@@ -262,7 +276,8 @@ interface IProps {
 // amount of the 3 hours after its slot, and the strip under the bars the share of models above 0.2 mm in it. Readouts
 // follow the crosshair, or the slot nearest to `now`; the hovered slot's time sits above the panels. `now` draws the
 // "now" line at the exact current time, which is inside the first slot right after a refresh, and shades the past.
-// The archive draws a city's past weather the same way, without a now line or a chance of rain.
+// The archive draws a city's past weather the same way, every hour and narrower, without a now line or a chance of
+// rain.
 export function MedianOverview({
     panels,
     series,
@@ -287,10 +302,20 @@ export function MedianOverview({
     const [hoverIndex, setHoverIndex] = useState<number | null>(null)
     const [viewLeft, setViewLeft] = useState(0)
 
-    const geometry = useMemo(() => getGeometry(isStacked ? PHONE_SIZE : DESKTOP_SIZE, panels), [isStacked, panels])
+    const hasChance = chance !== null
+    const stepMs = isArchive ? HOUR_MS : SLOT_MS
+    const geometry = useMemo(
+        () => getGeometry(isStacked ? PHONE_SIZE : DESKTOP_SIZE, panels, hasChance),
+        [isStacked, panels, hasChance],
+    )
     const axisSteps = getSeries(series, panels[0]).steps
     const times = useMemo(() => axisSteps.map((s) => new Date(s)), [axisSteps])
-    const contentWidth = getScrollWidth(width, times.length - 1, MIN_SLOT_WIDTH, geometry.marginLeft + MARGIN_RIGHT)
+    const contentWidth = getScrollWidth(
+        width,
+        times.length - 1,
+        isArchive ? MIN_ARCHIVE_HOUR_WIDTH : MIN_SLOT_WIDTH,
+        geometry.marginLeft + MARGIN_RIGHT,
+    )
     const plotRight = contentWidth - MARGIN_RIGHT
     const x = useMemo(
         () => getTimeScale(times, [geometry.marginLeft, Math.max(geometry.marginLeft + 1, plotRight)]),
@@ -303,7 +328,7 @@ export function MedianOverview({
     const nowX = getNowX(x, now, geometry.marginLeft, plotRight)
     const nowLabelY = geometry.isNowLabelAbove ? geometry.plotTop - 7 : geometry.plotTop + geometry.tickFontSize
     const isNowLabelShown = !geometry.isNowLabelAbove || hoverIndex === null
-    const barWidth = getBarWidth(x, times[0], SLOT_MS)
+    const barWidth = getBarWidth(x, times[0], stepMs)
     const plotWidth = Math.max(0, contentWidth - geometry.marginLeft - MARGIN_RIGHT)
     const slotWidth = times.length > 1 ? x(times[1]) - x(times[0]) : plotWidth
     const scales = useMemo(() => geometry.layout.map((row) => getPanelScale(row, series)), [geometry, series])
@@ -392,7 +417,7 @@ export function MedianOverview({
                             ))}
                             {variable === Variable.Precip ? (
                                 points.map((p) => {
-                                    const center = x(getSumBarCenter(p[0], SLOT_MS))
+                                    const center = x(getSumBarCenter(p[0], stepMs))
 
                                     if (p[1] === null || center + barWidth / 2 > plotRight) return null
 
@@ -438,7 +463,7 @@ export function MedianOverview({
                             {variable === Variable.Precip && (
                                 <g aria-hidden="true">
                                     {chance?.map((c, i) => {
-                                        const center = x(getSumBarCenter(times[i], SLOT_MS))
+                                        const center = x(getSumBarCenter(times[i], stepMs))
                                         const isShown = c !== null && center + barWidth / 2 <= plotRight
 
                                         return (
@@ -514,6 +539,7 @@ export function MedianOverview({
             scales,
             x,
             barWidth,
+            stepMs,
             chance,
             times,
             axisSteps,
@@ -592,10 +618,9 @@ export function MedianOverview({
                                 {formatNumber(value, info.decimals)}
                                 <span className="ml-1 text-sm font-normal whitespace-nowrap text-muted-foreground">
                                     {isSum
-                                        ? t(isArchive ? 'perSlotPast' : 'perSlot', {
-                                              unit: info.unit,
-                                              hours: SLOT_HOURS,
-                                          })
+                                        ? isArchive
+                                            ? t('perHourPast', { unit: info.unit })
+                                            : t('perSlot', { unit: info.unit, hours: SLOT_HOURS })
                                         : info.unit}
                                 </span>
                             </span>

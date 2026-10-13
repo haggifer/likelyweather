@@ -172,7 +172,7 @@
         "perSlot": "{unit} / nächste {hours} h",
         "unavailable": "Für diese Stadt gibt es noch keine stündliche Vorhersage. Versuche es in einer Minute erneut.",
         "secondary": "{name}: {value} {unit}",
-        "perSlotPast": "{unit} / {hours} h"
+        "perHourPast": "{unit} / h"
     },
     "legal": {
         "privacy": "Datenschutzerklärung",

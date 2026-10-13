@@ -1,14 +1,8 @@
 import { useArchive } from '@fa/api-client/hooks/useArchive'
 import { useCity } from '@fa/api-client/hooks/useCity'
-import { getArchiveDirections, getArchiveSeries } from '@fa/chart-core/archive-stats'
+import { getArchiveHourlySeries } from '@fa/chart-core/archive-stats'
 import { ArchiveResponse, City } from '@fa/shared/api'
-import {
-    ArchiveRange,
-    getArchiveSlots,
-    getDefaultArchiveRange,
-    getLatestArchiveDate,
-    isValidArchiveRange,
-} from '@fa/shared/archive'
+import { ArchiveRange, getDefaultArchiveRange, getLatestArchiveDate, isValidArchiveRange } from '@fa/shared/archive'
 import { getCityRegion } from '@fa/shared/city-region'
 import { formatDateKey, getCityName } from '@fa/shared/format'
 import { getVisiblePanels, OverviewPanels } from '@fa/shared/overview-panels'
@@ -44,6 +38,9 @@ const styles = StyleSheet.create({
     notice: { fontSize: 14, lineHeight: 21, textAlign: 'center', paddingVertical: 40 },
     source: { fontSize: 12, lineHeight: 17 },
     panels: { alignSelf: 'flex-end' },
+    // Tighter than a card's usual gap (author, 2026-10-13), the picker a little apart from the title, as on the web.
+    card: { gap: 4 },
+    picker: { marginTop: 8, gap: 8 },
 })
 
 const toRangeKey = (range: ArchiveRange | null) => (range ? `${range.from}${RANGE_SEPARATOR}${range.to}` : null)
@@ -90,18 +87,8 @@ export function ArchiveCard({ slug }: IProps) {
     const archive = useArchive(city ? slug : null, requested)
 
     const visible = useMemo(() => getVisiblePanels(settings.panels), [settings.panels])
-    const slots = useMemo(
-        () => (archive.data && city ? getArchiveSlots(archive.data, city.timezone) : null),
-        [archive.data, city],
-    )
-    const series = useMemo(
-        () => (archive.data && slots ? getArchiveSeries(archive.data, slots) : null),
-        [archive.data, slots],
-    )
-    const directions = useMemo(
-        () => (archive.data && slots ? getArchiveDirections(archive.data, slots) : null),
-        [archive.data, slots],
-    )
+    const series = useMemo(() => (archive.data ? getArchiveHourlySeries(archive.data) : null), [archive.data])
+    const directions = archive.data?.values.windDir ?? null
     const name = city ? getCityName(city, locale) : ''
     const region = city ? getCityRegion(city, locale) : null
     const shown = archive.data ?? null
@@ -164,7 +151,7 @@ export function ArchiveCard({ slug }: IProps) {
     // The sheet lives beside the card, so it stays open whatever the card shows while a period loads.
     return (
         <>
-            <Card>
+            <Card style={styles.card}>
                 <View style={styles.titleRow}>
                     {city ? (
                         <>
@@ -184,7 +171,7 @@ export function ArchiveCard({ slug }: IProps) {
                     )}
                 </View>
                 {range && city && (
-                    <>
+                    <View style={styles.picker}>
                         <ArchivePeriodPicker
                             range={range}
                             latest={getLatestArchiveDate(now, city.timezone)}
@@ -197,7 +184,7 @@ export function ArchiveCard({ slug }: IProps) {
                             onPress={handleCustomize}
                             style={styles.panels}
                         />
-                    </>
+                    </View>
                 )}
                 {renderChart()}
                 <Text style={[styles.source, { color: colors['muted-foreground'] }]}>{t('source')}</Text>

@@ -172,7 +172,7 @@
         "perSlot": "{unit} / next {hours} h",
         "unavailable": "No hourly forecast is available for this city yet. Try again in a minute.",
         "secondary": "{name}: {value} {unit}",
-        "perSlotPast": "{unit} / {hours} h"
+        "perHourPast": "{unit} / h"
     },
     "legal": {
         "privacy": "Privacy Policy",

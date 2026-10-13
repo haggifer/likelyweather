@@ -172,7 +172,7 @@
         "perSlot": "{unit} / {hours} h à venir",
         "unavailable": "Aucune prévision horaire n’est encore disponible pour cette ville. Réessayez dans une minute.",
         "secondary": "{name} : {value} {unit}",
-        "perSlotPast": "{unit} / {hours} h"
+        "perHourPast": "{unit} / h"
     },
     "legal": {
         "privacy": "Politique de confidentialité",

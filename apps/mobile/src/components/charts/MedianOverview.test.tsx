@@ -138,7 +138,7 @@ describe('MedianOverview', () => {
         expect(names.map((name) => name.props.children)).toEqual([en.variables.cloud, en.variables.temp])
     })
 
-    it('draws past weather without a chance of rain, reading precipitation over the past 3 hours', async () => {
+    it('draws past weather without a chance of rain, reading precipitation hour by hour', async () => {
         await render(
             <IntlProvider locale="en" messages={en}>
                 <MedianOverview
@@ -156,7 +156,7 @@ describe('MedianOverview', () => {
         )
 
         expect(screen.queryByText(/Chance of rain/)).toBeNull()
-        expect(screen.getByText('mm / 3 h')).toBeOnTheScreen()
+        expect(screen.getByText('mm / h')).toBeOnTheScreen()
         expect(screen.getByText('16.0 °C')).toBeOnTheScreen()
     })
 

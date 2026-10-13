@@ -3,7 +3,6 @@ import {
     adjustArchiveRange,
     countArchiveDays,
     getArchiveHours,
-    getArchiveSlots,
     getDefaultArchiveRange,
     getLatestArchiveDate,
     isArchiveDate,
@@ -85,31 +84,5 @@ describe('adjustArchiveRange', () => {
             from: '1940-01-01',
             to: '1940-01-05',
         })
-    })
-})
-
-describe('getArchiveSlots', () => {
-    it('runs from the first local midnight to the last slot whose 3 hours the period holds', () => {
-        const slots = getArchiveSlots({ from: '2026-10-05', to: '2026-10-11' }, 'Europe/London')
-
-        expect(slots).toHaveLength(56)
-        expect(slots[0]).toBe('2026-10-04T23:00Z')
-        expect(slots.at(-1)).toBe('2026-10-11T20:00Z')
-    })
-
-    it('counts the real hours of a day that changes the clocks', () => {
-        const slots = getArchiveSlots({ from: '2026-10-25', to: '2026-10-25' }, 'Europe/London')
-
-        expect(slots).toHaveLength(8)
-        expect(slots[0]).toBe('2026-10-24T23:00Z')
-        expect(slots.at(-1)).toBe('2026-10-25T20:00Z')
-    })
-
-    it('starts at 00:30 in a zone a half hour off UTC, not the evening before', () => {
-        const slots = getArchiveSlots({ from: '2026-10-05', to: '2026-10-05' }, 'Asia/Kolkata')
-
-        expect(slots).toHaveLength(8)
-        expect(slots[0]).toBe('2026-10-04T19:00Z')
-        expect(slots.at(-1)).toBe('2026-10-05T16:00Z')
     })
 })

@@ -17,6 +17,8 @@ interface RevealInput {
 // The narrowest 3-hour slot (author, 2026-10-12): room for a three-digit label at the charts' text size, such as a
 // 100 % chance of rain, with air around it.
 export const MIN_SLOT_WIDTH = 30
+// The archive draws every hour, each at least this wide (author, 2026-10-13); it has no chance-of-rain labels to fit.
+export const MIN_ARCHIVE_HOUR_WIDTH = 20
 
 // A chart fills its container, or grows past it and scrolls when its slots would get narrower than `minSlot`.
 export const getScrollWidth = (available: number, intervals: number, minSlot: number, sides: number) =>

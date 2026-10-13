@@ -1,7 +1,6 @@
 import { DAY_MS, HOUR_MS } from './constants'
 import { getLocalMidnight } from './format'
-import { buildSlots, getSlotStart, SLOT_HOURS } from './slots'
-import { addHours, getLocalDateKey } from './time'
+import { getLocalDateKey } from './time'
 
 // A period of a city's past weather: whole local days, both ends included (`YYYY-MM-DD`).
 export interface ArchiveRange {
@@ -97,16 +96,4 @@ export const getArchiveHours = ({ from, to }: ArchiveRange, timeZone: string) =>
         start: new Date(Math.floor(start.getTime() / HOUR_MS) * HOUR_MS),
         end: new Date(Math.ceil(end.getTime() / HOUR_MS) * HOUR_MS),
     }
-}
-
-// The period's 3-hour slots, laid out as the overview lays out the forecast: from the first slot mark at or after the
-// first local midnight (00:30 in a zone a half hour off UTC) to the last slot whose 3 hours end inside the period.
-// Counted in real hours, so a day that changes the clocks keeps its 23 or 25.
-export const getArchiveSlots = (range: ArchiveRange, timeZone: string) => {
-    const { start, end } = getArchiveHours(range, timeZone)
-    const slotStart = getSlotStart(start, timeZone)
-    const first = slotStart < start ? addHours(slotStart, SLOT_HOURS) : slotStart
-    const count = Math.floor((end.getTime() - first.getTime()) / (SLOT_HOURS * HOUR_MS))
-
-    return buildSlots(first, (count - 1) * SLOT_HOURS)
 }

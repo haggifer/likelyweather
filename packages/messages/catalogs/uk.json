@@ -172,7 +172,7 @@
         "perSlot": "{unit} / наст. {hours} год",
         "unavailable": "Погодинного прогнозу для цього міста ще немає. Спробуйте за хвилину.",
         "secondary": "{name}: {value} {unit}",
-        "perSlotPast": "{unit} / {hours} год"
+        "perHourPast": "{unit} / год"
     },
     "legal": {
         "privacy": "Політика конфіденційності",

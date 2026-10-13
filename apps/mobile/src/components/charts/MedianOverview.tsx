@@ -1,7 +1,13 @@
 import { MedianSeries, OverviewMedians } from '@fa/chart-core/overview-stats'
 import { CHART_FONT_SIZE, clamp, getBarWidth, getNowX, getTimeScale, getValueScale } from '@fa/chart-core/plot-geometry'
 import { formatYTick, getPanelTicks, getYDomain } from '@fa/chart-core/scales'
-import { getInitialScrollLeft, getScrollWidth, getVisibleRange, MIN_SLOT_WIDTH } from '@fa/chart-core/scroll-geometry'
+import {
+    getInitialScrollLeft,
+    getScrollWidth,
+    getVisibleRange,
+    MIN_ARCHIVE_HOUR_WIDTH,
+    MIN_SLOT_WIDTH,
+} from '@fa/chart-core/scroll-geometry'
 import { getNearestIndex, getSumBarCenter } from '@fa/chart-core/spaghetti-geometry'
 import { HOUR_MS } from '@fa/shared/constants'
 import { formatNumber, formatStepLabel } from '@fa/shared/format'
@@ -66,7 +72,7 @@ interface HoverDot {
 }
 
 // The chance of rain sits under the precipitation bars like the direction arrows under the wind, a few pixels below the
-// bars' baseline so its "%" clears the axis's 0; the panel's height includes it, so the bars keep their room.
+// bars' baseline so its "%" clears the axis's 0; the panel grows by it, so the bars keep their room.
 const CHANCE_GAP = 4
 const CHANCE_STRIP = 18
 const CHANCE_ROOM = CHANCE_GAP + CHANCE_STRIP
@@ -77,7 +83,7 @@ const PANEL_HEIGHT: Record<PanelVariable, number> = {
     [Variable.Temp]: 104,
     [Variable.Wind]: 100,
     [Variable.Pressure]: 80,
-    [Variable.Precip]: 80 + CHANCE_ROOM,
+    [Variable.Precip]: 80,
     [Variable.Humidity]: 80,
     [Variable.Cloud]: 80,
 }
@@ -109,21 +115,27 @@ const styles = StyleSheet.create({
     extra: { fontSize: 12 },
 })
 
-const getStripHeight = (variable: PanelVariable) =>
-    variable === Variable.Wind ? ARROW_STRIP : variable === Variable.Precip ? CHANCE_ROOM : 0
+const getChanceRoom = (variable: PanelVariable, hasChance: boolean) =>
+    variable === Variable.Precip && hasChance ? CHANCE_ROOM : 0
 
-const toRows = (panels: PanelVariable[]) =>
+const getStripHeight = (variable: PanelVariable, hasChance: boolean) =>
+    variable === Variable.Wind ? ARROW_STRIP : getChanceRoom(variable, hasChance)
+
+const toRows = (panels: PanelVariable[], hasChance: boolean) =>
     panels.reduce<RowLayout[]>((rows, variable) => {
         const previous = rows[rows.length - 1]
         const top = previous ? previous.top + previous.height + ROW_GAP : HOVER_STRIP
-        const height = PANEL_HEIGHT[variable]
+        const height = PANEL_HEIGHT[variable] + getChanceRoom(variable, hasChance)
 
-        return [...rows, { variable, top, height, bottom: top + height - ROW_PAD - getStripHeight(variable) }]
+        return [
+            ...rows,
+            { variable, top, height, bottom: top + height - ROW_PAD - getStripHeight(variable, hasChance) },
+        ]
     }, [])
 
 // The hover time strip sits above the first panel and the day labels under the last, whichever they are.
-const getLayout = (panels: PanelVariable[]): ChartLayout => {
-    const rows = toRows(panels)
+const getLayout = (panels: PanelVariable[], hasChance: boolean): ChartLayout => {
+    const rows = toRows(panels, hasChance)
     const last = rows[rows.length - 1]
     const plotBottom = last ? last.top + last.height : HOVER_STRIP
 
@@ -232,6 +244,7 @@ interface PanelDrawingProps {
     times: Date[]
     directions: (number | null)[] | null
     chance: (number | null)[] | null
+    stepMs: number
     barWidth: number
     plotRight: number
 }
@@ -245,6 +258,7 @@ const PanelDrawing = ({
     times,
     directions,
     chance,
+    stepMs,
     barWidth,
     plotRight,
 }: PanelDrawingProps) => {
@@ -262,7 +276,7 @@ const PanelDrawing = ({
             ))}
             {variable === Variable.Precip ? (
                 points.map((p) => {
-                    const center = x(getSumBarCenter(p[0], SLOT_MS))
+                    const center = x(getSumBarCenter(p[0], stepMs))
 
                     if (p[1] === null || center + barWidth / 2 > plotRight) return null
 
@@ -306,7 +320,7 @@ const PanelDrawing = ({
                     x={x}
                     times={times}
                     chance={chance}
-                    slotMs={SLOT_MS}
+                    slotMs={stepMs}
                     barWidth={barWidth}
                     plotRight={plotRight}
                     y={bottom + CHANCE_GAP + CHANCE_STRIP / 2}
@@ -337,6 +351,7 @@ interface DrawingProps {
     times: Date[]
     directions: (number | null)[] | null
     chance: (number | null)[] | null
+    stepMs: number
     barWidth: number
     plotRight: number
     plotWidth: number
@@ -356,6 +371,7 @@ const OverviewDrawing = memo(function OverviewDrawing({
     times,
     directions,
     chance,
+    stepMs,
     barWidth,
     plotRight,
     plotWidth,
@@ -410,6 +426,7 @@ const OverviewDrawing = memo(function OverviewDrawing({
                     times={times}
                     directions={directions}
                     chance={chance}
+                    stepMs={stepMs}
                     barWidth={barWidth}
                     plotRight={plotRight}
                 />
@@ -465,7 +482,7 @@ interface SkeletonProps {
 export function MedianOverviewSkeleton({ panels, isArchive = false }: SkeletonProps) {
     const { colors } = useTheme()
 
-    const layout = useMemo(() => getLayout(panels), [panels])
+    const layout = useMemo(() => getLayout(panels, !isArchive), [panels, isArchive])
 
     return (
         <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
@@ -494,14 +511,14 @@ interface IProps {
     locale: string
     now: Date | null
     accessibilityLabel: string
-    // Past weather: precipitation reads as the 3 hours from the slot, not the next 3 hours.
+    // Past weather, hour by hour: precipitation reads as the hour from the step.
     isArchive?: boolean
 }
 
 // Median of all models for every panel's variable on one axis of local 3-hour slots; a precipitation bar is the amount
 // of the 3 hours after its slot, and the strip under the bars the share of models above 0.2 mm in it. The readouts
-// follow the finger, or the slot nearest to now. The archive draws a city's past weather the same way, without a now
-// line or a chance of rain, opening at its first slot.
+// follow the finger, or the slot nearest to now. The archive draws a city's past weather the same way, every hour and
+// narrower, without a now line or a chance of rain, opening at its first hour.
 export function MedianOverview({
     panels,
     series,
@@ -524,10 +541,17 @@ export function MedianOverview({
     const [hoverIndex, setHoverIndex] = useState<number | null>(null)
     const [viewLeft, setViewLeft] = useState(0)
 
-    const layout = useMemo(() => getLayout(panels), [panels])
+    const hasChance = chance !== null
+    const stepMs = isArchive ? HOUR_MS : SLOT_MS
+    const layout = useMemo(() => getLayout(panels, hasChance), [panels, hasChance])
     const axisSteps = getSeries(series, panels[0]).steps
     const times = useMemo(() => axisSteps.map((s) => new Date(s)), [axisSteps])
-    const contentWidth = getScrollWidth(width, times.length - 1, MIN_SLOT_WIDTH, MARGIN.left + MARGIN.right)
+    const contentWidth = getScrollWidth(
+        width,
+        times.length - 1,
+        isArchive ? MIN_ARCHIVE_HOUR_WIDTH : MIN_SLOT_WIDTH,
+        MARGIN.left + MARGIN.right,
+    )
     const plotRight = contentWidth - MARGIN.right
     const x = useMemo(
         () => getTimeScale(times, [MARGIN.left, Math.max(MARGIN.left + 1, plotRight)]),
@@ -538,7 +562,7 @@ export function MedianOverview({
     const readoutIndex = hoverIndex ?? (now ? getNearestIndex(times, now) : 0)
     const readoutTime = axisSteps[readoutIndex]
     const nowX = getNowX(x, now, MARGIN.left, plotRight)
-    const barWidth = getBarWidth(x, times[0], SLOT_MS)
+    const barWidth = getBarWidth(x, times[0], stepMs)
     const plotWidth = Math.max(0, contentWidth - MARGIN.left - MARGIN.right)
     const slotWidth = times.length > 1 ? x(times[1]) - x(times[0]) : plotWidth
     const scales = useMemo(() => layout.rows.map((row) => getPanelScale(row, series)), [layout, series])
@@ -586,10 +610,9 @@ export function MedianOverview({
                                 <Text style={[styles.unit, { color: colors['muted-foreground'] }]}>
                                     {' '}
                                     {isSum
-                                        ? t(isArchive ? 'perSlotPast' : 'perSlot', {
-                                              unit: info.unit,
-                                              hours: SLOT_HOURS,
-                                          })
+                                        ? isArchive
+                                            ? t('perHourPast', { unit: info.unit })
+                                            : t('perSlot', { unit: info.unit, hours: SLOT_HOURS })
                                         : info.unit}
                                 </Text>
                             </Text>
@@ -627,6 +650,7 @@ export function MedianOverview({
                                         times={times}
                                         directions={directions}
                                         chance={chance}
+                                        stepMs={stepMs}
                                         barWidth={barWidth}
                                         plotRight={plotRight}
                                         plotWidth={plotWidth}
