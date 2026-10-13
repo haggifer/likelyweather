@@ -3,6 +3,7 @@
     "ignoreIssues": {
         // The zod contract exports every schema next to its inferred type, whether or not a workspace parses with it.
         "packages/shared/src/api.ts": ["exports"],
+        "apps/mobile/src/components/ui/**": ["exports", "types"],
     },
     "workspaces": {
         ".": {
@@ -15,6 +16,9 @@
         "apps/mobile": {
             // knip's Expo plugin expects expo-updates from app.json; EAS Update is added with the first release.
             "ignoreDependencies": ["expo-updates"],
+            // The React Native Reusables kit is copied in whole while the app moves to it (2026-10-13); drop this and
+            // the matching ignoreIssues entry once components/legacy-ui is gone.
+            "entry": ["src/components/ui/*.tsx"],
         },
         "apps/e2e": {
             // Started by playwright.config.ts as a webServer command.
