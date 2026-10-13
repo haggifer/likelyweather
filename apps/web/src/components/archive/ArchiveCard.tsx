@@ -16,15 +16,14 @@ import { getArchiveDirections, getArchiveSeries } from '@fa/chart-core/archive-s
 import { ArchiveResponse, City } from '@fa/shared/api'
 import {
     ArchiveRange,
-    countArchiveDays,
+    getArchiveSlots,
     getDefaultArchiveRange,
     getLatestArchiveDate,
     isValidArchiveRange,
 } from '@fa/shared/archive'
 import { getCityRegion } from '@fa/shared/city-region'
-import { formatDateKey, getCityName, getLocalMidnight } from '@fa/shared/format'
+import { formatDateKey, getCityName } from '@fa/shared/format'
 import { getVisiblePanels, OverviewPanels } from '@fa/shared/overview-panels'
-import { buildSlots, getSlotStart } from '@fa/shared/slots'
 import { Loader2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
@@ -54,10 +53,6 @@ const resolveRange = (stored: ArchiveRange | null, now: Date, city: City): Archi
     stored && isValidArchiveRange(stored, getLatestArchiveDate(now, city.timezone))
         ? stored
         : getDefaultArchiveRange(now, city.timezone)
-
-// The period's 3-hour slots from the city's first local midnight, as the overview lays out the forecast.
-const getArchiveSlots = (range: ArchiveRange, timeZone: string) =>
-    buildSlots(getSlotStart(getLocalMidnight(range.from, timeZone), timeZone), countArchiveDays(range) * 24)
 
 const isEmptyArchive = (archive: ArchiveResponse) => archive.values.temp.every((v) => v === null)
 
