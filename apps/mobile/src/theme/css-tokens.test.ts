@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
-import { parseCssTokens } from './css-tokens'
+import { parseCssTokens, toUniwindCss } from './css-tokens'
 import { DARK, LIGHT, RADIUS } from './tokens'
 
 const CSS = `
@@ -32,5 +32,20 @@ describe('parseCssTokens', () => {
         const css = readFileSync(path.resolve(__dirname, '../../../web/src/app/globals.css'), 'utf8')
 
         expect({ light: LIGHT, dark: DARK, radius: RADIUS }).toEqual(parseCssTokens(css))
+    })
+
+    it('writes the light and dark colours and the radius scale as the Uniwind theme', () => {
+        const css = toUniwindCss(parseCssTokens(CSS))
+
+        expect(css).toContain('--radius-lg: 10px;')
+        expect(css).toMatch(/@variant light \{\s*--color-background: #f7f9fc;\s*--color-primary: #1e5eff;/)
+        expect(css).toMatch(/@variant dark \{\s*--color-background: #0b1220;\s*--color-primary: #5b8cff;/)
+    })
+
+    it('matches the committed app theme, so a globals.css change needs `pnpm --filter @fa/mobile tokens`', () => {
+        const web = readFileSync(path.resolve(__dirname, '../../../web/src/app/globals.css'), 'utf8')
+        const app = readFileSync(path.resolve(__dirname, '../global.css'), 'utf8')
+
+        expect(app).toBe(toUniwindCss(parseCssTokens(web)))
     })
 })

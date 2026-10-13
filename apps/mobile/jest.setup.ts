@@ -10,3 +10,11 @@ jest.mock(
     'react-native-safe-area-context',
     () => jest.requireActual<{ default: object }>('react-native-safe-area-context/jest/mock').default,
 )
+
+// Reanimated and its worklets runtime need native modules; the libraries' own mocks stand in for them in every test,
+// since the kit's overlays animate through Reanimated.
+jest.mock('react-native-worklets', () => jest.requireActual('react-native-worklets/src/mock'))
+jest.mock('react-native-reanimated', () => jest.requireActual('react-native-reanimated/mock'))
+jest.mock('react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule', () =>
+    jest.requireActual('react-native-gesture-handler/lib/commonjs/mocks/mocks'),
+)

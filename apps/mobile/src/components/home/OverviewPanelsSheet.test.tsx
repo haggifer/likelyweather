@@ -9,14 +9,6 @@ import { useOverviewPanels } from '../../hooks/useOverviewPanels'
 import { settingsStore } from '../../lib/settings'
 import { OverviewPanelsSheet } from './OverviewPanelsSheet'
 
-// The worklet runtime and the gesture handler's root have no native module under Jest; the libraries' own mocks stand
-// in, and run the drag's worklets on the JS thread.
-jest.mock('react-native-worklets', () => jest.requireActual('react-native-worklets/src/mock'))
-jest.mock('react-native-reanimated', () => jest.requireActual('react-native-reanimated/mock'))
-jest.mock('react-native-gesture-handler/lib/commonjs/RNGestureHandlerModule', () =>
-    jest.requireActual('react-native-gesture-handler/lib/commonjs/mocks/mocks'),
-)
-
 const t = createTranslator({ locale: 'en', messages: en, namespace: 'overview' })
 
 const BoundSheet = () => {

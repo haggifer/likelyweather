@@ -1,15 +1,18 @@
 import { getViewerTimeZone } from '@fa/shared/format'
+import { PortalHost } from '@rn-primitives/portal'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { getLocales } from 'expo-localization'
 import { Stack } from 'expo-router'
 import { useEffect } from 'react'
 import { Appearance, StatusBar } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { Uniwind } from 'uniwind'
 import { IntlProvider, useTranslations } from 'use-intl'
 import { HeaderBackground } from '../components/shell/HeaderBackground'
 import { MoreMenu } from '../components/shell/MoreMenu'
 import { Wordmark } from '../components/shell/Wordmark'
 import { SnackbarHost } from '../components/ui/SnackbarHost'
+import '../global.css'
 import { useAppFonts } from '../hooks/useAppFonts'
 import { useSettings } from '../hooks/useSettings'
 import { useTheme } from '../hooks/useTheme'
@@ -47,6 +50,7 @@ const AppStack = () => {
                 <Stack.Screen name="+not-found" options={{ title: '' }} />
             </Stack>
             <SnackbarHost />
+            <PortalHost />
         </>
     )
 }
@@ -57,8 +61,10 @@ export default function RootLayout() {
 
     const locale = resolveLocale(settings.language, getLocales()[0]?.languageCode)
 
-    // Native parts (alerts, the keyboard, the navigation bar) follow the app's theme setting too.
+    // The kit's styles (Uniwind) and the native parts (alerts, the keyboard, the navigation bar) follow the app's theme
+    // setting.
     useEffect(() => {
+        Uniwind.setTheme(settings.theme)
         Appearance.setColorScheme(settings.theme === 'system' ? 'unspecified' : settings.theme)
     }, [settings.theme])
 
