@@ -150,11 +150,6 @@ export function ArchiveCard({ slug }: IProps) {
                                 {region && <span className="font-medium text-muted-foreground">, {region}</span>}
                             </span>
                             <FavoriteToggle place={city} className="-ml-1 max-sm:ml-auto" />
-                            <OverviewPanelsMenu
-                                panels={settings.panels}
-                                onChange={handlePanels}
-                                className="-ml-2 shrink-0 pointer-coarse:size-9"
-                            />
                         </>
                     ) : (
                         <span className="flex h-7 items-center gap-2 text-sm font-normal text-muted-foreground">
@@ -165,11 +160,18 @@ export function ArchiveCard({ slug }: IProps) {
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
                 {range && now && city && (
-                    <ArchivePeriodPicker
-                        range={range}
-                        latest={getLatestArchiveDate(now, city.timezone)}
-                        onChange={handleRange}
-                    />
+                    <div className="flex flex-wrap items-end justify-between gap-3">
+                        <ArchivePeriodPicker
+                            range={range}
+                            latest={getLatestArchiveDate(now, city.timezone)}
+                            onChange={handleRange}
+                        />
+                        <OverviewPanelsMenu
+                            panels={settings.panels}
+                            onChange={handlePanels}
+                            className="mb-1 shrink-0 pointer-coarse:mb-0 pointer-coarse:h-10"
+                        />
+                    </div>
                 )}
                 {renderArchive()}
                 <p className="text-xs text-muted-foreground">{t('source')}</p>

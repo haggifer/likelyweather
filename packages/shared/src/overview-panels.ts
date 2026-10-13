@@ -60,17 +60,20 @@ export const parseOverviewPanels = (raw: string | null): OverviewPanels => {
     }
 }
 
-export const movePanel = (panels: OverviewPanels, variable: PanelVariable, step: -1 | 1): OverviewPanels => {
+// A dragged panel lands at `to` and the panels between shift by one.
+export const movePanelTo = (panels: OverviewPanels, variable: PanelVariable, to: number): OverviewPanels => {
     const from = panels.order.indexOf(variable)
-    const to = from + step
 
-    if (from < 0 || to < 0 || to >= panels.order.length) return panels
+    if (from < 0 || from === to || to < 0 || to >= panels.order.length) return panels
 
-    const order = [...panels.order]
-    ;[order[from], order[to]] = [order[to], order[from]]
+    const order = panels.order.filter((v) => v !== variable)
+    order.splice(to, 0, variable)
 
     return { ...panels, order }
 }
+
+export const movePanel = (panels: OverviewPanels, variable: PanelVariable, step: -1 | 1): OverviewPanels =>
+    movePanelTo(panels, variable, panels.order.indexOf(variable) + step)
 
 export const togglePanel = (panels: OverviewPanels, variable: PanelVariable): OverviewPanels => {
     if (panels.hidden.includes(variable)) return { ...panels, hidden: panels.hidden.filter((v) => v !== variable) }

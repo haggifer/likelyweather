@@ -4,112 +4,176 @@ import { Button } from '@/components/ui/button'
 import { Popover, PopoverPanel, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/cn'
 import {
+    Announcements,
+    closestCenter,
+    DndContext,
+    DragEndEvent,
+    KeyboardSensor,
+    Modifier,
+    PointerSensor,
+    UniqueIdentifier,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core'
+import {
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import {
     DEFAULT_OVERVIEW_PANELS,
     getVisiblePanels,
-    movePanel,
+    movePanelTo,
     OverviewPanels,
     PanelVariable,
     togglePanel,
 } from '@fa/shared/overview-panels'
-import { ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react'
+import { Eye, EyeOff, GripVertical, SlidersHorizontal } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { RefCallback, useRef } from 'react'
-import { flushSync } from 'react-dom'
+import { useState } from 'react'
 
-type MoveStep = -1 | 1
+interface RowProps {
+    variable: PanelVariable
+    isShown: boolean
+    isToggleDisabled: boolean
+    onToggle: (variable: PanelVariable) => void
+}
+
+// A small pointer movement before a drag starts, so a click on the handle stays a click.
+const DRAG_DISTANCE = 4
+
+// The list is one column, so a held row only moves up and down.
+const lockToVertical: Modifier = ({ transform }) => ({ ...transform, x: 0 })
+const MODIFIERS = [lockToVertical]
+
+const PanelRow = ({ variable, isShown, isToggleDisabled, onToggle }: RowProps) => {
+    const t = useTranslations('overview')
+    const tv = useTranslations('variables')
+
+    const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
+        id: variable,
+    })
+
+    const name = tv(variable)
+
+    return (
+        <li
+            ref={setNodeRef}
+            style={{ transform: CSS.Translate.toString(transform), transition }}
+            className={cn('flex items-center gap-1 rounded-md', isDragging && 'relative z-10 bg-muted shadow-sm')}
+        >
+            <button
+                ref={setActivatorNodeRef}
+                type="button"
+                {...attributes}
+                {...listeners}
+                aria-label={t('dragPanel', { name })}
+                className="flex size-8 shrink-0 cursor-grab touch-none items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing pointer-coarse:size-10"
+            >
+                <GripVertical className="size-4" />
+            </button>
+            <span className={cn('min-w-0 flex-1', !isShown && 'text-muted-foreground')}>{name}</span>
+            <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={t(isShown ? 'hidePanel' : 'showPanel', { name })}
+                disabled={isToggleDisabled}
+                onClick={() => onToggle(variable)}
+                className="pointer-coarse:size-10"
+            >
+                {isShown ? <Eye className="text-primary" /> : <EyeOff className="text-muted-foreground" />}
+            </Button>
+        </li>
+    )
+}
 
 interface IProps {
     panels: OverviewPanels
     onChange: (update: (panels: OverviewPanels) => OverviewPanels) => void
+    // The overview's controls row is full on phones, so the button keeps only its icon there.
+    isLabelHiddenOnPhones?: boolean
     className?: string
 }
 
-// Which overview panels show and in which order (author, 2026-10-12): a checkbox and arrows per panel rather than
-// drag and drop, so it works the same with a keyboard, a screen reader and a finger. The last shown panel stays.
-export function OverviewPanelsMenu({ panels, onChange: setPanels, className }: IProps) {
+// Which panels show and in which order (author, 2026-10-13): each row drags by its handle and shows or hides with its
+// eye. The keyboard drags too (Space on the handle, the arrows, Space again), with the moves read out to screen
+// readers. The last shown panel stays.
+export function OverviewPanelsMenu({ panels, onChange: setPanels, isLabelHiddenOnPhones = false, className }: IProps) {
     const t = useTranslations('overview')
     const tv = useTranslations('variables')
 
-    const arrowsRef = useRef(new Map<string, HTMLButtonElement>())
+    const [isDragging, setIsDragging] = useState(false)
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: DRAG_DISTANCE } }),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    )
 
     const visibleCount = getVisiblePanels(panels).length
 
-    const bindArrow =
-        (variable: PanelVariable, step: MoveStep): RefCallback<HTMLButtonElement> =>
-        (node) => {
-            const key = `${variable}${step}`
+    const getName = (id: UniqueIdentifier) => tv(id as PanelVariable)
+    const getPosition = (id: UniqueIdentifier) => panels.order.indexOf(id as PanelVariable) + 1
+    const announcements: Announcements = {
+        onDragStart: ({ active }) => t('pickedUp', { name: getName(active.id) }),
+        onDragOver: ({ active, over }) =>
+            over
+                ? t('movedTo', { name: getName(active.id), position: getPosition(over.id), count: panels.order.length })
+                : undefined,
+        onDragEnd: ({ active, over }) =>
+            over
+                ? t('dropped', { name: getName(active.id), position: getPosition(over.id), count: panels.order.length })
+                : undefined,
+        onDragCancel: ({ active }) => t('dragCancelled', { name: getName(active.id) }),
+    }
 
-            if (node) arrowsRef.current.set(key, node)
+    const handleToggle = (variable: PanelVariable) => setPanels((p) => togglePanel(p, variable))
+    const handleDragEnd = ({ active, over }: DragEndEvent) => {
+        setIsDragging(false)
 
-            return () => void arrowsRef.current.delete(key)
-        }
-    // Reordering moves the row's element, which drops keyboard focus; it returns to the arrow just pressed, or to the
-    // other one when the row reached the end and that arrow turned disabled.
-    const handleMove = (variable: PanelVariable, step: MoveStep) => {
-        const to = panels.order.indexOf(variable) + step
-        const isAtEnd = to === 0 || to === panels.order.length - 1
-        const focusStep = isAtEnd ? -step : step
-
-        flushSync(() => setPanels((p) => movePanel(p, variable, step)))
-        arrowsRef.current.get(`${variable}${focusStep}`)?.focus()
+        if (over)
+            setPanels((p) => movePanelTo(p, active.id as PanelVariable, p.order.indexOf(over.id as PanelVariable)))
     }
 
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label={t('customize')}
-                    title={t('customize')}
-                    className={className}
-                >
+                <Button variant="outline" size="sm" title={t('customize')} className={className}>
                     <SlidersHorizontal />
+                    <span className={cn(isLabelHiddenOnPhones && 'max-sm:sr-only')}>{t('panels')}</span>
                 </Button>
             </PopoverTrigger>
-            <PopoverPanel aria-label={t('customizeTitle')}>
+            {/* Escape cancels a keyboard drag before it would close the menu. */}
+            <PopoverPanel aria-label={t('customizeTitle')} onEscapeKeyDown={(e) => isDragging && e.preventDefault()}>
                 <p className="mb-2 font-semibold">{t('customizeTitle')}</p>
-                <ul className="flex flex-col gap-1">
-                    {panels.order.map((variable, i) => {
-                        const isShown = !panels.hidden.includes(variable)
-                        const name = tv(variable)
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    modifiers={MODIFIERS}
+                    accessibility={{ announcements, screenReaderInstructions: { draggable: t('dragInstructions') } }}
+                    onDragStart={() => setIsDragging(true)}
+                    onDragCancel={() => setIsDragging(false)}
+                    onDragEnd={handleDragEnd}
+                >
+                    <SortableContext items={panels.order} strategy={verticalListSortingStrategy}>
+                        <ul className="flex flex-col gap-1">
+                            {panels.order.map((variable) => {
+                                const isShown = !panels.hidden.includes(variable)
 
-                        return (
-                            <li key={variable} className="flex items-center gap-1">
-                                <label className="flex min-h-8 flex-1 cursor-pointer items-center gap-2">
-                                    <input
-                                        type="checkbox"
-                                        checked={isShown}
-                                        disabled={isShown && visibleCount === 1}
-                                        onChange={() => setPanels((p) => togglePanel(p, variable))}
-                                        className="size-4 accent-primary"
+                                return (
+                                    <PanelRow
+                                        key={variable}
+                                        variable={variable}
+                                        isShown={isShown}
+                                        isToggleDisabled={isShown && visibleCount === 1}
+                                        onToggle={handleToggle}
                                     />
-                                    <span className={cn(!isShown && 'text-muted-foreground')}>{name}</span>
-                                </label>
-                                <Button
-                                    variant="ghost"
-                                    size="icon-sm"
-                                    ref={bindArrow(variable, -1)}
-                                    aria-label={t('moveUp', { name })}
-                                    disabled={i === 0}
-                                    onClick={() => handleMove(variable, -1)}
-                                >
-                                    <ChevronUp />
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="icon-sm"
-                                    ref={bindArrow(variable, 1)}
-                                    aria-label={t('moveDown', { name })}
-                                    disabled={i === panels.order.length - 1}
-                                    onClick={() => handleMove(variable, 1)}
-                                >
-                                    <ChevronDown />
-                                </Button>
-                            </li>
-                        )
-                    })}
-                </ul>
+                                )
+                            })}
+                        </ul>
+                    </SortableContext>
+                </DndContext>
                 <Button
                     variant="outline"
                     size="sm"

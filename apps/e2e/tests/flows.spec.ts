@@ -143,8 +143,8 @@ test('showing a hidden overview panel draws it without another request', async (
     page.on('request', (request) => {
         if (request.url().includes('/latest')) requests.push(request.url())
     })
-    await page.getByRole('button', { name: 'Choose panels' }).click()
-    await page.getByRole('checkbox', { name: 'Humidity' }).check()
+    await page.getByRole('button', { name: 'Panels', exact: true }).click()
+    await page.getByRole('button', { name: 'Show Humidity' }).click()
     await page.keyboard.press('Escape')
     await expect(page.getByRole('dialog', { name: 'Overview panels' })).toBeHidden()
 
@@ -152,21 +152,34 @@ test('showing a hidden overview panel draws it without another request', async (
     expect(requests).toEqual([])
 })
 
-test('the panel menu keeps keyboard focus on the arrows while a panel moves', async ({ page }) => {
+test('a panel moves by keyboard with its handle, and Escape cancels a move without closing the menu', async ({
+    page,
+}) => {
     await page.goto(`/?city=${LONDON}`)
-    await page.getByRole('button', { name: 'Choose panels' }).click()
+    await page.getByRole('button', { name: 'Panels', exact: true }).click()
 
-    const up = page.getByRole('button', { name: 'Move Temperature up' })
-    const down = page.getByRole('button', { name: 'Move Temperature down' })
+    const handle = page.getByRole('button', { name: 'Reorder Temperature' })
+    const rows = page.getByRole('dialog', { name: 'Overview panels' }).getByRole('listitem')
 
-    await down.focus()
-    await page.keyboard.press('Enter')
-    await expect(down).toBeFocused()
-    await up.focus()
-    await page.keyboard.press('Enter')
-    // Back at the top, the up arrow is disabled, so focus moves to the down arrow.
-    await expect(up).toBeDisabled()
-    await expect(down).toBeFocused()
+    // The handle reads as pressed while its row is held, and the held row slides down before it is dropped.
+    const moveDown = async (finalKey: string) => {
+        await page.keyboard.press('Space')
+        await expect(handle).toHaveAttribute('aria-pressed', 'true')
+        await page.keyboard.press('ArrowDown')
+        await expect(handle.locator('xpath=ancestor::li')).toHaveAttribute('style', /translate3d\(0px, [1-9]/)
+        await page.keyboard.press(finalKey)
+        await expect(handle).not.toHaveAttribute('aria-pressed')
+    }
+
+    await handle.focus()
+    await moveDown('Space')
+    await expect(rows.nth(1)).toContainText('Temperature')
+    await expect(handle).toBeFocused()
+    await moveDown('Escape')
+    await expect(rows.nth(1)).toContainText('Temperature')
+    await expect(page.getByRole('dialog', { name: 'Overview panels' })).toBeVisible()
+    await page.getByRole('button', { name: 'Hide Temperature' }).click()
+    await expect(rows.nth(1).getByRole('button', { name: 'Show Temperature' })).toBeVisible()
 })
 
 test('the archive shows past weather for a city and keeps the chosen period', async ({ page, isMobile }) => {

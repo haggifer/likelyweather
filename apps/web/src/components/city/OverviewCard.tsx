@@ -51,6 +51,7 @@ export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
             <CardAction className={ACTIONS}>
                 <Skeleton className="hidden h-7 w-28 rounded-full lg:block" />
                 <Skeleton className="h-7 w-22 max-sm:h-8 max-sm:flex-1" />
+                <Skeleton className="h-7 w-20 max-sm:size-8" />
                 <Skeleton className="h-7 w-30 max-sm:h-8 max-sm:flex-1" />
             </CardAction>
         </CardHeader>
@@ -99,11 +100,6 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, on
                         {region && <span className="font-medium text-muted-foreground">, {region}</span>}
                     </span>
                     <FavoriteToggle place={city} className="-ml-1 max-sm:ml-auto" />
-                    <OverviewPanelsMenu
-                        panels={storedPanels}
-                        onChange={setPanels}
-                        className="-ml-2 shrink-0 pointer-coarse:size-9"
-                    />
                 </CardTitle>
                 <CardAction className={ACTIONS}>
                     <UpdatedChip
@@ -118,6 +114,12 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, on
                         onRefresh={onRefresh}
                         className={cn(PHONE_BUTTON, 'max-sm:w-full')}
                         wrapperClassName="max-sm:flex-1"
+                    />
+                    <OverviewPanelsMenu
+                        panels={storedPanels}
+                        onChange={setPanels}
+                        isLabelHiddenOnPhones
+                        className="shrink-0 max-sm:size-8 max-sm:px-0"
                     />
                     <Button asChild size="sm" className={PHONE_BUTTON}>
                         <Link href={`/city/${city.slug}`}>

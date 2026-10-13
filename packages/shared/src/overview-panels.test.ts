@@ -4,6 +4,7 @@ import {
     getPanelDataVariables,
     getVisiblePanels,
     movePanel,
+    movePanelTo,
     OverviewPanels,
     parseOverviewPanels,
     togglePanel,
@@ -44,6 +45,15 @@ describe('movePanel', () => {
         expect(movePanel(DEFAULT_OVERVIEW_PANELS, Wind, -1).order.slice(0, 2)).toEqual([Wind, Temp])
         expect(movePanel(DEFAULT_OVERVIEW_PANELS, Temp, -1)).toBe(DEFAULT_OVERVIEW_PANELS)
         expect(movePanel(DEFAULT_OVERVIEW_PANELS, Cloud, 1)).toBe(DEFAULT_OVERVIEW_PANELS)
+    })
+})
+
+describe('movePanelTo', () => {
+    it('drops a panel at the index and shifts the ones between', () => {
+        expect(movePanelTo(DEFAULT_OVERVIEW_PANELS, Temp, 3).order.slice(0, 4)).toEqual([Wind, Pressure, Precip, Temp])
+        expect(movePanelTo(DEFAULT_OVERVIEW_PANELS, Cloud, 0).order[0]).toBe(Cloud)
+        expect(movePanelTo(DEFAULT_OVERVIEW_PANELS, Temp, 0)).toBe(DEFAULT_OVERVIEW_PANELS)
+        expect(movePanelTo(DEFAULT_OVERVIEW_PANELS, Temp, 6)).toBe(DEFAULT_OVERVIEW_PANELS)
     })
 })
 
