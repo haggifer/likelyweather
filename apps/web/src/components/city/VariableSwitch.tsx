@@ -62,7 +62,7 @@ export function VariableSwitch({ className }: IProps) {
                         aria-label={t(id)}
                         title={t(id)}
                         className={cn(
-                            'min-w-0 gap-1.5 border-border px-2.5 text-xs pointer-coarse:h-9 data-[state=on]:bg-accent dark:border-input',
+                            'min-w-0 gap-1.5 px-2.5 text-xs pointer-coarse:h-9 data-[state=on]:bg-accent',
                             id === variable ? 'max-sm:flex-[3.4] max-sm:px-2' : 'max-sm:flex-1 max-sm:px-0',
                         )}
                     >
