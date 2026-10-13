@@ -29,6 +29,8 @@ interface ArchiveRangeStateOptions {
     latest: string
     locale: string
     onChange: (range: ArchiveRange) => void
+    // The web moves keyboard focus to the period's day when the calendar opens; the app has no keyboard focus to move.
+    autoFocus?: boolean
 }
 
 export interface ArchiveDayState {
@@ -97,6 +99,7 @@ export function useArchiveRangeState({
     latest,
     locale,
     onChange,
+    autoFocus,
 }: ArchiveRangeStateOptions): UseArchiveRangeStateResult {
     const { from, to } = range
     const value = useMemo(() => toCalendarRange({ from, to }), [from, to])
@@ -113,6 +116,7 @@ export function useArchiveRangeState({
         firstDayOfWeek: ARCHIVE_FIRST_DAY_OF_WEEK,
         isDateUnavailable: isOutsideArchiveSpan,
         onChange: handleChange,
+        autoFocus,
     }
     const state = useRangeCalendarState(options)
 

@@ -94,6 +94,7 @@ export function ArchiveRangeCalendar({ range, latest, onChange }: IProps) {
         latest,
         locale,
         onChange,
+        autoFocus: true,
     })
     // Leaving the calendar halfway through a period keeps the period it had, instead of applying the half-picked one.
     const { calendarProps } = useRangeCalendar(

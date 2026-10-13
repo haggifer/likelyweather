@@ -9,6 +9,9 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { I18nProvider } from 'react-aria/I18nProvider'
 
+// The calendar focuses the period's day itself, as a date picker should, rather than its first button.
+const keepCalendarFocus = (event: Event) => event.preventDefault()
+
 interface IProps {
     range: ArchiveRange
     latest: string
@@ -43,7 +46,7 @@ export function ArchivePeriodPicker({ range, latest, onChange }: IProps) {
                     {period}
                 </Button>
             </PopoverTrigger>
-            <PopoverPanel align="start" className="w-auto">
+            <PopoverPanel align="start" className="w-auto" onOpenAutoFocus={keepCalendarFocus}>
                 <I18nProvider locale={locale}>
                     <ArchiveRangeCalendar range={range} latest={latest} onChange={handleChange} />
                 </I18nProvider>
