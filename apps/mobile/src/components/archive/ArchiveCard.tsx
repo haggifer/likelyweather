@@ -1,6 +1,7 @@
 import { useArchive } from '@fa/api-client/hooks/useArchive'
 import { useCity } from '@fa/api-client/hooks/useCity'
 import { getArchiveHourlySeries } from '@fa/chart-core/archive-stats'
+import { useFirstValue } from '@fa/hooks/useFirstValue'
 import {
     ARCHIVE_LABEL_DATE_FORMAT,
     ArchiveRange,
@@ -37,13 +38,14 @@ export function ArchiveCard({ slug }: IProps) {
     const t = useTranslations('archive')
     const to = useTranslations('overview')
     const locale = useLocale()
-    const now = useNow()
+    // The period and its calendar keep the day the page opened on, so the city's midnight neither moves nor refetches them.
+    const openedAt = useFirstValue(useNow())
     const { settings, setSettings } = useArchiveSettings()
 
     const { data: city, error: cityError, refetch: refetchCity } = useCity(slug)
 
     // The calendar applies a period only once both ends are picked, so it is asked for at once.
-    const range = city ? resolveArchiveRange(settings.range, now, city.timezone) : null
+    const range = city ? resolveArchiveRange(settings.range, openedAt, city.timezone) : null
 
     const archive = useArchive(city ? slug : null, range)
 
@@ -132,7 +134,7 @@ export function ArchiveCard({ slug }: IProps) {
                     <View className="mt-2 flex-row flex-wrap items-start justify-between gap-3">
                         <ArchivePeriodPicker
                             range={range}
-                            latest={getLatestArchiveDate(now, city.timezone)}
+                            latest={getLatestArchiveDate(openedAt, city.timezone)}
                             onChange={handleRange}
                         />
                         <OverviewPanelsMenu panels={settings.panels} onChange={handlePanels} className="ml-auto" />
