@@ -166,8 +166,7 @@ const SpaghettiDrawing = memo(function SpaghettiDrawing({
                 </ClipPath>
             </Defs>
             <G clipPath={`url(#${clipId})`}>
-                {!isBars && <Path d={geometry.outerBand} fill={chart.band} opacity={chart.bandOuterOpacity} />}
-                {!isBars && <Path d={geometry.innerBand} fill={chart.band} opacity={chart.bandInnerOpacity} />}
+                {!isBars && <Path d={geometry.rangeBand} fill={chart.band} opacity={chart.bandOpacity} />}
                 {bars.map(({ i, center }) => {
                     const median = stats.median[i]
 
@@ -247,7 +246,7 @@ interface IProps {
     isMedianHidden?: boolean
 }
 
-// Every model as a line (precipitation: a tick per model over the median bar), the min–max and interquartile bands,
+// Every model as a line (precipitation: a tick per model over the median bar), the min–max band,
 // the median, local day boundaries and the now line, as on the web. A tap picks a 3-hour slot; a drag scrolls.
 export function SpaghettiChart({
     steps,

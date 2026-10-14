@@ -11,8 +11,7 @@ export interface ChartColors {
 }
 
 export interface ChartTheme extends ChartColors {
-    bandOuterOpacity: number
-    bandInnerOpacity: number
+    bandOpacity: number
 }
 
 type ColorKey = keyof ChartColors
@@ -31,9 +30,8 @@ type ChartColorToken = (typeof CHART_COLOR_TOKENS)[ColorKey]
 
 type ColorReader = (token: ChartColorToken, key: ColorKey) => string
 
-// `--band-outer-opacity` and `--band-inner-opacity` in globals.css, equal in both colour modes.
-export const BAND_OUTER_OPACITY = 0.12
-export const BAND_INNER_OPACITY = 0.22
+// `--band-opacity` in globals.css, equal in both colour modes.
+export const BAND_OPACITY = 0.12
 
 const readColor = (read: ColorReader, key: ColorKey) => read(CHART_COLOR_TOKENS[key], key)
 

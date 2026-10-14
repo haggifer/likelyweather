@@ -57,8 +57,7 @@ describe('spaghetti geometry', () => {
 
         expect({
             median: geometry.median,
-            outerBand: geometry.outerBand,
-            innerBand: geometry.innerBand,
+            rangeBand: geometry.rangeBand,
             lines: geometry.lines,
         }).toMatchSnapshot()
     })

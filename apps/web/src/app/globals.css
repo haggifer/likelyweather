@@ -89,8 +89,7 @@
     --chart-median: #0b1b33;
     --chart-band: #1e5eff;
     --chart-grid: #e6ebf3;
-    --band-outer-opacity: 0.12;
-    --band-inner-opacity: 0.22;
+    --band-opacity: 0.12;
 
     --font-sans: var(--font-inter), system-ui, sans-serif;
     --font-heading: var(--font-inter), system-ui, sans-serif;

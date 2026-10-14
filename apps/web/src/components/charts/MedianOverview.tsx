@@ -278,7 +278,7 @@ export function MedianOverview({
                             ))}
                             {paths ? (
                                 <>
-                                    <path d={paths.area} fill={theme.band} opacity={theme.bandOuterOpacity} />
+                                    <path d={paths.area} fill={theme.band} opacity={theme.bandOpacity} />
                                     <path
                                         d={paths.line}
                                         fill="none"

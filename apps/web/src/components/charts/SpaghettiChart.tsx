@@ -189,8 +189,7 @@ export function SpaghettiChart({
                 {/* The bands and median span every model while the y-domain fits the visible ones, so a hidden
                     outlier's band is cut at the plot edge instead of covering the card header. */}
                 <g clipPath={`url(#${clipId})`}>
-                    {!isBars && <path d={geometry.outerBand} fill={theme.band} opacity={theme.bandOuterOpacity} />}
-                    {!isBars && <path d={geometry.innerBand} fill={theme.band} opacity={theme.bandInnerOpacity} />}
+                    {!isBars && <path d={geometry.rangeBand} fill={theme.band} opacity={theme.bandOpacity} />}
                     {bars.map(({ i, center }) => {
                         const median = stats.median[i]
 

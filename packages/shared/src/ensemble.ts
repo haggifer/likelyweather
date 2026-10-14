@@ -8,8 +8,6 @@ export interface EnsembleStats {
     median: (number | null)[]
     min: (number | null)[]
     max: (number | null)[]
-    q1: (number | null)[]
-    q3: (number | null)[]
     count: number[]
 }
 
@@ -93,15 +91,13 @@ export const getStandardDeviation = (values: number[]) => {
 }
 
 export const computeEnsemble = (series: (number | null)[][], stepCount: number): EnsembleStats => {
-    const stats: EnsembleStats = { median: [], min: [], max: [], q1: [], q3: [], count: [] }
+    const stats: EnsembleStats = { median: [], min: [], max: [], count: [] }
 
     for (let i = 0; i < stepCount; i++) {
         const sorted = getStepValues(series, i).sort((a, b) => a - b)
 
         stats.count.push(sorted.length)
         stats.median.push(quantileSorted(sorted, 0.5))
-        stats.q1.push(quantileSorted(sorted, 0.25))
-        stats.q3.push(quantileSorted(sorted, 0.75))
         stats.min.push(sorted.length ? sorted[0] : null)
         stats.max.push(sorted.length ? sorted[sorted.length - 1] : null)
     }

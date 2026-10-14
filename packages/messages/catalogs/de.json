@@ -132,7 +132,7 @@
         },
         "median": {
             "title": "Median und Streuung",
-            "body": "Der Median ist der mittlere Wert aller Modelle, die für einen Schritt Daten geliefert haben (bei gerader Anzahl der Mittelwert der beiden mittleren). Die Bänder im Dashboard zeigen die Spanne vom niedrigsten bis zum höchsten Modell und die mittlere Hälfte der Modelle. Die Windrichtung nutzt einen zirkulären Median, sodass sich 350° und 10° im Norden treffen. Die Regenwahrscheinlichkeit ist der Anteil der Modelle, die in einem 3-Stunden-Abschnitt (die Zeile unter den Niederschlagsbalken der Übersicht) mehr als {rain} mm vorhersagen."
+            "body": "Der Median ist der mittlere Wert aller Modelle, die für einen Schritt Daten geliefert haben (bei gerader Anzahl der Mittelwert der beiden mittleren). Das Band im Dashboard zeigt die Spanne vom niedrigsten bis zum höchsten Modell. Die Windrichtung nutzt einen zirkulären Median, sodass sich 350° und 10° im Norden treffen. Die Regenwahrscheinlichkeit ist der Anteil der Modelle, die in einem 3-Stunden-Abschnitt (die Zeile unter den Niederschlagsbalken der Übersicht) mehr als {rain} mm vorhersagen."
         },
         "disagreement": {
             "title": "Uneinigkeit",

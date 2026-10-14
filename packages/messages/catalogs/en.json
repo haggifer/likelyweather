@@ -132,7 +132,7 @@
         },
         "median": {
             "title": "Median and spread",
-            "body": "The median is the middle value of all models that returned data for a step (with an even count, the mean of the two middle values). The dashboard’s bands show the range from the lowest to the highest model and the middle half of the models. Wind direction uses a circular median, so 350° and 10° meet at north. The chance of rain is the share of models forecasting more than {rain} mm in a 3-hour slot (the row under the overview’s precipitation bars)."
+            "body": "The median is the middle value of all models that returned data for a step (with an even count, the mean of the two middle values). The dashboard’s band shows the range from the lowest to the highest model. Wind direction uses a circular median, so 350° and 10° meet at north. The chance of rain is the share of models forecasting more than {rain} mm in a 3-hour slot (the row under the overview’s precipitation bars)."
         },
         "disagreement": {
             "title": "Disagreement",

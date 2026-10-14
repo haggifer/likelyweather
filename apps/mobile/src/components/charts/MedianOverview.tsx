@@ -90,7 +90,7 @@ const PanelDrawing = ({ row, series, scale: { y, ticks }, frame, times, directio
             ))}
             {paths ? (
                 <G>
-                    <Path d={paths.area} fill={chart.band} opacity={chart.bandOuterOpacity} />
+                    <Path d={paths.area} fill={chart.band} opacity={chart.bandOpacity} />
                     <Path d={paths.line} fill="none" stroke={chart.median} strokeWidth={2} strokeLinecap="round" />
                     {paths.secondary !== null && (
                         <Path

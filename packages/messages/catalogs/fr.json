@@ -132,7 +132,7 @@
         },
         "median": {
             "title": "Médiane et écart",
-            "body": "La médiane est la valeur centrale de tous les modèles ayant renvoyé des données pour un pas (pour un nombre pair, la moyenne des deux valeurs centrales). Les bandes du tableau de bord montrent l’étendue du modèle le plus bas au plus haut et la moitié centrale des modèles. La direction du vent utilise une médiane circulaire : 350° et 10° se rejoignent au nord. La probabilité de pluie est la part des modèles prévoyant plus de {rain} mm sur une tranche de 3 heures (la ligne sous les barres de précipitations de l’aperçu)."
+            "body": "La médiane est la valeur centrale de tous les modèles ayant renvoyé des données pour un pas (pour un nombre pair, la moyenne des deux valeurs centrales). La bande du tableau de bord montre l’étendue du modèle le plus bas au plus haut. La direction du vent utilise une médiane circulaire : 350° et 10° se rejoignent au nord. La probabilité de pluie est la part des modèles prévoyant plus de {rain} mm sur une tranche de 3 heures (la ligne sous les barres de précipitations de l’aperçu)."
         },
         "disagreement": {
             "title": "Désaccord",

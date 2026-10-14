@@ -41,7 +41,7 @@ describe('computeEnsemble', () => {
         const stats = computeEnsemble([[null], [null]], 1)
 
         expect(stats.median).toEqual([null])
-        expect(stats.q1).toEqual([null])
+        expect(stats.max).toEqual([null])
     })
 })
 

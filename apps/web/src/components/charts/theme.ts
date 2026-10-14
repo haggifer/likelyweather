@@ -1,9 +1,4 @@
-import {
-    BAND_INNER_OPACITY,
-    BAND_OUTER_OPACITY,
-    getChartColors,
-    ChartTheme as SharedChartTheme,
-} from '@fa/chart-core/chart-theme'
+import { BAND_OPACITY, getChartColors, ChartTheme as SharedChartTheme } from '@fa/chart-core/chart-theme'
 
 // The colours both apps' charts draw with, and the ones only the web's draw with.
 export interface ChartTheme extends SharedChartTheme {
@@ -23,8 +18,7 @@ export const FALLBACK_CHART_THEME: ChartTheme = {
     band: '#1e5eff',
     primary: '#1e5eff',
     warning: '#b45309',
-    bandOuterOpacity: BAND_OUTER_OPACITY,
-    bandInnerOpacity: BAND_INNER_OPACITY,
+    bandOpacity: BAND_OPACITY,
     fontMono: 'ui-monospace, monospace',
 }
 
@@ -38,8 +32,7 @@ export const readChartTheme = (): ChartTheme => {
         ...getChartColors((token, key) => read(`--${token}`, FALLBACK_CHART_THEME[key])),
         primary: read('--primary', FALLBACK_CHART_THEME.primary),
         warning: read('--warning', FALLBACK_CHART_THEME.warning),
-        bandOuterOpacity: readNumber('--band-outer-opacity', FALLBACK_CHART_THEME.bandOuterOpacity),
-        bandInnerOpacity: readNumber('--band-inner-opacity', FALLBACK_CHART_THEME.bandInnerOpacity),
+        bandOpacity: readNumber('--band-opacity', FALLBACK_CHART_THEME.bandOpacity),
         fontMono: read('--font-mono', FALLBACK_CHART_THEME.fontMono),
     }
 }

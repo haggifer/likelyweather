@@ -22,8 +22,7 @@ export interface SpaghettiGeometry {
     times: Date[]
     lines: { modelId: ModelId; d: string }[]
     median: string
-    outerBand: string
-    innerBand: string
+    rangeBand: string
 }
 
 // A precipitation bar that fits the plot, by its step's index and its centre.
@@ -109,8 +108,7 @@ export const buildSpaghettiGeometry = ({
         times,
         lines: series.map((s) => ({ modelId: s.modelId, d: getLinePath(scales, s.values) })),
         median: getLinePath(scales, stats.median),
-        outerBand: getBandPath(scales, stats.min, stats.max),
-        innerBand: getBandPath(scales, stats.q1, stats.q3),
+        rangeBand: getBandPath(scales, stats.min, stats.max),
     }
 }
 

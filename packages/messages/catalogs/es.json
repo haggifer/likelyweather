@@ -132,7 +132,7 @@
         },
         "median": {
             "title": "Mediana y dispersión",
-            "body": "La mediana es el valor central de todos los modelos que devolvieron datos para un paso (con un número par, la media de los dos centrales). Las franjas del panel muestran el rango del modelo más bajo al más alto y la mitad central de los modelos. La dirección del viento usa una mediana circular, así que 350° y 10° se encuentran en el norte. La probabilidad de lluvia es la proporción de modelos que pronostican más de {rain} mm en una franja de 3 horas (la fila bajo las barras de precipitación del resumen)."
+            "body": "La mediana es el valor central de todos los modelos que devolvieron datos para un paso (con un número par, la media de los dos centrales). La franja del panel muestra el rango del modelo más bajo al más alto. La dirección del viento usa una mediana circular, así que 350° y 10° se encuentran en el norte. La probabilidad de lluvia es la proporción de modelos que pronostican más de {rain} mm en una franja de 3 horas (la fila bajo las barras de precipitación del resumen)."
         },
         "disagreement": {
             "title": "Discrepancia",
