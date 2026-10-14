@@ -4,12 +4,13 @@ import { ChartFrame } from '@/components/charts/ChartFrame'
 import { SpaghettiChart } from '@/components/charts/SpaghettiChart'
 import { DisagreementTiles } from '@/components/city/DisagreementTiles'
 import { ModelLegend } from '@/components/city/ModelLegend'
+import { VariablePairTabs } from '@/components/city/VariablePairTabs'
 import { VariableSwitch } from '@/components/city/VariableSwitch'
 import { ErrorNotice } from '@/components/shell/ErrorNotice'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { useIsPhone } from '@/hooks/useIsPhone'
 import { useNow } from '@/hooks/useNow'
 import { useUrlSync } from '@/hooks/useUrlSync'
 import { useAppDispatch, useAppSelector } from '@/store'
@@ -21,10 +22,11 @@ import { getReadoutLabel } from '@fa/shared/dashboard'
 import { EnsembleStats } from '@fa/shared/ensemble'
 import { formatNumber, formatStepLabel, getCityName } from '@fa/shared/format'
 import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
-import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
+import { formatPairedMedian, formatPairedModel, PairedRuns } from '@fa/shared/paired-values'
+import { getVariablePair, getVariableTab, Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Loader2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
-import { ComponentProps, useMemo } from 'react'
+import { ComponentProps, memo, useDeferredValue, useMemo } from 'react'
 
 interface SeriesTableProps {
     steps: string[]
@@ -35,14 +37,14 @@ interface SeriesTableProps {
     locale: string
     medianLabel: string
     timeLabel: string
+    // Phones read a pair together, "actual (companion)", whichever sub-tab is open (author, 2026-10-14).
+    pairedRuns: PairedRuns | null
 }
 
 // Model columns scroll under the time column, so its background stays opaque: the hover colour is the row's
 // muted/50 tint mixed into the card colour instead of laid over it.
 const STICKY_TIME_CELL =
     'sticky left-0 z-1 bg-card group-hover:bg-[color-mix(in_srgb,var(--color-muted)_50%,var(--color-card))]'
-
-const PHONE_QUERY = '(width < 40rem)'
 
 // On phones the switch stays under the top bar, so another variable is one tap away wherever the page is scrolled.
 const VARIABLE_BAR = (
@@ -84,9 +86,20 @@ interface HoveredLegendProps {
     timeZone: string
     locale: string
     now: Date | null
+    pairedRuns: PairedRuns | null
 }
 
-const HoveredLegend = ({ steps, series, stats, directions, variable, timeZone, locale, now }: HoveredLegendProps) => {
+const HoveredLegend = ({
+    steps,
+    series,
+    stats,
+    directions,
+    variable,
+    timeZone,
+    locale,
+    now,
+    pairedRuns,
+}: HoveredLegendProps) => {
     const hoverStep = useAppSelector((s) => s.dashboard.hoverStep)
 
     const isSum = VARIABLE_BY_ID[variable].aggregation === 'sum'
@@ -100,6 +113,7 @@ const HoveredLegend = ({ steps, series, stats, directions, variable, timeZone, l
             readoutLabel={getReadoutLabel(steps[readoutIndex], variable, timeZone, locale)}
             direction={variable === Variable.Wind ? (directions?.[readoutIndex] ?? null) : null}
             variable={variable}
+            pairedRuns={pairedRuns}
         />
     )
 }
@@ -113,8 +127,9 @@ const SeriesTable = ({
     locale,
     medianLabel,
     timeLabel,
+    pairedRuns,
 }: SeriesTableProps) => (
-    <Table className="text-xs">
+    <Table className="text-xs max-sm:text-sm">
         <TableHeader>
             <TableRow className="group">
                 <TableHead className={STICKY_TIME_CELL}>{timeLabel}</TableHead>
@@ -133,11 +148,15 @@ const SeriesTable = ({
                         {formatStepLabel(step, timeZone, locale)}
                     </TableCell>
                     <TableCell className="text-right font-semibold">
-                        {formatNumber(stats.median[i], decimals)}
+                        {pairedRuns
+                            ? formatPairedMedian(pairedRuns, i, decimals)
+                            : formatNumber(stats.median[i], decimals)}
                     </TableCell>
                     {series.map((s) => (
                         <TableCell key={s.modelId} className="text-right">
-                            {formatNumber(s.values[i], decimals)}
+                            {pairedRuns
+                                ? formatPairedModel(pairedRuns, s.modelId, i, decimals)
+                                : formatNumber(s.values[i], decimals)}
                         </TableCell>
                     ))}
                 </TableRow>
@@ -146,20 +165,22 @@ const SeriesTable = ({
     </Table>
 )
 
-interface IProps {
+interface ViewProps {
     slug: string
+    variable: Variable
+    isHydrated: boolean
 }
 
-export function Dashboard({ slug }: IProps) {
+// Memoized, so a tap on the switch re-renders only the switch at once; the view follows with the deferred variable.
+const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }: ViewProps) {
     const t = useTranslations('dashboard')
     const tv = useTranslations('variables')
     const tInline = useTranslations('variablesInline')
+    const tTabs = useTranslations('variableTabs')
     const locale = useLocale()
     const now = useNow()
     // The legend follows every hover, so only the copy for this width is rendered, not a second one hidden by CSS.
-    const isPhone = useMediaQuery(PHONE_QUERY)
-    const { isHydrated } = useUrlSync()
-    const variable = useAppSelector((s) => s.dashboard.variable)
+    const isPhone = useIsPhone()
     const highlighted = useAppSelector((s) => s.dashboard.highlightedModel)
     const hidden = useAppSelector((s) => s.dashboard.hiddenModels)
     const isMedianHidden = useAppSelector((s) => s.dashboard.isMedianHidden)
@@ -171,6 +192,7 @@ export function Dashboard({ slug }: IProps) {
         latest,
         derived,
         summary: summaryValues,
+        pairedRuns: allPairedRuns,
         retry,
     } = useDashboardData(slug, variable, {
         now,
@@ -180,6 +202,9 @@ export function Dashboard({ slug }: IProps) {
 
     const info = VARIABLE_BY_ID[variable]
     const timeZone = city?.timezone ?? 'UTC'
+    const pairedRuns = isPhone ? allPairedRuns : null
+    // Phones name a pair once ("Temperature") and show which member is open in the sub-tabs.
+    const title = isPhone && getVariablePair(variable) ? tTabs(getVariableTab(variable)) : tv(variable)
     // A stable list, so the chart's memoized drawing survives renders that did not change the highlighted model.
     const emphasized = useMemo<ModelId[]>(() => (highlighted ? [highlighted] : []), [highlighted])
 
@@ -221,6 +246,7 @@ export function Dashboard({ slug }: IProps) {
             timeZone={timeZone}
             locale={locale}
             now={now}
+            pairedRuns={pairedRuns}
         />
     )
 
@@ -232,7 +258,8 @@ export function Dashboard({ slug }: IProps) {
             <div data-sheet className="flex flex-col gap-(--card-gap) max-sm:-mx-4 max-sm:gap-0">
                 <div className="grid gap-(--card-gap) max-sm:gap-0 lg:grid-cols-[minmax(0,1fr)_20rem]">
                     <ChartFrame
-                        title={tv(variable)}
+                        title={title}
+                        tabs={isPhone ? <VariablePairTabs /> : undefined}
                         isFetching={latestQuery.isFetching && latestQuery.isPlaceholderData}
                         table={
                             <SeriesTable
@@ -244,6 +271,7 @@ export function Dashboard({ slug }: IProps) {
                                 locale={locale}
                                 medianLabel={t('median')}
                                 timeLabel={t('time')}
+                                pairedRuns={pairedRuns}
                             />
                         }
                     >
@@ -260,8 +288,9 @@ export function Dashboard({ slug }: IProps) {
                             now={now}
                             isMedianHidden={isMedianHidden}
                         />
+                        {/* Phones go without the note (author, 2026-10-14): the legend names the direction. */}
                         {variable === Variable.Wind && (
-                            <p className="mt-1 text-xs text-muted-foreground">{t('windArrows')}</p>
+                            <p className="mt-1 text-xs text-muted-foreground max-sm:hidden">{t('windArrows')}</p>
                         )}
                     </ChartFrame>
                     {isPhone ? (
@@ -276,6 +305,25 @@ export function Dashboard({ slug }: IProps) {
                 <Separator className="sm:hidden" />
                 <DisagreementTiles days={derived.disagreement} variable={variable} />
             </div>
+        </div>
+    )
+})
+
+interface IProps {
+    slug: string
+}
+
+// The switch shows a tap at once; the dashboard redraws for it in the background and its chart fades until it has
+// (`data-switching`, the author's lag report of 2026-10-14).
+export function Dashboard({ slug }: IProps) {
+    const { isHydrated } = useUrlSync()
+    const selectedVariable = useAppSelector((s) => s.dashboard.variable)
+
+    const variable = useDeferredValue(selectedVariable)
+
+    return (
+        <div data-switching={variable !== selectedVariable || undefined} className="contents">
+            <DashboardView slug={slug} variable={variable} isHydrated={isHydrated} />
         </div>
     )
 }

@@ -2,6 +2,7 @@ import { Series } from '@fa/shared/api'
 import { formatNumber, formatWindDirection } from '@fa/shared/format'
 import { getLegendRows } from '@fa/shared/legend-rows'
 import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
+import { formatPairedMedian, formatPairedModel, PairedRuns } from '@fa/shared/paired-values'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Eye, EyeOff } from 'lucide-react-native'
 import { memo } from 'react'
@@ -16,12 +17,12 @@ import { LineSwatch } from '../ui/LineSwatch'
 import { Text } from '../ui/text'
 import { Toggle } from '../ui/toggle'
 
-// The eye button is 28 px and takes taps across 36 px, the web's `pointer-coarse:after:-inset-1.5`.
+// The eye button is 32 px and takes taps across 40 px, the web's `pointer-coarse:after:-inset-1.5`.
 const EYE_HIT_SLOP = 4
-// The web's phone legend clips the model swatches to 12 px; their dashes still show.
-const MODEL_SWATCH_WIDTH = 12
 const EYE_CLASS = 'size-3.5 text-muted-foreground'
-const ROW_CLASS = 'min-h-9 flex-row items-center gap-1.5 px-1.5'
+const EYE_BUTTON_CLASS = 'size-8'
+// A model's row is laid out like the median's (author, 2026-10-14): the same swatch length, gaps and padding.
+const ROW_CLASS = 'min-h-10 flex-row items-center gap-1.5 pr-0.5 pl-2'
 
 // Shared elements, so an unchanged eye is not rebuilt on every tap of the chart; the class picks the theme's colour.
 const EYE = <Icon as={Eye} className={EYE_CLASS} />
@@ -50,14 +51,15 @@ const ModelRow = memo(function ModelRow({ modelId, value, isHidden, onToggleHidd
 
     return (
         <View className={cn(ROW_CLASS, isHidden && 'opacity-45')}>
-            <View className="flex-1 flex-row items-center gap-1">
-                <LineSwatch color={model.color} dash={model.dash} width={MODEL_SWATCH_WIDTH} />
+            <View className="flex-1 flex-row items-center gap-2">
+                <LineSwatch color={model.color} dash={model.dash} />
                 <Text className={cn('shrink text-sm', isHidden && 'line-through')}>{model.name}</Text>
             </View>
             <Text className="min-w-12 text-right text-sm font-medium tabular-nums">{value}</Text>
             <Button
                 variant="ghost"
                 size="icon-xs"
+                className={EYE_BUTTON_CLASS}
                 onPress={() => onToggleHidden(modelId)}
                 hitSlop={EYE_HIT_SLOP}
                 accessibilityLabel={isHidden ? t('show', { model: model.name }) : t('hide', { model: model.name })}
@@ -76,6 +78,8 @@ interface IProps {
     variable: Variable
     // The median wind direction at the readout time: a phone can't hover the arrows, so the readout names it.
     direction?: number | null
+    // A pair reads "actual (companion)" whichever sub-tab is open (author, 2026-10-14).
+    pairedRuns?: PairedRuns | null
     hidden: ModelId[]
     isMedianHidden: boolean
     onToggleHidden: (id: ModelId) => void
@@ -92,6 +96,7 @@ export function ModelLegend({
     readoutLabel,
     variable,
     direction = null,
+    pairedRuns = null,
     hidden,
     isMedianHidden,
     onToggleHidden,
@@ -105,6 +110,12 @@ export function ModelLegend({
     const { decimals, unit } = VARIABLE_BY_ID[variable]
     const rows = getLegendRows(series, readoutIndex, hidden)
     const isChanged = hidden.length > 0 || isMedianHidden
+    const medianText = pairedRuns
+        ? formatPairedMedian(pairedRuns, readoutIndex, decimals)
+        : formatNumber(median, decimals)
+
+    const formatRow = (modelId: ModelId, value: number | null) =>
+        pairedRuns ? formatPairedModel(pairedRuns, modelId, readoutIndex, decimals) : formatNumber(value, decimals)
 
     return (
         <View className="gap-2">
@@ -130,14 +141,13 @@ export function ModelLegend({
                     isMedianHidden && 'opacity-45',
                 )}
             >
-                <View className="min-h-9 flex-1 flex-row items-center gap-2">
+                <View className="min-h-10 flex-1 flex-row items-center gap-2">
                     <MedianSwatch color={chart.median} />
                     <Text className={cn('text-sm font-semibold', isMedianHidden && 'line-through')}>{t('median')}</Text>
                 </View>
                 {!isMedianHidden && (
                     <Text className="text-sm font-semibold tabular-nums">
-                        {formatNumber(median, decimals)}{' '}
-                        <Text className="text-sm font-normal text-muted-foreground">{unit}</Text>
+                        {medianText} <Text className="text-sm font-normal text-muted-foreground">{unit}</Text>
                     </Text>
                 )}
                 {/* The web's aria-pressed: a toggle that is on while the median is hidden. */}
@@ -146,7 +156,7 @@ export function ModelLegend({
                     onPressedChange={onToggleMedian}
                     hitSlop={EYE_HIT_SLOP}
                     accessibilityLabel={isMedianHidden ? t('showMedian') : t('hideMedian')}
-                    className="size-7 min-w-7 bg-transparent px-0"
+                    className="size-8 min-w-8 bg-transparent px-0"
                 >
                     {isMedianHidden ? EYE_OFF : EYE}
                 </Toggle>
@@ -156,7 +166,7 @@ export function ModelLegend({
                     <ModelRow
                         key={modelId}
                         modelId={modelId}
-                        value={isHidden ? '' : formatNumber(value, decimals)}
+                        value={isHidden ? '' : formatRow(modelId, value)}
                         isHidden={isHidden}
                         onToggleHidden={onToggleHidden}
                     />

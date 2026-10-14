@@ -7,10 +7,11 @@ import { getReadoutLabel } from '@fa/shared/dashboard'
 import { EnsembleStats } from '@fa/shared/ensemble'
 import { getCityName } from '@fa/shared/format'
 import { ModelId } from '@fa/shared/models'
+import { PairedRuns } from '@fa/shared/paired-values'
 import { toggleItem } from '@fa/shared/toggle-item'
-import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
+import { getVariablePair, getVariableTab, Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { ReactNode, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { ChartFrame } from '../components/charts/ChartFrame'
@@ -21,6 +22,7 @@ import { DashboardSkeleton } from '../components/city/DashboardSkeleton'
 import { DisagreementTiles } from '../components/city/DisagreementTiles'
 import { ModelLegend } from '../components/city/ModelLegend'
 import { SeriesTable } from '../components/city/SeriesTable'
+import { VariablePairTabs } from '../components/city/VariablePairTabs'
 import { VariableSwitch } from '../components/city/VariableSwitch'
 import { SearchBox } from '../components/home/SearchBox'
 import { EdgeSheet, FLAT_CARD } from '../components/ui/EdgeSheet'
@@ -69,6 +71,7 @@ const VariableBar = ({ value, onChange }: { value: Variable; onChange: (variable
 interface SelectableChartProps {
     title: string
     table: ReactNode
+    tabs: ReactNode
     isFetching: boolean
     steps: string[]
     series: Series[]
@@ -80,6 +83,7 @@ interface SelectableChartProps {
     locale: string
     summary: string
     now: Date
+    pairedRuns: PairedRuns | null
     hidden: ModelId[]
     isMedianHidden: boolean
     onToggleHidden: (id: ModelId) => void
@@ -93,6 +97,7 @@ interface SelectableChartProps {
 const SelectableChart = ({
     title,
     table,
+    tabs,
     isFetching,
     steps,
     series,
@@ -104,14 +109,13 @@ const SelectableChart = ({
     locale,
     summary,
     now,
+    pairedRuns,
     hidden,
     isMedianHidden,
     onToggleHidden,
     onToggleMedian,
     onReset,
 }: SelectableChartProps) => {
-    const t = useTranslations('dashboard')
-
     const [selection, setSelection] = useState<Selection | null>(null)
 
     const info = VARIABLE_BY_ID[variable]
@@ -125,7 +129,7 @@ const SelectableChart = ({
 
     return (
         <>
-            <ChartFrame title={title} table={table} isFetching={isFetching} className={FLAT_CARD}>
+            <ChartFrame title={title} table={table} tabs={tabs} isFetching={isFetching} className={FLAT_CARD}>
                 <SpaghettiChart
                     steps={steps}
                     series={visibleSeries}
@@ -140,9 +144,6 @@ const SelectableChart = ({
                     now={now}
                     isMedianHidden={isMedianHidden}
                 />
-                {variable === Variable.Wind && (
-                    <Text className="text-xs leading-[1.0625rem] text-muted-foreground">{t('windArrows')}</Text>
-                )}
             </ChartFrame>
             <Separator />
             <View className="p-4">
@@ -153,6 +154,7 @@ const SelectableChart = ({
                     readoutLabel={getReadoutLabel(steps[readoutIndex], variable, timeZone, locale)}
                     direction={windDirections?.[readoutIndex] ?? null}
                     variable={variable}
+                    pairedRuns={pairedRuns}
                     hidden={hidden}
                     isMedianHidden={isMedianHidden}
                     onToggleHidden={onToggleHidden}
@@ -174,13 +176,18 @@ const Dashboard = ({ city }: DashboardProps) => {
     const t = useTranslations('dashboard')
     const tv = useTranslations('variables')
     const tInline = useTranslations('variablesInline')
+    const tTabs = useTranslations('variableTabs')
     const locale = useLocale()
     const now = useNow()
     const router = useRouter()
-    const { variable, setVariable } = useSelectedVariable()
+    const { variable: selectedVariable, setVariable } = useSelectedVariable()
 
     const [hidden, setHidden] = useState<ModelId[]>([])
     const [isMedianHidden, setIsMedianHidden] = useState(false)
+
+    // The switch shows a tap at once; the screen redraws for it in the background and fades until it has (author's lag
+    // report, 2026-10-14).
+    const variable = useDeferredValue(selectedVariable)
 
     const {
         latestQuery,
@@ -188,11 +195,14 @@ const Dashboard = ({ city }: DashboardProps) => {
         latest,
         derived,
         summary: summaryValues,
+        pairedRuns,
         retry,
     } = useDashboardData(city.slug, variable, { now, locale })
 
     const info = VARIABLE_BY_ID[variable]
     const timeZone = city.timezone
+    // A pair is named once ("Temperature"); the sub-tabs show which member is open.
+    const title = getVariablePair(variable) ? tTabs(getVariableTab(variable)) : tv(variable)
     // A stable list, so the chart's memoized drawing survives renders that did not hide or show a model.
     const visibleSeries = useMemo(
         () => latest?.series.filter((s) => !hidden.includes(s.modelId)) ?? [],
@@ -218,7 +228,7 @@ const Dashboard = ({ city }: DashboardProps) => {
                 keyboardShouldPersistTaps="handled"
             >
                 <CityHeader city={city} onSelectCity={handleSwitchCity} />
-                <VariableBar value={variable} onChange={setVariable} />
+                <VariableBar value={selectedVariable} onChange={setVariable} />
                 {latestQuery.isError || precipQuery.isError ? (
                     <ErrorNotice error={latestQuery.error ?? precipQuery.error} onRetry={retry} />
                 ) : (
@@ -238,11 +248,14 @@ const Dashboard = ({ city }: DashboardProps) => {
             keyboardShouldPersistTaps="handled"
         >
             <CityHeader city={city} onSelectCity={handleSwitchCity} />
-            <VariableBar value={variable} onChange={setVariable} />
+            <VariableBar value={selectedVariable} onChange={setVariable} />
             <EdgeSheet>
                 <SelectableChart
-                    title={tv(variable)}
-                    isFetching={latestQuery.isFetching && latestQuery.isPlaceholderData}
+                    title={title}
+                    tabs={<VariablePairTabs value={selectedVariable} onChange={setVariable} />}
+                    isFetching={
+                        (latestQuery.isFetching && latestQuery.isPlaceholderData) || variable !== selectedVariable
+                    }
                     table={
                         <SeriesTable
                             steps={latest.steps}
@@ -251,6 +264,7 @@ const Dashboard = ({ city }: DashboardProps) => {
                             decimals={info.decimals}
                             timeZone={timeZone}
                             locale={locale}
+                            pairedRuns={pairedRuns}
                         />
                     }
                     steps={latest.steps}
@@ -263,6 +277,7 @@ const Dashboard = ({ city }: DashboardProps) => {
                     locale={locale}
                     summary={summary}
                     now={now}
+                    pairedRuns={pairedRuns}
                     hidden={hidden}
                     isMedianHidden={isMedianHidden}
                     onToggleHidden={handleToggleHidden}
@@ -313,7 +328,7 @@ export function CityScreen() {
         )
     }
 
-    // The header's two lines (name with star and pencil, then Refresh), the switch and the cards.
+    // The header (name with star and pencil; Refresh only joins it for an outdated run), the switch and the cards.
     if (!city) {
         return (
             <ScreenScroll contentContainerStyle={CONTENT_STYLE} scrollEnabled={false}>
@@ -322,7 +337,6 @@ export function CityScreen() {
                         <Skeleton className="size-9" />
                         <Skeleton className="size-9" />
                     </SlugHeading>
-                    <Skeleton className="h-9 w-[6.5rem] self-end" />
                 </View>
                 <Skeleton className="h-9" />
                 <DashboardSkeleton />

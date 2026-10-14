@@ -73,6 +73,17 @@
         "humidity": "вологість",
         "cloud": "хмарність"
     },
+    "variableTabs": {
+        "temp": "Температура",
+        "wind": "Вітер"
+    },
+    "subVariables": {
+        "label": "{variable}: що показує графік",
+        "temp": "Фактична",
+        "feels": "Відчувається як",
+        "wind": "Швидкість",
+        "gusts": "Пориви"
+    },
     "city": {
         "forecastAge": "Прогнозу {hours, plural, one {# година} few {# години} many {# годин} other {# години}}",
         "forecastTitle": "Моделі почали цей запуск: {time} за часом міста ({utc}). Отримано: {fetched}. Новий запуск стартує кожні 6 годин.",

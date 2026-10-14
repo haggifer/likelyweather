@@ -73,6 +73,17 @@
         "humidity": "humidity",
         "cloud": "cloud cover"
     },
+    "variableTabs": {
+        "temp": "Temperature",
+        "wind": "Wind"
+    },
+    "subVariables": {
+        "label": "{variable}: what the chart shows",
+        "temp": "Actual",
+        "feels": "Feels like",
+        "wind": "Speed",
+        "gusts": "Gusts"
+    },
     "city": {
         "forecastAge": "{hours, plural, one {# hour old} other {# hours old}}",
         "forecastTitle": "The models started this run at {time} city time ({utc}), and it was collected at {fetched}. A new run starts every 6 hours.",

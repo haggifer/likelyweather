@@ -9,6 +9,7 @@ import { Series } from '@fa/shared/api'
 import { formatNumber, formatWindDirection } from '@fa/shared/format'
 import { getLegendRows } from '@fa/shared/legend-rows'
 import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
+import { formatPairedMedian, formatPairedModel, PairedRuns } from '@fa/shared/paired-values'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Eye, EyeOff } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -20,9 +21,10 @@ interface RowProps {
     isHidden: boolean
 }
 
-// Shared elements, so an unchanged icon is not rebuilt on every hover.
-const EYE = <Eye />
-const EYE_OFF = <EyeOff />
+// Shared elements, so an unchanged icon is not rebuilt on every hover. Phones get a 14 px eye in a 32 px button.
+const EYE = <Eye className="size-3 max-sm:size-3.5" />
+const EYE_OFF = <EyeOff className="size-3 max-sm:size-3.5" />
+const EYE_BUTTON = 'relative max-sm:size-8 pointer-coarse:after:absolute pointer-coarse:after:-inset-1.5'
 
 // One model's row; a hover re-renders only the rows whose value text changed (author's lag report, 2026-10-12).
 const ModelRow = memo(function ModelRow({ modelId, value, isHidden }: RowProps) {
@@ -34,7 +36,7 @@ const ModelRow = memo(function ModelRow({ modelId, value, isHidden }: RowProps) 
     return (
         <li
             className={cn(
-                'flex h-(--row-height) items-center gap-1.5 rounded-md px-1.5 text-[0.8125rem] max-sm:h-auto max-sm:min-h-9 max-sm:py-1 max-sm:text-sm sm:gap-2 hover:bg-muted',
+                'flex h-(--row-height) items-center gap-1.5 rounded-md px-1.5 text-[0.8125rem] max-sm:h-auto max-sm:min-h-10 max-sm:py-1 max-sm:pr-0.5 max-sm:pl-2 max-sm:text-sm sm:gap-2 hover:bg-muted',
                 isHidden && 'opacity-45',
             )}
             onMouseEnter={() => dispatch(setHighlightedModel(modelId))}
@@ -42,7 +44,7 @@ const ModelRow = memo(function ModelRow({ modelId, value, isHidden }: RowProps) 
             onFocus={() => dispatch(setHighlightedModel(modelId))}
             onBlur={() => dispatch(setHighlightedModel(null))}
         >
-            <div className="flex min-w-0 flex-1 items-center gap-2 max-sm:gap-1">
+            <div className="flex min-w-0 flex-1 items-center gap-2">
                 <LineSwatch color={model.color} dash={model.dash} />
                 <span
                     className={cn(
@@ -53,11 +55,11 @@ const ModelRow = memo(function ModelRow({ modelId, value, isHidden }: RowProps) 
                     {model.name}
                 </span>
             </div>
-            <span className="w-14 text-right font-medium">{value}</span>
+            <span className="w-14 text-right font-medium whitespace-nowrap max-sm:w-auto">{value}</span>
             <Button
                 variant="ghost"
                 size="icon-xs"
-                className="relative pointer-coarse:after:absolute pointer-coarse:after:-inset-1.5"
+                className={EYE_BUTTON}
                 onClick={() => dispatch(toggleHiddenModel(modelId))}
                 aria-label={isHidden ? t('show', { model: model.name }) : t('hide', { model: model.name })}
             >
@@ -74,11 +76,21 @@ interface IProps {
     readoutLabel: string
     variable: Variable
     direction?: number | null
+    // Phones read a pair together, "actual (companion)" (author, 2026-10-14).
+    pairedRuns?: PairedRuns | null
 }
 
 // `direction` is the median wind direction at the readout time: on a touch screen the arrows' hover titles can't be
 // read, so the readout names it.
-export function ModelLegend({ series, median, readoutIndex, readoutLabel, variable, direction = null }: IProps) {
+export function ModelLegend({
+    series,
+    median,
+    readoutIndex,
+    readoutLabel,
+    variable,
+    direction = null,
+    pairedRuns = null,
+}: IProps) {
     const t = useTranslations('legend')
     const tc = useTranslations('chart')
     const dispatch = useAppDispatch()
@@ -87,6 +99,12 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
 
     const { decimals, unit } = VARIABLE_BY_ID[variable]
     const rows = getLegendRows(series, readoutIndex, hidden)
+    const medianText = pairedRuns
+        ? formatPairedMedian(pairedRuns, readoutIndex, decimals)
+        : formatNumber(median, decimals)
+
+    const formatRow = (modelId: ModelId, value: number | null) =>
+        pairedRuns ? formatPairedModel(pairedRuns, modelId, readoutIndex, decimals) : formatNumber(value, decimals)
 
     return (
         <div className="flex flex-col gap-2">
@@ -112,7 +130,7 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
             </div>
             <div
                 className={cn(
-                    'flex items-center gap-1.5 rounded-md bg-muted py-1 pr-0.5 pl-2 text-[0.8125rem] max-sm:text-sm sm:gap-2',
+                    'flex items-center gap-1.5 rounded-md bg-muted py-1 pr-0.5 pl-2 text-[0.8125rem] max-sm:min-h-10 max-sm:text-sm sm:gap-2',
                     isMedianHidden && 'opacity-45',
                 )}
             >
@@ -131,7 +149,7 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
                     <span className={cn(isMedianHidden && 'line-through')}>{t('median')}</span>
                 </span>
                 <span className="text-right font-semibold">
-                    {isMedianHidden ? '' : formatNumber(median, decimals)}{' '}
+                    {isMedianHidden ? '' : medianText}{' '}
                     {!isMedianHidden && (
                         <span className="text-xs font-normal text-muted-foreground max-sm:text-sm">{unit}</span>
                     )}
@@ -139,7 +157,7 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
                 <Button
                     variant="ghost"
                     size="icon-xs"
-                    className="relative pointer-coarse:after:absolute pointer-coarse:after:-inset-1.5"
+                    className={EYE_BUTTON}
                     onClick={() => dispatch(toggleMedian())}
                     aria-label={isMedianHidden ? t('showMedian') : t('hideMedian')}
                     aria-pressed={isMedianHidden}
@@ -152,7 +170,7 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
                     <ModelRow
                         key={modelId}
                         modelId={modelId}
-                        value={isHidden ? '' : formatNumber(value, decimals)}
+                        value={isHidden ? '' : formatRow(modelId, value)}
                         isHidden={isHidden}
                     />
                 ))}

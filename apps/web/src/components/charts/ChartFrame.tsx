@@ -11,6 +11,8 @@ interface IProps {
     title: ReactNode
     description?: ReactNode
     table?: ReactNode
+    // Shown above the chart, not with the table, which already holds what they switch between.
+    tabs?: ReactNode
     actions?: ReactNode
     footer?: ReactNode
     isFetching?: boolean
@@ -18,21 +20,32 @@ interface IProps {
     children: ReactNode
 }
 
-export function ChartFrame({ title, description, table, actions, footer, isFetching, className, children }: IProps) {
+export function ChartFrame({
+    title,
+    description,
+    table,
+    tabs,
+    actions,
+    footer,
+    isFetching,
+    className,
+    children,
+}: IProps) {
     const t = useTranslations('chart')
     const [isTable, setIsTable] = useState(false)
 
     return (
         <Card className={cn('gap-3', className)}>
-            <CardHeader>
-                <CardTitle className="font-semibold">{title}</CardTitle>
+            <CardHeader className="max-sm:items-center">
+                <CardTitle className="font-semibold max-sm:text-lg">{title}</CardTitle>
                 {description && <CardDescription>{description}</CardDescription>}
-                <CardAction className="flex items-center gap-1.5">
+                <CardAction className="flex items-center gap-1.5 max-sm:self-center">
                     {actions}
                     {table && (
                         <Button
                             variant="ghost"
                             size="sm"
+                            className="max-sm:text-sm"
                             onClick={() => setIsTable((v) => !v)}
                             aria-pressed={isTable}
                             aria-label={isTable ? t('showChart') : t('showTable')}
@@ -43,7 +56,13 @@ export function ChartFrame({ title, description, table, actions, footer, isFetch
                     )}
                 </CardAction>
             </CardHeader>
-            <CardContent className={cn('transition-opacity', isFetching && 'opacity-60')}>
+            {tabs && !isTable && <div className="px-(--card-spacing)">{tabs}</div>}
+            <CardContent
+                className={cn(
+                    'transition-opacity in-data-switching:opacity-60 max-sm:pl-1',
+                    isFetching && 'opacity-60',
+                )}
+            >
                 {isTable && table ? <div className="max-h-[26.25rem] overflow-auto">{table}</div> : children}
                 {footer}
             </CardContent>

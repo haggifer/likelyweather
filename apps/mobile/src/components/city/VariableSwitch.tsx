@@ -1,4 +1,4 @@
-import { Variable, VARIABLES } from '@fa/shared/variables'
+import { getVariablePair, getVariableTab, PHONE_VARIABLES, Variable } from '@fa/shared/variables'
 import {
     Cloud,
     CloudRain,
@@ -26,31 +26,38 @@ const ICONS: Record<Variable, LucideIcon> = {
     [Variable.Cloud]: Cloud,
 }
 
-const LAST_INDEX = VARIABLES.length - 1
+const LAST_INDEX = PHONE_VARIABLES.length - 1
 
 interface IProps {
     value: Variable
     onChange: (variable: Variable) => void
 }
 
-// The web's phone layout: eight segments, only the selected one named and without its icon; the others show their
+// The web's phone layout: six segments, only the selected one named and without its icon; the others show their
 // icon and keep their accessible name. The named segment takes the room its label needs, the web's `flex-[3.4]`; a
-// longer name ends in an ellipsis.
+// longer name ends in an ellipsis. A pair is named once (Temperature, Wind); its sub-tabs above the chart pick the
+// member (`VariablePairTabs`).
 export function VariableSwitch({ value, onChange }: IProps) {
     const t = useTranslations('variables')
+    const tTabs = useTranslations('variableTabs')
+
+    const selected = getVariableTab(value)
+
+    const getLabel = (id: Variable) => (getVariablePair(id) ? tTabs(id) : t(id))
 
     return (
         <ToggleGroup
             type="single"
             variant="outline"
-            value={value}
+            value={selected}
             // A tap on the selected segment would clear the group; the switch always keeps one variable.
             onValueChange={(next) => next && onChange(next as Variable)}
             accessibilityLabel={t('label')}
             className="w-full bg-card"
         >
-            {VARIABLES.map(({ id }, i) => {
-                const isSelected = id === value
+            {PHONE_VARIABLES.map((id, i) => {
+                const isSelected = id === selected
+                const label = getLabel(id)
 
                 return (
                     <ToggleGroupItem
@@ -58,12 +65,12 @@ export function VariableSwitch({ value, onChange }: IProps) {
                         value={id}
                         isFirst={i === 0}
                         isLast={i === LAST_INDEX}
-                        accessibilityLabel={t(id)}
+                        accessibilityLabel={label}
                         className={cn('h-9 min-w-0 border-border', isSelected ? 'flex-[3.4] px-2' : 'flex-1 px-0')}
                     >
                         {isSelected ? (
-                            <Text numberOfLines={1} className="shrink text-[0.8125rem]">
-                                {t(id)}
+                            <Text numberOfLines={1} className="shrink text-sm">
+                                {label}
                             </Text>
                         ) : (
                             <ToggleGroupIcon as={ICONS[id]} className="text-muted-foreground" />

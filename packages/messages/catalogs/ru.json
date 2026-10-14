@@ -73,6 +73,17 @@
         "humidity": "влажность",
         "cloud": "облачность"
     },
+    "variableTabs": {
+        "temp": "Температура",
+        "wind": "Ветер"
+    },
+    "subVariables": {
+        "label": "{variable}: что показывает график",
+        "temp": "Фактическая",
+        "feels": "Ощущается как",
+        "wind": "Скорость",
+        "gusts": "Порывы"
+    },
     "city": {
         "forecastAge": "Прогнозу {hours, plural, one {# час} few {# часа} many {# часов} other {# часа}}",
         "forecastTitle": "Модели начали этот запуск: {time} по времени города ({utc}). Получено: {fetched}. Новый запуск стартует каждые 6 часов.",

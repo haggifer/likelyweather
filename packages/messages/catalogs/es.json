@@ -73,6 +73,17 @@
         "humidity": "humedad",
         "cloud": "nubosidad"
     },
+    "variableTabs": {
+        "temp": "Temperatura",
+        "wind": "Viento"
+    },
+    "subVariables": {
+        "label": "{variable}: qué muestra el gráfico",
+        "temp": "Real",
+        "feels": "Sensación térmica",
+        "wind": "Velocidad",
+        "gusts": "Rachas"
+    },
     "city": {
         "forecastAge": "{hours, plural, one {De hace # hora} other {De hace # horas}}",
         "forecastTitle": "Los modelos iniciaron esta ejecución el {time}, hora de la ciudad ({utc}), y se obtuvo el {fetched}. Cada 6 horas empieza una ejecución nueva.",

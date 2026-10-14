@@ -1,16 +1,19 @@
 import { useCity } from '@fa/api-client/hooks/useCity'
 import { useLatest } from '@fa/api-client/hooks/useLatest'
+import { getLatestQuery } from '@fa/api-client/latest-query'
 import { City, LatestResponse } from '@fa/shared/api'
 import {
     DashboardStats,
     DashboardSummaryValues,
     getDashboardStats,
     getDashboardSummaryValues,
+    getEnsembleStats,
 } from '@fa/shared/dashboard'
+import { PairedRuns, toPairedRuns } from '@fa/shared/paired-values'
 import { buildSlots, DASHBOARD_HOURS, getChartStart, toSlotLatest } from '@fa/shared/slots'
-import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
-import { UseQueryResult } from '@tanstack/react-query'
-import { useMemo } from 'react'
+import { getVariablePair, Variable, VARIABLE_BY_ID, VARIABLES } from '@fa/shared/variables'
+import { useQueryClient, UseQueryResult } from '@tanstack/react-query'
+import { useEffect, useMemo } from 'react'
 
 interface DashboardOptions {
     // The web's clock is null while it renders on the server and hydrates.
@@ -31,24 +34,33 @@ export interface UseDashboardDataResult {
     derived: DashboardStats | null
     // The summary sentence's values, apart from the variable's translated name.
     summary: DashboardSummaryValues | null
+    // For a variable with a companion (feels-like, gusts), both runs, which phones show side by side.
+    pairedRuns: PairedRuns | null
     retry: () => void
 }
 
 // A city dashboard's data in both apps: the chosen variable's run and the precipitation run, which anchors the chart
 // because every variable shares it (a newer run re-anchors it), re-gridded onto the chart's slots, with its ensemble
-// statistics and the summary's values.
+// statistics and the summary's values. Once that run is on screen the city's other variables load in the background,
+// so a switch draws from the cache instead of waiting for the network (author's lag report, 2026-10-14); the API serves
+// them from the run it has just refreshed, so they spend no quota.
 export function useDashboardData(
     slug: string,
     variable: Variable,
     { now, locale, isEnabled = true }: DashboardOptions,
 ): UseDashboardDataResult {
+    const queryClient = useQueryClient()
+
     const { data: city } = useCity(slug)
     const latestQuery = useLatest(slug, variable, isEnabled)
     const precipQuery = useLatest(slug, Variable.Precip, isEnabled)
+    const companion = getVariablePair(variable)?.find((v) => v !== variable) ?? null
+    const companionQuery = useLatest(slug, companion ?? variable, isEnabled && companion !== null)
 
     const timeZone = city?.timezone
     const aggregation = VARIABLE_BY_ID[variable].aggregation
     const anchorRun = precipQuery.data ?? latestQuery.data
+    const isRunShown = latestQuery.isSuccess && precipQuery.isSuccess
     const anchor = useMemo(
         () => (timeZone && anchorRun ? getChartStart(anchorRun, timeZone) : null),
         [anchorRun, timeZone],
@@ -62,6 +74,24 @@ export function useDashboardData(
         () => (latest && timeZone && now ? getDashboardStats(latest, variable, timeZone, now) : null),
         [latest, variable, timeZone, now],
     )
+    const companionLatest = useMemo(
+        () =>
+            companion && companionQuery.data && slots
+                ? toSlotLatest(companionQuery.data, slots, VARIABLE_BY_ID[companion].aggregation)
+                : null,
+        [companion, companionQuery.data, slots],
+    )
+    const pairedRuns = useMemo(
+        () =>
+            latest && derived && companionLatest
+                ? toPairedRuns(
+                      variable,
+                      { series: latest.series, median: derived.stats.median },
+                      { series: companionLatest.series, median: getEnsembleStats(companionLatest).median },
+                  )
+                : null,
+        [latest, derived, companionLatest, variable],
+    )
     const summary = useMemo(
         () => (latest && derived && now ? getDashboardSummaryValues(latest, derived, variable, now, locale) : null),
         [latest, derived, variable, now, locale],
@@ -72,5 +102,14 @@ export function useDashboardData(
         void precipQuery.refetch()
     }
 
-    return { city, latestQuery, precipQuery, anchor, latest, derived, summary, retry }
+    useEffect(() => {
+        if (!isRunShown) return
+
+        // Only a variable missing from the cache is fetched; one already there waits for Refresh like the rest.
+        VARIABLES.forEach(
+            ({ id }) => void queryClient.prefetchQuery({ ...getLatestQuery(slug, id), staleTime: Infinity }),
+        )
+    }, [isRunShown, slug, queryClient])
+
+    return { city, latestQuery, precipQuery, anchor, latest, derived, summary, pairedRuns, retry }
 }
