@@ -21,11 +21,11 @@ const ARCHIVE: ArchiveResponse = {
     },
 }
 describe('getArchiveHourlySeries', () => {
-    it('keeps every hour, with precipitation as the hour after each step', () => {
+    it('keeps every hour as it comes', () => {
         const series = getArchiveHourlySeries(ARCHIVE)
 
         expect(series[Variable.Temp]).toEqual({ steps: STEPS, values: [10, 11, 12, 13, 14, 15] })
         expect(series[Variable.Precip]?.steps).toEqual(STEPS)
-        expect(series[Variable.Precip]?.values).toEqual([0.1, 0.2, 0.3, 0.4, 0.5, null])
+        expect(series[Variable.Precip]?.values).toEqual([0, 0.1, 0.2, 0.3, 0.4, 0.5])
     })
 })

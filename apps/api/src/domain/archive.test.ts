@@ -21,6 +21,8 @@ const CITY: City = {
 }
 const NOW = new Date('2026-10-12T12:00:00Z')
 const RANGE = { from: '2026-10-09', to: '2026-10-10' }
+// The period's 48 hours and the one after it, whose precipitation stamp closes the period's last hour.
+const HOURS = 49
 
 const toHours = (start: string, count: number, temp: (i: number) => number | null) =>
     Array.from({ length: count }, (_, i) => ({
@@ -54,21 +56,21 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('archive (database)', () => {
 
     it('fetches a period once, spending one unit, then serves it from the database for free', async () => {
         const spend = vi.fn().mockResolvedValue(undefined)
-        fetchMock.mockResolvedValue(toHours('2026-10-09T00:00:00Z', 48, (i) => i))
+        fetchMock.mockResolvedValue(toHours('2026-10-09T00:00:00Z', HOURS, (i) => i))
 
         const first = await getArchivePayload(CITY, RANGE, spend, NOW)
         const second = await getArchivePayload(CITY, RANGE, spend, NOW)
 
         expect(fetchMock).toHaveBeenCalledTimes(1)
         expect(spend).toHaveBeenCalledTimes(1)
-        expect(first.steps).toHaveLength(48)
-        expect(second.values.temp[47]).toBe(47)
+        expect(first.steps).toHaveLength(HOURS)
+        expect(second.values.temp[HOURS - 1]).toBe(HOURS - 1)
         expect(second.values.humidity[0]).toBe(70)
     })
 
     it('stores no hour without a temperature, so it is asked for again', async () => {
         const spend = vi.fn().mockResolvedValue(undefined)
-        fetchMock.mockResolvedValue(toHours('2026-10-09T00:00:00Z', 48, (i) => (i < 40 ? i : null)))
+        fetchMock.mockResolvedValue(toHours('2026-10-09T00:00:00Z', HOURS, (i) => (i < 40 ? i : null)))
 
         const first = await getArchivePayload(CITY, RANGE, spend, NOW)
         await getArchivePayload(CITY, RANGE, spend, NOW)

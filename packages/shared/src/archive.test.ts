@@ -11,6 +11,7 @@ import {
     isEmptyArchive,
     isValidArchiveRange,
     resolveArchiveRange,
+    toPeriodArchive,
 } from './archive'
 
 const NOW = new Date('2026-10-12T18:00:00Z')
@@ -36,16 +37,45 @@ describe('archive ranges', () => {
         expect(isValidArchiveRange({ from: '2026-02-27', to: '2026-02-30' }, '2026-10-11')).toBe(false)
     })
 
-    it('covers the local days in whole UTC hours', () => {
+    it('covers the local days in whole UTC hours, and the hour after them', () => {
         const london = getArchiveHours({ from: '2026-10-10', to: '2026-10-11' }, 'Europe/London')
 
         expect(london.start.toISOString()).toBe('2026-10-09T23:00:00.000Z')
-        expect(london.end.toISOString()).toBe('2026-10-11T23:00:00.000Z')
+        expect(london.end.toISOString()).toBe('2026-10-12T00:00:00.000Z')
 
         const kolkata = getArchiveHours({ from: '2026-10-10', to: '2026-10-10' }, 'Asia/Kolkata')
 
         expect(kolkata.start.toISOString()).toBe('2026-10-09T18:00:00.000Z')
-        expect(kolkata.end.toISOString()).toBe('2026-10-10T19:00:00.000Z')
+        expect(kolkata.end.toISOString()).toBe('2026-10-10T20:00:00.000Z')
+    })
+})
+
+describe('toPeriodArchive', () => {
+    const steps = ['2026-10-10T00:00Z', '2026-10-10T01:00Z', '2026-10-10T02:00Z']
+    const answer: ArchiveResponse = {
+        from: '2026-10-10',
+        to: '2026-10-10',
+        steps,
+        values: {
+            temp: [10, 11, 12],
+            feels: [8, 9, 10],
+            wind: [3, 3, 3],
+            gusts: [6, 6, 6],
+            windDir: [270, 280, 290],
+            pressure: [1012, 1012, 1012],
+            precip: [0.9, 0.1, 0.2],
+            humidity: [80, 80, 80],
+            cloud: [50, 50, 50],
+        },
+    }
+
+    it("drops the API's hour after the period and reads each step's precipitation from the hour after it", () => {
+        const period = toPeriodArchive(answer)
+
+        expect(period.steps).toEqual(steps.slice(0, 2))
+        expect(period.values.temp).toEqual([10, 11])
+        expect(period.values.windDir).toEqual([270, 280])
+        expect(period.values.precip).toEqual([0.1, 0.2])
     })
 })
 

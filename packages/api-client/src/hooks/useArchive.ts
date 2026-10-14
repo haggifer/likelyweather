@@ -1,5 +1,5 @@
 import { ArchiveResponse } from '@fa/shared/api'
-import { ArchiveRange } from '@fa/shared/archive'
+import { ArchiveRange, toPeriodArchive } from '@fa/shared/archive'
 import { keepPreviousData, useQuery, UseQueryResult } from '@tanstack/react-query'
 import { apiGet } from '../api'
 
@@ -10,6 +10,7 @@ export function useArchive(slug: string | null, range: ArchiveRange | null): Use
         queryKey: ['archive', slug, range?.from, range?.to],
         queryFn: () => apiGet<ArchiveResponse>(`/cities/${slug}/archive`, { from: range!.from, to: range!.to }),
         enabled: Boolean(slug && range),
+        select: toPeriodArchive,
         staleTime: Infinity,
         // Another period keeps the last chart on screen until its own arrives.
         placeholderData: keepPreviousData,

@@ -87,14 +87,29 @@ export const formatArchiveRange = ({ from, to }: ArchiveRange) =>
 // A period the archive has no hours for: the hours come back, all empty.
 export const isEmptyArchive = ({ values }: Pick<ArchiveResponse, 'values'>) => values.temp.every((v) => v === null)
 
-// The UTC hours the local days cover, start included and end excluded, widened to whole hours for zones that are a
-// half hour off UTC, since the archive is hourly in UTC.
+// The UTC hours the API answers with: the local days, widened to whole hours for zones that are a half hour off UTC
+// since the archive is hourly in UTC, and one hour more, because Open-Meteo stamps an hour's precipitation at its end
+// and the period's last hour ends at the period's end (`toPeriodArchive` reads it and drops that hour). Start included,
+// end excluded.
 export const getArchiveHours = ({ from, to }: ArchiveRange, timeZone: string) => {
     const start = getLocalMidnight(from, timeZone)
     const end = getLocalMidnight(addDays(to, 1), timeZone)
 
     return {
         start: new Date(Math.floor(start.getTime() / HOUR_MS) * HOUR_MS),
-        end: new Date(Math.ceil(end.getTime() / HOUR_MS) * HOUR_MS),
+        end: new Date((Math.ceil(end.getTime() / HOUR_MS) + 1) * HOUR_MS),
     }
 }
+
+const toPeriodValues = (field: ArchiveField, values: (number | null)[]) =>
+    field === 'precip' ? values.slice(1) : values.slice(0, -1)
+
+// The period's own hours from the API's answer: each step's precipitation is the hour after it, which Open-Meteo stamps
+// at that hour's end, and the API's extra hour after the period goes.
+export const toPeriodArchive = (archive: ArchiveResponse): ArchiveResponse => ({
+    ...archive,
+    steps: archive.steps.slice(0, -1),
+    values: Object.fromEntries(
+        ARCHIVE_FIELDS.map(({ field }) => [field, toPeriodValues(field, archive.values[field])]),
+    ) as ArchiveResponse['values'],
+})
