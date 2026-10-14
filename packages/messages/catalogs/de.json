@@ -104,7 +104,6 @@
         "show": "{model} zeigen",
         "hide": "{model} ausblenden",
         "hint": "Maus über ein Modell hebt es hervor.",
-        "hintTouch": "Das Auge blendet ein Modell aus.",
         "showMedian": "Median anzeigen",
         "hideMedian": "Median ausblenden"
     },

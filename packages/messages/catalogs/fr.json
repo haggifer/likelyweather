@@ -104,7 +104,6 @@
         "show": "Afficher {model}",
         "hide": "Masquer {model}",
         "hint": "Survolez un modèle pour le mettre en évidence.",
-        "hintTouch": "L’œil masque un modèle.",
         "showMedian": "Afficher la médiane",
         "hideMedian": "Masquer la médiane"
     },

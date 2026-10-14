@@ -104,7 +104,6 @@
         "show": "Mostrar {model}",
         "hide": "Ocultar {model}",
         "hint": "Pasa el cursor por un modelo para resaltarlo.",
-        "hintTouch": "El ojo oculta un modelo.",
         "showMedian": "Mostrar la mediana",
         "hideMedian": "Ocultar la mediana"
     },
