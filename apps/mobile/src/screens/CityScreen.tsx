@@ -23,9 +23,11 @@ import { ModelLegend } from '../components/city/ModelLegend'
 import { SeriesTable } from '../components/city/SeriesTable'
 import { VariableSwitch } from '../components/city/VariableSwitch'
 import { SearchBox } from '../components/home/SearchBox'
+import { EdgeSheet, FLAT_CARD } from '../components/ui/EdgeSheet'
 import { ErrorNotice } from '../components/ui/ErrorNotice'
 import { LoadingStatus } from '../components/ui/LoadingStatus'
 import { ScreenScroll } from '../components/ui/ScreenScroll'
+import { Separator } from '../components/ui/separator'
 import { Skeleton } from '../components/ui/skeleton'
 import { Text } from '../components/ui/text'
 import { useNow } from '../hooks/useNow'
@@ -34,7 +36,7 @@ import { getSlugTitle } from '../lib/city-slug'
 import { setSelectedCity } from '../lib/selected-city-store'
 
 // ScreenScroll adds the navigation bar's height to the content's bottom padding, which it reads from this style.
-const CONTENT_STYLE = { padding: 16, paddingTop: 8, gap: 12 }
+const CONTENT_STYLE = { padding: 16, paddingTop: 8, paddingBottom: 0, gap: 12 }
 // The header is the scroll's first child and the variable bar its second, the one that sticks.
 const STICKY_INDICES = [1]
 
@@ -65,6 +67,9 @@ const VariableBar = ({ value, onChange }: { value: Variable; onChange: (variable
 )
 
 interface SelectableChartProps {
+    title: string
+    table: ReactNode
+    isFetching: boolean
     steps: string[]
     series: Series[]
     visibleSeries: Series[]
@@ -83,8 +88,12 @@ interface SelectableChartProps {
 }
 
 // The chart and its model list hold the picked slot themselves, so a tap re-renders them and not the rest of the
-// screen: the header, the disagreement tiles and the table.
+// screen: the header, the disagreement tiles and the table. The list is the sheet's own section under the chart, so it
+// stays while the table replaces the chart, as on the web.
 const SelectableChart = ({
+    title,
+    table,
+    isFetching,
     steps,
     series,
     visibleSeries,
@@ -116,24 +125,27 @@ const SelectableChart = ({
 
     return (
         <>
-            <SpaghettiChart
-                steps={steps}
-                series={visibleSeries}
-                stats={stats}
-                variable={variable}
-                timeZone={timeZone}
-                locale={locale}
-                accessibilityLabel={summary}
-                hoverIndex={hoverIndex >= 0 ? hoverIndex : null}
-                onHoverIndex={handleHoverIndex}
-                directions={windDirections}
-                now={now}
-                isMedianHidden={isMedianHidden}
-            />
-            {variable === Variable.Wind && (
-                <Text className="text-xs leading-[1.0625rem] text-muted-foreground">{t('windArrows')}</Text>
-            )}
-            <View className="border-t border-border pt-3">
+            <ChartFrame title={title} table={table} isFetching={isFetching} className={FLAT_CARD}>
+                <SpaghettiChart
+                    steps={steps}
+                    series={visibleSeries}
+                    stats={stats}
+                    variable={variable}
+                    timeZone={timeZone}
+                    locale={locale}
+                    accessibilityLabel={summary}
+                    hoverIndex={hoverIndex >= 0 ? hoverIndex : null}
+                    onHoverIndex={handleHoverIndex}
+                    directions={windDirections}
+                    now={now}
+                    isMedianHidden={isMedianHidden}
+                />
+                {variable === Variable.Wind && (
+                    <Text className="text-xs leading-[1.0625rem] text-muted-foreground">{t('windArrows')}</Text>
+                )}
+            </ChartFrame>
+            <Separator />
+            <View className="p-4">
                 <ModelLegend
                     series={series}
                     median={stats.median[readoutIndex]}
@@ -227,22 +239,20 @@ const Dashboard = ({ city }: DashboardProps) => {
         >
             <CityHeader city={city} onSelectCity={handleSwitchCity} />
             <VariableBar value={variable} onChange={setVariable} />
-            <ChartFrame
-                title={tv(variable)}
-                summary={summary}
-                isFetching={latestQuery.isFetching && latestQuery.isPlaceholderData}
-                table={
-                    <SeriesTable
-                        steps={latest.steps}
-                        series={latest.series}
-                        stats={derived.stats}
-                        decimals={info.decimals}
-                        timeZone={timeZone}
-                        locale={locale}
-                    />
-                }
-            >
+            <EdgeSheet>
                 <SelectableChart
+                    title={tv(variable)}
+                    isFetching={latestQuery.isFetching && latestQuery.isPlaceholderData}
+                    table={
+                        <SeriesTable
+                            steps={latest.steps}
+                            series={latest.series}
+                            stats={derived.stats}
+                            decimals={info.decimals}
+                            timeZone={timeZone}
+                            locale={locale}
+                        />
+                    }
                     steps={latest.steps}
                     series={latest.series}
                     visibleSeries={visibleSeries}
@@ -259,8 +269,9 @@ const Dashboard = ({ city }: DashboardProps) => {
                     onToggleMedian={handleToggleMedian}
                     onReset={handleReset}
                 />
-            </ChartFrame>
-            <DisagreementTiles days={derived.disagreement} variable={variable} />
+                <Separator />
+                <DisagreementTiles days={derived.disagreement} variable={variable} className={FLAT_CARD} />
+            </EdgeSheet>
         </ScreenScroll>
     )
 }

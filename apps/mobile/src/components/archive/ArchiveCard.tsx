@@ -18,10 +18,12 @@ import { View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { useArchiveSettings } from '../../hooks/useArchiveSettings'
 import { useNow } from '../../hooks/useNow'
+import { cn } from '../../lib/cn'
 import { MedianOverview, MedianOverviewSkeleton } from '../charts/MedianOverview'
 import { FavoriteToggle } from '../city/FavoriteToggle'
 import { OverviewPanelsMenu } from '../home/OverviewPanelsMenu'
 import { Card, CardContent, CardHeader } from '../ui/card'
+import { BLEED_CARD } from '../ui/EdgeSheet'
 import { ErrorNotice } from '../ui/ErrorNotice'
 import { FlagIcon } from '../ui/FlagIcon'
 import { LoadingStatus } from '../ui/LoadingStatus'
@@ -103,7 +105,7 @@ export function ArchiveCard({ slug }: IProps) {
 
     if (cityError) {
         return (
-            <Card className="py-10">
+            <Card className={cn('py-10', BLEED_CARD)}>
                 <CardContent>
                     <ErrorNotice error={cityError} onRetry={() => void refetchCity()} />
                 </CardContent>
@@ -112,7 +114,7 @@ export function ArchiveCard({ slug }: IProps) {
     }
 
     return (
-        <Card className="gap-0 pt-3 pb-4">
+        <Card className={cn('gap-0 pt-3 pb-4', BLEED_CARD)}>
             <CardHeader className="min-h-9 flex-row items-center gap-2.5 px-4">
                 {city ? (
                     <>

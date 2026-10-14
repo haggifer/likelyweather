@@ -5,9 +5,11 @@ import { ArchiveCard } from '../components/archive/ArchiveCard'
 import { PlaceChips } from '../components/home/PlaceChips'
 import { SearchBox } from '../components/home/SearchBox'
 import { Card, CardContent } from '../components/ui/card'
+import { BLEED_CARD } from '../components/ui/EdgeSheet'
 import { LoadingStatus } from '../components/ui/LoadingStatus'
 import { ScreenScroll } from '../components/ui/ScreenScroll'
 import { usePlaces } from '../hooks/usePlaces'
+import { cn } from '../lib/cn'
 
 // The web's archive page: the same search and chips as Home, then the chosen city's past weather. The city is the
 // screen's `city` param, as the web keeps it in `?city=`, and the first chip until one is picked.
@@ -24,7 +26,7 @@ export function ArchiveScreen() {
 
     return (
         <ScreenScroll
-            contentContainerClassName="gap-4 p-4"
+            contentContainerClassName="gap-4 px-4 pt-4"
             keyboardShouldPersistTaps="handled"
             className="bg-background"
         >
@@ -33,7 +35,7 @@ export function ArchiveScreen() {
             {slug ? (
                 <ArchiveCard key={slug} slug={slug} />
             ) : (
-                <Card className="py-4">
+                <Card className={cn('py-4', BLEED_CARD)}>
                     <CardContent>
                         <LoadingStatus label={t('loading')} />
                     </CardContent>

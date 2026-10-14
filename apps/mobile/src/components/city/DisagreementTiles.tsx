@@ -5,22 +5,24 @@ import { DISAGREEMENT_TONE } from '@fa/shared/status-tone'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { ScrollView, View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
+import { cn } from '../../lib/cn'
 import { Badge } from '../ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 import { Text } from '../ui/text'
 
-// A tile's `w-28` and the row's `gap-2`, which the row snaps by.
-const TILE_WIDTH = 112
+// A tile's `w-[5.625rem]` (the web's phone minimum) and the row's `gap-2`, which the row snaps by.
+const TILE_WIDTH = 90
 const TILE_GAP = 8
 
 interface IProps {
     days: DayDisagreement[]
     variable: Variable
+    className?: string
 }
 
 // One tile per local day with the spread between the highest and the lowest model; the row scrolls sideways and
 // snaps to a tile's start, like the web's phone row, and is named for TalkBack like the web's region.
-export function DisagreementTiles({ days, variable }: IProps) {
+export function DisagreementTiles({ days, variable, className }: IProps) {
     const t = useTranslations('disagreement')
     const tInline = useTranslations('variablesInline')
     const locale = useLocale()
@@ -34,7 +36,7 @@ export function DisagreementTiles({ days, variable }: IProps) {
     })
 
     return (
-        <Card className="gap-3 py-4">
+        <Card className={cn('gap-3 py-4', className)}>
             <CardHeader className="gap-1 px-4">
                 <CardTitle className="text-sm">{t('title')}</CardTitle>
                 <CardDescription className="text-[0.8125rem]">{description}</CardDescription>
@@ -51,8 +53,11 @@ export function DisagreementTiles({ days, variable }: IProps) {
                         accessibilityLabel={t('title')}
                     >
                         {days.map((d) => (
-                            <View key={d.day} className="w-28 gap-1.5 rounded-md border border-border p-2.5">
-                                <Text className="text-xs text-muted-foreground">
+                            <View
+                                key={d.day}
+                                className="w-[5.625rem] items-center gap-1.5 rounded-md border border-border p-2.5"
+                            >
+                                <Text className="text-center text-xs text-muted-foreground">
                                     {formatDateKey(d.day, locale, { weekday: 'short', day: 'numeric', month: 'short' })}
                                 </Text>
                                 <Text
@@ -62,7 +67,7 @@ export function DisagreementTiles({ days, variable }: IProps) {
                                     {formatSpread(d.spread, decimals)}
                                     <Text className="text-xs font-normal text-muted-foreground"> {unit}</Text>
                                 </Text>
-                                <Badge variant={DISAGREEMENT_TONE[d.label]} className="self-start">
+                                <Badge variant={DISAGREEMENT_TONE[d.label]} className="w-full self-stretch">
                                     <Text>{t(d.label)}</Text>
                                 </Badge>
                             </View>

@@ -20,10 +20,8 @@ import { Toggle } from '../ui/toggle'
 const EYE_HIT_SLOP = 4
 // The web's phone legend clips the model swatches to 12 px; their dashes still show.
 const MODEL_SWATCH_WIDTH = 12
-const COLUMNS = 2
 const EYE_CLASS = 'size-3.5 text-muted-foreground'
-// One wrapping list rather than a view per line, so a row that moves when the values re-sort keeps its view.
-const CELL_CLASS = 'min-h-9 grow basis-2/5 flex-row items-center gap-1.5 px-1.5'
+const ROW_CLASS = 'min-h-9 flex-row items-center gap-1.5 px-1.5'
 
 // Shared elements, so an unchanged eye is not rebuilt on every tap of the chart; the class picks the theme's colour.
 const EYE = <Icon as={Eye} className={EYE_CLASS} />
@@ -51,14 +49,12 @@ const ModelRow = memo(function ModelRow({ modelId, value, isHidden, onToggleHidd
     const model = MODEL_BY_ID[modelId]
 
     return (
-        <View className={cn(CELL_CLASS, isHidden && 'opacity-45')}>
+        <View className={cn(ROW_CLASS, isHidden && 'opacity-45')}>
             <View className="flex-1 flex-row items-center gap-1">
                 <LineSwatch color={model.color} dash={model.dash} width={MODEL_SWATCH_WIDTH} />
-                <Text className={cn('shrink text-xs leading-[0.9375rem]', isHidden && 'line-through')}>
-                    {model.name}
-                </Text>
+                <Text className={cn('shrink text-sm', isHidden && 'line-through')}>{model.name}</Text>
             </View>
-            <Text className="min-w-8 text-right text-xs font-medium tabular-nums">{value}</Text>
+            <Text className="min-w-12 text-right text-sm font-medium tabular-nums">{value}</Text>
             <Button
                 variant="ghost"
                 size="icon-xs"
@@ -87,7 +83,7 @@ interface IProps {
     onReset: () => void
 }
 
-// The models at the chart's readout time in two columns, highest first, under the median; the eye hides a model, the
+// The models at the chart's readout time in one column, highest first, under the median; the eye hides a model, the
 // median too.
 export function ModelLegend({
     series,
@@ -113,10 +109,10 @@ export function ModelLegend({
     return (
         <View className="gap-2">
             <View className="min-h-[1.125rem] flex-row items-center justify-between gap-2">
-                <Text className="shrink text-xs font-medium">
+                <Text className="shrink text-sm font-medium">
                     {readoutLabel}
                     {direction !== null && (
-                        <Text className="text-xs font-normal text-muted-foreground">
+                        <Text className="text-sm font-normal text-muted-foreground">
                             {'  '}
                             {tc('windFrom', { direction: formatWindDirection(direction, tc('compass').split(',')) })}
                         </Text>
@@ -124,7 +120,7 @@ export function ModelLegend({
                 </Text>
                 {isChanged && (
                     <Button variant="link" size="xs" onPress={onReset} hitSlop={8} className="h-auto px-0">
-                        <Text>{t('reset')}</Text>
+                        <Text className="text-sm">{t('reset')}</Text>
                     </Button>
                 )}
             </View>
@@ -136,14 +132,12 @@ export function ModelLegend({
             >
                 <View className="min-h-9 flex-1 flex-row items-center gap-2">
                     <MedianSwatch color={chart.median} />
-                    <Text className={cn('text-[0.8125rem] font-semibold', isMedianHidden && 'line-through')}>
-                        {t('median')}
-                    </Text>
+                    <Text className={cn('text-sm font-semibold', isMedianHidden && 'line-through')}>{t('median')}</Text>
                 </View>
                 {!isMedianHidden && (
-                    <Text className="text-[0.8125rem] font-semibold tabular-nums">
+                    <Text className="text-sm font-semibold tabular-nums">
                         {formatNumber(median, decimals)}{' '}
-                        <Text className="text-xs font-normal text-muted-foreground">{unit}</Text>
+                        <Text className="text-sm font-normal text-muted-foreground">{unit}</Text>
                     </Text>
                 )}
                 {/* The web's aria-pressed: a toggle that is on while the median is hidden. */}
@@ -157,8 +151,7 @@ export function ModelLegend({
                     {isMedianHidden ? EYE_OFF : EYE}
                 </Toggle>
             </View>
-            {/* Rows fill the two columns left to right, highest first, as the web's two-column grid does. */}
-            <View className="flex-row flex-wrap gap-x-3 gap-y-0.5">
+            <View className="gap-y-0.5">
                 {rows.map(({ modelId, value, isHidden }) => (
                     <ModelRow
                         key={modelId}
@@ -168,9 +161,7 @@ export function ModelLegend({
                         onToggleHidden={onToggleHidden}
                     />
                 ))}
-                {rows.length % COLUMNS > 0 && <View className={CELL_CLASS} />}
             </View>
-            <Text className="text-[0.6875rem] leading-[0.9375rem] text-muted-foreground">{t('hintTouch')}</Text>
         </View>
     )
 }

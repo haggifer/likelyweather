@@ -6,9 +6,11 @@ import { useEffect, useMemo } from 'react'
 import { useLocale, useTranslations } from 'use-intl'
 import { useNow } from '../../hooks/useNow'
 import { useOverviewPanels } from '../../hooks/useOverviewPanels'
+import { cn } from '../../lib/cn'
 import { showSnackbar } from '../../lib/snackbar-store'
 import { updateWidgetsForCity } from '../../widget/widget-updates'
 import { Card, CardContent } from '../ui/card'
+import { BLEED_CARD } from '../ui/EdgeSheet'
 import { ErrorNotice } from '../ui/ErrorNotice'
 import { Text } from '../ui/text'
 import { OverviewCard, OverviewCardSkeleton } from './OverviewCard'
@@ -49,7 +51,7 @@ export function CityOverview({ slug }: IProps) {
 
     if (error || isEmpty || isOffline) {
         return (
-            <Card className="py-4">
+            <Card className={cn('py-4', BLEED_CARD)}>
                 <CardContent>
                     {isEmpty || isOffline ? (
                         <Text

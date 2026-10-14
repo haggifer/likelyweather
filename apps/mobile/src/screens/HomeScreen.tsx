@@ -42,7 +42,7 @@ export function HomeScreen() {
     return (
         <ScreenScroll
             className="bg-background"
-            contentContainerClassName="gap-4 p-4"
+            contentContainerClassName="gap-4 px-4 pt-4"
             keyboardShouldPersistTaps="handled"
         >
             <SearchBox onSelectCity={setSelectedCity} isLocateShown />
