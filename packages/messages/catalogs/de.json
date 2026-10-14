@@ -1,6 +1,6 @@
 {
     "app": {
-        "tagline": "Zehn Wettermodelle, jede Stadt und wie sehr sie sich uneinig sind."
+        "tagline": "Zehn Wettermodelle, jede Stadt und wie stark sie voneinander abweichen."
     },
     "shell": {
         "switchMode": "Zum {mode} Modus wechseln",
@@ -39,7 +39,7 @@
         "locateFar": "Die nächste gespeicherte Stadt ist {name}, {km} km entfernt",
         "locateUse": "Öffnen",
         "locateSearch": "Suchen",
-        "locateUnavailable": "Der Standort ist nicht verfügbar; suche stattdessen deine Stadt",
+        "locateUnavailable": "Der Standort ist nicht verfügbar; suche stattdessen nach deiner Stadt",
         "close": "Suche schließen"
     },
     "chart": {
@@ -80,15 +80,15 @@
         "refresh": "Aktualisieren",
         "refreshTitle": "Nach einem neueren Lauf suchen und das Diagramm ab jetzt beginnen",
         "upToDate": "Aktuell: vor weniger als {hours} Stunden abgerufen.",
-        "notFound": "Diese Stadt ist nicht in Forecast Arena",
+        "notFound": "Diese Stadt ist nicht in Forecast Arena enthalten",
         "notFoundBody": "Suche sie, um ihre Vorhersage in wenigen Sekunden zu öffnen.",
         "chanceOfRain": "Regenwahrscheinlichkeit",
         "back": "Zurück zur Übersicht",
         "change": "Stadt wechseln",
-        "pin": "Zu Favoriten hinzufügen",
-        "unpin": "Aus Favoriten entfernen",
-        "pinCity": "{name} zu Favoriten hinzufügen",
-        "unpinCity": "{name} aus Favoriten entfernen",
+        "pin": "Zu den Favoriten hinzufügen",
+        "unpin": "Aus den Favoriten entfernen",
+        "pinCity": "{name} zu den Favoriten hinzufügen",
+        "unpinCity": "{name} aus den Favoriten entfernen",
         "pinLimit": "Du hast bereits {max} Favoriten, die zuerst unter der Suche stehen. Entferne einen, um diesen Ort hinzuzufügen."
     },
     "dashboard": {
@@ -100,10 +100,10 @@
     },
     "legend": {
         "median": "Median",
-        "reset": "Alle zeigen",
-        "show": "{model} zeigen",
+        "reset": "Alle anzeigen",
+        "show": "{model} anzeigen",
         "hide": "{model} ausblenden",
-        "hint": "Maus über ein Modell hebt es hervor.",
+        "hint": "Fahre mit der Maus über ein Modell, um es hervorzuheben.",
         "showMedian": "Median anzeigen",
         "hideMedian": "Median ausblenden"
     },
@@ -123,7 +123,7 @@
     },
     "methodology": {
         "title": "Methodik",
-        "intro": "Wie Forecast Arena Vorhersagen sammelt und zusammenführt, und wo die Zahlen nicht mehr belastbar sind.",
+        "intro": "Wie Forecast Arena die Vorhersagen sammelt und zusammenführt – und ab wann die Zahlen nicht mehr zuverlässig sind.",
         "europeOnly": "nur Europa",
         "sources": {
             "title": "Quellen",
@@ -135,7 +135,7 @@
         },
         "disagreement": {
             "title": "Uneinigkeit",
-            "body": "Für Temperatur, Wind und Luftdruck ist die tägliche Uneinigkeit der Mittelwert, über die künftigen Schritte des Tages, des Abstands zwischen höchstem und niedrigstem Modell. Beim Niederschlag ist es die Spanne der täglichen Summen der Modelle; jede Stunde zählt zu dem Tag, an dem sie endet. Tage gelten in der Ortszeit der Stadt. Schwellen:"
+            "body": "Bei Temperatur, Wind und Luftdruck entspricht die tägliche Abweichung dem Durchschnitt der Spanne zwischen dem höchsten und dem niedrigsten Modellwert über die zukünftigen Zeitschritte des Tages. Bei Niederschlag ist es die Spanne der täglichen Gesamtwerte der Modelle, wobei jede Stunde an dem Tag gezählt wird, an dem sie endet. Die Tage sind in der Ortszeit der Stadt angegeben. Schwellenwerte:"
         },
         "limits": {
             "title": "Grenzen",
@@ -152,14 +152,14 @@
     "overview": {
         "customize": "Felder wählen",
         "customizeTitle": "Felder der Übersicht",
-        "moveUp": "{name} nach oben",
-        "moveDown": "{name} nach unten",
+        "moveUp": "{name} nach oben verschieben",
+        "moveDown": "{name} nach unten verschieben",
         "resetPanels": "Zurücksetzen",
         "panels": "Felder",
         "showPanel": "{name} einblenden",
         "hidePanel": "{name} ausblenden",
         "dragPanel": "{name} verschieben",
-        "dragInstructions": "Um ein Feld zu verschieben, drücken Sie auf seinem Griff die Leertaste oder Enter, bewegen Sie es mit den Pfeiltasten und drücken Sie dann die Leertaste oder Enter zum Ablegen oder Escape zum Abbrechen.",
+        "dragInstructions": "Um ein Feld zu verschieben, drücke die Leertaste oder die Eingabetaste auf dem Griff, bewege es mit den Pfeiltasten und drücke dann die Leertaste oder die Eingabetaste, um es abzulegen, oder die Escape-Taste, um den Vorgang abzubrechen.",
         "pickedUp": "{name} aufgenommen.",
         "movedTo": "{name} ist an Position {position} von {count}.",
         "dropped": "{name} an Position {position} von {count} abgelegt.",
@@ -167,7 +167,7 @@
         "details": "Details öffnen",
         "aria": "Median-Vorhersage für {name} aus {count} Modellen",
         "fetching": "Zehn Modelle für {name} werden abgerufen…",
-        "loading": "Lädt…",
+        "loading": "Wird geladen…",
         "perSlot": "{unit} / nächste {hours} h",
         "unavailable": "Für diese Stadt gibt es noch keine stündliche Vorhersage. Versuche es in einer Minute erneut.",
         "secondary": "{name}: {value} {unit}",
@@ -182,7 +182,7 @@
     "errors": {
         "quotaExceeded": "Die heutigen Anfragen sind aufgebraucht. Gespeicherte Vorhersagen bleiben verfügbar, neue gibt es nach dem täglichen Zurücksetzen.",
         "rateLimited": "Zu viele Anfragen. Bitte eine Minute warten und erneut versuchen.",
-        "notFound": "Diese Stadt ist nicht in Forecast Arena.",
+        "notFound": "Diese Stadt ist nicht in Forecast Arena enthalten.",
         "pending": "Die Vorhersage wird noch abgerufen. Bitte gleich noch einmal versuchen.",
         "unavailable": "Die Wetterdienste antworten nicht. Bitte später erneut versuchen.",
         "generic": "Etwas ist schiefgelaufen. Bitte gleich noch einmal versuchen.",
@@ -195,7 +195,7 @@
         "body": "Dein Standort, Startbildschirm-Widget, funktioniert offline",
         "cta": "App holen",
         "dismiss": "Schließen",
-        "note": "Eine APK aus den GitHub-Releases des Projekts; Android fragt, ob Installationen aus dieser Quelle erlaubt sind."
+        "note": "Eine APK aus den GitHub-Releases des Projekts; Android fordert dich auf, Installationen aus dieser Quelle zuzulassen."
     },
     "mobile": {
         "settings": "Einstellungen",
@@ -209,13 +209,13 @@
         "about": "Über die App",
         "version": "Version {version}",
         "widgets": "Startbildschirm-Widgets",
-        "widgetsHint": "Halte eine freie Stelle auf dem Startbildschirm gedrückt, tippe auf Widgets und wähle Forecast Arena.",
+        "widgetsHint": "Halte eine freie Stelle auf deinem Startbildschirm gedrückt, tippe auf „Widgets“ und wähle „Forecast Arena“ aus.",
         "widgetsNone": "Auf dem Startbildschirm ist noch kein Widget.",
         "widgetCity": "Ein Widget zeigt {city}"
     },
     "widget": {
         "configureTitle": "Stadt für dieses Widget wählen",
-        "configureEmpty": "Suche oder markiere zuerst einen Ort in Forecast Arena; dann erscheint er hier.",
+        "configureEmpty": "Wähle oder markiere zuerst einen Ort in Forecast Arena; er erscheint dann hier.",
         "openApp": "Öffne Forecast Arena, um {city} zu laden",
         "next24": "Nächste 24 h",
         "wind": "Wind",

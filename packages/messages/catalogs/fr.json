@@ -76,11 +76,11 @@
     "city": {
         "forecastAge": "{hours, plural, one {Il y a # heure} other {Il y a # heures}}",
         "forecastTitle": "Les modèles ont lancé cette exécution le {time}, heure de la ville ({utc}), récupérée le {fetched}. Une nouvelle exécution démarre toutes les 6 heures.",
-        "forecastOldTitle": "Aucune exécution plus récente pour l’instant ; Actualiser la cherche.",
+        "forecastOldTitle": "Aucune exécution plus récente n’est encore enregistrée ; « Actualiser » vérifie s’il y en a une.",
         "refresh": "Actualiser",
-        "refreshTitle": "Chercher une émission plus récente et faire commencer le graphique maintenant",
+        "refreshTitle": "Chercher une exécution plus récente et faire commencer le graphique maintenant",
         "upToDate": "À jour : récupéré il y a moins de {hours} heures.",
-        "notFound": "Cette ville n’est pas dans Forecast Arena",
+        "notFound": "Cette ville ne figure pas dans Forecast Arena",
         "notFoundBody": "Recherchez-la pour ouvrir sa prévision en quelques secondes.",
         "chanceOfRain": "Probabilité de pluie",
         "back": "Retour à l’aperçu",
@@ -182,7 +182,7 @@
     "errors": {
         "quotaExceeded": "Vous avez utilisé les requêtes du jour. Les prévisions enregistrées restent disponibles ; les nouvelles reviennent après la remise à zéro quotidienne.",
         "rateLimited": "Trop de requêtes. Attendez une minute et réessayez.",
-        "notFound": "Cette ville n’est pas dans Forecast Arena.",
+        "notFound": "Cette ville ne figure pas dans Forecast Arena.",
         "pending": "La prévision est encore en cours de récupération. Réessayez dans un instant.",
         "unavailable": "Les services météo ne répondent pas. Réessayez plus tard.",
         "generic": "Une erreur s’est produite. Réessayez dans un instant.",
@@ -209,7 +209,7 @@
         "about": "À propos",
         "version": "Version {version}",
         "widgets": "Widgets de l’écran d’accueil",
-        "widgetsHint": "Appuyez longuement sur un espace libre de l’écran d’accueil, touchez Widgets et choisissez Forecast Arena.",
+        "widgetsHint": "Appuyez longuement sur un emplacement libre de votre écran d’accueil, sélectionnez « Widgets », puis choisissez « Forecast Arena ».",
         "widgetsNone": "Aucun widget sur l’écran d’accueil pour l’instant.",
         "widgetCity": "Un widget affiche {city}"
     },

@@ -76,9 +76,9 @@
     "city": {
         "forecastAge": "{hours, plural, one {De hace # hora} other {De hace # horas}}",
         "forecastTitle": "Los modelos iniciaron esta ejecución el {time}, hora de la ciudad ({utc}), y se obtuvo el {fetched}. Cada 6 horas empieza una ejecución nueva.",
-        "forecastOldTitle": "Aún no hay una ejecución más reciente; Actualizar la busca.",
+        "forecastOldTitle": "Aún no hay una ejecución más reciente; «Actualizar» comprueba si ya la hay.",
         "refresh": "Actualizar",
-        "refreshTitle": "Buscar una emisión más reciente y empezar el gráfico en la hora actual",
+        "refreshTitle": "Buscar una ejecución más reciente y empezar el gráfico en la hora actual",
         "upToDate": "Al día: obtenido hace menos de {hours} horas.",
         "notFound": "Esta ciudad no está en Forecast Arena",
         "notFoundBody": "Búscala para abrir su pronóstico en segundos.",
@@ -103,7 +103,7 @@
         "reset": "Mostrar todos",
         "show": "Mostrar {model}",
         "hide": "Ocultar {model}",
-        "hint": "Pasa el cursor por un modelo para resaltarlo.",
+        "hint": "Pasa el cursor por encima de un modelo para resaltarlo.",
         "showMedian": "Mostrar la mediana",
         "hideMedian": "Ocultar la mediana"
     },
@@ -175,7 +175,7 @@
     },
     "legal": {
         "privacy": "Política de privacidad",
-        "terms": "Términos de uso",
+        "terms": "Condiciones de uso",
         "lastUpdated": "Última actualización: {date}",
         "englishOnly": "Este documento solo está disponible en inglés."
     },
@@ -195,7 +195,7 @@
         "body": "Tu ubicación, widget en la pantalla de inicio, funciona sin conexión",
         "cta": "Obtener la app",
         "dismiss": "Cerrar",
-        "note": "Un APK de las versiones del proyecto en GitHub; Android te pedirá permitir instalaciones desde esa fuente."
+        "note": "Un APK de las versiones del proyecto en GitHub; Android te pedirá que autorices la instalación desde esa fuente."
     },
     "mobile": {
         "settings": "Ajustes",
@@ -209,7 +209,7 @@
         "about": "Acerca de",
         "version": "Versión {version}",
         "widgets": "Widgets de la pantalla de inicio",
-        "widgetsHint": "Mantén pulsado un espacio vacío de la pantalla de inicio, toca Widgets y elige Forecast Arena.",
+        "widgetsHint": "Mantén pulsado un espacio vacío de tu pantalla de inicio, pulsa en «Widgets» y elige «Forecast Arena».",
         "widgetsNone": "Aún no hay ningún widget en tu pantalla de inicio.",
         "widgetCity": "Un widget muestra {city}"
     },
