@@ -23,7 +23,7 @@ export function ArchiveView() {
     const handleSelect = (next: string) => void setSlug(next)
 
     return (
-        <div className="flex flex-col gap-4 pt-2 pb-6 sm:gap-6 sm:pt-5">
+        <div className="flex flex-col gap-4 pt-0 pb-6 sm:gap-6 sm:pt-5">
             <section className="flex flex-col items-center gap-3 text-center sm:gap-5">
                 <h1 className="sr-only">{t('heading')}</h1>
                 <div className="flex w-full flex-col items-center gap-3">
