@@ -33,7 +33,7 @@ export function Landing() {
     }, [isFirstVisit, starters.data])
 
     return (
-        <div className="flex flex-col gap-4 pt-0 pb-6 sm:gap-6 sm:pt-5">
+        <div className="flex flex-col gap-4 pt-0 pb-0 sm:gap-6 sm:pt-5 sm:pb-6">
             <section className="flex flex-col items-center gap-3 text-center sm:gap-5">
                 {/* The search and the overview say what the page is for; the heading stays for screen readers and search
                     engines (author, 2026-10-12). */}
