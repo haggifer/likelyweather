@@ -36,10 +36,16 @@ export function UpdatedChip({ issueTime, fetchedAt, timeZone, now, isIconOnPhone
     return (
         <Hint
             content={
-                <>
-                    {isIconOnPhones && <span className="font-semibold sm:hidden">{age}. </span>}
-                    {details}
-                </>
+                isIconOnPhones ? (
+                    // The phone's warning clock tells only its age (author, 2026-10-14); the badge beside it on wider
+                    // screens keeps the run's times.
+                    <>
+                        <span className="sm:hidden">{age}</span>
+                        <span className="max-sm:hidden">{details}</span>
+                    </>
+                ) : (
+                    details
+                )
             }
         >
             {/* The chip is the hint's trigger: a button with no fill of its own, round like the badge it holds. */}

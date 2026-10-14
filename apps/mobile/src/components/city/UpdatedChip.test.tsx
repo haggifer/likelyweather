@@ -36,7 +36,7 @@ describe('UpdatedChip', () => {
         expect(getSnackbar()?.message).toContain('00:00 UTC')
     })
 
-    it('turns into an icon that tells its age in the snackbar', async () => {
+    it('turns into an icon that tells only its age in the snackbar', async () => {
         await renderInEnglish(
             <UpdatedChip
                 fetchedAt="2026-10-09T07:00:00Z"
@@ -51,7 +51,7 @@ describe('UpdatedChip', () => {
 
         await fireEvent.press(screen.getByRole('button', { name: AGE }))
 
-        expect(getSnackbar()?.message).toMatch(new RegExp(`^${AGE}\\. .*00:00 UTC`))
+        expect(getSnackbar()?.message).toBe(AGE)
     })
 
     it('stays hidden while the data is fresh', async () => {

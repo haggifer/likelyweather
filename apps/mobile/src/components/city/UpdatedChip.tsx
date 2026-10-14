@@ -13,7 +13,8 @@ interface IProps {
     // With the run's start time and the city's zone, a tap on the chip shows the run's times, the web's tooltip.
     issueTime?: string
     timeZone?: string
-    // The overview card's row has room for icons only (author, 2026-10-13): a warning clock, its age in the snackbar.
+    // The overview card's row has room for icons only (author, 2026-10-13): a warning clock whose snackbar tells only
+    // its age (author, 2026-10-14).
     isCompact?: boolean
 }
 
@@ -24,9 +25,7 @@ export function UpdatedChip({ fetchedAt, now, issueTime, timeZone, isCompact = f
 
     const { hours, isShown, isStale, tone } = getForecastAge(fetchedAt, now)
     const label = t('forecastAge', { hours })
-    const chip = isCompact ? (
-        <Icon as={ClockAlert} className="text-warning" />
-    ) : (
+    const badge = (
         <Badge variant={tone}>
             <Text className="tabular-nums">{label}</Text>
         </Badge>
@@ -34,7 +33,22 @@ export function UpdatedChip({ fetchedAt, now, issueTime, timeZone, isCompact = f
 
     if (!isShown) return null
 
-    if (!issueTime || !timeZone) return chip
+    if (isCompact) {
+        return (
+            // The compact clock takes the web's phone box.
+            <Button
+                variant="ghost"
+                size="icon-sm"
+                onPress={() => showSnackbar(label)}
+                hitSlop={8}
+                accessibilityLabel={label}
+            >
+                <Icon as={ClockAlert} className="text-warning" />
+            </Button>
+        )
+    }
+
+    if (!issueTime || !timeZone) return badge
 
     const runTimes = t('forecastTitle', getForecastTitleValues(issueTime, fetchedAt, timeZone, locale))
     const details = isStale ? `${runTimes} ${t('forecastOldTitle')}` : runTimes
@@ -42,15 +56,13 @@ export function UpdatedChip({ fetchedAt, now, issueTime, timeZone, isCompact = f
     return (
         <Button
             variant="ghost"
-            // The compact clock takes the web's phone box; the chip keeps its pill's own size.
-            size={isCompact ? 'icon-sm' : 'default'}
-            onPress={() => showSnackbar(isCompact ? `${label}. ${details}` : details)}
+            onPress={() => showSnackbar(details)}
             hitSlop={8}
             accessibilityLabel={label}
             accessibilityHint={details}
-            className={isCompact ? undefined : 'h-auto rounded-full px-0'}
+            className="h-auto rounded-full px-0"
         >
-            {chip}
+            {badge}
         </Button>
     )
 }
