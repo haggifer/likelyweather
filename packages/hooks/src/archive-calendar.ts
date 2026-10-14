@@ -7,7 +7,7 @@ export interface CalendarRange {
     end: CalendarDate
 }
 
-// Weeks start on Monday in Ukrainian, Spanish, German and French. English follows them rather than the US Sunday: the
+// Weeks start on Monday in Ukrainian, Spanish, German, French and Russian. English follows them rather than the US Sunday: the
 // app has no week-start setting, and its places, like the DD.MM.YYYY period, are mostly European.
 export const ARCHIVE_FIRST_DAY_OF_WEEK: DayOfWeek = 'mon'
 

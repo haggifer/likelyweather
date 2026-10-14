@@ -10,6 +10,7 @@ const LOADERS: Record<Locale, () => Promise<{ default: Messages }>> = {
     [Locale.Es]: () => import('../catalogs/es.json'),
     [Locale.De]: () => import('../catalogs/de.json'),
     [Locale.Fr]: () => import('../catalogs/fr.json'),
+    [Locale.Ru]: () => import('../catalogs/ru.json'),
 }
 
 export const loadMessages = async (locale: Locale) => {

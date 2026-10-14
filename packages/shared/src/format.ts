@@ -10,6 +10,7 @@ const INTL_LOCALES: Record<Locale, string> = {
     [Locale.Es]: 'es-ES',
     [Locale.De]: 'de-DE',
     [Locale.Fr]: 'fr-FR',
+    [Locale.Ru]: 'ru-RU',
 }
 
 const CLOCK: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }

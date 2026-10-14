@@ -59,7 +59,7 @@ Android phones get a dismissible "Get the app" bar on the landing and city pages
 
 Phones (below 640 px) get their own layouts where the desktop ones don't fit: the dashboard pins the variable switch under the top bar and puts the model list under the chart, and day labels shorten to fit.
 
-Ukrainian, English, Spanish, German and French (language menu in the top bar; the non-English catalogs are machine-drafted and need a native review), light and dark mode.
+Ukrainian, English, Spanish, German, French and Russian (language menu in the top bar; the non-English catalogs are machine-drafted and need a native review), light and dark mode.
 
 ## Scripts
 
@@ -70,7 +70,7 @@ Ukrainian, English, Spanish, German and French (language menu in the top bar; th
 | `pnpm build`                                                   | Next.js build, the API's Lambda bundle (esbuild), Prisma client                                 |
 | `pnpm test`                                                    | Vitest in every package but `apps/mobile` (Jest); database tests run when `DATABASE_URL` is set |
 | `pnpm lint` / `typecheck` / `format` / `format:check`          | ESLint, TypeScript, Prettier with organize-imports                                              |
-| `pnpm check:messages`                                          | Key and ICU argument parity across the five catalogs, and literal key usage in code             |
+| `pnpm check:messages`                                          | Key and ICU argument parity across the six catalogs, and literal key usage in code              |
 | `pnpm knip`                                                    | Unused files, exports and dependencies across the workspace (`knip.jsonc`)                      |
 | `pnpm e2e`                                                     | Playwright flows on desktop and phone against a fake upstream (run `pnpm build` first)          |
 | `pnpm cdk:synth` / `cdk:diff` / `cdk:deploy` / `cdk:bootstrap` | The AWS CDK stack in `infra/` (run `pnpm build` first; see [Deploy](#deploy))                   |
@@ -112,7 +112,7 @@ packages/
 
 What is built and what is still planned.
 
-- **Web:** Next.js App Router, Tailwind v4 and shadcn/ui with a token system, Redux Toolkit for UI state, TanStack Query for server state, D3 for the charts, next-intl (uk, en, es, de, fr). On Lambda behind CloudFront (the target named Amplify Hosting, which does not support Next.js 16).
+- **Web:** Next.js App Router, Tailwind v4 and shadcn/ui with a token system, Redux Toolkit for UI state, TanStack Query for server state, D3 for the charts, next-intl (uk, en, es, de, fr, ru). On Lambda behind CloudFront (the target named Amplify Hosting, which does not support Next.js 16).
 - **API:** Express 5 REST on AWS Lambda (Web Adapter) behind CloudFront, with the same zod contract.
 - **Data:** Prisma on Postgres (Neon) with forecasts partitioned by issue time; Redis (Upstash) for the geocode and payload caches, rate limits, the quota and the daily retention claim.
 - **Collection:** on demand only, in the API, when a city is opened and its stored forecast is 3 hours old; nothing runs on a schedule but the Android widget's 3-hourly redraw, which reads like an open.

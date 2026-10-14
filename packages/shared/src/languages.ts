@@ -8,4 +8,5 @@ export const LANGUAGE_NAMES: Record<Locale, string> = {
     [Locale.Es]: 'Español',
     [Locale.De]: 'Deutsch',
     [Locale.Fr]: 'Français',
+    [Locale.Ru]: 'Русский',
 }

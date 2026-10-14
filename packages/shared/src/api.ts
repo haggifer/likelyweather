@@ -8,6 +8,7 @@ export enum Locale {
     Es = 'es',
     De = 'de',
     Fr = 'fr',
+    Ru = 'ru',
 }
 
 export const LOCALES: Locale[] = Object.values(Locale)
