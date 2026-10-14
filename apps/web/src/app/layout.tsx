@@ -31,7 +31,7 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
                 <NextIntlClientProvider>
                     <Providers>
                         <TopBar />
-                        <main className="mx-auto w-full max-w-[87.5rem] flex-1 px-4 py-5 sm:px-(--pane-padding)">
+                        <main className="mx-auto w-full max-w-[87.5rem] flex-1 px-4 py-5 max-sm:pb-0 sm:px-(--pane-padding)">
                             {children}
                         </main>
                         <Footer />
