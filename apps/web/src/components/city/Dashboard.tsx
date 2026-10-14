@@ -6,6 +6,7 @@ import { DisagreementTiles } from '@/components/city/DisagreementTiles'
 import { ModelLegend } from '@/components/city/ModelLegend'
 import { VariableSwitch } from '@/components/city/VariableSwitch'
 import { ErrorNotice } from '@/components/shell/ErrorNotice'
+import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -226,45 +227,55 @@ export function Dashboard({ slug }: IProps) {
     return (
         <div className="flex flex-col gap-(--card-gap)">
             {VARIABLE_BAR}
-            <div className="grid gap-(--card-gap) lg:grid-cols-[minmax(0,1fr)_20rem]">
-                <ChartFrame
-                    title={tv(variable)}
-                    summary={summary}
-                    isFetching={latestQuery.isFetching && latestQuery.isPlaceholderData}
-                    table={
-                        <SeriesTable
+            {/* On phones the cards join into one edge-to-edge sheet (`data-sheet`, globals.css) parted by dividers, like
+                the landing's card. */}
+            <div data-sheet className="flex flex-col gap-(--card-gap) max-sm:-mx-4 max-sm:gap-0">
+                <div className="grid gap-(--card-gap) max-sm:gap-0 lg:grid-cols-[minmax(0,1fr)_20rem]">
+                    <ChartFrame
+                        title={tv(variable)}
+                        isFetching={latestQuery.isFetching && latestQuery.isPlaceholderData}
+                        table={
+                            <SeriesTable
+                                steps={latest.steps}
+                                series={latest.series}
+                                stats={derived.stats}
+                                decimals={info.decimals}
+                                timeZone={timeZone}
+                                locale={locale}
+                                medianLabel={t('median')}
+                                timeLabel={t('time')}
+                            />
+                        }
+                    >
+                        <HoveredChart
                             steps={latest.steps}
-                            series={latest.series}
+                            series={visibleSeries}
                             stats={derived.stats}
-                            decimals={info.decimals}
+                            variable={variable}
                             timeZone={timeZone}
                             locale={locale}
-                            medianLabel={t('median')}
-                            timeLabel={t('time')}
+                            ariaLabel={summary}
+                            emphasized={emphasized}
+                            directions={variable === Variable.Wind ? derived.directions : null}
+                            now={now}
+                            isMedianHidden={isMedianHidden}
                         />
-                    }
-                >
-                    <HoveredChart
-                        steps={latest.steps}
-                        series={visibleSeries}
-                        stats={derived.stats}
-                        variable={variable}
-                        timeZone={timeZone}
-                        locale={locale}
-                        ariaLabel={summary}
-                        emphasized={emphasized}
-                        directions={variable === Variable.Wind ? derived.directions : null}
-                        now={now}
-                        isMedianHidden={isMedianHidden}
-                    />
-                    {variable === Variable.Wind && (
-                        <p className="mt-1 text-xs text-muted-foreground">{t('windArrows')}</p>
+                        {variable === Variable.Wind && (
+                            <p className="mt-1 text-xs text-muted-foreground">{t('windArrows')}</p>
+                        )}
+                    </ChartFrame>
+                    {isPhone ? (
+                        <>
+                            <Separator />
+                            <div className="p-4">{legend}</div>
+                        </>
+                    ) : (
+                        <div className="rounded-(--radius) border bg-card p-3">{legend}</div>
                     )}
-                    {isPhone && <div className="mt-3 border-t pt-3 sm:hidden">{legend}</div>}
-                </ChartFrame>
-                {!isPhone && <div className="rounded-(--radius) border bg-card p-3 max-sm:hidden">{legend}</div>}
+                </div>
+                <Separator className="sm:hidden" />
+                <DisagreementTiles days={derived.disagreement} variable={variable} />
             </div>
-            <DisagreementTiles days={derived.disagreement} variable={variable} />
         </div>
     )
 }

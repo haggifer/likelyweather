@@ -193,6 +193,22 @@
         border-radius: 0;
         border-block-width: 0;
     }
+
+    /* The city page's cards join into one edge-to-edge sheet like the landing's card, parted by dividers. */
+    [data-sheet] {
+        background: var(--card);
+        box-shadow:
+            0 1px 2px rgb(15 23 42 / 0.06),
+            0 8px 24px -12px rgb(15 23 42 / 0.18);
+    }
+    .dark [data-sheet] {
+        box-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+    }
+    [data-sheet] [data-slot='card'] {
+        border-radius: 0;
+        border-width: 0;
+        box-shadow: none;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {

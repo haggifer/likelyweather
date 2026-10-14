@@ -34,7 +34,7 @@ const ModelRow = memo(function ModelRow({ modelId, value, isHidden }: RowProps) 
     return (
         <li
             className={cn(
-                'flex h-(--row-height) items-center gap-1.5 rounded-md px-1.5 text-[0.8125rem] max-sm:h-auto max-sm:min-h-9 max-sm:py-1 max-sm:text-xs sm:gap-2 hover:bg-muted',
+                'flex h-(--row-height) items-center gap-1.5 rounded-md px-1.5 text-[0.8125rem] max-sm:h-auto max-sm:min-h-9 max-sm:py-1 max-sm:text-sm sm:gap-2 hover:bg-muted',
                 isHidden && 'opacity-45',
             )}
             onMouseEnter={() => dispatch(setHighlightedModel(modelId))}
@@ -53,7 +53,7 @@ const ModelRow = memo(function ModelRow({ modelId, value, isHidden }: RowProps) 
                     {model.name}
                 </span>
             </div>
-            <span className="text-right font-medium max-sm:w-8 sm:w-14">{value}</span>
+            <span className="w-14 text-right font-medium">{value}</span>
             <Button
                 variant="ghost"
                 size="icon-xs"
@@ -90,7 +90,7 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
 
     return (
         <div className="flex flex-col gap-2">
-            <div className="flex min-h-4.5 items-center justify-between gap-2 text-xs">
+            <div className="flex min-h-4.5 items-center justify-between gap-2 text-xs max-sm:text-sm">
                 <span className="font-medium">
                     {readoutLabel}
                     {direction !== null && (
@@ -103,7 +103,7 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
                     <Button
                         variant="link"
                         size="xs"
-                        className="h-auto p-0 text-xs"
+                        className="h-auto p-0 text-xs max-sm:text-sm"
                         onClick={() => dispatch(showAllModels())}
                     >
                         {t('reset')}
@@ -112,7 +112,7 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
             </div>
             <div
                 className={cn(
-                    'flex items-center gap-1.5 rounded-md bg-muted py-1 pr-0.5 pl-2 text-[0.8125rem] sm:gap-2',
+                    'flex items-center gap-1.5 rounded-md bg-muted py-1 pr-0.5 pl-2 text-[0.8125rem] max-sm:text-sm sm:gap-2',
                     isMedianHidden && 'opacity-45',
                 )}
             >
@@ -132,7 +132,9 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
                 </span>
                 <span className="text-right font-semibold">
                     {isMedianHidden ? '' : formatNumber(median, decimals)}{' '}
-                    {!isMedianHidden && <span className="text-xs font-normal text-muted-foreground">{unit}</span>}
+                    {!isMedianHidden && (
+                        <span className="text-xs font-normal text-muted-foreground max-sm:text-sm">{unit}</span>
+                    )}
                 </span>
                 <Button
                     variant="ghost"
@@ -145,7 +147,7 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
                     {isMedianHidden ? EYE_OFF : EYE}
                 </Button>
             </div>
-            <ul className="grid grid-cols-2 gap-x-3 gap-y-0.5 lg:grid-cols-1">
+            <ul className="grid grid-cols-2 gap-x-3 gap-y-0.5 max-sm:grid-cols-1 lg:grid-cols-1">
                 {rows.map(({ modelId, value, isHidden }) => (
                     <ModelRow
                         key={modelId}
@@ -156,9 +158,6 @@ export function ModelLegend({ series, median, readoutIndex, readoutLabel, variab
                 ))}
             </ul>
             <p className="text-[0.6875rem] leading-snug text-muted-foreground pointer-coarse:hidden">{t('hint')}</p>
-            <p className="hidden text-[0.6875rem] leading-snug text-muted-foreground pointer-coarse:block">
-                {t('hintTouch')}
-            </p>
         </div>
     )
 }

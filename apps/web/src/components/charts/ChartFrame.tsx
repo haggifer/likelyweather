@@ -10,7 +10,6 @@ import { ReactNode, useState } from 'react'
 interface IProps {
     title: ReactNode
     description?: ReactNode
-    summary?: string
     table?: ReactNode
     actions?: ReactNode
     footer?: ReactNode
@@ -19,17 +18,7 @@ interface IProps {
     children: ReactNode
 }
 
-export function ChartFrame({
-    title,
-    description,
-    summary,
-    table,
-    actions,
-    footer,
-    isFetching,
-    className,
-    children,
-}: IProps) {
+export function ChartFrame({ title, description, table, actions, footer, isFetching, className, children }: IProps) {
     const t = useTranslations('chart')
     const [isTable, setIsTable] = useState(false)
 
@@ -56,7 +45,6 @@ export function ChartFrame({
             </CardHeader>
             <CardContent className={cn('transition-opacity', isFetching && 'opacity-60')}>
                 {isTable && table ? <div className="max-h-[26.25rem] overflow-auto">{table}</div> : children}
-                {summary && <p className="mt-2 text-xs text-muted-foreground">{summary}</p>}
                 {footer}
             </CardContent>
         </Card>
