@@ -18,13 +18,13 @@ export async function Footer() {
     return (
         <footer className="border-t text-xs text-muted-foreground">
             <div className="mx-auto flex max-w-[87.5rem] flex-wrap items-center gap-x-4 gap-y-1 px-4 py-4 sm:px-(--pane-padding)">
-                <p>
+                <p className="max-sm:mb-2 max-sm:text-sm">
                     {t.rich('attribution', {
                         openMeteo: (chunks) => renderExternalLink(ATTRIBUTION_URLS.openMeteo, chunks),
                         metno: (chunks) => renderExternalLink(ATTRIBUTION_URLS.metno, chunks),
                     })}
                 </p>
-                <nav className="ml-auto flex flex-wrap gap-x-4 gap-y-1">
+                <nav className="ml-auto flex flex-wrap gap-x-4 gap-y-1 max-sm:mx-auto max-sm:justify-center max-sm:text-sm">
                     <Link href="/privacy" className="hover:text-foreground">
                         {tl('privacy')}
                     </Link>
