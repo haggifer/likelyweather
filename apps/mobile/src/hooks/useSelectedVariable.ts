@@ -1,6 +1,6 @@
 import { Variable } from '@fa/shared/variables'
 import { useIsFocused, useLocalSearchParams, useRouter } from 'expo-router'
-import { useEffect, useState, useSyncExternalStore } from 'react'
+import { startTransition, useEffect, useState, useSyncExternalStore } from 'react'
 import {
     getSelectedVariableState,
     parseVariable,
@@ -31,9 +31,11 @@ export function useSelectedVariable(): UseSelectedVariableResult {
 
     if (isFocused && shown !== variable) setShown(variable)
 
+    // The store answers the tap at once; the param only mirrors it for links, so it updates the navigation state
+    // in the background rather than in the tap's own render (author's lag report, 2026-10-14).
     const setVariable = (next: Variable) => {
         setSelectedVariable(next)
-        router.setParams({ v: next })
+        startTransition(() => router.setParams({ v: next }))
     }
 
     useEffect(() => {
