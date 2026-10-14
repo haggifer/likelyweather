@@ -35,8 +35,8 @@ export function useCityOverview(slug: string, visible: PanelVariable[]): UseCity
 
     // An error with data still in place is a failed Refresh: the chart stays and the caller reports the failure.
     const failed = results.find((r) => r.isError && !r.data)
-    const hourly = getHourlyByVariable(results)
-    const readyPanels = getReadyPanels(visible, hourly)
+    const hourly = useMemo(() => getHourlyByVariable(results), [results])
+    const readyPanels = useMemo(() => getReadyPanels(visible, hourly), [visible, hourly])
     const anchorRun = results.find((r) => r.data)?.data
     const timeZone = city?.timezone
     const anchor = useMemo(
