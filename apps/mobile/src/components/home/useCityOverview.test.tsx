@@ -1,13 +1,14 @@
 import { useCityOverview } from '@fa/hooks/useCityOverview'
 import { City, LatestResponse } from '@fa/shared/api'
 import { ModelId } from '@fa/shared/models'
+import { PanelVariable } from '@fa/shared/overview-panels'
 import { OVERVIEW_VARIABLES, Variable } from '@fa/shared/variables'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook } from '@testing-library/react-native'
 import { ReactNode } from 'react'
 
 const SLUG = 'kyiv-ua-703448'
-const VISIBLE = [Variable.Temp, Variable.Wind]
+const VISIBLE: PanelVariable[] = [Variable.Temp, Variable.Wind]
 
 const CITY: City = {
     id: 703448,
