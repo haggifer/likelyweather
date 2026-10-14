@@ -19,7 +19,8 @@ import { useRouter } from 'next/navigation'
 import { KeyboardEvent as ReactKeyboardEvent, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 
-const STATUS = 'px-3 py-2 text-xs text-muted-foreground'
+const STATUS = 'px-3 py-2 text-xs text-muted-foreground max-sm:text-[0.8125rem]'
+const GROUP = 'max-sm:**:[[cmdk-group-heading]]:text-[0.8125rem]'
 
 const FavoriteMark = ({ places, id }: { places: Places | null; id: number }) =>
     places && isFavorite(places, id) ? (
@@ -169,7 +170,7 @@ export function SearchBox({
                 {/* Phones show five rows (heading, 5 × 2 rem, padding), so the keyboard never covers an option. */}
                 <CommandList className="max-sm:max-h-[12.25rem]">
                     {search.isPlacesView && places && (
-                        <CommandGroup heading={t('places')}>
+                        <CommandGroup heading={t('places')} className={GROUP}>
                             {getPlaceList(places).map((place) => (
                                 <CommandItem
                                     key={place.id}
@@ -187,7 +188,7 @@ export function SearchBox({
                     )}
                     {!search.isPlacesView && renderStatus()}
                     {!search.isPlacesView && search.results.length > 0 && (
-                        <CommandGroup heading={t('results')}>
+                        <CommandGroup heading={t('results')} className={GROUP}>
                             {search.results.map((result) => (
                                 <CommandItem
                                     key={result.id}

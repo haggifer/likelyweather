@@ -166,7 +166,9 @@ export function ArchiveRangeCalendar({ range, latest, onChange }: IProps) {
                     ))}
                 </tbody>
             </table>
-            <p className="max-w-72 text-xs text-muted-foreground">{t('limit', { days: ARCHIVE_MAX_DAYS })}</p>
+            <p className="max-w-72 text-xs text-muted-foreground max-sm:text-sm">
+                {t('limit', { days: ARCHIVE_MAX_DAYS })}
+            </p>
         </div>
     )
 }

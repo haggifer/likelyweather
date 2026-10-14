@@ -7,6 +7,7 @@ import { FlagIcon } from '@/components/shell/FlagIcon'
 import { SearchBox } from '@/components/shell/SearchBox'
 import { Button } from '@/components/ui/button'
 import { useNow } from '@/hooks/useNow'
+import { cn } from '@/lib/cn'
 import { useLatest } from '@fa/api-client/hooks/useLatest'
 import { isRefreshOffered } from '@fa/api-client/refresh-due'
 import { City } from '@fa/shared/api'
@@ -27,7 +28,8 @@ interface IProps {
 // The city name doubles as a switcher: the pencil swaps it for a search box holding the current name, selected so
 // typing replaces it. Picking a result opens that city; Escape or clicking away keeps this one. On phones the header
 // matches the app's: the name and region wrap, the star and the pencil sit at the right edge, and the age chip and
-// Refresh form a second line.
+// Refresh form a second line only once the run is outdated (author, 2026-10-14); wider screens keep Refresh disabled
+// with its hint until then.
 export function CityHeader({ city }: IProps) {
     const t = useTranslations('city')
     const locale = useLocale()
@@ -59,7 +61,12 @@ export function CityHeader({ city }: IProps) {
 
     return (
         <div className="mb-(--card-gap) flex flex-col gap-2 sm:gap-3">
-            <Button asChild variant="ghost" size="sm" className="-ml-2 self-start text-muted-foreground max-sm:text-sm">
+            <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="-ml-2 self-start text-muted-foreground max-sm:h-9 max-sm:text-sm"
+            >
                 <Link href={`/?city=${city.slug}`}>
                     <ArrowLeft /> {t('back')}
                 </Link>
@@ -91,20 +98,26 @@ export function CityHeader({ city }: IProps) {
                             </Button>
                         </div>
                     </div>
-                    <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+                    <div
+                        className={cn(
+                            'ml-auto flex flex-wrap items-center justify-end gap-2',
+                            !isOutdated && 'max-sm:hidden',
+                        )}
+                    >
                         {latest && (
                             <UpdatedChip
                                 issueTime={latest.issueTime}
                                 fetchedAt={latest.fetchedAt}
                                 timeZone={city.timezone}
                                 now={now}
+                                className="max-sm:[&>[data-slot=badge]]:text-sm"
                             />
                         )}
                         <RefreshButton
                             isAvailable={isOutdated}
                             isFetching={isFetching}
                             onRefresh={handleRefresh}
-                            className="pointer-coarse:h-9"
+                            className="pointer-coarse:h-9 max-sm:text-sm"
                         />
                     </div>
                 </div>

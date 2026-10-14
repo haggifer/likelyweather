@@ -27,7 +27,7 @@ export function UpdatedChip({ fetchedAt, now, issueTime, timeZone, isCompact = f
     const label = t('forecastAge', { hours })
     const badge = (
         <Badge variant={tone}>
-            <Text className="tabular-nums">{label}</Text>
+            <Text className="text-sm tabular-nums">{label}</Text>
         </Badge>
     )
 

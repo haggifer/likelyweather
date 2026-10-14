@@ -40,7 +40,7 @@ export function ArchivePeriodPicker({ range, latest, onChange }: IProps) {
                     variant="outline"
                     size="sm"
                     aria-label={t('periodValue', { range: period })}
-                    className="tabular-nums pointer-coarse:h-10"
+                    className="tabular-nums pointer-coarse:h-10 max-sm:text-sm"
                 >
                     <CalendarDays />
                     {period}

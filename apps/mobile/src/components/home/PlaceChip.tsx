@@ -35,10 +35,7 @@ export function PlaceChip({ place, isSelected, onSelect }: IProps) {
                 className="h-9 gap-1.5 rounded-l-full rounded-r-none border-0 pr-1.5 pl-3 active:bg-transparent active:opacity-70 dark:active:bg-transparent"
             >
                 <FlagIcon countryCode={place.countryCode} />
-                <Text
-                    numberOfLines={1}
-                    className={cn('text-[0.8125rem] font-medium', isSelected && 'text-primary-foreground')}
-                >
+                <Text numberOfLines={1} className={cn('text-sm font-medium', isSelected && 'text-primary-foreground')}>
                     {name}
                 </Text>
             </Button>

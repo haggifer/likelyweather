@@ -27,7 +27,8 @@ interface IProps {
 
 // The name doubles as a switcher: the pencil swaps both lines for a search box holding the current name, selected so
 // typing replaces it. Picking a result opens that city; a tap elsewhere, Android's back or the close button keeps this
-// one. The second line carries the age chip and Refresh, right-aligned together, as on the web's phone header.
+// one. The second line carries the age chip and Refresh, right-aligned together, as on the web's phone header, and
+// only once the run is outdated (author, 2026-10-14).
 export function CityHeader({ city, onSelectCity }: IProps) {
     const t = useTranslations('city')
     const ts = useTranslations('search')
@@ -82,17 +83,19 @@ export function CityHeader({ city, onSelectCity }: IProps) {
                     <Icon as={Pencil} className="text-muted-foreground" />
                 </Button>
             </CityTitle>
-            <View className="flex-row flex-wrap items-center justify-end gap-2">
-                {latest && (
-                    <UpdatedChip
-                        fetchedAt={latest.fetchedAt}
-                        issueTime={latest.issueTime}
-                        timeZone={city.timezone}
-                        now={now}
-                    />
-                )}
-                <RefreshButton isAvailable={isOutdated} isFetching={isFetching} onRefresh={handleRefresh} />
-            </View>
+            {isOutdated && (
+                <View className="flex-row flex-wrap items-center justify-end gap-2">
+                    {latest && (
+                        <UpdatedChip
+                            fetchedAt={latest.fetchedAt}
+                            issueTime={latest.issueTime}
+                            timeZone={city.timezone}
+                            now={now}
+                        />
+                    )}
+                    <RefreshButton isAvailable={isOutdated} isFetching={isFetching} onRefresh={handleRefresh} />
+                </View>
+            )}
         </View>
     )
 }

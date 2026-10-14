@@ -127,7 +127,7 @@ export function ArchiveCard({ slug }: IProps) {
             </CardHeader>
             <CardContent className="flex flex-col gap-1">
                 {range && openedAt && city && (
-                    <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
+                    <div className="mt-2 mb-2 flex flex-wrap items-start justify-between gap-3">
                         <ArchivePeriodPicker
                             range={range}
                             latest={getLatestArchiveDate(openedAt, city.timezone)}
@@ -141,7 +141,7 @@ export function ArchiveCard({ slug }: IProps) {
                     </div>
                 )}
                 {renderArchive()}
-                <p className="text-xs text-muted-foreground">{t('source')}</p>
+                <p className="text-xs text-muted-foreground max-sm:text-sm">{t('source')}</p>
             </CardContent>
         </Card>
     )

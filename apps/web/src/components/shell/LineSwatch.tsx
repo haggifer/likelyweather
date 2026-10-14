@@ -8,7 +8,7 @@ interface IProps {
 // stroke width, so dashed models get butt caps, like the chart lines.
 export function LineSwatch({ color, dash, width = 18 }: IProps) {
     return (
-        <svg width={width} height="6" aria-hidden="true" className="shrink-0 max-sm:w-3">
+        <svg width={width} height="6" aria-hidden="true" className="shrink-0">
             <line
                 x1="1"
                 x2={width - 1}

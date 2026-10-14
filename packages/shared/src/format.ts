@@ -65,6 +65,13 @@ export const formatDateKey = (day: string, locale: string, options: Intl.DateTim
 
 // The viewer's own zone, for times that belong to no city (the quota reset). Read it only after mount: the
 // server renders in UTC, so using it in the first render would mismatch on hydration.
+// A day tile's two lines on phones: the weekday, then the date (author, 2026-10-14).
+export const formatDayTileLines = (day: string, locale: string) =>
+    [
+        formatDateKey(day, locale, { weekday: 'short' }),
+        formatDateKey(day, locale, { day: 'numeric', month: 'short' }),
+    ] as const
+
 export const getViewerTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone
 
 export const formatNumber = (value: number | null | undefined, decimals = 1) => {

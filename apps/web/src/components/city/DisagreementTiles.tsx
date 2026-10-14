@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatSpread } from '@fa/shared/dashboard'
 import { DayDisagreement } from '@fa/shared/ensemble'
-import { formatDateKey, formatNumber } from '@fa/shared/format'
+import { formatDateKey, formatDayTileLines, formatNumber } from '@fa/shared/format'
 import { DISAGREEMENT_TONE } from '@fa/shared/status-tone'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { useLocale, useTranslations } from 'next-intl'
@@ -23,7 +23,7 @@ export function DisagreementTiles({ days, variable }: IProps) {
     return (
         <Card className="gap-3">
             <CardHeader>
-                <CardTitle className="font-semibold">{t('title')}</CardTitle>
+                <CardTitle className="font-semibold max-sm:text-base">{t('title')}</CardTitle>
                 <CardDescription>
                     {t(variable === Variable.Precip ? 'descriptionPrecip' : 'description', {
                         variable: tInline(variable),
@@ -47,8 +47,13 @@ export function DisagreementTiles({ days, variable }: IProps) {
                         key={d.day}
                         className="flex min-w-19 flex-1 shrink-0 snap-start flex-col gap-1.5 rounded-md border p-2 max-sm:min-w-[5.625rem] max-sm:items-center max-sm:text-center"
                     >
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-muted-foreground max-sm:hidden">
                             {formatDateKey(d.day, locale, { weekday: 'short', day: 'numeric', month: 'short' })}
+                        </span>
+                        <span className="flex flex-col text-sm leading-tight text-muted-foreground sm:hidden">
+                            {formatDayTileLines(d.day, locale).map((line) => (
+                                <span key={line}>{line}</span>
+                            ))}
                         </span>
                         <span className="text-lg leading-none font-semibold" title={t('spreadTitle')}>
                             {formatSpread(d.spread, decimals)}
@@ -56,7 +61,7 @@ export function DisagreementTiles({ days, variable }: IProps) {
                         </span>
                         <Badge
                             variant={DISAGREEMENT_TONE[d.label]}
-                            className="self-start max-sm:w-full max-sm:self-stretch"
+                            className="self-start max-sm:w-full max-sm:self-stretch max-sm:text-[0.8125rem]"
                         >
                             {t(d.label)}
                         </Badge>

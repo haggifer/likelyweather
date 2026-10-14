@@ -141,7 +141,7 @@ export function OverviewPanelsMenu({ panels, onChange: setPanels, isLabelHiddenO
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" title={t('customize')} className={className}>
+                <Button variant="outline" size="sm" title={t('customize')} className={cn('max-sm:text-sm', className)}>
                     <SlidersHorizontal />
                     <span className={cn(isLabelHiddenOnPhones && 'max-sm:sr-only')}>{t('panels')}</span>
                 </Button>
@@ -179,7 +179,7 @@ export function OverviewPanelsMenu({ panels, onChange: setPanels, isLabelHiddenO
                 <Button
                     variant="outline"
                     size="sm"
-                    className="mt-3 w-full"
+                    className="mt-3 w-full max-sm:text-sm"
                     onClick={() => setPanels(() => DEFAULT_OVERVIEW_PANELS)}
                 >
                     {t('resetPanels')}

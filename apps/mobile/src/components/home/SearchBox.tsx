@@ -115,7 +115,7 @@ export function SearchBox({
 
     const renderRows = (heading: string, rows: ReactNode) => (
         <View>
-            <Text className="px-3 pt-2.5 pb-1 text-xs font-semibold text-muted-foreground">{heading}</Text>
+            <Text className="px-3 pt-2.5 pb-1 text-[0.8125rem] font-semibold text-muted-foreground">{heading}</Text>
             <ScrollView className={ROWS} nestedScrollEnabled keyboardShouldPersistTaps="handled">
                 {rows}
             </ScrollView>

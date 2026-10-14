@@ -220,7 +220,7 @@ export function OverviewPanelsMenu({ panels, onChange: setPanels, isLabelHiddenO
                     })}
                 </GestureHandlerRootView>
                 <Button variant="outline" size="sm" onPress={handleReset} className="mt-3 w-full">
-                    <Text>{t('resetPanels')}</Text>
+                    <Text className="text-sm">{t('resetPanels')}</Text>
                 </Button>
             </PopoverContent>
         </Popover>

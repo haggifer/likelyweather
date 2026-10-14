@@ -144,7 +144,7 @@ export function ArchiveRangeCalendar({ range, latest, onChange }: IProps) {
                     </View>
                 ))}
             </View>
-            <Text className="text-xs text-muted-foreground">{t('limit', { days: ARCHIVE_MAX_DAYS })}</Text>
+            <Text className="text-sm text-muted-foreground">{t('limit', { days: ARCHIVE_MAX_DAYS })}</Text>
         </View>
     )
 }

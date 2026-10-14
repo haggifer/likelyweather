@@ -1,6 +1,6 @@
 import { formatSpread } from '@fa/shared/dashboard'
 import { DayDisagreement } from '@fa/shared/ensemble'
-import { formatDateKey, formatNumber } from '@fa/shared/format'
+import { formatDayTileLines, formatNumber } from '@fa/shared/format'
 import { DISAGREEMENT_TONE } from '@fa/shared/status-tone'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { ScrollView, View } from 'react-native'
@@ -38,8 +38,8 @@ export function DisagreementTiles({ days, variable, className }: IProps) {
     return (
         <Card className={cn('gap-3 py-4', className)}>
             <CardHeader className="gap-1 px-4">
-                <CardTitle className="text-sm">{t('title')}</CardTitle>
-                <CardDescription className="text-[0.8125rem]">{description}</CardDescription>
+                <CardTitle className="text-base">{t('title')}</CardTitle>
+                <CardDescription className="text-sm">{description}</CardDescription>
             </CardHeader>
             <CardContent>
                 {days.length ? (
@@ -57,9 +57,16 @@ export function DisagreementTiles({ days, variable, className }: IProps) {
                                 key={d.day}
                                 className="w-[5.625rem] items-center gap-1.5 rounded-md border border-border p-2.5"
                             >
-                                <Text className="text-center text-xs text-muted-foreground">
-                                    {formatDateKey(d.day, locale, { weekday: 'short', day: 'numeric', month: 'short' })}
-                                </Text>
+                                <View>
+                                    {formatDayTileLines(d.day, locale).map((line) => (
+                                        <Text
+                                            key={line}
+                                            className="text-center text-sm leading-tight text-muted-foreground"
+                                        >
+                                            {line}
+                                        </Text>
+                                    ))}
+                                </View>
                                 <Text
                                     className="text-lg font-semibold tabular-nums"
                                     accessibilityHint={t('spreadTitle')}
@@ -68,7 +75,7 @@ export function DisagreementTiles({ days, variable, className }: IProps) {
                                     <Text className="text-xs font-normal text-muted-foreground"> {unit}</Text>
                                 </Text>
                                 <Badge variant={DISAGREEMENT_TONE[d.label]} className="w-full self-stretch">
-                                    <Text>{t(d.label)}</Text>
+                                    <Text className="text-[0.8125rem]">{t(d.label)}</Text>
                                 </Badge>
                             </View>
                         ))}

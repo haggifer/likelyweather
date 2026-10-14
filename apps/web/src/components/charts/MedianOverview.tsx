@@ -435,7 +435,9 @@ export function MedianOverview({
                             className="flex flex-col justify-center border-l-2 pl-3 sm:h-(--row-h)"
                             style={{ '--row-h': `${height}px` } as CSSProperties}
                         >
-                            <span className="text-xs font-medium text-muted-foreground">{tv(variable)}</span>
+                            <span className="text-xs font-medium text-muted-foreground max-sm:text-sm">
+                                {tv(variable)}
+                            </span>
                             <span className="text-xl leading-tight font-semibold sm:text-2xl">
                                 {formatNumber(value, info.decimals)}
                                 <span className="ml-1 text-sm font-normal whitespace-nowrap text-muted-foreground">
