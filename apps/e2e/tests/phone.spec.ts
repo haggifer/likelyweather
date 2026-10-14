@@ -99,9 +99,16 @@ test('the variable switch stays in view and the model list sits under the chart'
     await page.goto(`/city/${KYIV}`)
     await expect(page.locator('main svg[role=img]').first()).toBeVisible()
 
-    const chartCard = page.locator('main [data-slot=card]').first()
+    // On phones the chart card and the model list share one sheet, the list in its own section under the chart.
+    const sheet = page.locator('main [data-sheet]')
+    const hideButton = sheet.getByRole('button', { name: /^Hide / }).first()
 
-    await expect(chartCard.getByRole('button', { name: /^Hide / }).first()).toBeVisible()
+    await expect(hideButton).toBeVisible()
+
+    const chartBox = await sheet.locator('[data-slot=card]').first().boundingBox()
+    const hideBox = await hideButton.boundingBox()
+
+    expect(hideBox?.y ?? 0).toBeGreaterThanOrEqual((chartBox?.y ?? 0) + (chartBox?.height ?? 0))
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
 
     const box = await page.getByRole('radiogroup', { name: 'Variable' }).boundingBox()
@@ -118,8 +125,7 @@ test('model names in the phone legend wrap instead of clipping', async ({ page, 
         await page.goto(`/city/${KYIV}`)
         await expect(page.locator('main svg[role=img]').first()).toBeVisible()
 
-        const chartCard = page.locator('main [data-slot=card]').first()
-        const rows = chartCard.locator('li')
+        const rows = page.locator('main [data-sheet] li')
 
         await expect(rows.first()).toBeVisible()
 
