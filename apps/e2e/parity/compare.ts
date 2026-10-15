@@ -8,7 +8,10 @@ import { getFixedTop, getPageOffsets, pairNodes, placeWebNodes, stitchPages } fr
 import type { Rect, TextNode } from './types.ts'
 import { captureWeb } from './web.ts'
 
-type Screen = 'home' | 'city' | 'archive'
+// A list rather than an enum: Node runs this file by stripping its types, which leaves no enum behind.
+const SCREENS = ['home', 'city', 'archive', 'methodology'] as const
+
+type Screen = (typeof SCREENS)[number]
 
 interface Measurement {
     text: string
@@ -33,7 +36,7 @@ const HELP = `Compares one screen of the web's phone layout with the same screen
 
 pnpm --filter @fa/e2e parity --screen city --slug <slug> [options]
 
-  --screen   home | city | archive (default home)
+  --screen   home | city | archive | methodology (default home)
   --slug     a stored city's slug (needed for city and archive)
   --web      the web app's origin (default http://localhost:3000)
   --device   the adb device (default emulator-5554)
@@ -61,8 +64,10 @@ const { values } = parseArgs({
     },
 })
 
+const isScreen = (value: string): value is Screen => SCREENS.some((screen) => screen === value)
+
 const getPaths = (screen: Screen, slug: string | undefined) => {
-    if (screen !== 'home' && !slug) {
+    if ((screen === 'city' || screen === 'archive') && !slug) {
         throw new Error(`--screen ${screen} needs --slug`)
     }
 
@@ -74,6 +79,8 @@ const getPaths = (screen: Screen, slug: string | undefined) => {
             return { web: `/city/${slug}`, app: `forecastarena://city/${slug}` }
         case 'archive':
             return { web: `/archive?city=${slug}`, app: `forecastarena://archive?city=${slug}` }
+        case 'methodology':
+            return { web: '/methodology', app: 'forecastarena:///methodology' }
     }
 }
 
@@ -137,7 +144,11 @@ const main = async () => {
         return
     }
 
-    const screen = values.screen as Screen
+    if (!isScreen(values.screen)) {
+        throw new Error(`--screen must be one of ${SCREENS.join(', ')}`)
+    }
+
+    const { screen } = values
     const mode = values.mode === 'light' ? 'light' : 'dark'
     const paths = getPaths(screen, values.slug)
     const android = createAndroid(values.device)
