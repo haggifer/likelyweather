@@ -40,7 +40,10 @@ pnpm --filter @fa/e2e parity --screen city --slug <slug> [options]
   --mode     light | dark: the web's colour mode; set the app's theme to match in its Settings (default dark)
   --wait     seconds both apps get to load; the app starts afresh (default 12)
   --scroll-x where the app is dragged to scroll, as a share of its width (default 0.5)
-  --out      the results folder (default apps/e2e/parity-results)`
+  --out      the results folder (default apps/e2e/parity-results)
+
+The app runs a development build against the same API as the web, with the build's Tools button turned off in its
+menu, since the button covers the screen's bottom corner.`
 
 // pnpm hands a separating `--` on to the script, so `pnpm … parity -- --screen city` works as well.
 const { values } = parseArgs({
