@@ -8,6 +8,7 @@ const CSS = `
     --background: #f7f9fc;
     --primary: #1E5EFF;
     --font-sans: var(--font-inter), system-ui, sans-serif;
+    --text-base: 0.875rem;
     --radius: 0.625rem;
 }
 .dark {
@@ -20,24 +21,28 @@ const CSS = `
 `
 
 describe('parseCssTokens', () => {
-    it('reads the light and dark colours and the radius in px', () => {
+    it('reads the light and dark colours, the radius and the text sizes in px', () => {
         expect(parseCssTokens(CSS)).toEqual({
             light: { background: '#f7f9fc', primary: '#1e5eff' },
             dark: { background: '#0b1220', primary: '#5b8cff' },
             radius: 10,
+            text: { 'text-base': 14 },
         })
     })
 
     it('matches the committed tokens, so a globals.css change needs `pnpm --filter @fa/mobile tokens`', () => {
         const css = readFileSync(path.resolve(__dirname, '../../../web/src/app/globals.css'), 'utf8')
 
-        expect({ light: LIGHT, dark: DARK, radius: RADIUS }).toEqual(parseCssTokens(css))
+        const { light, dark, radius } = parseCssTokens(css)
+
+        expect({ light: LIGHT, dark: DARK, radius: RADIUS }).toEqual({ light, dark, radius })
     })
 
-    it('writes the light and dark colours and the radius scale as the Uniwind theme', () => {
+    it('writes the light and dark colours, the radius scale and the text sizes as the Uniwind theme', () => {
         const css = toUniwindCss(parseCssTokens(CSS))
 
         expect(css).toContain('--radius-lg: 10px;')
+        expect(css).toContain('--text-base: 14px;')
         expect(css).toMatch(/@variant light \{\s*--color-background: #f7f9fc;\s*--color-primary: #1e5eff;/)
         expect(css).toMatch(/@variant dark \{\s*--color-background: #0b1220;\s*--color-primary: #5b8cff;/)
     })

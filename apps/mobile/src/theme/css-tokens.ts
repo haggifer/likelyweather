@@ -2,11 +2,14 @@ export interface CssTokens {
     light: Record<string, string>
     dark: Record<string, string>
     radius: number
+    // Tailwind type sizes the web overrides at runtime (`--text-base` and the like), in px.
+    text: Record<string, number>
 }
 
 const ROOT_FONT_PX = 16
 const HEX_DECLARATION = /--([\w-]+):\s*(#[0-9a-f]{3,8})\s*;/gi
 const RADIUS_DECLARATION = /--radius:\s*([\d.]+)rem\s*;/
+const TEXT_DECLARATION = /--(text-[\w-]+):\s*([\d.]+)rem\s*;/g
 
 // The first `:root { … }` block holds the light tokens and `.dark { … }` the dark ones; later `:root` blocks hold
 // layout sizes the app does not take from CSS.
@@ -19,11 +22,19 @@ const getBlock = (css: string, selector: string) => {
 const getColors = (block: string) =>
     Object.fromEntries([...block.matchAll(HEX_DECLARATION)].map(([, name, value]) => [name, value.toLowerCase()]))
 
+const getTextSizes = (block: string) =>
+    Object.fromEntries([...block.matchAll(TEXT_DECLARATION)].map(([, name, rem]) => [name, Number(rem) * ROOT_FONT_PX]))
+
 export const parseCssTokens = (css: string): CssTokens => {
     const light = getBlock(css, ':root')
     const radiusRem = Number(RADIUS_DECLARATION.exec(light)?.[1] ?? 0)
 
-    return { light: getColors(light), dark: getColors(getBlock(css, '.dark')), radius: radiusRem * ROOT_FONT_PX }
+    return {
+        light: getColors(light),
+        dark: getColors(getBlock(css, '.dark')),
+        radius: radiusRem * ROOT_FONT_PX,
+        text: getTextSizes(light),
+    }
 }
 
 // The web's radius scale (globals.css `@theme inline`), in px: native styles take no `calc()`.
@@ -36,7 +47,12 @@ const toDeclarations = (colors: Record<string, string>, indent: string) =>
 
 // The app's Uniwind theme: the same colours as utilities (`bg-primary`, `text-muted-foreground`), switched by
 // `Uniwind.setTheme`, which reads the light and dark variants rather than the web's `.dark` class.
-export const toUniwindCss = ({ light, dark, radius }: CssTokens) => {
+export const toUniwindCss = ({ light, dark, radius, text }: CssTokens) => {
+    // The web sets `--text-base` in `:root`, so its `text-base` (and the body text) is 14 px; without the same value
+    // here the app's `text-base`, the kit's default text size, would be Tailwind's 16 px.
+    const textSizes = Object.entries(text)
+        .map(([name, px]) => `    --${name}: ${px}px;`)
+        .join('\n')
     const radii = Object.entries(RADIUS_SCALE)
         .map(([name, share]) => `    --radius-${name}: ${Math.round(radius * share)}px;`)
         .join('\n')
@@ -46,6 +62,7 @@ export const toUniwindCss = ({ light, dark, radius }: CssTokens) => {
 @import 'uniwind';
 
 @theme {
+${textSizes}
 ${radii}
 }
 
