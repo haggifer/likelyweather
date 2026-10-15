@@ -4,6 +4,10 @@ import { withUniwind } from 'uniwind'
 import { cn } from '../../lib/cn'
 import { TextClassContext } from './text'
 
+// The size a kit part gives the icons inside it, as the web's `[&_svg:not([class*='size-'])]:size-4` does; an icon's
+// own size class still wins.
+const IconClassContext = React.createContext<string | undefined>(undefined)
+
 type IconProps = LucideProps & {
     as: LucideIcon
 } & React.RefAttributes<LucideIcon>
@@ -45,7 +49,14 @@ const StyledIcon = withUniwind(IconImpl, {
  */
 function Icon({ as: IconComponent, className, ...props }: IconProps) {
     const textClass = React.useContext(TextClassContext)
-    return <StyledIcon as={IconComponent} className={cn('text-foreground size-5', textClass, className)} {...props} />
+    const iconClass = React.useContext(IconClassContext)
+    return (
+        <StyledIcon
+            as={IconComponent}
+            className={cn('text-foreground size-5', textClass, iconClass, className)}
+            {...props}
+        />
+    )
 }
 
-export { Icon }
+export { Icon, IconClassContext }

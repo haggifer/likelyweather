@@ -54,16 +54,17 @@ export function LocateButton({ onLocated, onSearch }: IProps) {
     return (
         <Button
             variant="ghost"
-            size="icon"
+            size="icon-sm"
             onPress={handlePress}
             disabled={locate.isPending}
             accessibilityLabel={t('locate')}
             accessibilityState={{ busy: locate.isPending, disabled: locate.isPending }}
+            className="size-9"
         >
             {locate.isPending ? (
-                <ActivityIndicator size="small" color={colors['muted-foreground']} />
+                <ActivityIndicator size="small" color={colors.foreground} />
             ) : (
-                <Icon as={LocateFixed} className="size-5 text-muted-foreground" />
+                <Icon as={LocateFixed} />
             )}
         </Button>
     )

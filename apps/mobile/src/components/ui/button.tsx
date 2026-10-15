@@ -1,33 +1,33 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import { Pressable } from 'react-native'
 import { cn } from '../../lib/cn'
+import { IconClassContext } from './icon'
 import { TextClassContext } from './text'
 
-// The web's variants (apps/web/src/components/ui/button.tsx) at its coarse-pointer sizes: a finger needs the 36 px the
-// web gives touch screens.
+// The web's variants and sizes (apps/web/src/components/ui/button.tsx). The web gives a touch screen bigger controls
+// element by element (`pointer-coarse:h-9`), so a call site sets the same size here; a press nudges the button down
+// as on the web.
 const buttonVariants = cva(
-    'group shrink-0 flex-row items-center justify-center gap-1.5 rounded-lg border border-transparent',
+    'group shrink-0 flex-row items-center justify-center gap-1.5 rounded-lg border border-transparent active:translate-y-px',
     {
         variants: {
             variant: {
-                default: 'bg-primary active:bg-primary/80',
-                outline:
-                    'border-border bg-background active:bg-muted dark:border-border dark:bg-input/30 dark:active:bg-input/50',
-                secondary: 'bg-secondary active:bg-secondary/80',
-                ghost: 'active:bg-muted dark:active:bg-muted/50',
-                destructive:
-                    'bg-destructive/10 active:bg-destructive/20 dark:bg-destructive/20 dark:active:bg-destructive/30',
+                default: 'bg-primary',
+                outline: 'border-border bg-background dark:bg-input/30',
+                secondary: 'bg-secondary',
+                ghost: '',
+                destructive: 'bg-destructive/10 dark:bg-destructive/20',
                 link: '',
             },
             size: {
-                default: 'h-9 px-3',
-                xs: 'h-7 gap-1 rounded-md px-2',
-                sm: 'h-8 gap-1 rounded-md px-2.5',
-                lg: 'h-10 px-3',
-                icon: 'size-9',
-                'icon-xs': 'size-7 rounded-md',
-                'icon-sm': 'size-8 rounded-md',
-                'icon-lg': 'size-10',
+                default: 'h-8 px-2.5',
+                xs: 'h-6 gap-1 rounded-md px-2',
+                sm: 'h-7 gap-1 rounded-md px-2.5',
+                lg: 'h-9 px-2.5',
+                icon: 'size-8',
+                'icon-xs': 'size-6 rounded-md',
+                'icon-sm': 'size-7 rounded-md',
+                'icon-lg': 'size-9',
             },
         },
         defaultVariants: {
@@ -41,11 +41,11 @@ const buttonTextVariants = cva('text-foreground text-sm font-medium', {
     variants: {
         variant: {
             default: 'text-primary-foreground',
-            outline: 'group-active:text-foreground',
+            outline: '',
             secondary: 'text-secondary-foreground',
-            ghost: 'group-active:text-foreground',
+            ghost: '',
             destructive: 'text-destructive',
-            link: 'text-primary group-active:underline',
+            link: 'text-primary',
         },
         size: {
             default: '',
@@ -64,6 +64,17 @@ const buttonTextVariants = cva('text-foreground text-sm font-medium', {
     },
 })
 
+const ICON_CLASS: Record<NonNullable<VariantProps<typeof buttonVariants>['size']>, string> = {
+    default: 'size-4',
+    xs: 'size-3',
+    sm: 'size-3.5',
+    lg: 'size-4',
+    icon: 'size-4',
+    'icon-xs': 'size-3',
+    'icon-sm': 'size-4',
+    'icon-lg': 'size-4',
+}
+
 type ButtonProps = React.ComponentProps<typeof Pressable> &
     React.RefAttributes<typeof Pressable> &
     VariantProps<typeof buttonVariants>
@@ -71,11 +82,13 @@ type ButtonProps = React.ComponentProps<typeof Pressable> &
 function Button({ className, variant, size, ...props }: ButtonProps) {
     return (
         <TextClassContext.Provider value={buttonTextVariants({ variant, size })}>
-            <Pressable
-                className={cn(props.disabled && 'opacity-50', buttonVariants({ variant, size }), className)}
-                role="button"
-                {...props}
-            />
+            <IconClassContext.Provider value={ICON_CLASS[size ?? 'default']}>
+                <Pressable
+                    className={cn(props.disabled && 'opacity-50', buttonVariants({ variant, size }), className)}
+                    role="button"
+                    {...props}
+                />
+            </IconClassContext.Provider>
         </TextClassContext.Provider>
     )
 }

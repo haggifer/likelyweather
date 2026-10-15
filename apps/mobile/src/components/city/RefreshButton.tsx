@@ -29,23 +29,20 @@ export function RefreshButton({ isAvailable, isFetching, onRefresh, isIconOnly =
     const handlePress = () => (isAvailable ? onRefresh() : showSnackbar(explanation))
 
     return (
+        // The web's `sm` button at its phone sizes: a 32 px square in the overview's icon row, 36 px tall with a label.
         <Button
             variant="outline"
-            size={isIconOnly ? 'icon' : 'default'}
+            size="sm"
             onPress={handlePress}
             // Pressable writes `disabled` into the accessibility state, which must keep saying disabled here.
             disabled={isFetching ? true : undefined}
             accessibilityLabel={t('refresh')}
             accessibilityHint={explanation}
             accessibilityState={{ disabled: !isAvailable || isFetching, busy: isFetching }}
-            className={cn(!isAvailable && 'opacity-50')}
+            className={cn(isIconOnly ? 'size-8 px-0' : 'h-9', !isAvailable && 'opacity-50')}
         >
-            {isFetching ? (
-                <ActivityIndicator size="small" color={colors.foreground} />
-            ) : (
-                <Icon as={RefreshCw} className="size-4" />
-            )}
-            {!isIconOnly && <Text>{t('refresh')}</Text>}
+            {isFetching ? <ActivityIndicator size="small" color={colors.foreground} /> : <Icon as={RefreshCw} />}
+            {!isIconOnly && <Text className="text-sm">{t('refresh')}</Text>}
         </Button>
     )
 }

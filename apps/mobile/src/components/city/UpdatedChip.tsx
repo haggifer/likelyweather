@@ -38,12 +38,12 @@ export function UpdatedChip({ fetchedAt, now, issueTime, timeZone, isCompact = f
             // The compact clock takes the web's phone box.
             <Button
                 variant="ghost"
-                size="icon-sm"
+                size="icon"
                 onPress={() => showSnackbar(label)}
                 hitSlop={8}
                 accessibilityLabel={label}
             >
-                <Icon as={ClockAlert} className="text-warning" />
+                <Icon as={ClockAlert} className="size-5 text-warning" />
             </Button>
         )
     }

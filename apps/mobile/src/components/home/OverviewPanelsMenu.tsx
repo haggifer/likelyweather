@@ -32,7 +32,9 @@ import { getDropIndex, moveItem } from './panel-drag'
 type MoveAction = 'moveUp' | 'moveDown'
 
 // Every row has this height, so the slot under a dragged row follows from its offset alone.
-const ROW_HEIGHT = 48
+// The web's rows: 40 px controls 4 px apart.
+const ROW_GAP = 4
+const ROW_HEIGHT = 40 + ROW_GAP
 const SETTLE_MS = 150
 const LIFTED_ELEVATION = 6
 const LIFTED_SHADOW_OPACITY = 0.2
@@ -117,12 +119,12 @@ const PanelRow = ({ variable, order, index, count, isShown, isToggleDisabled, on
 
     return (
         <Animated.View
-            className="absolute inset-x-0 h-12 flex-row items-center gap-1 rounded-md"
+            className="absolute inset-x-0 h-10 flex-row items-center gap-1 rounded-md"
             style={[ROW_SHADOW, lifted]}
         >
             <GestureDetector gesture={pan}>
                 <View
-                    className="h-12 w-11 items-center justify-center"
+                    className="size-10 items-center justify-center"
                     accessible
                     accessibilityLabel={t('dragPanel', { name })}
                     accessibilityActions={actions}
@@ -134,10 +136,11 @@ const PanelRow = ({ variable, order, index, count, isShown, isToggleDisabled, on
             <Text className={cn('flex-1 text-sm', !isShown && 'text-muted-foreground')}>{name}</Text>
             <Button
                 variant="ghost"
-                size="icon-lg"
+                size="icon-sm"
                 onPress={() => onToggle(variable)}
                 disabled={isToggleDisabled}
                 accessibilityLabel={t(isShown ? 'hidePanel' : 'showPanel', { name })}
+                className="size-10"
             >
                 <Icon
                     as={isShown ? Eye : EyeOff}
@@ -184,22 +187,23 @@ export function OverviewPanelsMenu({ panels, onChange: setPanels, isLabelHiddenO
     return (
         <Popover>
             <PopoverTrigger asChild>
+                {/* The web's `sm` button: a 32 px square in the overview's icon row, 40 px tall with a label. */}
                 <Button
                     variant="outline"
-                    size={isLabelHiddenOnPhones ? 'icon' : 'default'}
+                    size="sm"
                     accessibilityLabel={t('panels')}
-                    className={className}
+                    className={cn(isLabelHiddenOnPhones ? 'size-8 px-0' : 'h-10', className)}
                 >
-                    <Icon as={SlidersHorizontal} className="size-4" />
-                    {!isLabelHiddenOnPhones && <Text>{t('panels')}</Text>}
+                    <Icon as={SlidersHorizontal} />
+                    {!isLabelHiddenOnPhones && <Text className="text-sm">{t('panels')}</Text>}
                 </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-72 p-3" accessibilityLabel={t('customizeTitle')}>
-                <Text role="heading" className="mb-2 font-semibold">
+                <Text role="heading" className="mb-2 text-sm font-semibold">
                     {t('customizeTitle')}
                 </Text>
                 {/* On iOS the popover draws in a window of its own, outside the app's gesture root. */}
-                <GestureHandlerRootView style={{ height: count * ROW_HEIGHT }}>
+                <GestureHandlerRootView style={{ height: count * ROW_HEIGHT - ROW_GAP }}>
                     {panels.order.map((variable, i) => {
                         const isShown = !panels.hidden.includes(variable)
 

@@ -29,9 +29,9 @@ export function ChartFrame({ title, description, table, tabs, isFetching = false
 
     return (
         <Card className={cn('gap-3 py-4', className)}>
-            <CardHeader className="flex-row items-center gap-2 px-4">
+            <CardHeader className="flex-row items-center gap-1 px-4">
                 <View className="flex-1 gap-1">
-                    <CardTitle className="text-lg leading-snug">{title}</CardTitle>
+                    <CardTitle className="text-lg leading-snug font-semibold">{title}</CardTitle>
                     {description && <CardDescription>{description}</CardDescription>}
                 </View>
                 {table && (
@@ -42,7 +42,7 @@ export function ChartFrame({ title, description, table, tabs, isFetching = false
                         accessibilityLabel={isTable ? t('showChart') : t('showTable')}
                         accessibilityState={{ selected: isTable }}
                     >
-                        <Icon as={isTable ? BarChart3 : Table2} className="size-4" />
+                        <Icon as={isTable ? BarChart3 : Table2} />
                         <Text className="text-sm">{isTable ? t('chart') : t('table')}</Text>
                     </Button>
                 )}

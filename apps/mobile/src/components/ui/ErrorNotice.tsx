@@ -20,9 +20,9 @@ export function ErrorNotice({ error, onRetry }: IProps) {
         <Alert icon={CircleAlert}>
             <AlertDescription>{t(getErrorKind(error))}</AlertDescription>
             {onRetry && (
-                <View className="ml-0.5 items-start pb-1.5 pl-6">
-                    <Button variant="outline" size="sm" onPress={onRetry}>
-                        <Icon as={RefreshCw} className="size-4" />
+                <View className="mt-2 items-start pl-6">
+                    <Button variant="outline" size="sm" onPress={onRetry} className="h-9">
+                        <Icon as={RefreshCw} />
                         <Text>{t('retry')}</Text>
                     </Button>
                 </View>

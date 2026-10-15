@@ -14,12 +14,14 @@ interface IProps {
     place: Place
     size?: number
     tone?: 'default' | 'inverse'
+    // A header gives the toggle the web's 36 px box (`size-9`); a chip keeps the star's own size.
+    className?: string
 }
 
 // Pins a place to the front of the chips. With four favorites already, a tap explains the limit instead of failing
 // silently: a disabled control on a phone gives no hint why. The toggle keeps the star's own size, so it fits a chip;
 // the header gives it a full-size box.
-export function FavoriteToggle({ place, size = 22, tone = 'default' }: IProps) {
+export function FavoriteToggle({ place, size = 20, tone = 'default', className }: IProps) {
     const t = useTranslations('city')
     const locale = useLocale()
     const places = usePlaces()
@@ -45,7 +47,7 @@ export function FavoriteToggle({ place, size = 22, tone = 'default' }: IProps) {
             hitSlop={8}
             accessibilityLabel={label}
             // On the selected chip's blue an idle star at full strength reads as pinned; the web mutes it to 70 %.
-            className={cn('h-auto min-w-0 bg-transparent px-0', isInverse && !isPinned && 'opacity-70')}
+            className={cn('h-auto min-w-0 bg-transparent px-0', isInverse && !isPinned && 'opacity-70', className)}
         >
             <Icon
                 as={Star}

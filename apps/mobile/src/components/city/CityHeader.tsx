@@ -5,7 +5,7 @@ import { getCityRegion } from '@fa/shared/city-region'
 import { getCityName } from '@fa/shared/format'
 import { Variable } from '@fa/shared/variables'
 import { useIsFetching, useQueryClient } from '@tanstack/react-query'
-import { Pencil, X } from 'lucide-react-native'
+import { Pencil } from 'lucide-react-native'
 import { useState } from 'react'
 import { View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
@@ -18,20 +18,17 @@ import { FavoriteToggle } from './FavoriteToggle'
 import { RefreshButton } from './RefreshButton'
 import { UpdatedChip } from './UpdatedChip'
 
-const STAR_SIZE = 20
-
 interface IProps {
     city: City
     onSelectCity: (slug: string) => void
 }
 
 // The name doubles as a switcher: the pencil swaps both lines for a search box holding the current name, selected so
-// typing replaces it. Picking a result opens that city; a tap elsewhere, Android's back or the close button keeps this
-// one. The second line carries the age chip and Refresh, right-aligned together, as on the web's phone header, and
+// typing replaces it. Picking a result opens that city; a tap elsewhere or Android's back keeps this one, as a blur
+// or Escape does on the web. The second line carries the age chip and Refresh, right-aligned together, as on the web's phone header, and
 // only once the run is outdated (author, 2026-10-14).
 export function CityHeader({ city, onSelectCity }: IProps) {
     const t = useTranslations('city')
-    const ts = useTranslations('search')
     const locale = useLocale()
     const now = useNow()
     const queryClient = useQueryClient()
@@ -50,35 +47,19 @@ export function CityHeader({ city, onSelectCity }: IProps) {
     const handleClose = () => setIsSwitching(false)
 
     if (isSwitching) {
-        return (
-            <View className="flex-row items-start gap-1.5">
-                <View className="flex-1">
-                    <SearchBox initialQuery={name} autoFocus onDismiss={handleClose} onSelectCity={onSelectCity} />
-                </View>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onPress={handleClose}
-                    accessibilityLabel={ts('close')}
-                    className="mt-1.5"
-                >
-                    <Icon as={X} className="text-muted-foreground" />
-                </Button>
-            </View>
-        )
+        return <SearchBox initialQuery={name} autoFocus onDismiss={handleClose} onSelectCity={onSelectCity} />
     }
 
     return (
         <View className="gap-2">
             <CityTitle name={name} region={getCityRegion(city, locale)} countryCode={city.countryCode}>
-                <View className="size-9 items-center justify-center">
-                    <FavoriteToggle place={city} size={STAR_SIZE} />
-                </View>
+                <FavoriteToggle place={city} className="size-9" />
                 <Button
                     variant="ghost"
-                    size="icon"
+                    size="icon-sm"
                     onPress={() => setIsSwitching(true)}
                     accessibilityLabel={t('change')}
+                    className="size-9"
                 >
                     <Icon as={Pencil} className="text-muted-foreground" />
                 </Button>

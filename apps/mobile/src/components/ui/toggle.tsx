@@ -3,11 +3,14 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import * as React from 'react'
 import { Platform } from 'react-native'
 import { cn } from '../../lib/cn'
+import { IconClassContext } from './icon'
 import { TextClassContext } from './text'
 
+// The web's sizes and look (apps/web/src/components/ui/toggle.tsx): `bg-muted` when on, which call sites override as
+// the web's do (the variable switch's `bg-accent`).
 const toggleVariants = cva(
     cn(
-        'active:bg-muted group flex flex-row items-center justify-center gap-2 rounded-md',
+        'active:bg-muted group flex flex-row items-center justify-center gap-1 rounded-lg',
         Platform.select({
             web: 'hover:bg-muted hover:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive inline-flex cursor-default whitespace-nowrap outline-none transition-[color,box-shadow] focus-visible:ring-[3px] disabled:pointer-events-none [&_svg]:pointer-events-none',
         }),
@@ -17,16 +20,16 @@ const toggleVariants = cva(
             variant: {
                 default: 'bg-transparent',
                 outline: cn(
-                    'border-border active:bg-accent border bg-transparent shadow-sm shadow-black/5',
+                    'border-border border bg-transparent',
                     Platform.select({
                         web: 'hover:bg-accent hover:text-accent-foreground',
                     }),
                 ),
             },
             size: {
-                default: 'h-10 min-w-10 px-2.5 sm:h-9 sm:min-w-9 sm:px-2',
-                sm: 'h-9 min-w-9 px-2 sm:h-8 sm:min-w-8 sm:px-1.5',
-                lg: 'h-11 min-w-11 px-3 sm:h-10 sm:min-w-10 sm:px-2.5',
+                default: 'h-8 min-w-8 px-2.5',
+                sm: 'h-7 min-w-7 rounded-md px-2.5',
+                lg: 'h-9 min-w-9 px-2.5',
             },
         },
         defaultVariants: {
@@ -35,6 +38,16 @@ const toggleVariants = cva(
         },
     },
 )
+
+const toggleTextVariants = cva('text-sm text-foreground font-medium', {
+    variants: {
+        size: { default: '', sm: 'text-[0.8rem]', lg: '' },
+    },
+    defaultVariants: { size: 'default' },
+})
+
+const getToggleIconClass = (size: VariantProps<typeof toggleVariants>['size']) =>
+    size === 'sm' ? 'size-3.5' : 'size-4'
 
 function Toggle({
     className,
@@ -45,24 +58,24 @@ function Toggle({
     return (
         <TextClassContext.Provider
             value={cn(
-                'text-sm text-foreground font-medium',
-                props.pressed
-                    ? 'text-accent-foreground'
-                    : Platform.select({ web: 'group-hover:text-muted-foreground' }),
+                toggleTextVariants({ size }),
+                !props.pressed && Platform.select({ web: 'group-hover:text-muted-foreground' }),
                 className,
             )}
         >
-            <TogglePrimitive.Root
-                className={cn(
-                    toggleVariants({ variant, size }),
-                    props.disabled && 'opacity-50',
-                    props.pressed && 'bg-accent',
-                    className,
-                )}
-                {...props}
-            />
+            <IconClassContext.Provider value={getToggleIconClass(size)}>
+                <TogglePrimitive.Root
+                    className={cn(
+                        toggleVariants({ variant, size }),
+                        props.disabled && 'opacity-50',
+                        props.pressed && 'bg-muted',
+                        className,
+                    )}
+                    {...props}
+                />
+            </IconClassContext.Provider>
         </TextClassContext.Provider>
     )
 }
 
-export { Toggle, toggleVariants }
+export { getToggleIconClass, Toggle, toggleTextVariants, toggleVariants }
