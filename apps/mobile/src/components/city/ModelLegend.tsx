@@ -19,19 +19,20 @@ import { Toggle } from '../ui/toggle'
 
 // The eye button is 32 px and takes taps across 40 px, the web's `pointer-coarse:after:-inset-1.5`.
 const EYE_HIT_SLOP = 4
-const EYE_CLASS = 'size-3.5 text-muted-foreground'
+const EYE_CLASS = 'size-3.5'
 const EYE_BUTTON_CLASS = 'size-8'
 // A model's row is laid out like the median's (author, 2026-10-14): the same swatch length, gaps and padding.
-const ROW_CLASS = 'min-h-10 flex-row items-center gap-1.5 pr-0.5 pl-2'
+const ROW_CLASS = 'min-h-10 flex-row items-center gap-1.5 py-1 pr-0.5 pl-2'
 
 // Shared elements, so an unchanged eye is not rebuilt on every tap of the chart; the class picks the theme's colour.
 const EYE = <Icon as={Eye} className={EYE_CLASS} />
 const EYE_OFF = <Icon as={EyeOff} className={EYE_CLASS} />
 
-// The median as the chart draws it: thicker than a model and round-capped.
+// The median as the chart draws it: thicker than a model and round-capped; the web's line runs to 1 px from each end,
+// so the box trims its caps.
 const MedianSwatch = ({ color }: { color: string }) => (
     <Svg width={18} height={6} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
-        <Line x1={2} x2={16} y1={3} y2={3} stroke={color} strokeWidth={4} strokeLinecap="round" />
+        <Line x1={1} x2={17} y1={3} y2={3} stroke={color} strokeWidth={4} strokeLinecap="round" />
     </Svg>
 )
 
@@ -53,9 +54,9 @@ const ModelRow = memo(function ModelRow({ modelId, value, isHidden, onToggleHidd
         <View className={cn(ROW_CLASS, isHidden && 'opacity-45')}>
             <View className="flex-1 flex-row items-center gap-2">
                 <LineSwatch color={model.color} dash={model.dash} />
-                <Text className={cn('shrink text-sm', isHidden && 'line-through')}>{model.name}</Text>
+                <Text className={cn('shrink text-sm leading-tight', isHidden && 'line-through')}>{model.name}</Text>
             </View>
-            <Text className="min-w-12 text-right text-sm font-medium">{value}</Text>
+            <Text className="text-right text-sm font-medium">{value}</Text>
             <Button
                 variant="ghost"
                 size="icon-xs"
@@ -137,7 +138,7 @@ export function ModelLegend({
             </View>
             <View
                 className={cn(
-                    'flex-row items-center gap-1.5 rounded-md bg-muted pr-0.5 pl-2',
+                    'flex-row items-center gap-1.5 rounded-md bg-muted py-1 pr-0.5 pl-2',
                     isMedianHidden && 'opacity-45',
                 )}
             >

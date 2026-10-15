@@ -38,7 +38,7 @@ export function DisagreementTiles({ days, variable, className }: IProps) {
     return (
         <Card className={cn('gap-3 py-4', className)}>
             <CardHeader className="gap-1 px-4">
-                <CardTitle className="text-base">{t('title')}</CardTitle>
+                <CardTitle className="text-base font-semibold">{t('title')}</CardTitle>
                 <CardDescription className="text-sm">{description}</CardDescription>
             </CardHeader>
             <CardContent>
@@ -49,13 +49,14 @@ export function DisagreementTiles({ days, variable, className }: IProps) {
                         snapToInterval={TILE_WIDTH + TILE_GAP}
                         snapToAlignment="start"
                         decelerationRate="fast"
-                        contentContainerClassName="gap-2"
+                        // The tiles share the row when few days are left, as the web's do.
+                        contentContainerClassName="grow gap-2 pb-1"
                         accessibilityLabel={t('title')}
                     >
                         {days.map((d) => (
                             <View
                                 key={d.day}
-                                className="w-[5.625rem] items-center gap-1.5 rounded-md border border-border p-2.5"
+                                className="min-w-[5.625rem] flex-1 items-center gap-1.5 rounded-md border border-border p-2"
                             >
                                 <View>
                                     {formatDayTileLines(d.day, locale).map((line) => (
@@ -67,7 +68,10 @@ export function DisagreementTiles({ days, variable, className }: IProps) {
                                         </Text>
                                     ))}
                                 </View>
-                                <Text className="text-lg font-semibold" accessibilityHint={t('spreadTitle')}>
+                                <Text
+                                    className="text-lg leading-none font-semibold"
+                                    accessibilityHint={t('spreadTitle')}
+                                >
                                     {formatSpread(d.spread, decimals)}
                                     <Text className="text-xs font-normal text-muted-foreground"> {unit}</Text>
                                 </Text>
