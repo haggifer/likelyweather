@@ -108,6 +108,31 @@ export const buildSheet = (rows: { web: PNG; webRect: Rect; app: PNG; appRect: R
     return PNG.sync.write(sheet)
 }
 
+const isSameRow = (a: PNG, b: PNG, y: number) => {
+    const start = y * a.width * 4
+
+    return a.data.subarray(start, start + a.width * 4).equals(b.data.subarray(start, start + b.width * 4))
+}
+
+// The fixed top from the pixels, for a screen without a fixed text: the rows two consecutive pages share from the top
+// (the header and a sticky bar), found after the status bar, whose clock may have ticked between them. It stops within
+// the top `maxRows`, so a run of plain background rows in the content can't carry it far.
+export const getFixedRows = (pages: PNG[], maxRows: number) =>
+    Math.max(
+        0,
+        ...pages.slice(1).map((page, i) => {
+            const previous = pages[i]
+            const limit = Math.min(maxRows, page.height, previous.height)
+            let y = 0
+
+            while (y < limit && !isSameRow(previous, page, y)) y++
+
+            while (y < limit && isSameRow(previous, page, y)) y++
+
+            return y < limit ? y : 0
+        }),
+    )
+
 // The app's screenshots laid at their places in the scrolled content: one tall image like the web's full page. The
 // first page is whole; each later one adds what lies below the fixed top (`fixedTop`), painting over the earlier
 // page's bottom edge, where the navigation bar sat.

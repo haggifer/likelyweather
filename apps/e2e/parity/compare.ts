@@ -3,7 +3,7 @@ import path from 'node:path'
 import { parseArgs } from 'node:util'
 import { PNG } from 'pngjs'
 import { createAndroid } from './android.ts'
-import { buildSheet, buildSideBySide, buildTallImage, decodePng, getInkBox } from './ink.ts'
+import { buildSheet, buildSideBySide, buildTallImage, decodePng, getFixedRows, getInkBox } from './ink.ts'
 import { getFixedTop, getPageOffsets, pairNodes, placeWebNodes, stitchPages } from './stitch.ts'
 import type { Rect, TextNode } from './types.ts'
 import { captureWeb } from './web.ts'
@@ -73,12 +73,13 @@ const getPaths = (screen: Screen, slug: string | undefined) => {
 
     switch (screen) {
         case 'home':
-            // The bare scheme opens no route, so the app would stay on the screen it last showed.
+            // A path after the scheme's `///`: without the third slash Android may take the first part for a host,
+            // and the app stays on the screen it last showed.
             return { web: '/', app: 'forecastarena:///' }
         case 'city':
-            return { web: `/city/${slug}`, app: `forecastarena://city/${slug}` }
+            return { web: `/city/${slug}`, app: `forecastarena:///city/${slug}` }
         case 'archive':
-            return { web: `/archive?city=${slug}`, app: `forecastarena://archive?city=${slug}` }
+            return { web: `/archive?city=${slug}`, app: `forecastarena:///archive?city=${slug}` }
         case 'methodology':
             return { web: '/methodology', app: 'forecastarena:///methodology' }
     }
@@ -188,7 +189,8 @@ const main = async () => {
     const pageNodes = pages.map(({ nodes }) => nodes)
     const offsets = getPageOffsets(pageNodes, Math.round(display.height * SCROLL_SHARE))
     const appNodes = stitchPages(pageNodes, offsets)
-    const appImage = buildTallImage(appPngs, offsets, getFixedTop(pageNodes))
+    const fixedTop = Math.max(getFixedTop(pageNodes), getFixedRows(appPngs, Math.round(display.height * SCROLL_SHARE)))
+    const appImage = buildTallImage(appPngs, offsets, fixedTop)
     const { pairs, webOnly, appOnly } = pairNodes(placeWebNodes(web.nodes), appNodes)
 
     const measurements = pairs
