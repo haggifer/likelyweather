@@ -4,12 +4,16 @@ export interface CssTokens {
     radius: number
     // Tailwind type sizes the web overrides at runtime (`--text-base` and the like), in px.
     text: Record<string, number>
+    // Shadows per colour mode (`--shadow-card`), in a form React Native's `boxShadow` reads.
+    shadows: { light: Record<string, string>; dark: Record<string, string> }
 }
 
 const ROOT_FONT_PX = 16
 const HEX_DECLARATION = /--([\w-]+):\s*(#[0-9a-f]{3,8})\s*;/gi
 const RADIUS_DECLARATION = /--radius:\s*([\d.]+)rem\s*;/
 const TEXT_DECLARATION = /--(text-[\w-]+):\s*([\d.]+)rem\s*;/g
+const SHADOW_DECLARATION = /--(shadow-[\w-]+):\s*([^;]+);/g
+const SLASH_RGB = /rgb\((\d+) (\d+) (\d+) \/ ([\d.]+)\)/g
 
 // The first `:root { … }` block holds the light tokens and `.dark { … }` the dark ones; later `:root` blocks hold
 // layout sizes the app does not take from CSS.
@@ -25,15 +29,27 @@ const getColors = (block: string) =>
 const getTextSizes = (block: string) =>
     Object.fromEntries([...block.matchAll(TEXT_DECLARATION)].map(([, name, rem]) => [name, Number(rem) * ROOT_FONT_PX]))
 
+// One line, with `rgb(r g b / a)` written as `rgba(…)`, the colour form React Native's parser is sure to take.
+const toShadow = (value: string) =>
+    value
+        .replace(/\s+/g, ' ')
+        .trim()
+        .replace(SLASH_RGB, (_, r, g, b, a) => `rgba(${r}, ${g}, ${b}, ${a})`)
+
+const getShadows = (block: string) =>
+    Object.fromEntries([...block.matchAll(SHADOW_DECLARATION)].map(([, name, value]) => [name, toShadow(value)]))
+
 export const parseCssTokens = (css: string): CssTokens => {
     const light = getBlock(css, ':root')
+    const dark = getBlock(css, '.dark')
     const radiusRem = Number(RADIUS_DECLARATION.exec(light)?.[1] ?? 0)
 
     return {
         light: getColors(light),
-        dark: getColors(getBlock(css, '.dark')),
+        dark: getColors(dark),
         radius: radiusRem * ROOT_FONT_PX,
         text: getTextSizes(light),
+        shadows: { light: getShadows(light), dark: getShadows(dark) },
     }
 }
 
@@ -45,9 +61,14 @@ const toDeclarations = (colors: Record<string, string>, indent: string) =>
         .map(([name, value]) => `${indent}--color-${name}: ${value};`)
         .join('\n')
 
+const toVariables = (values: Record<string, string>, indent: string) =>
+    Object.entries(values)
+        .map(([name, value]) => `${indent}--${name}: ${value};`)
+        .join('\n')
+
 // The app's Uniwind theme: the same colours as utilities (`bg-primary`, `text-muted-foreground`), switched by
 // `Uniwind.setTheme`, which reads the light and dark variants rather than the web's `.dark` class.
-export const toUniwindCss = ({ light, dark, radius, text }: CssTokens) => {
+export const toUniwindCss = ({ light, dark, radius, text, shadows }: CssTokens) => {
     // The web sets `--text-base` in `:root`, so its `text-base` (and the body text) is 14 px; without the same value
     // here the app's `text-base`, the kit's default text size, would be Tailwind's 16 px.
     const textSizes = Object.entries(text)
@@ -64,16 +85,19 @@ export const toUniwindCss = ({ light, dark, radius, text }: CssTokens) => {
 @theme {
 ${textSizes}
 ${radii}
+${toVariables(shadows.light, '    ')}
 }
 
 @layer theme {
     :root {
         @variant light {
 ${toDeclarations(light, '            ')}
+${toVariables(shadows.light, '            ')}
         }
 
         @variant dark {
 ${toDeclarations(dark, '            ')}
+${toVariables(shadows.dark, '            ')}
         }
     }
 }

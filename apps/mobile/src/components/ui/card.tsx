@@ -4,11 +4,13 @@ import { Text, TextClassContext } from './text'
 
 function Card({ className, ...props }: React.ComponentProps<typeof View> & React.RefAttributes<View>) {
     return (
-        <TextClassContext.Provider value="text-card-foreground">
+        // The web card's text size, and its frame from globals.css (`[data-slot='card']`): the 10 px radius, the border
+        // and `--shadow-card`, which the theme generator brings over.
+        <TextClassContext.Provider value="text-sm text-card-foreground">
             <View
                 className={cn(
                     // The web card's spacing (--card-spacing, 16 px).
-                    'bg-card border-border flex flex-col gap-4 rounded-xl border py-4 shadow-sm shadow-black/5',
+                    'bg-card border-border shadow-card flex flex-col gap-4 rounded-lg border py-4',
                     className,
                 )}
                 {...props}

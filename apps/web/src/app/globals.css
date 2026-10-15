@@ -97,6 +97,8 @@
     --text-base: 0.875rem;
     --radius: 0.625rem;
     --border-width: 1px;
+    /* The cards' and the phone sheet's shadow; the app's theme takes it too (pnpm --filter @fa/mobile tokens). */
+    --shadow-card: 0 1px 2px rgb(15 23 42 / 0.06), 0 8px 24px -12px rgb(15 23 42 / 0.18);
 }
 
 .dark {
@@ -133,6 +135,7 @@
     --chart-median: #f1f5fb;
     --chart-band: #5b8cff;
     --chart-grid: #1e2a44;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
 }
 
 :root {
@@ -179,12 +182,7 @@
     --card-spacing: var(--card-padding);
     border-radius: var(--radius);
     border: var(--border-width) solid var(--border);
-    box-shadow:
-        0 1px 2px rgb(15 23 42 / 0.06),
-        0 8px 24px -12px rgb(15 23 42 / 0.18);
-}
-.dark [data-slot='card'] {
-    box-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+    box-shadow: var(--shadow-card);
 }
 /* On phones a card of dense charts runs edge to edge, without corners or top and bottom borders, so its plot gets the
    screen's whole width; its parent cancels the page's side padding. */
@@ -197,12 +195,7 @@
     /* The city page's cards join into one edge-to-edge sheet like the landing's card, parted by dividers. */
     [data-sheet] {
         background: var(--card);
-        box-shadow:
-            0 1px 2px rgb(15 23 42 / 0.06),
-            0 8px 24px -12px rgb(15 23 42 / 0.18);
-    }
-    .dark [data-sheet] {
-        box-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+        box-shadow: var(--shadow-card);
     }
     [data-sheet] [data-slot='card'] {
         border-radius: 0;
