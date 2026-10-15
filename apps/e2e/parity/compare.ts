@@ -1,10 +1,10 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { parseArgs } from 'node:util'
-import type { PNG } from 'pngjs'
+import { PNG } from 'pngjs'
 import { createAndroid } from './android.ts'
-import { buildSheet, buildSideBySide, decodePng, getInkBox } from './ink.ts'
-import { pairNodes, placeWebNodes, stitchPages } from './stitch.ts'
+import { buildSheet, buildSideBySide, buildTallImage, decodePng, getInkBox } from './ink.ts'
+import { getFixedTop, getPageOffsets, pairNodes, placeWebNodes, stitchPages } from './stitch.ts'
 import type { Rect, TextNode } from './types.ts'
 import { captureWeb } from './web.ts'
 
@@ -152,7 +152,7 @@ const main = async () => {
     const pages: { png: Buffer; nodes: TextNode[] }[] = []
 
     for (let i = 0; i < MAX_PAGES; i++) {
-        const page = android.capture(i)
+        const page = android.capture(i, display)
 
         if (pages.length && isSamePage(pages[pages.length - 1].nodes, page.nodes)) {
             break
@@ -174,10 +174,10 @@ const main = async () => {
 
     const webPng = decodePng(web.png)
     const appPngs = pages.map(({ png }) => decodePng(png))
-    const appNodes = stitchPages(
-        pages.map(({ nodes }) => nodes),
-        Math.round(display.height * SCROLL_SHARE),
-    )
+    const pageNodes = pages.map(({ nodes }) => nodes)
+    const offsets = getPageOffsets(pageNodes, Math.round(display.height * SCROLL_SHARE))
+    const appNodes = stitchPages(pageNodes, offsets)
+    const appImage = buildTallImage(appPngs, offsets, getFixedTop(pageNodes))
     const { pairs, webOnly, appOnly } = pairNodes(placeWebNodes(web.nodes), appNodes)
 
     const measurements = pairs
@@ -196,7 +196,8 @@ const main = async () => {
     mkdirSync(folder, { recursive: true })
     writeFileSync(path.join(folder, 'web.png'), web.png)
     pages.forEach(({ png }, i) => writeFileSync(path.join(folder, `app-${i + 1}.png`), png))
-    writeFileSync(path.join(folder, 'side-by-side.png'), buildSideBySide(decodePng(web.viewportPng), appPngs[0]))
+    writeFileSync(path.join(folder, 'app.png'), PNG.sync.write(appImage))
+    writeFileSync(path.join(folder, 'side-by-side.png'), buildSideBySide(webPng, appImage))
     writeFileSync(path.join(folder, 'sheet.png'), buildSheet(sheetRows))
     writeFileSync(path.join(folder, 'report.md'), buildReport(title, measurements, webOnly, appOnly))
 

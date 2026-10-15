@@ -108,7 +108,23 @@ export const buildSheet = (rows: { web: PNG; webRect: Rect; app: PNG; appRect: R
     return PNG.sync.write(sheet)
 }
 
-// The web's first screen and the app's first screenshot side by side, at their device pixels.
+// The app's screenshots laid at their places in the scrolled content: one tall image like the web's full page. The
+// first page is whole; each later one adds what lies below the fixed top (`fixedTop`), painting over the earlier
+// page's bottom edge, where the navigation bar sat.
+export const buildTallImage = (pages: PNG[], offsets: number[], fixedTop: number) => {
+    const width = Math.max(...pages.map((page) => page.width))
+    const image = new PNG({ width, height: Math.max(...pages.map((page, i) => offsets[i] + page.height)) })
+    image.data.fill(255)
+    pages.forEach((page, i) => {
+        const top = i ? Math.min(fixedTop, page.height) : 0
+
+        copyRegion(page, { x: 0, y: top, width: page.width, height: page.height - top }, image, 0, offsets[i] + top)
+    })
+
+    return image
+}
+
+// The web's page and the app's screen side by side, at their device pixels.
 export const buildSideBySide = (web: PNG, app: PNG) => {
     const sheet = new PNG({ width: web.width + GAP + app.width, height: Math.max(web.height, app.height) })
     sheet.data.fill(255)

@@ -15,6 +15,8 @@ interface AndroidPage {
 
 const DUMP_PATH = '/sdcard/fa-parity.xml'
 const MAX_CAPTURE_ATTEMPTS = 4
+// The gesture bar's strip at the screen's bottom, in dp: a text under its pill is measured on the next page instead.
+const NAVIGATION_BAR_DP = 32
 const NODE = /<node ([^>]*?)\/?>/g
 const BOUNDS = /^\[(\d+),(\d+)\]\[(\d+),(\d+)\]$/
 const ENTITIES: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" }
@@ -74,7 +76,10 @@ export const createAndroid = (device: string) => {
 
     // The view dump and the screenshot must show the same frame: a list still gliding after a drag would put each
     // text's bounds over another one's pixels, so a capture counts only when the screen did not change around it.
-    const capture = (image: number): AndroidPage => {
+    const capture = (image: number, { height, scale }: Display): AndroidPage => {
+        const isAboveNavigationBar = (node: TextNode) =>
+            node.rect.y + node.rect.height <= height - NAVIGATION_BAR_DP * scale
+
         for (let attempt = 1; ; attempt++) {
             const before = adb('exec-out', 'screencap', '-p')
             shell('uiautomator', 'dump', DUMP_PATH)
@@ -82,7 +87,7 @@ export const createAndroid = (device: string) => {
             const png = adb('exec-out', 'screencap', '-p')
 
             if (before.equals(png) || attempt === MAX_CAPTURE_ATTEMPTS) {
-                return { png, nodes: parseTextNodes(xml, image) }
+                return { png, nodes: parseTextNodes(xml, image).filter(isAboveNavigationBar) }
             }
 
             shell('sleep', '1')

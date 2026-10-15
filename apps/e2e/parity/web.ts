@@ -12,9 +12,7 @@ interface WebCapture {
 }
 
 interface WebPage {
-    // The whole page, and the first screen of it for the side-by-side view.
     png: Buffer
-    viewportPng: Buffer
     nodes: TextNode[]
 }
 
@@ -87,8 +85,6 @@ export const captureWeb = async ({ url, width, height, scale, mode, waitMs }: We
         await page.goto(url, { waitUntil: 'networkidle' })
         await page.waitForTimeout(waitMs)
 
-        const viewportPng = await page.screenshot()
-
         // A full-page screenshot lays the page out again at its full height, which moves fixed and sticky parts away
         // from the boxes measured before it; one tall viewport keeps the boxes and the pixels from the same layout.
         const pageHeight = await page.evaluate(() => document.documentElement.scrollHeight)
@@ -100,7 +96,6 @@ export const captureWeb = async ({ url, width, height, scale, mode, waitMs }: We
 
         return {
             png,
-            viewportPng,
             nodes: boxes.map(({ text, ...rect }) => ({ text, rect: toDevicePixels(rect, scale), image: 0 })),
         }
     } finally {

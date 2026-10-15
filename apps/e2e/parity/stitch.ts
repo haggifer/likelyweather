@@ -13,6 +13,8 @@ interface Pair {
 
 // Two views of one text closer than this on the stitched screen are the same element seen on two pages.
 const SAME_PLACE = 8
+// Room below a fixed text for the rest of its bar (the variable bar's segment and padding), in device pixels.
+const FIXED_MARGIN = 64
 
 // Spaces and digits left out: the web may part a number from its unit with a margin instead of a space, and the two
 // apps can show different runs, whose figures differ while their size does not (both use tabular figures).
@@ -49,14 +51,34 @@ const getShift = (previous: TextNode[], current: TextNode[], fallback: number) =
     return shifts.length ? getMedian(shifts) : fallback
 }
 
+// The bottom of what stays put while the screen scrolls (status bar, header, a sticky bar), from the texts that keep
+// their box on the next page; the pages after the first are pasted below it.
+export const getFixedTop = (pages: TextNode[][]) =>
+    Math.max(
+        0,
+        ...pages
+            .slice(1)
+            .flatMap((nodes, i) =>
+                nodes
+                    .filter((node) => pages[i].some((p) => p.text === node.text && isSameRect(p.rect, node.rect)))
+                    .map((node) => node.rect.y + node.rect.height + FIXED_MARGIN),
+            ),
+    )
+
+// Where each page starts in the screen's whole scrolled content, in device pixels.
+export const getPageOffsets = (pages: TextNode[][], fallbackShift: number) =>
+    pages.reduce<number[]>(
+        (offsets, nodes, i) => [...offsets, i ? offsets[i - 1] + getShift(pages[i - 1], nodes, fallbackShift) : 0],
+        [],
+    )
+
 // The app's pages laid end to end as one tall screen, like the web's single page: sticky parts (the same box on two
 // pages) count once, and a text seen on two pages keeps its tallest view, the one the screen's edge did not cut.
-export const stitchPages = (pages: TextNode[][], fallbackShift: number): PlacedNode[] => {
+export const stitchPages = (pages: TextNode[][], offsets: number[]): PlacedNode[] => {
     const placed: PlacedNode[] = []
-    let offset = 0
 
     pages.forEach((nodes, i) => {
-        offset += i ? getShift(pages[i - 1], nodes, fallbackShift) : 0
+        const offset = offsets[i]
 
         for (const node of nodes) {
             const isSticky = i > 0 && pages[i - 1].some((p) => p.text === node.text && isSameRect(p.rect, node.rect))
