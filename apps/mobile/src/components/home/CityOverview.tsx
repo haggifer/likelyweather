@@ -6,7 +6,6 @@ import { useEffect, useMemo } from 'react'
 import { useLocale, useTranslations } from 'use-intl'
 import { useNow } from '../../hooks/useNow'
 import { useOverviewPanels } from '../../hooks/useOverviewPanels'
-import { cn } from '../../lib/cn'
 import { showSnackbar } from '../../lib/snackbar-store'
 import { updateWidgetsForCity } from '../../widget/widget-updates'
 import { Card, CardContent } from '../ui/card'
@@ -51,13 +50,10 @@ export function CityOverview({ slug }: IProps) {
 
     if (error || isEmpty || isOffline) {
         return (
-            <Card className={cn('py-4', BLEED_CARD)}>
-                <CardContent>
+            <Card className={BLEED_CARD}>
+                <CardContent className="py-10">
                     {isEmpty || isOffline ? (
-                        <Text
-                            className="py-10 text-center text-sm text-muted-foreground"
-                            accessibilityLiveRegion="polite"
-                        >
+                        <Text className="text-center text-sm text-muted-foreground" accessibilityLiveRegion="polite">
                             {isOffline ? te('offline') : t('unavailable')}
                         </Text>
                     ) : (

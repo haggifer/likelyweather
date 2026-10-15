@@ -332,14 +332,13 @@ export function CityScreen() {
     if (!city) {
         return (
             <ScreenScroll contentContainerStyle={CONTENT_STYLE} scrollEnabled={false}>
-                <View className="gap-2">
-                    <SlugHeading slug={slug}>
-                        <Skeleton className="size-9" />
-                        <Skeleton className="size-9" />
-                    </SlugHeading>
+                <View className="flex-row items-center gap-1.5">
+                    <Skeleton className="h-8 w-44" />
+                    <Skeleton className="ml-auto size-9" />
+                    <Skeleton className="size-9" />
                 </View>
                 <Skeleton className="h-9" />
-                <DashboardSkeleton />
+                <DashboardSkeleton hasTiles={false} />
             </ScreenScroll>
         )
     }

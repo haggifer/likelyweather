@@ -105,8 +105,8 @@ export function ArchiveCard({ slug }: IProps) {
 
     if (cityError) {
         return (
-            <Card className={cn('py-10', BLEED_CARD)}>
-                <CardContent>
+            <Card className={BLEED_CARD}>
+                <CardContent className="py-10">
                     <ErrorNotice error={cityError} onRetry={() => void refetchCity()} />
                 </CardContent>
             </Card>
@@ -119,16 +119,16 @@ export function ArchiveCard({ slug }: IProps) {
                 {city ? (
                     <>
                         <FlagIcon countryCode={city.countryCode} width={24} />
-                        <Text className="flex-1 text-lg font-bold tracking-tight">
+                        <Text className="flex-1 text-lg leading-snug font-bold tracking-tight">
                             {name}
                             {region ? (
                                 <Text className="text-lg font-medium text-muted-foreground">, {region}</Text>
                             ) : null}
                         </Text>
-                        <FavoriteToggle place={city} />
+                        <FavoriteToggle place={city} className="size-9" />
                     </>
                 ) : (
-                    <LoadingStatus label={to('loading')} />
+                    <LoadingStatus label={to('loading')} isLabelShown={false} />
                 )}
             </CardHeader>
             <CardContent className="gap-1 px-4">
