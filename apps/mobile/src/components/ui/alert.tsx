@@ -20,14 +20,16 @@ function Alert({
     }) {
     return (
         <TextClassContext.Provider
-            value={cn('text-sm text-foreground', variant === 'destructive' && 'text-destructive', className)}
+            value={cn('text-sm text-foreground', variant === 'destructive' && 'text-destructive')}
         >
+            {/* The web's alert: 10 px sides, 8 px top and bottom, the icon in the first 16 px column and the text 8 px
+                after it. */}
             <View
                 role="alert"
-                className={cn('bg-card border-border relative w-full rounded-lg border px-4 pb-2 pt-3.5', className)}
+                className={cn('bg-card border-border relative w-full gap-0.5 rounded-lg border px-2.5 py-2', className)}
                 {...props}
             >
-                <View className="absolute left-3.5 top-3">
+                <View className="absolute left-2.5 top-2.5">
                     <Icon
                         as={icon}
                         className={cn('size-4', variant === 'destructive' && 'text-destructive', iconClassName)}
@@ -44,7 +46,7 @@ function AlertDescription({ className, ...props }: React.ComponentProps<typeof T
     return (
         <Text
             className={cn(
-                'text-muted-foreground ml-0.5 pb-1.5 pl-6 text-sm leading-relaxed',
+                'text-muted-foreground pl-6 text-sm',
                 textClass?.includes('text-destructive') && 'text-destructive/90',
                 className,
             )}

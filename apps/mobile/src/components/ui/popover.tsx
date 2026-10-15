@@ -19,7 +19,7 @@ const EDGE_GAP = 8
 
 function PopoverContent({
     className,
-    align = 'center',
+    align = 'end',
     sideOffset = 4,
     portalHost,
     insets,
@@ -48,13 +48,14 @@ function PopoverContent({
                         exiting={FadeOut.reduceMotion(ReduceMotion.System)}
                         as="Pressable"
                     >
-                        <TextClassContext.Provider value="text-popover-foreground">
+                        <TextClassContext.Provider value="text-sm text-popover-foreground">
                             <PopoverPrimitive.Content
                                 align={align}
                                 sideOffset={sideOffset}
                                 insets={edgeInsets}
                                 className={cn(
-                                    'bg-popover border-border outline-hidden z-50 w-72 rounded-md border p-4 shadow-md shadow-black/5',
+                                    // The web's PopoverPanel.
+                                    'bg-popover border-border outline-hidden z-50 w-72 rounded-md border p-3 shadow-md',
                                     Platform.select({
                                         web: cn(
                                             'animate-in fade-in-0 zoom-in-95 origin-(--radix-popover-content-transform-origin) cursor-auto',

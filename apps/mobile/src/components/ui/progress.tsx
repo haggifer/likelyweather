@@ -19,7 +19,7 @@ function Progress({
 }) {
     return (
         <ProgressPrimitive.Root
-            className={cn('bg-primary/20 relative h-2 w-full overflow-hidden rounded-full', className)}
+            className={cn('bg-muted relative h-1 w-full overflow-hidden rounded-full', className)}
             value={value}
             {...props}
         >
@@ -61,7 +61,7 @@ function NativeIndicator({ value, className }: IndicatorProps) {
 
     const indicator = useAnimatedStyle(() => {
         return {
-            width: withSpring(`${interpolate(progress.value, [0, 100], [1, 100], Extrapolation.CLAMP)}%`, {
+            width: withSpring(`${interpolate(progress.value, [0, 100], [0, 100], Extrapolation.CLAMP)}%`, {
                 overshootClamping: true,
             }),
         }

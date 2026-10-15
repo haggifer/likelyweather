@@ -4,6 +4,7 @@ import { Platform, type StyleProp, StyleSheet, type ViewStyle } from 'react-nati
 import { FadeIn, ReduceMotion } from 'react-native-reanimated'
 import { FullWindowOverlay as RNFullWindowOverlay } from 'react-native-screens'
 import { cn } from '../../lib/cn'
+import { IconClassContext } from './icon'
 import { NativeOnlyAnimatedView } from './native-only-animated-view'
 import { TextClassContext } from './text'
 
@@ -44,7 +45,8 @@ function DropdownMenuContent({
                         <TextClassContext.Provider value="text-popover-foreground">
                             <DropdownMenuPrimitive.Content
                                 className={cn(
-                                    'bg-popover border-border min-w-[8rem] overflow-hidden rounded-md border p-1 shadow-lg shadow-black/5',
+                                    // The web's menu: 10 px corners, a frame of 10 % text colour, a medium shadow.
+                                    'bg-popover border-foreground/10 min-w-[8rem] overflow-hidden rounded-lg border p-1 shadow-md',
                                     Platform.select({
                                         web: cn(
                                             'animate-in fade-in-0 zoom-in-95 max-h-(--radix-context-menu-content-available-height) origin-(--radix-context-menu-content-transform-origin) z-50 cursor-default',
@@ -81,22 +83,24 @@ function DropdownMenuItem({
                 variant === 'destructive' && 'text-destructive group-active:text-destructive',
             )}
         >
-            <DropdownMenuPrimitive.Item
-                className={cn(
-                    'active:bg-accent group relative flex flex-row items-center gap-2 rounded-sm px-2 py-2 sm:py-1.5',
-                    Platform.select({
-                        web: cn(
-                            'focus:bg-accent focus:text-accent-foreground cursor-default outline-none data-[disabled]:pointer-events-none',
-                            variant === 'destructive' && 'focus:bg-destructive/10 dark:focus:bg-destructive/20',
-                        ),
-                    }),
-                    variant === 'destructive' && 'active:bg-destructive/10 dark:active:bg-destructive/20',
-                    props.disabled && 'opacity-50',
-                    inset && 'pl-8',
-                    className,
-                )}
-                {...props}
-            />
+            <IconClassContext.Provider value="size-4">
+                <DropdownMenuPrimitive.Item
+                    className={cn(
+                        'active:bg-accent group relative flex flex-row items-center gap-1.5 rounded-md px-1.5 py-1',
+                        Platform.select({
+                            web: cn(
+                                'focus:bg-accent focus:text-accent-foreground cursor-default outline-none data-[disabled]:pointer-events-none',
+                                variant === 'destructive' && 'focus:bg-destructive/10 dark:focus:bg-destructive/20',
+                            ),
+                        }),
+                        variant === 'destructive' && 'active:bg-destructive/10 dark:active:bg-destructive/20',
+                        props.disabled && 'opacity-50',
+                        inset && 'pl-8',
+                        className,
+                    )}
+                    {...props}
+                />
+            </IconClassContext.Provider>
         </TextClassContext.Provider>
     )
 }
