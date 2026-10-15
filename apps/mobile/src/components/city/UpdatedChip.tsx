@@ -1,7 +1,7 @@
 import { getForecastAge, getForecastTitleValues } from '@fa/shared/forecast-age'
 import { ClockAlert } from 'lucide-react-native'
 import { useLocale, useTranslations } from 'use-intl'
-import { showSnackbar } from '../../lib/snackbar-store'
+import { Hint } from '../shell/Hint'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { Icon } from '../ui/icon'
@@ -35,16 +35,12 @@ export function UpdatedChip({ fetchedAt, now, issueTime, timeZone, isCompact = f
 
     if (isCompact) {
         return (
-            // The compact clock takes the web's phone box.
-            <Button
-                variant="ghost"
-                size="icon"
-                onPress={() => showSnackbar(label)}
-                hitSlop={8}
-                accessibilityLabel={label}
-            >
-                <Icon as={ClockAlert} className="size-5 text-warning" />
-            </Button>
+            // The compact clock takes the web's phone box; its hint tells only the age (author, 2026-10-14).
+            <Hint content={label}>
+                <Button variant="ghost" size="icon" hitSlop={8} accessibilityLabel={label} className="rounded-full">
+                    <Icon as={ClockAlert} className="size-5 text-warning" />
+                </Button>
+            </Hint>
         )
     }
 
@@ -54,15 +50,16 @@ export function UpdatedChip({ fetchedAt, now, issueTime, timeZone, isCompact = f
     const details = isStale ? `${runTimes} ${t('forecastOldTitle')}` : runTimes
 
     return (
-        <Button
-            variant="ghost"
-            onPress={() => showSnackbar(details)}
-            hitSlop={8}
-            accessibilityLabel={label}
-            accessibilityHint={details}
-            className="h-auto rounded-full px-0"
-        >
-            {badge}
-        </Button>
+        <Hint content={details}>
+            <Button
+                variant="ghost"
+                hitSlop={8}
+                accessibilityLabel={label}
+                accessibilityHint={details}
+                className="h-auto rounded-full px-0"
+            >
+                {badge}
+            </Button>
+        </Hint>
     )
 }
