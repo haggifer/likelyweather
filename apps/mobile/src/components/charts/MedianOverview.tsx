@@ -1,4 +1,5 @@
 import {
+    AXIS_HEIGHT,
     getArrowY,
     getChanceLabels,
     getChanceY,
@@ -7,24 +8,21 @@ import {
     getOverviewFrame,
     getOverviewLayout,
     getPanelBars,
+    getPanelHeight,
     getPanelPaths,
     getPanelScale,
+    HOVER_STRIP,
     OVERVIEW_MARGIN_RIGHT,
-    OVERVIEW_SIZE,
+    OVERVIEW_PHONE_SIZE,
     OverviewFrame,
     OverviewLayout,
     PANEL_RADIUS,
     PanelRow,
     PanelScale,
+    ROW_GAP,
     SECONDARY_DASH,
 } from '@fa/chart-core/overview-geometry'
-import {
-    getExtraReadout,
-    getOverviewReadoutIndex,
-    getPanelSeries,
-    getValueAt,
-    hasExtraReadout,
-} from '@fa/chart-core/overview-readouts'
+import { getExtraReadout, getOverviewReadoutIndex, getPanelSeries, getValueAt } from '@fa/chart-core/overview-readouts'
 import { OverviewMedians } from '@fa/chart-core/overview-stats'
 import { CHART_FONT_SIZE, getNowX } from '@fa/chart-core/plot-geometry'
 import { formatYTick } from '@fa/chart-core/scales'
@@ -42,7 +40,6 @@ import { useTranslations } from 'use-intl'
 import { useChartScroll } from '../../hooks/useChartScroll'
 import { useLayoutWidth } from '../../hooks/useLayoutWidth'
 import { useTheme } from '../../hooks/useTheme'
-import { cn } from '../../lib/cn'
 import { getFontFamily } from '../../theme/fonts'
 import { Skeleton } from '../ui/skeleton'
 import { Text } from '../ui/text'
@@ -53,14 +50,20 @@ import { WindArrows } from './WindArrows'
 
 // The web's phone layout: readouts in a two-column grid above, the reader's panels stacked below in the same order,
 // each named inside its panel.
-const { heights: PANEL_HEIGHTS, marginLeft: MARGIN_LEFT, hoverLabelHalfWidth: HOVER_LABEL_HALF_WIDTH } = OVERVIEW_SIZE
+const {
+    heights: PANEL_HEIGHTS,
+    marginLeft: MARGIN_LEFT,
+    hoverLabelHalfWidth: HOVER_LABEL_HALF_WIDTH,
+} = OVERVIEW_PHONE_SIZE
 const SCROLL_THROTTLE_MS = 100
 // Half the cap height of the tick font, so a label centres on its gridline.
 const BASELINE_SHIFT = 3.5
-const NO_BREAK_SPACE = ' '
 // The web's phone grid: two equal columns with the gap between them; an odd last readout keeps to its column.
 const READOUTS_CLASS = 'flex-row flex-wrap gap-2'
-const READOUT_CLASS = 'max-w-[50%] grow basis-2/5 border-l-2 border-border pr-1 pl-3'
+// Centred in its row, like the web's grid cell next to a taller one (Pressure beside Precipitation's second line).
+const SKELETON_READOUT_CLASS = 'h-[3.5625rem] max-w-[50%] grow basis-2/5'
+const SKELETON_PANELS_STYLE = { gap: ROW_GAP, paddingTop: HOVER_STRIP, paddingBottom: AXIS_HEIGHT }
+const READOUT_CLASS = 'max-w-[50%] grow basis-2/5 justify-center border-l-2 border-border pr-1 pl-3'
 const LABEL_CLASS = 'text-sm font-medium text-muted-foreground'
 const VALUE_CLASS = 'text-xl leading-tight font-semibold'
 const EXTRA_CLASS = 'text-xs text-muted-foreground'
@@ -245,44 +248,33 @@ const OverviewDrawing = memo(function OverviewDrawing({
     )
 })
 
-interface SkeletonLineProps {
-    className: string
-    widthClass: string
-}
-
-// One line of invisible text gives the line its loaded height; the pulsing bar sits inside it.
-const SkeletonLine = ({ className, widthClass }: SkeletonLineProps) => (
-    <View>
-        <Text className={className}>{NO_BREAK_SPACE}</Text>
-        <Skeleton className={cn('absolute top-0.5 bottom-0.5', widthClass)} />
-    </View>
-)
-
 interface SkeletonProps {
     panels: PanelVariable[]
-    // The archive's precipitation readout has no chance-of-rain line.
+    // The archive's precipitation panel has no chance-of-rain strip.
     isArchive?: boolean
 }
 
-// The loaded overview's shape, line for line: the panels' readouts with their second lines, then the panels at their
-// full height.
+// The web's phone skeleton: a block per readout, then a block per panel at its height in the chart's frame.
 export function MedianOverviewSkeleton({ panels, isArchive = false }: SkeletonProps) {
-    const layout = useMemo(() => getOverviewLayout(PANEL_HEIGHTS, panels, !isArchive), [panels, isArchive])
-
     return (
         <View className="gap-3" importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
             <View className={READOUTS_CLASS}>
-                {layout.rows.map(({ variable }) => (
-                    <View key={variable} className={READOUT_CLASS}>
-                        <SkeletonLine className={LABEL_CLASS} widthClass="w-[55%]" />
-                        <SkeletonLine className={VALUE_CLASS} widthClass="w-[40%]" />
-                        {hasExtraReadout(variable, !isArchive) && (
-                            <SkeletonLine className={EXTRA_CLASS} widthClass="w-[65%]" />
-                        )}
-                    </View>
+                {panels.map((variable) => (
+                    <Skeleton key={variable} className={SKELETON_READOUT_CLASS} />
                 ))}
             </View>
-            <Skeleton style={{ height: layout.totalHeight }} />
+            <View style={SKELETON_PANELS_STYLE}>
+                {panels.map((variable) => (
+                    <Skeleton
+                        key={variable}
+                        style={{
+                            height: getPanelHeight(PANEL_HEIGHTS, variable, !isArchive),
+                            marginLeft: MARGIN_LEFT,
+                            marginRight: OVERVIEW_MARGIN_RIGHT,
+                        }}
+                    />
+                ))}
+            </View>
         </View>
     )
 }

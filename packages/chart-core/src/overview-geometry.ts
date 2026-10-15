@@ -101,7 +101,7 @@ export const SECONDARY_DASH = '5 3'
 const SLOT_MS = SLOT_HOURS * HOUR_MS
 const LIKELY_CHANCE = 0.5
 
-// The overview of the web's desktop column and of the app. Text is 11 px everywhere (author, 2026-10-12).
+// The overview of the web's desktop column. Text is 11 px everywhere (author, 2026-10-12).
 export const OVERVIEW_SIZE: OverviewSize = {
     heights: {
         [Variable.Temp]: 104,
@@ -113,6 +113,21 @@ export const OVERVIEW_SIZE: OverviewSize = {
     },
     marginLeft: 36,
     hoverLabelHalfWidth: 34,
+}
+
+// The overview on a phone, the web's below `sm` and the app's: the landing page's main content, so its panels are
+// taller than in the desktop column (author, 2026-10-09); the readouts above the chart leave it the full width.
+export const OVERVIEW_PHONE_SIZE: OverviewSize = {
+    heights: {
+        [Variable.Temp]: 120,
+        [Variable.Wind]: 115,
+        [Variable.Pressure]: 92,
+        [Variable.Precip]: 92,
+        [Variable.Humidity]: 92,
+        [Variable.Cloud]: 92,
+    },
+    marginLeft: 40,
+    hoverLabelHalfWidth: 36,
 }
 
 const isDefined = (p: Point) => p[1] !== null
