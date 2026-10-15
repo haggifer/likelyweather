@@ -38,7 +38,7 @@ pnpm --filter @fa/e2e parity --screen city --slug <slug> [options]
   --web      the web app's origin (default http://localhost:3000)
   --device   the adb device (default emulator-5554)
   --mode     light | dark: the web's colour mode; set the app's theme to match in its Settings (default dark)
-  --wait     seconds both apps get to load (default 6)
+  --wait     seconds both apps get to load; the app starts afresh (default 12)
   --scroll-x where the app is dragged to scroll, as a share of its width (default 0.5)
   --out      the results folder (default apps/e2e/parity-results)`
 
@@ -51,7 +51,7 @@ const { values } = parseArgs({
         web: { type: 'string', default: 'http://localhost:3000' },
         device: { type: 'string', default: 'emulator-5554' },
         mode: { type: 'string', default: 'dark' },
-        wait: { type: 'string', default: '6' },
+        wait: { type: 'string', default: '12' },
         'scroll-x': { type: 'string', default: '0.5' },
         out: { type: 'string', default: path.resolve(import.meta.dirname, '../parity-results') },
         help: { type: 'boolean', default: false },

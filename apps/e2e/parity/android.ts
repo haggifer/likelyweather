@@ -65,8 +65,11 @@ export const createAndroid = (device: string) => {
         return { width: Number(size[1]), height: Number(size[2]), scale: Number(density[1]) / 160 }
     }
 
+    // A fresh task (NEW_TASK | CLEAR_TASK): a link into a running app would push the screen onto whatever is open, so
+    // Home would gain a back arrow over a second Home. The development build loads its bundle again, which takes the
+    // run's `--wait`.
     const open = (url: string) => {
-        shell('am', 'start', '-a', 'android.intent.action.VIEW', '-d', `'${url}'`)
+        shell('am', 'start', '-f', '0x10008000', '-a', 'android.intent.action.VIEW', '-d', `'${url}'`)
     }
 
     // The view dump and the screenshot must show the same frame: a list still gliding after a drag would put each
