@@ -6,9 +6,10 @@ import { useResolveClassNames } from 'uniwind'
 import { cn } from '../../lib/cn'
 import { getFontFamily } from '../../theme/fonts'
 
+// `tabular-nums` everywhere, as the web's body sets it for every text: a figure takes the same width in both apps.
 const textVariants = cva(
     cn(
-        'text-foreground text-base',
+        'text-foreground text-base tabular-nums',
         Platform.select({
             web: 'select-text',
         }),
