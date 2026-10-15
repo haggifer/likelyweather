@@ -84,13 +84,13 @@ export function SearchBox({
     const handleSelectResult = (result: GeocodeResult) => {
         // A mutation made offline would wait, spinning, for the network; the web's request fails at once instead.
         if (!onlineManager.isOnline()) {
-            showSnackbar(te('offline'))
+            showSnackbar(te('offline'), [], { isError: true })
             return
         }
 
         search.pickResult(result, {
             onPicked: handleSelectNew,
-            onError: (error) => showSnackbar(te(getErrorKind(error))),
+            onError: (error) => showSnackbar(te(getErrorKind(error)), [], { isError: true }),
         })
     }
 

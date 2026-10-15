@@ -39,7 +39,7 @@ export function CityOverview({ slug }: IProps) {
     const handleRefresh = async () => {
         const failure = await refresh()
 
-        if (failure) showSnackbar(te(getErrorKind(failure)))
+        if (failure) showSnackbar(te(getErrorKind(failure)), [], { isError: true })
     }
 
     // A home-screen widget showing this city redraws with the run the app just loaded.

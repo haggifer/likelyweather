@@ -13,6 +13,11 @@ interface Snackbar {
     actions: SnackbarAction[]
 }
 
+interface SnackbarOptions {
+    // The web's `toast.error`: the same message with the error icon.
+    isError?: boolean
+}
+
 // Long enough to read a sentence; a message that offers a choice stays a little longer.
 const SHORT_MS = 4000
 const LONG_MS = 6000
@@ -43,14 +48,23 @@ const handleAction = (id: number, action: SnackbarAction) => {
 
 // The app's one feedback surface, the web's toast (sonner there, sonner-native here): a new message replaces the one
 // on screen.
-export const showSnackbar = (message: string, actions: SnackbarAction[] = []) => {
+export const showSnackbar = (
+    message: string,
+    actions: SnackbarAction[] = [],
+    { isError = false }: SnackbarOptions = {},
+) => {
     const id = ++lastId
     const shown = actions.slice(0, MAX_ACTIONS)
 
     dismissSnackbar()
     current = { id, message, actions: shown }
     toast.custom(
-        createElement(SnackbarToast, { message, actions: shown, onAction: (action) => handleAction(id, action) }),
+        createElement(SnackbarToast, {
+            message,
+            actions: shown,
+            isError,
+            onAction: (action) => handleAction(id, action),
+        }),
         { id, duration: shown.length ? LONG_MS : SHORT_MS, onDismiss: forget, onAutoClose: forget },
     )
 
