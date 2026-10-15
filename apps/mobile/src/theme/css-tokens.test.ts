@@ -7,6 +7,7 @@ const CSS = `
 :root {
     --background: #f7f9fc;
     --primary: #1E5EFF;
+    --primary-text: color-mix(in srgb, var(--primary) 50%, var(--background));
     --font-sans: var(--font-inter), system-ui, sans-serif;
     --text-base: 0.875rem;
     --radius: 0.625rem;
@@ -25,10 +26,10 @@ const CSS = `
 `
 
 describe('parseCssTokens', () => {
-    it('reads the light and dark colours and shadows, the radius and the text sizes in px', () => {
+    it('reads the light and dark colours (mixes worked out per mode) and shadows, the radius and the text sizes in px', () => {
         expect(parseCssTokens(CSS)).toEqual({
-            light: { background: '#f7f9fc', primary: '#1e5eff' },
-            dark: { background: '#0b1220', primary: '#5b8cff' },
+            light: { background: '#f7f9fc', primary: '#1e5eff', 'primary-text': '#8bacfe' },
+            dark: { background: '#0b1220', primary: '#5b8cff', 'primary-text': '#334f90' },
             radius: 10,
             text: { 'text-base': 14 },
             shadows: {
@@ -54,6 +55,7 @@ describe('parseCssTokens', () => {
         expect(css).toMatch(/@variant dark \{[^}]*--shadow-card: 0 1px 2px rgba\(0, 0, 0, 0\.4\);/)
         expect(css).toMatch(/@variant light \{\s*--color-background: #f7f9fc;\s*--color-primary: #1e5eff;/)
         expect(css).toMatch(/@variant dark \{\s*--color-background: #0b1220;\s*--color-primary: #5b8cff;/)
+        expect(css).toContain('--color-primary-text: #334f90;')
     })
 
     it('matches the committed app theme, so a globals.css change needs `pnpm --filter @fa/mobile tokens`', () => {

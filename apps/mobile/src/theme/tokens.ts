@@ -33,6 +33,10 @@ export const LIGHT = {
     'chart-median': '#0b1b33',
     'chart-band': '#1e5eff',
     'chart-grid': '#e6ebf3',
+    'success-text': '#13673b',
+    'info-text': '#194dcc',
+    'warning-text': '#8a4514',
+    'destructive-text': '#a82329',
 }
 
 export const DARK: Record<keyof typeof LIGHT, string> = {
@@ -69,6 +73,10 @@ export const DARK: Record<keyof typeof LIGHT, string> = {
     'chart-median': '#f1f5fb',
     'chart-band': '#5b8cff',
     'chart-grid': '#1e2a44',
+    'success-text': '#72e29e',
+    'info-text': '#96b5fe',
+    'warning-text': '#f2b247',
+    'destructive-text': '#f49093',
 }
 
 export const RADIUS = 10

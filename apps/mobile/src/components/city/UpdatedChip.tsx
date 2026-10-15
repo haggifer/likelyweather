@@ -26,7 +26,7 @@ export function UpdatedChip({ fetchedAt, now, issueTime, timeZone, isCompact = f
     const { hours, isShown, isStale, tone } = getForecastAge(fetchedAt, now)
     const label = t('forecastAge', { hours })
     const badge = (
-        <Badge variant={tone}>
+        <Badge variant={tone} className="h-7">
             <Text className="text-sm">{label}</Text>
         </Badge>
     )

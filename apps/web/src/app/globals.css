@@ -24,6 +24,10 @@
     --color-favorite-fill: var(--favorite-fill);
     --color-favorite-idle: var(--favorite-idle);
     --color-success: var(--success);
+    --color-success-text: var(--success-text);
+    --color-info-text: var(--info-text);
+    --color-warning-text: var(--warning-text);
+    --color-destructive-text: var(--destructive-text);
     --color-code-background: var(--code-background);
     --color-ring: var(--ring);
     --color-input: var(--input);
@@ -90,6 +94,12 @@
     --chart-band: #1e5eff;
     --chart-grid: #e6ebf3;
     --band-opacity: 0.12;
+    /* Status text on a tinted badge: the tone with a quarter of the text colour mixed in, so it reads on the tint in
+       both modes. The app's theme takes the mixed values (pnpm --filter @fa/mobile tokens). */
+    --success-text: color-mix(in srgb, var(--success) 75%, var(--foreground));
+    --info-text: color-mix(in srgb, var(--info) 75%, var(--foreground));
+    --warning-text: color-mix(in srgb, var(--warning) 75%, var(--foreground));
+    --destructive-text: color-mix(in srgb, var(--destructive) 75%, var(--foreground));
 
     --font-sans: var(--font-inter), system-ui, sans-serif;
     --font-heading: var(--font-inter), system-ui, sans-serif;
