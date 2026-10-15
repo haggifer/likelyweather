@@ -1,34 +1,37 @@
 import en from '@fa/messages/catalogs/en.json'
 import { REFRESH_AFTER_HOURS } from '@fa/shared/constants'
+import { PortalHost } from '@rn-primitives/portal'
 import { fireEvent, render, screen } from '@testing-library/react-native'
 import { ReactElement } from 'react'
+import { View } from 'react-native'
 import { createTranslator, IntlProvider } from 'use-intl'
-import { dismissSnackbar, getSnackbar } from '../../lib/snackbar-store'
 import { RefreshButton } from './RefreshButton'
-
-// sonner-native ships ESM that Jest does not transform; the snackbar store's own state is all these tests read.
-jest.mock('sonner-native', () => ({ toast: { custom: jest.fn(), dismiss: jest.fn() } }))
 
 const t = createTranslator({ locale: 'en', messages: en, namespace: 'city' })
 
-const renderInEnglish = (element: ReactElement) =>
-    render(
+// The hint opens where its trigger was measured; the test renderer measures nothing, so the trigger reports a box.
+const renderInEnglish = async (element: ReactElement) => {
+    jest.spyOn(View.prototype, 'measure').mockImplementation((callback) => callback(0, 0, 32, 32, 16, 100))
+
+    await render(
         <IntlProvider locale="en" messages={en} timeZone="UTC">
             {element}
+            <PortalHost />
         </IntlProvider>,
     )
+}
 
 describe('RefreshButton', () => {
-    afterEach(() => dismissSnackbar())
+    afterEach(() => jest.restoreAllMocks())
 
-    it('keeps the name "Refresh" and says why it is disabled when tapped', async () => {
+    it('keeps the name "Refresh" and says why it is disabled in a hint when tapped', async () => {
         const onRefresh = jest.fn()
 
         await renderInEnglish(<RefreshButton isAvailable={false} isFetching={false} onRefresh={onRefresh} />)
         await fireEvent.press(screen.getByRole('button', { name: en.city.refresh }))
 
         expect(onRefresh).not.toHaveBeenCalled()
-        expect(getSnackbar()?.message).toBe(t('upToDate', { hours: REFRESH_AFTER_HOURS }))
+        expect(screen.getByText(t('upToDate', { hours: REFRESH_AFTER_HOURS }))).toBeOnTheScreen()
     })
 
     it('refreshes when offered and keeps its name without the label', async () => {
