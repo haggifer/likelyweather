@@ -25,6 +25,7 @@ pnpm mobile                        # Expo dev server (Metro) for the mobile deve
 pnpm --filter @fa/mobile android   # build and run the development build on a device or emulator (JDK 17 or 21)
 pnpm --filter @fa/mobile tokens    # regenerate the app's design tokens and Uniwind theme (src/global.css) after editing globals.css (a test fails until you do)
 pnpm --filter @fa/mobile icons     # regenerate the app icons and splash from the cloud-sun logo (scripts/generate-icons.ts)
+pnpm --filter @fa/e2e parity --screen city --slug <slug> --web http://localhost:3000   # web phone layout against the running app: text sizes, report in apps/e2e/parity-results
 ```
 
 ## Rules that must not break
@@ -39,7 +40,7 @@ pnpm --filter @fa/mobile icons     # regenerate the app icons and splash from th
 - **Catalogs.** `packages/messages/catalogs/{uk,en,es,de,fr,ru}.json` keep identical keys; the web app and the mobile app read them.
 - **Phone parity.** The mobile app and the web app's phone layout (below `sm`) are one product on two platforms with **the same design**: the same elements in the same order, with the same copy, text sizes, spacing, colours, icons and behaviour.
     - **A request names one app, the change lands in both.** "Make X 14 px on the web" or "add Y to the app" means both apps, in the same task, unless the author says it is for one app only.
-    - **Before finishing,** compare the changed element in both apps (sizes and kit variants included, such as `size="sm"` against `default`); a mismatch you find on the way is reported, not left silently.
+    - **Before finishing,** compare the changed element in both apps (sizes and kit variants included, such as `size="sm"` against `default`); a mismatch you find on the way is reported, not left silently. `pnpm --filter @fa/e2e parity` does this for every text of a screen: it opens the screen in the web's phone layout (Playwright at the device's width and density) and in the app on an emulator or phone (adb), pairs the same texts and compares their glyph boxes, so a different size, weight or digit style shows; the app must run the same theme as `--mode`.
     - **Agreed differences** (the only ones; the author adds to this list): the app's widget, Settings screen, device geocoder and native header back arrow; the web's "Get the app" bar and top-bar quota and language controls (the app has them in Settings).
 - **Server code.** The API's domain code lives in `apps/api/src/domain` and never imports Express; the files at the top of `apps/api/src` are the HTTP layer (routes, limits, headers) and stay thin. Database access goes through `apps/api/src/domain/store.ts`, shared expiring state through `apps/api/src/domain/cache.ts`.
 - **Redis is optional at runtime.** Every Redis call must degrade (no cache, no limit, claim granted) rather than fail a request. Never add ElastiCache.

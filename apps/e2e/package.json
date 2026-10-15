@@ -4,6 +4,7 @@
     "type": "module",
     "scripts": {
         "e2e": "playwright test",
+        "parity": "node parity/compare.ts",
         "lint": "eslint .",
         "typecheck": "tsc --noEmit"
     },
@@ -11,7 +12,9 @@
         "@axe-core/playwright": "^4.10.2",
         "@playwright/test": "^1.63.0",
         "@types/node": "^22",
+        "@types/pngjs": "^6.0.5",
         "eslint": "^9",
+        "pngjs": "^7.0.0",
         "typescript": "^5"
     }
 }
