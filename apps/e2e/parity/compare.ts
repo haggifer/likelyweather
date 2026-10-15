@@ -68,7 +68,8 @@ const getPaths = (screen: Screen, slug: string | undefined) => {
 
     switch (screen) {
         case 'home':
-            return { web: '/', app: 'forecastarena://' }
+            // The bare scheme opens no route, so the app would stay on the screen it last showed.
+            return { web: '/', app: 'forecastarena:///' }
         case 'city':
             return { web: `/city/${slug}`, app: `forecastarena://city/${slug}` }
         case 'archive':
