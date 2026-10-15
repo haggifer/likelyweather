@@ -55,7 +55,7 @@ const ModelRow = memo(function ModelRow({ modelId, value, isHidden, onToggleHidd
                 <LineSwatch color={model.color} dash={model.dash} />
                 <Text className={cn('shrink text-sm', isHidden && 'line-through')}>{model.name}</Text>
             </View>
-            <Text className="min-w-12 text-right text-sm font-medium tabular-nums">{value}</Text>
+            <Text className="min-w-12 text-right text-sm font-medium">{value}</Text>
             <Button
                 variant="ghost"
                 size="icon-xs"
@@ -146,7 +146,7 @@ export function ModelLegend({
                     <Text className={cn('text-sm font-semibold', isMedianHidden && 'line-through')}>{t('median')}</Text>
                 </View>
                 {!isMedianHidden && (
-                    <Text className="text-sm font-semibold tabular-nums">
+                    <Text className="text-sm font-semibold">
                         {medianText} <Text className="text-sm font-normal text-muted-foreground">{unit}</Text>
                     </Text>
                 )}

@@ -23,7 +23,7 @@ const getDayClassName = ({ isSelected, isRangeStart, isRangeEnd, isDisabled }: A
 
 const getDayTextClassName = ({ isSelected, isRangeStart, isRangeEnd, isToday }: ArchiveDayState) =>
     cn(
-        'font-normal tabular-nums',
+        'font-normal',
         isToday && !isSelected && 'font-semibold text-primary',
         (isRangeStart || isRangeEnd) && 'text-primary-foreground',
     )

@@ -67,10 +67,7 @@ export function DisagreementTiles({ days, variable, className }: IProps) {
                                         </Text>
                                     ))}
                                 </View>
-                                <Text
-                                    className="text-lg font-semibold tabular-nums"
-                                    accessibilityHint={t('spreadTitle')}
-                                >
+                                <Text className="text-lg font-semibold" accessibilityHint={t('spreadTitle')}>
                                     {formatSpread(d.spread, decimals)}
                                     <Text className="text-xs font-normal text-muted-foreground"> {unit}</Text>
                                 </Text>

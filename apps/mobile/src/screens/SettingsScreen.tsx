@@ -137,7 +137,7 @@ export function SettingsScreen() {
                 {quota && quotaStatus ? (
                     <View className="gap-2">
                         {/* The bar below reads the same count to TalkBack. */}
-                        <Text aria-hidden className="text-sm tabular-nums">
+                        <Text aria-hidden className="text-sm">
                             {quotaValue}
                         </Text>
                         <Progress
@@ -147,7 +147,7 @@ export function SettingsScreen() {
                             className="h-1.5 bg-muted"
                             indicatorClassName={quotaStatus.isLow ? 'bg-warning' : 'bg-primary'}
                         />
-                        <Text className={`${SMALL} tabular-nums`}>
+                        <Text className={SMALL}>
                             {tq('resets', { time: formatClockTime(quota.resetsAt, getViewerTimeZone(), locale) })}
                         </Text>
                     </View>

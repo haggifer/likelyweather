@@ -62,8 +62,8 @@ const NO_BREAK_SPACE = ' '
 const READOUTS_CLASS = 'flex-row flex-wrap gap-2'
 const READOUT_CLASS = 'max-w-[50%] grow basis-2/5 border-l-2 border-border pr-1 pl-3'
 const LABEL_CLASS = 'text-sm font-medium text-muted-foreground'
-const VALUE_CLASS = 'text-xl leading-tight font-semibold tabular-nums'
-const EXTRA_CLASS = 'text-xs text-muted-foreground tabular-nums'
+const VALUE_CLASS = 'text-xl leading-tight font-semibold'
+const EXTRA_CLASS = 'text-xs text-muted-foreground'
 
 interface PanelDrawingProps {
     row: PanelRow
