@@ -19,8 +19,8 @@ const ITEMS: MenuItem[] = [
     { key: 'methodology', icon: BookOpen, href: '/methodology' },
     { key: 'settings', icon: Settings, href: '/settings' },
 ]
-// Finger-sized rows (author, 2026-10-13), like the web's phone menu.
-const ITEM = 'min-h-12 gap-2.5 px-4'
+// 36 px rows (author, 2026-10-16), like the web's phone menu and the language options.
+const ITEM = 'min-h-9 gap-2.5 px-4'
 
 // The web header's pages (Forecast, the Archive, then Methodology), on every screen's header; Settings joins them
 // because the app has no top-bar controls for language and theme.

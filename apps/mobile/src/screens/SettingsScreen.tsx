@@ -26,8 +26,8 @@ import { widgetBindings } from '../widget/widget-store'
 const LANGUAGE_SETTINGS: LanguageSetting[] = ['system', ...LOCALES]
 const THEME_KEYS = { system: 'themeSystem', light: 'themeLight', dark: 'themeDark' } as const
 const SMALL = 'text-xs text-muted-foreground'
-// The radio's own circle is small; the row around it is finger-sized.
-const RADIO_HIT_SLOP = 14
+// The radio's own circle is small; its touch area fills the 36 px row without reaching into the next one.
+const RADIO_HIT_SLOP = 10
 
 const setLanguage = (value: string) => {
     const language = LANGUAGE_SETTINGS.find((option) => option === value)
@@ -71,9 +71,9 @@ interface RadioRowProps {
 
 // The radio carries the name for TalkBack; the label beside it takes taps without being read a second time.
 const RadioRow = ({ value, label, onSelect }: RadioRowProps) => (
-    <View className="min-h-11 flex-row items-center gap-3">
+    <View className="min-h-9 flex-row items-center gap-3">
         <RadioGroupItem value={value} aria-label={label} hitSlop={RADIO_HIT_SLOP} />
-        <Text accessible={false} onPress={() => onSelect(value)} className="flex-1 py-3 text-sm">
+        <Text accessible={false} onPress={() => onSelect(value)} className="flex-1 py-2 text-sm">
             {label}
         </Text>
     </View>

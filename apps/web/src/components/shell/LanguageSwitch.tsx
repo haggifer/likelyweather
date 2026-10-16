@@ -48,7 +48,7 @@ export function LanguageSwitch() {
                 <DropdownMenuLabel>{t('language')}</DropdownMenuLabel>
                 <DropdownMenuRadioGroup value={locale} onValueChange={handleChange}>
                     {LOCALES.map((l) => (
-                        <DropdownMenuRadioItem key={l} value={l} lang={l}>
+                        <DropdownMenuRadioItem key={l} value={l} lang={l} className="max-sm:min-h-9">
                             {LANGUAGE_NAMES[l]}
                         </DropdownMenuRadioItem>
                     ))}

@@ -9,8 +9,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const ICONS = { forecast: <CloudSun />, archive: <Archive />, methodology: <BookOpen /> }
-// Finger-sized rows (author, 2026-10-13), like the app's menu.
-const ITEM = 'min-h-12 gap-2.5 px-4'
+// 36 px rows (author, 2026-10-16), like the app's menu and the language options.
+const ITEM = 'min-h-9 gap-2.5 px-4'
 
 // The header's pages on phones, where the inline links (`MainNav`) do not fit.
 export function MoreMenu() {
