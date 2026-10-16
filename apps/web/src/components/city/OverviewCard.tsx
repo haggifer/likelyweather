@@ -10,7 +10,6 @@ import { FlagIcon } from '@/components/shell/FlagIcon'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useIsPhone } from '@/hooks/useIsPhone'
 import { useOverviewPanels } from '@/hooks/useOverviewPanels'
 import { cn } from '@/lib/cn'
 import { isRefreshOffered } from '@fa/api-client/refresh-due'
@@ -50,7 +49,7 @@ export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
                 <Skeleton className="hidden h-7 w-28 rounded-full lg:block" />
                 <Skeleton className="h-7 w-22 max-sm:size-9" />
                 <Skeleton className="h-7 w-20 max-sm:size-9" />
-                <Skeleton className="size-9 sm:hidden" />
+                <Skeleton className="h-7 w-18 max-sm:size-9" />
                 <Skeleton className="h-7 w-30 max-sm:h-9 max-sm:flex-1" />
             </CardAction>
         </CardHeader>
@@ -75,7 +74,6 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, on
     const t = useTranslations('overview')
     const tc = useTranslations('chart')
     const locale = useLocale()
-    const isPhone = useIsPhone()
     const { panels: storedPanels, setPanels } = useOverviewPanels()
 
     const [isTable, setIsTable] = useState(false)
@@ -121,16 +119,17 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, on
                         isLabelHiddenOnPhones
                         className={PHONE_ICON}
                     />
-                    {/* Phones only (author, 2026-10-16): the dashboard's chart frame has its own toggle. */}
+                    {/* An icon on phones, labelled from `sm` up (author, 2026-10-16). */}
                     <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setIsTable((v) => !v)}
                         aria-pressed={isTable}
                         aria-label={isTable ? tc('showChart') : tc('showTable')}
-                        className={cn(PHONE_ICON, 'sm:hidden')}
+                        className={PHONE_ICON}
                     >
                         {isTable ? <BarChart3 /> : <Table2 />}
+                        <span className="max-sm:sr-only">{isTable ? tc('chart') : tc('table')}</span>
                     </Button>
                     <Button asChild size="sm" className={PHONE_BUTTON}>
                         <Link href={`/city/${city.slug}`}>
@@ -140,7 +139,7 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, on
                 </CardAction>
             </CardHeader>
             <CardContent>
-                {isTable && isPhone ? (
+                {isTable ? (
                     <OverviewTable
                         panels={panels}
                         series={medians}
