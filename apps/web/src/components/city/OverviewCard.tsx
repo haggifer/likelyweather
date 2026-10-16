@@ -1,6 +1,7 @@
 'use client'
 
 import { MedianOverview, MedianOverviewSkeleton } from '@/components/charts/MedianOverview'
+import { OverviewTable } from '@/components/charts/OverviewTable'
 import { FavoriteToggle } from '@/components/city/FavoriteToggle'
 import { OverviewPanelsMenu } from '@/components/city/OverviewPanelsMenu'
 import { RefreshButton } from '@/components/city/RefreshButton'
@@ -9,6 +10,7 @@ import { FlagIcon } from '@/components/shell/FlagIcon'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useIsPhone } from '@/hooks/useIsPhone'
 import { useOverviewPanels } from '@/hooks/useOverviewPanels'
 import { cn } from '@/lib/cn'
 import { isRefreshOffered } from '@fa/api-client/refresh-due'
@@ -17,10 +19,10 @@ import { City } from '@fa/shared/api'
 import { getCityRegion } from '@fa/shared/city-region'
 import { getCityName } from '@fa/shared/format'
 import { PanelVariable } from '@fa/shared/overview-panels'
-import { ArrowRight, Loader2 } from 'lucide-react'
+import { ArrowRight, BarChart3, Loader2, Table2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 interface SkeletonProps {
     status: string
@@ -30,9 +32,10 @@ interface SkeletonProps {
 const CARD = 'gap-0 max-sm:pt-3'
 const ACTIONS =
     'flex items-center gap-2 max-sm:col-span-2 max-sm:col-start-1 max-sm:row-start-2 max-sm:mt-2 max-sm:mb-3 max-sm:w-full max-sm:justify-self-stretch'
-// On phones the age, Refresh and Panels are icons, and Open details takes the rest of the row (author, 2026-10-13).
-const PHONE_BUTTON = 'max-sm:h-8 max-sm:flex-1 max-sm:text-sm'
-const PHONE_ICON = 'shrink-0 max-sm:size-8 max-sm:px-0'
+// On phones the age, Refresh, Panels and the table toggle are icons, and Open details takes the rest of the row
+// (author, 2026-10-13); the row is 36 px tall with 16 px icons and text (author, 2026-10-16).
+const PHONE_BUTTON = 'max-sm:h-9 max-sm:flex-1 max-sm:text-[1rem] max-sm:[&_svg]:size-4'
+const PHONE_ICON = 'shrink-0 max-sm:size-9 max-sm:px-0 max-sm:[&_svg]:size-4'
 const TITLE = 'flex min-w-0 items-center gap-2.5 text-lg tracking-tight sm:text-xl'
 
 // Same header and panel structure as the loaded card, so nothing moves when the data arrives.
@@ -45,9 +48,10 @@ export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
             </CardTitle>
             <CardAction className={ACTIONS}>
                 <Skeleton className="hidden h-7 w-28 rounded-full lg:block" />
-                <Skeleton className="h-7 w-22 max-sm:size-8" />
-                <Skeleton className="h-7 w-20 max-sm:size-8" />
-                <Skeleton className="h-7 w-30 max-sm:h-8 max-sm:flex-1" />
+                <Skeleton className="h-7 w-22 max-sm:size-9" />
+                <Skeleton className="h-7 w-20 max-sm:size-9" />
+                <Skeleton className="size-9 sm:hidden" />
+                <Skeleton className="h-7 w-30 max-sm:h-9 max-sm:flex-1" />
             </CardAction>
         </CardHeader>
         <CardContent>
@@ -69,8 +73,12 @@ interface IProps {
 // `anchor` is the local 3-hour slot the run was fetched in, where the chart starts.
 export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, onRefresh }: IProps) {
     const t = useTranslations('overview')
+    const tc = useTranslations('chart')
     const locale = useLocale()
+    const isPhone = useIsPhone()
     const { panels: storedPanels, setPanels } = useOverviewPanels()
+
+    const [isTable, setIsTable] = useState(false)
 
     const name = getCityName(city, locale)
     const region = getCityRegion(city, locale)
@@ -113,6 +121,17 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, on
                         isLabelHiddenOnPhones
                         className={PHONE_ICON}
                     />
+                    {/* Phones only (author, 2026-10-16): the dashboard's chart frame has its own toggle. */}
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsTable((v) => !v)}
+                        aria-pressed={isTable}
+                        aria-label={isTable ? tc('showChart') : tc('showTable')}
+                        className={cn(PHONE_ICON, 'sm:hidden')}
+                    >
+                        {isTable ? <BarChart3 /> : <Table2 />}
+                    </Button>
                     <Button asChild size="sm" className={PHONE_BUTTON}>
                         <Link href={`/city/${city.slug}`}>
                             {t('details')} <ArrowRight />
@@ -121,17 +140,27 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, on
                 </CardAction>
             </CardHeader>
             <CardContent>
-                <MedianOverview
-                    key={city.slug}
-                    panels={panels}
-                    series={medians}
-                    directions={directions}
-                    chance={chance}
-                    timeZone={city.timezone}
-                    locale={locale}
-                    now={now}
-                    ariaLabel={t('aria', { name, count: modelCount })}
-                />
+                {isTable && isPhone ? (
+                    <OverviewTable
+                        panels={panels}
+                        series={medians}
+                        chance={chance}
+                        timeZone={city.timezone}
+                        locale={locale}
+                    />
+                ) : (
+                    <MedianOverview
+                        key={city.slug}
+                        panels={panels}
+                        series={medians}
+                        directions={directions}
+                        chance={chance}
+                        timeZone={city.timezone}
+                        locale={locale}
+                        now={now}
+                        ariaLabel={t('aria', { name, count: modelCount })}
+                    />
+                )}
             </CardContent>
         </Card>
     )

@@ -54,14 +54,14 @@ export function UpdatedChip({ issueTime, fetchedAt, timeZone, now, isIconOnPhone
                 aria-label={isIconOnPhones ? age : undefined}
                 className={cn(
                     'h-auto shrink-0 rounded-full border-0 p-0 hover:bg-transparent dark:hover:bg-transparent',
-                    isIconOnPhones && 'max-sm:size-8',
+                    isIconOnPhones && 'max-sm:size-9',
                     className,
                 )}
             >
                 <Badge variant={tone} className={cn('h-7', isIconOnPhones && 'max-sm:hidden')}>
                     {age}
                 </Badge>
-                {isIconOnPhones && <ClockAlert aria-hidden="true" className="size-5 text-warning sm:hidden" />}
+                {isIconOnPhones && <ClockAlert aria-hidden="true" className="size-4 text-warning sm:hidden" />}
             </Button>
         </Hint>
     )

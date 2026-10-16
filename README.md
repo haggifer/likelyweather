@@ -57,7 +57,7 @@ A daily quota per user (60 upstream fetches a day per client, 600 for the whole 
 
 Android phones get a dismissible "Get the app" bar on the landing and city pages when `NEXT_PUBLIC_APP_PROMO_URL` names the latest APK release at build time (`apps/web/.env.example`); dismissed, it stays away for 30 days.
 
-Phones (below 640 px) get their own layouts where the desktop ones don't fit: the dashboard pins the variable switch under the top bar and puts the model list under the chart, and day labels shorten to fit. The phone switch has six tabs: temperature and wind each open sub-tabs above the chart (actual or feels-like, speed or gusts), and their table and model list read both as "actual (feels like)"; the age chip and Refresh show only once the run is outdated. The Android app has the same design.
+Phones (below 640 px) get their own layouts where the desktop ones don't fit: the dashboard pins the variable switch under the top bar and puts the model list under the chart, and day labels shorten to fit. The phone switch has six tabs: temperature and wind each open sub-tabs above the chart (actual or feels-like, speed or gusts), and their table and model list read both as "actual (feels like)"; the age chip and Refresh show only once the run is outdated; the landing overview's row of 36 px buttons adds a table toggle, which shows every panel's median and second line slot by slot; tables keep the card's padding and pin the time column on a muted background. The Android app has the same design.
 
 Ukrainian, English, Spanish, German, French and Russian (language menu in the top bar; the non-English catalogs are machine-drafted and need a native review), light and dark mode.
 

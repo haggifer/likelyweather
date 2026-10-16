@@ -5,13 +5,14 @@ import { getCityRegion } from '@fa/shared/city-region'
 import { getCityName } from '@fa/shared/format'
 import { getVisiblePanels, PanelVariable } from '@fa/shared/overview-panels'
 import { useRouter } from 'expo-router'
-import { ArrowRight } from 'lucide-react-native'
-import { useMemo } from 'react'
+import { ArrowRight, BarChart3, Table2 } from 'lucide-react-native'
+import { useMemo, useState } from 'react'
 import { View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { useOverviewPanels } from '../../hooks/useOverviewPanels'
 import { cn } from '../../lib/cn'
 import { MedianOverview, MedianOverviewSkeleton } from '../charts/MedianOverview'
+import { OverviewTable } from '../charts/OverviewTable'
 import { FavoriteToggle } from '../city/FavoriteToggle'
 import { RefreshButton } from '../city/RefreshButton'
 import { UpdatedChip } from '../city/UpdatedChip'
@@ -29,7 +30,8 @@ const CARD = cn('gap-0 pt-3 pb-4', BLEED_CARD)
 const HEADER = 'gap-1 px-4'
 const TITLE_ROW = 'flex-row items-center gap-2.5'
 const TITLE = 'text-lg leading-snug font-bold tracking-tight'
-// The age, Refresh and Panels are icons, and Open details takes the rest of the row (author, 2026-10-13).
+// The age, Refresh, Panels and the table toggle are icons, and Open details takes the rest of the row (author,
+// 2026-10-13); the row is 36 px tall with 16 px icons and text (author, 2026-10-16).
 const ACTIONS = 'mt-2 mb-3 flex-row items-center gap-2'
 const NO_BREAK_SPACE = ' '
 
@@ -53,9 +55,10 @@ export function OverviewCardSkeleton({ status }: SkeletonProps) {
                     <LoadingStatus label={status} />
                 </View>
                 <View className={ACTIONS}>
-                    <Skeleton className="size-8" />
-                    <Skeleton className="size-8" />
-                    <Skeleton className="h-8 flex-1" />
+                    <Skeleton className="size-9" />
+                    <Skeleton className="size-9" />
+                    <Skeleton className="size-9" />
+                    <Skeleton className="h-9 flex-1" />
                 </View>
             </CardHeader>
             <CardContent>
@@ -79,9 +82,12 @@ interface IProps {
 // `anchor` is the local 3-hour slot the run was fetched in, where the chart starts.
 export function OverviewCard({ city, panels, hourly, anchor, now, isFetching = false, onRefresh }: IProps) {
     const t = useTranslations('overview')
+    const tc = useTranslations('chart')
     const locale = useLocale()
     const router = useRouter()
     const { panels: storedPanels, setPanels } = useOverviewPanels()
+
+    const [isTable, setIsTable] = useState(false)
 
     const name = getCityName(city, locale)
     const region = getCityRegion(city, locale)
@@ -111,24 +117,44 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching = f
                         onRefresh={onRefresh}
                     />
                     <OverviewPanelsMenu panels={storedPanels} onChange={setPanels} isLabelHiddenOnPhones />
-                    <Button size="sm" onPress={() => router.push(`/city/${city.slug}`)} className="h-8 flex-1">
-                        <Text className="text-sm">{t('details')}</Text>
-                        <Icon as={ArrowRight} />
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onPress={() => setIsTable((v) => !v)}
+                        accessibilityLabel={isTable ? tc('showChart') : tc('showTable')}
+                        accessibilityState={{ selected: isTable }}
+                        className="size-9 px-0"
+                    >
+                        <Icon as={isTable ? BarChart3 : Table2} className="size-4" />
+                    </Button>
+                    <Button size="sm" onPress={() => router.push(`/city/${city.slug}`)} className="h-9 flex-1">
+                        <Text className="text-[1rem]">{t('details')}</Text>
+                        <Icon as={ArrowRight} className="size-4" />
                     </Button>
                 </View>
             </CardHeader>
             <CardContent>
-                <MedianOverview
-                    key={city.slug}
-                    panels={panels}
-                    series={medians}
-                    directions={directions}
-                    chance={chance}
-                    timeZone={city.timezone}
-                    locale={locale}
-                    now={now}
-                    accessibilityLabel={t('aria', { name, count: run.series.length })}
-                />
+                {isTable ? (
+                    <OverviewTable
+                        panels={panels}
+                        series={medians}
+                        chance={chance}
+                        timeZone={city.timezone}
+                        locale={locale}
+                    />
+                ) : (
+                    <MedianOverview
+                        key={city.slug}
+                        panels={panels}
+                        series={medians}
+                        directions={directions}
+                        chance={chance}
+                        timeZone={city.timezone}
+                        locale={locale}
+                        now={now}
+                        accessibilityLabel={t('aria', { name, count: run.series.length })}
+                    />
+                )}
             </CardContent>
         </Card>
     )

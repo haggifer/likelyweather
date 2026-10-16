@@ -190,14 +190,14 @@ export function OverviewPanelsMenu({ panels, onChange: setPanels, isLabelHiddenO
     return (
         <Popover>
             <PopoverTrigger asChild>
-                {/* The web's `sm` button: a 32 px square in the overview's icon row, 40 px tall with a label. */}
+                {/* The web's `sm` button: a 36 px square with a 16 px icon in the overview's row, 40 px tall with a label. */}
                 <Button
                     variant="outline"
                     size="sm"
                     accessibilityLabel={t('panels')}
-                    className={cn(isLabelHiddenOnPhones ? 'size-8 px-0' : 'h-10', className)}
+                    className={cn(isLabelHiddenOnPhones ? 'size-9 px-0' : 'h-10', className)}
                 >
-                    <Icon as={SlidersHorizontal} />
+                    <Icon as={SlidersHorizontal} className={isLabelHiddenOnPhones ? 'size-4' : undefined} />
                     {!isLabelHiddenOnPhones && <Text className="text-sm">{t('panels')}</Text>}
                 </Button>
             </PopoverTrigger>

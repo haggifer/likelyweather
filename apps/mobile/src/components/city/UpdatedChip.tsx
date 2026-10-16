@@ -37,8 +37,14 @@ export function UpdatedChip({ fetchedAt, now, issueTime, timeZone, isCompact = f
         return (
             // The compact clock takes the web's phone box; its hint tells only the age (author, 2026-10-14).
             <Hint content={label}>
-                <Button variant="ghost" size="icon" hitSlop={8} accessibilityLabel={label} className="rounded-full">
-                    <Icon as={ClockAlert} className="size-5 text-warning" />
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    hitSlop={8}
+                    accessibilityLabel={label}
+                    className="size-9 rounded-full"
+                >
+                    <Icon as={ClockAlert} className="size-4 text-warning" />
                 </Button>
             </Hint>
         )

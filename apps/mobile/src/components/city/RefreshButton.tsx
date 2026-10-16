@@ -27,7 +27,7 @@ interface IProps {
 // The web's `animate-spin` on the same icon while a fetch runs: one turn a second.
 const SPIN_MS = 1000
 
-const SpinningIcon = ({ isSpinning }: { isSpinning: boolean }) => {
+const SpinningIcon = ({ isSpinning, className }: { isSpinning: boolean; className?: string }) => {
     const turn = useSharedValue(0)
 
     const style = useAnimatedStyle(() => ({ transform: [{ rotate: `${turn.get() * 360}deg` }] }))
@@ -43,7 +43,7 @@ const SpinningIcon = ({ isSpinning }: { isSpinning: boolean }) => {
 
     return (
         <Animated.View style={style}>
-            <Icon as={RefreshCw} />
+            <Icon as={RefreshCw} className={className} />
         </Animated.View>
     )
 }
@@ -56,7 +56,8 @@ export function RefreshButton({ isAvailable, isFetching, onRefresh, isIconOnly =
     const explanation = isAvailable ? t('refreshTitle') : t('upToDate', { hours: REFRESH_AFTER_HOURS })
 
     const button = (
-        // The web's `sm` button at its phone sizes: a 32 px square in the overview's icon row, 36 px tall with a label.
+        // The web's `sm` button at its phone sizes: a 36 px square with a 16 px icon in the overview's row, 36 px tall
+        // with a label.
         <Button
             variant="outline"
             size="sm"
@@ -66,9 +67,9 @@ export function RefreshButton({ isAvailable, isFetching, onRefresh, isIconOnly =
             accessibilityLabel={t('refresh')}
             accessibilityHint={explanation}
             accessibilityState={{ disabled: !isAvailable || isFetching, busy: isFetching }}
-            className={cn(isIconOnly ? 'size-8 px-0' : 'h-9', !isAvailable && 'opacity-50')}
+            className={cn(isIconOnly ? 'size-9 px-0' : 'h-9', !isAvailable && 'opacity-50')}
         >
-            <SpinningIcon isSpinning={isFetching} />
+            <SpinningIcon isSpinning={isFetching} className={isIconOnly ? 'size-4' : undefined} />
             {!isIconOnly && <Text className="text-sm">{t('refresh')}</Text>}
         </Button>
     )
