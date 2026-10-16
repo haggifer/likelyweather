@@ -2,7 +2,9 @@ import { Providers } from '@/app/Providers'
 import { AppPromoBanner } from '@/components/shell/AppPromoBanner'
 import { Footer } from '@/components/shell/Footer'
 import { TopBar } from '@/components/shell/TopBar'
+import { cn } from '@/lib/cn'
 import { MODE_RESTORE } from '@/lib/color-mode'
+import { FILL_HEIGHT_PARENT } from '@/lib/fill-height'
 import type { Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getTranslations } from 'next-intl/server'
@@ -31,7 +33,12 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
                 <NextIntlClientProvider>
                     <Providers>
                         <TopBar />
-                        <main className="mx-auto w-full max-w-[87.5rem] flex-1 px-4 py-5 max-sm:pb-0 sm:px-(--pane-padding)">
+                        <main
+                            className={cn(
+                                'mx-auto w-full max-w-[87.5rem] flex-1 px-4 py-5 max-sm:pb-0 sm:px-(--pane-padding)',
+                                FILL_HEIGHT_PARENT,
+                            )}
+                        >
                             {children}
                         </main>
                         <Footer />

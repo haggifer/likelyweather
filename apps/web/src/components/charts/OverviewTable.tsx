@@ -2,7 +2,6 @@
 
 import { STICKY_TIME_CELL } from '@/components/charts/table-cells'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useFillHeight } from '@/hooks/useFillHeight'
 import { getPanelSeries } from '@fa/chart-core/overview-readouts'
 import { OverviewMedians } from '@fa/chart-core/overview-stats'
 import { formatOverviewTableCell, getOverviewTableColumns, OverviewTableColumn } from '@fa/chart-core/overview-table'
@@ -10,7 +9,6 @@ import { formatStepLabel } from '@fa/shared/format'
 import { PanelVariable } from '@fa/shared/overview-panels'
 import { VARIABLE_BY_ID } from '@fa/shared/variables'
 import { useTranslations } from 'next-intl'
-import { useRef } from 'react'
 
 interface IProps {
     // The visible panels, in the reader's order.
@@ -27,19 +25,19 @@ export function OverviewTable({ panels, series, chance, timeZone, locale }: IPro
     const tv = useTranslations('variables')
     const tc = useTranslations('city')
 
-    const scrollRef = useRef<HTMLDivElement>(null)
-
     const steps = getPanelSeries(series, panels[0]).steps
     const columns = getOverviewTableColumns(panels, chance !== null)
 
     const getLabel = ({ variable }: OverviewTableColumn) =>
         variable ? `${tv(variable)}, ${VARIABLE_BY_ID[variable].unit}` : `${tc('chanceOfRain')}, %`
 
-    // From `sm` up the table takes the window's free height (author, 2026-10-16); phones keep the dashboard's cap.
-    useFillHeight(scrollRef)
-
     return (
-        <div ref={scrollRef} className="max-h-[26.25rem] overflow-auto sm:max-h-none">
+        // From `sm` up the table takes the window's free height, between 27rem and 70vh (author, 2026-10-16), passed down
+        // by its ancestors (`FILL_HEIGHT_PARENT`); phones keep the dashboard's cap.
+        <div
+            data-fill-height
+            className="max-h-[26.25rem] overflow-auto sm:max-h-[70vh] sm:min-h-[27rem] sm:flex-1 sm:basis-0"
+        >
             <Table className="text-xs max-sm:text-sm">
                 <TableHeader>
                     <TableRow className="group">

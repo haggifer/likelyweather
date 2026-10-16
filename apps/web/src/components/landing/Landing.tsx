@@ -5,6 +5,8 @@ import { CityOverview } from '@/components/landing/CityOverview'
 import { PlaceChips } from '@/components/landing/PlaceChips'
 import { SearchBox } from '@/components/shell/SearchBox'
 import { usePlaces } from '@/hooks/usePlaces'
+import { cn } from '@/lib/cn'
+import { FILL_HEIGHT_PARENT } from '@/lib/fill-height'
 import { updatePlaces } from '@/lib/places-store'
 import { useStarters } from '@fa/hooks/useStarters'
 import { DEFAULT_PLACES, getPlaceChips, getStarterPlaces } from '@fa/shared/places'
@@ -33,7 +35,7 @@ export function Landing() {
     }, [isFirstVisit, starters.data])
 
     return (
-        <div className="flex flex-col gap-4 pt-0 pb-0 sm:gap-6 sm:pt-5 sm:pb-6">
+        <div className={cn('flex flex-col gap-4 pt-0 pb-0 sm:gap-6 sm:pt-5 sm:pb-6', FILL_HEIGHT_PARENT)}>
             <section className="flex flex-col items-center gap-3 text-center sm:gap-5">
                 {/* The search and the overview say what the page is for; the heading stays for screen readers and search
                     engines (author, 2026-10-12). */}
@@ -43,7 +45,7 @@ export function Landing() {
                     <PlaceChips places={places} chips={chips} slug={slug} onSelect={(next) => void setSlug(next)} />
                 </div>
             </section>
-            <section className="mx-auto w-full max-w-[70rem] max-sm:-mx-4 max-sm:w-auto">
+            <section className={cn('mx-auto w-full max-w-[70rem] max-sm:-mx-4 max-sm:w-auto', FILL_HEIGHT_PARENT)}>
                 {slug ? <CityOverview key={slug} slug={slug} /> : <OverviewCardSkeleton status={to('loading')} />}
             </section>
         </div>

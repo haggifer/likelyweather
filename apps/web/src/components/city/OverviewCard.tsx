@@ -12,6 +12,7 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/componen
 import { Skeleton } from '@/components/ui/skeleton'
 import { useOverviewPanels } from '@/hooks/useOverviewPanels'
 import { cn } from '@/lib/cn'
+import { FILL_HEIGHT_PARENT } from '@/lib/fill-height'
 import { isRefreshOffered } from '@fa/api-client/refresh-due'
 import { getOverviewRun, getOverviewSeries, OverviewHourly } from '@fa/chart-core/overview-stats'
 import { City } from '@fa/shared/api'
@@ -87,7 +88,7 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, on
     const { medians, directions, chance } = useMemo(() => getOverviewSeries(hourly, anchor), [hourly, anchor])
 
     return (
-        <Card data-bleed className={cn(CARD, 'transition-opacity', isFetching && 'opacity-70')}>
+        <Card data-bleed className={cn(CARD, 'transition-opacity', FILL_HEIGHT_PARENT, isFetching && 'opacity-70')}>
             <CardHeader>
                 <CardTitle className={TITLE}>
                     <FlagIcon countryCode={city.countryCode} className="h-4 w-6 shrink-0" />
@@ -138,7 +139,7 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, on
                     </Button>
                 </CardAction>
             </CardHeader>
-            <CardContent>
+            <CardContent className={FILL_HEIGHT_PARENT}>
                 {isTable ? (
                     <OverviewTable
                         panels={panels}
