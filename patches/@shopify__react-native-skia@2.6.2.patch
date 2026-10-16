@@ -1,0 +1,11 @@
+diff --git a/android/CMakeLists.txt b/android/CMakeLists.txt
+index 1b085e6c14dd0de5a69d1e8e8b3857b074a575ed..4e122842c763c4c2c3ea5d8c8c70a45c62496c73 100644
+--- a/android/CMakeLists.txt
++++ b/android/CMakeLists.txt
+@@ -1,5 +1,5 @@
+ project(RNSkia)
+-cmake_minimum_required(VERSION 3.4.1)
++cmake_minimum_required(VERSION 3.5)
+ 
+ set (CMAKE_VERBOSE_MAKEFILE ON)
+ set (CMAKE_CXX_STANDARD 20)
