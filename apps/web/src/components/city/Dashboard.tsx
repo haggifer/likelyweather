@@ -2,6 +2,7 @@
 
 import { ChartFrame } from '@/components/charts/ChartFrame'
 import { SpaghettiChart } from '@/components/charts/SpaghettiChart'
+import { STICKY_TIME_CELL } from '@/components/charts/table-cells'
 import { DisagreementTiles } from '@/components/city/DisagreementTiles'
 import { ModelLegend } from '@/components/city/ModelLegend'
 import { VariablePairTabs } from '@/components/city/VariablePairTabs'
@@ -40,11 +41,6 @@ interface SeriesTableProps {
     // Phones read a pair together, "actual (companion)", whichever sub-tab is open (author, 2026-10-14).
     pairedRuns: PairedRuns | null
 }
-
-// Model columns scroll under the time column, so its background stays opaque: the hover colour is the row's
-// muted/50 tint mixed into the card colour instead of laid over it.
-const STICKY_TIME_CELL =
-    'sticky left-0 z-1 bg-card group-hover:bg-[color-mix(in_srgb,var(--color-muted)_50%,var(--color-card))]'
 
 // On phones the switch stays under the top bar, so another variable is one tap away wherever the page is scrolled.
 const VARIABLE_BAR = (

@@ -48,7 +48,8 @@ export function ChartFrame({ title, description, table, tabs, isFetching = false
                 )}
             </CardHeader>
             {tabs && !isTable && <View className="px-4">{tabs}</View>}
-            <CardContent className={cn('pr-4 pl-1', isFetching && 'opacity-60')}>
+            {/* The chart runs close to the card's left edge, while the table keeps the card's padding. */}
+            <CardContent className={cn(isTable ? 'px-4' : 'pr-4 pl-1', isFetching && 'opacity-60')}>
                 {isTable && table ? table : children}
             </CardContent>
         </Card>

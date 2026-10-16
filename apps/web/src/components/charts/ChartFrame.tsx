@@ -58,8 +58,10 @@ export function ChartFrame({
             </CardHeader>
             {tabs && !isTable && <div className="px-(--card-spacing)">{tabs}</div>}
             <CardContent
+                // On phones the chart runs close to the card's left edge, while the table keeps the card's padding.
                 className={cn(
-                    'transition-opacity in-data-switching:opacity-60 max-sm:pl-1',
+                    'transition-opacity in-data-switching:opacity-60',
+                    !isTable && 'max-sm:pl-1',
                     isFetching && 'opacity-60',
                 )}
             >
