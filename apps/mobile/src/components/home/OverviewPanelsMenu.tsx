@@ -36,6 +36,8 @@ type MoveAction = 'moveUp' | 'moveDown'
 const ROW_GAP = 4
 const ROW_HEIGHT = 40 + ROW_GAP
 const SETTLE_MS = 150
+// The web's drag distance: a press on the eye that moves less stays a press.
+const DRAG_DISTANCE = 4
 const LIFTED_ELEVATION = 6
 const LIFTED_SHADOW_OPACITY = 0.2
 const STEPS: Record<MoveAction, -1 | 1> = { moveUp: -1, moveDown: 1 }
@@ -66,13 +68,14 @@ const PanelRow = ({ variable, order, index, count, isShown, isToggleDisabled, on
 
     const name = tv(variable)
     const maxTop = (count - 1) * ROW_HEIGHT
-    // TalkBack cannot drag the handle, so it moves the panel one place at a time instead.
+    // TalkBack cannot drag a row, so the handle moves the panel one place at a time instead.
     const actions = [
         ...(index > 0 ? [{ name: 'moveUp', label: t('moveUp', { name }) }] : []),
         ...(index < count - 1 ? [{ name: 'moveDown', label: t('moveDown', { name }) }] : []),
     ]
     const pan = Gesture.Pan()
         .withTestId(`drag-${variable}`)
+        .activeOffsetY([-DRAG_DISTANCE, DRAG_DISTANCE])
         .onStart(() => {
             isDragging.set(true)
             startTop.set(top.get())
@@ -118,11 +121,11 @@ const PanelRow = ({ variable, order, index, count, isShown, isToggleDisabled, on
     )
 
     return (
-        <Animated.View
-            className="absolute inset-x-0 h-10 flex-row items-center gap-1 rounded-md"
-            style={[ROW_SHADOW, lifted]}
-        >
-            <GestureDetector gesture={pan}>
+        <GestureDetector gesture={pan}>
+            <Animated.View
+                className="absolute inset-x-0 h-10 flex-row items-center gap-1 rounded-md"
+                style={[ROW_SHADOW, lifted]}
+            >
                 <View
                     className="size-10 items-center justify-center"
                     accessible
@@ -132,22 +135,22 @@ const PanelRow = ({ variable, order, index, count, isShown, isToggleDisabled, on
                 >
                     <Icon as={GripVertical} className="size-4 text-muted-foreground" />
                 </View>
-            </GestureDetector>
-            <Text className={cn('flex-1 text-sm', !isShown && 'text-muted-foreground')}>{name}</Text>
-            <Button
-                variant="ghost"
-                size="icon-sm"
-                onPress={() => onToggle(variable)}
-                disabled={isToggleDisabled}
-                accessibilityLabel={t(isShown ? 'hidePanel' : 'showPanel', { name })}
-                className="size-10"
-            >
-                <Icon
-                    as={isShown ? Eye : EyeOff}
-                    className={cn('size-4', isShown ? 'text-primary' : 'text-muted-foreground')}
-                />
-            </Button>
-        </Animated.View>
+                <Text className={cn('flex-1 text-sm', !isShown && 'text-muted-foreground')}>{name}</Text>
+                <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onPress={() => onToggle(variable)}
+                    disabled={isToggleDisabled}
+                    accessibilityLabel={t(isShown ? 'hidePanel' : 'showPanel', { name })}
+                    className="size-10"
+                >
+                    <Icon
+                        as={isShown ? Eye : EyeOff}
+                        className={cn('size-4', isShown ? 'text-primary' : 'text-muted-foreground')}
+                    />
+                </Button>
+            </Animated.View>
+        </GestureDetector>
     )
 }
 
@@ -160,8 +163,8 @@ interface IProps {
     className?: string
 }
 
-// Which panels show and in which order, the web's OverviewPanelsMenu: each row drags by its handle and shows or hides
-// with its eye; TalkBack moves a panel with the handle's actions instead. The last shown panel stays. Every change
+// Which panels show and in which order, the web's OverviewPanelsMenu: each row drags from anywhere on it and shows or
+// hides with its eye; TalkBack moves a panel with the handle's actions instead. The last shown panel stays. Every change
 // applies to the chart at once and is kept on the device.
 export function OverviewPanelsMenu({ panels, onChange: setPanels, isLabelHiddenOnPhones = false, className }: IProps) {
     const t = useTranslations('overview')

@@ -41,7 +41,7 @@ interface RowProps {
     onToggle: (variable: PanelVariable) => void
 }
 
-// A small pointer movement before a drag starts, so a click on the handle stays a click.
+// A small pointer movement before a drag starts, so a click on the row's eye stays a click.
 const DRAG_DISTANCE = 4
 
 // The list is one column, so a held row only moves up and down.
@@ -59,10 +59,16 @@ const PanelRow = ({ variable, isShown, isToggleDisabled, onToggle }: RowProps) =
     const name = tv(variable)
 
     return (
+        // The pointer drags the whole row; the keyboard starts a drag only on the handle, its activator, so Space on the
+        // eye still toggles it.
         <li
             ref={setNodeRef}
             style={{ transform: CSS.Translate.toString(transform), transition }}
-            className={cn('flex items-center gap-1 rounded-md', isDragging && 'relative z-10 bg-muted shadow-sm')}
+            {...listeners}
+            className={cn(
+                'flex cursor-grab touch-none items-center gap-1 rounded-md active:cursor-grabbing',
+                isDragging && 'relative z-10 bg-muted shadow-sm',
+            )}
         >
             <Button
                 ref={setActivatorNodeRef}
@@ -70,9 +76,8 @@ const PanelRow = ({ variable, isShown, isToggleDisabled, onToggle }: RowProps) =
                 variant="ghost"
                 size="icon"
                 {...attributes}
-                {...listeners}
                 aria-label={t('dragPanel', { name })}
-                className="cursor-grab touch-none rounded-md text-muted-foreground active:cursor-grabbing pointer-coarse:size-10"
+                className="rounded-md text-muted-foreground pointer-coarse:size-10"
             >
                 <GripVertical className="size-4" />
             </Button>
@@ -99,8 +104,8 @@ interface IProps {
     className?: string
 }
 
-// Which panels show and in which order (author, 2026-10-13): each row drags by its handle and shows or hides with its
-// eye. The keyboard drags too (Space on the handle, the arrows, Space again), with the moves read out to screen
+// Which panels show and in which order (author, 2026-10-13): each row drags from anywhere on it (author, 2026-10-16)
+// and shows or hides with its eye. The keyboard drags too (Space on the handle, the arrows, Space again), with the moves read out to screen
 // readers. The last shown panel stays.
 export function OverviewPanelsMenu({ panels, onChange: setPanels, isLabelHiddenOnPhones = false, className }: IProps) {
     const t = useTranslations('overview')
