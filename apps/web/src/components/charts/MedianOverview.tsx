@@ -29,7 +29,14 @@ import {
     ROW_GAP,
     SECONDARY_DASH,
 } from '@fa/chart-core/overview-geometry'
-import { getExtraReadout, getOverviewReadoutIndex, getPanelSeries, getValueAt } from '@fa/chart-core/overview-readouts'
+import {
+    getExtraReadout,
+    getOverviewReadoutIndex,
+    getPanelReadoutIndex,
+    getPanelSeries,
+    getPrecipUnitKey,
+    getValueAt,
+} from '@fa/chart-core/overview-readouts'
 import { OverviewMedians } from '@fa/chart-core/overview-stats'
 import { CHART_FONT_SIZE, clamp, getNowX } from '@fa/chart-core/plot-geometry'
 import { formatYTick } from '@fa/chart-core/scales'
@@ -195,7 +202,6 @@ export function MedianOverview({
     )
     const { x, plotRight, plotWidth, slotWidth } = frame
     const readoutIndex = getOverviewReadoutIndex(times, hoverIndex, now)
-    const readoutTime = axisSteps[readoutIndex]
     const nowX = getNowX(x, now, geometry.marginLeft, plotRight)
     const nowLabelY = geometry.isNowLabelAbove ? geometry.plotTop - 7 : geometry.plotTop + CHART_FONT_SIZE
     const isNowLabelShown = !geometry.isNowLabelAbove || hoverIndex === null
@@ -426,8 +432,9 @@ export function MedianOverview({
             <div className={READOUTS}>
                 {geometry.rows.map(({ variable, height }) => {
                     const info = VARIABLE_BY_ID[variable]
-                    const value = getValueAt(getPanelSeries(series, variable), readoutTime)
-                    const extra = getExtraReadout(variable, series, chance, readoutTime, readoutIndex)
+                    const index = getPanelReadoutIndex(variable, times, hoverIndex, now)
+                    const value = getValueAt(getPanelSeries(series, variable), axisSteps[index])
+                    const extra = getExtraReadout(variable, series, chance, axisSteps[index], index)
 
                     return (
                         <div
@@ -442,9 +449,10 @@ export function MedianOverview({
                                 {formatNumber(value, info.decimals)}
                                 <span className="ml-1 text-sm font-normal whitespace-nowrap text-muted-foreground">
                                     {variable === Variable.Precip
-                                        ? isArchive
-                                            ? t('perHourPast', { unit: info.unit })
-                                            : t('perSlot', { unit: info.unit, hours: SLOT_HOURS })
+                                        ? t(getPrecipUnitKey(isArchive, hoverIndex === null), {
+                                              unit: info.unit,
+                                              hours: SLOT_HOURS,
+                                          })
                                         : info.unit}
                                 </span>
                             </span>

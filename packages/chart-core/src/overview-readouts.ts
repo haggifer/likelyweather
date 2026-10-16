@@ -1,8 +1,10 @@
+import { HOUR_MS } from '@fa/shared/constants'
 import { formatNumber } from '@fa/shared/format'
 import { PanelVariable, SECONDARY_VARIABLE } from '@fa/shared/overview-panels'
+import { SLOT_HOURS } from '@fa/shared/slots'
 import { OverviewVariable, Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { MedianSeries, OverviewMedians } from './overview-stats'
-import { getNearestIndex } from './spaghetti-geometry'
+import { getNearestIndex, getSpanIndex } from './spaghetti-geometry'
 
 // A readout's second line: `variable` names it, or is null for the chance of rain.
 export interface ExtraReadout {
@@ -12,6 +14,7 @@ export interface ExtraReadout {
 }
 
 const NO_SERIES: MedianSeries = { steps: [], values: [] }
+const SLOT_MS = SLOT_HOURS * HOUR_MS
 
 // The caller fetches every series its panels draw; a missing one draws as an empty panel rather than failing.
 export const getPanelSeries = (series: OverviewMedians, variable: OverviewVariable) => series[variable] ?? NO_SERIES
@@ -33,6 +36,22 @@ export const getValueAt = (s: MedianSeries, step: string) => {
 // hours from that slot, which can be the bar after the one under the line (author, 2026-10-09).
 export const getOverviewReadoutIndex = (times: Date[], hoverIndex: number | null, now: Date | null) =>
     hoverIndex ?? (now ? getNearestIndex(times, now) : 0)
+
+// Before a pick, the precipitation readout is the bar the now line is in, labelled "these 3 h" (author, 2026-10-16),
+// rather than the slot nearest now, which can be the next bar.
+export const getPanelReadoutIndex = (
+    variable: PanelVariable,
+    times: Date[],
+    hoverIndex: number | null,
+    now: Date | null,
+) =>
+    variable === Variable.Precip && hoverIndex === null && now
+        ? getSpanIndex(times, now, SLOT_MS)
+        : getOverviewReadoutIndex(times, hoverIndex, now)
+
+// A precipitation readout sums the slot the now line is in, the 3 hours from a picked slot, or an archive hour.
+export const getPrecipUnitKey = (isArchive: boolean, isNow: boolean) =>
+    isArchive ? 'perHourPast' : isNow ? 'perSlotNow' : 'perSlot'
 
 // The dashed line's value at the slot, or the chance of rain of the precipitation slot.
 export const getExtraReadout = (

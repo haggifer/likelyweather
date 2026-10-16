@@ -20,8 +20,9 @@ import {
 } from '@fa/chart-core/overview-geometry'
 import {
     getExtraReadout,
-    getOverviewReadoutIndex,
+    getPanelReadoutIndex,
     getPanelSeries,
+    getPrecipUnitKey,
     getValueAt,
     hasExtraReadout,
 } from '@fa/chart-core/overview-readouts'
@@ -338,8 +339,6 @@ export function MedianOverview({
         [times, contentWidth, isArchive],
     )
     const { x, plotRight, slotWidth } = frame
-    const readoutIndex = getOverviewReadoutIndex(times, hoverIndex, now)
-    const readoutTime = axisSteps[readoutIndex]
     const nowX = getNowX(x, now, MARGIN_LEFT, plotRight)
     const scales = useMemo(() => layout.rows.map((row) => getPanelScale(row, series)), [layout, series])
     const hoverDots = hoverIndex === null ? [] : getHoverDots(layout.rows, scales, series, axisSteps[hoverIndex])
@@ -371,8 +370,9 @@ export function MedianOverview({
             <View className={READOUTS_CLASS}>
                 {layout.rows.map(({ variable }) => {
                     const info = VARIABLE_BY_ID[variable]
-                    const value = getValueAt(getPanelSeries(series, variable), readoutTime)
-                    const extra = getExtraReadout(variable, series, chance, readoutTime, readoutIndex)
+                    const index = getPanelReadoutIndex(variable, times, hoverIndex, now)
+                    const value = getValueAt(getPanelSeries(series, variable), axisSteps[index])
+                    const extra = getExtraReadout(variable, series, chance, axisSteps[index], index)
 
                     return (
                         <View key={variable} className={READOUT_CLASS}>
@@ -382,9 +382,10 @@ export function MedianOverview({
                                 <Text className="text-sm font-normal text-muted-foreground">
                                     {' '}
                                     {variable === Variable.Precip
-                                        ? isArchive
-                                            ? t('perHourPast', { unit: info.unit })
-                                            : t('perSlot', { unit: info.unit, hours: SLOT_HOURS })
+                                        ? t(getPrecipUnitKey(isArchive, hoverIndex === null), {
+                                              unit: info.unit,
+                                              hours: SLOT_HOURS,
+                                          })
                                         : info.unit}
                                 </Text>
                             </Text>

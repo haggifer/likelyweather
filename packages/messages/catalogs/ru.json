@@ -180,6 +180,7 @@
         "fetching": "Получаем десять моделей для города {name}…",
         "loading": "Загрузка…",
         "perSlot": "{unit} / след. {hours} ч",
+        "perSlotNow": "{unit} / эти {hours} ч",
         "unavailable": "Почасового прогноза для этого города пока нет. Попробуйте через минуту.",
         "secondary": "{name}: {value} {unit}",
         "perHourPast": "{unit} / ч"

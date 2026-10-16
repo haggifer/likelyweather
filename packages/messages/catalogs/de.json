@@ -180,6 +180,7 @@
         "fetching": "Zehn Modelle für {name} werden abgerufen…",
         "loading": "Wird geladen…",
         "perSlot": "{unit} / nächste {hours} h",
+        "perSlotNow": "{unit} / diese {hours} h",
         "unavailable": "Für diese Stadt gibt es noch keine stündliche Vorhersage. Versuche es in einer Minute erneut.",
         "secondary": "{name}: {value} {unit}",
         "perHourPast": "{unit} / h"

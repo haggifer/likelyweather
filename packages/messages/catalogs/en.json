@@ -180,6 +180,7 @@
         "fetching": "Fetching ten models for {name}…",
         "loading": "Loading…",
         "perSlot": "{unit} / next {hours} h",
+        "perSlotNow": "{unit} / these {hours} h",
         "unavailable": "No hourly forecast is available for this city yet. Try again in a minute.",
         "secondary": "{name}: {value} {unit}",
         "perHourPast": "{unit} / h"

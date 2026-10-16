@@ -2,7 +2,9 @@ import { Variable } from '@fa/shared/variables'
 import {
     getExtraReadout,
     getOverviewReadoutIndex,
+    getPanelReadoutIndex,
     getPanelSeries,
+    getPrecipUnitKey,
     getSecondarySeries,
     getValueAt,
     hasExtraReadout,
@@ -41,6 +43,28 @@ describe('getOverviewReadoutIndex', () => {
         expect(getOverviewReadoutIndex(TIMES, 2, new Date(SLOTS[0]))).toBe(2)
         expect(getOverviewReadoutIndex(TIMES, null, new Date('2026-10-12T02:00:00.000Z'))).toBe(1)
         expect(getOverviewReadoutIndex(TIMES, null, null)).toBe(0)
+    })
+})
+
+describe('getPanelReadoutIndex', () => {
+    const lateInFirstSlot = new Date('2026-10-12T02:00:00.000Z')
+
+    it('reads the precipitation bar the now line is in, not the slot nearest now', () => {
+        expect(getPanelReadoutIndex(Variable.Precip, TIMES, null, lateInFirstSlot)).toBe(0)
+        expect(getPanelReadoutIndex(Variable.Temp, TIMES, null, lateInFirstSlot)).toBe(1)
+    })
+
+    it('follows a pick for every panel, and starts at the first slot without now', () => {
+        expect(getPanelReadoutIndex(Variable.Precip, TIMES, 2, lateInFirstSlot)).toBe(2)
+        expect(getPanelReadoutIndex(Variable.Precip, TIMES, null, null)).toBe(0)
+    })
+})
+
+describe('getPrecipUnitKey', () => {
+    it('says "these" hours at now, "next" for a pick, and per hour in the archive', () => {
+        expect(getPrecipUnitKey(false, true)).toBe('perSlotNow')
+        expect(getPrecipUnitKey(false, false)).toBe('perSlot')
+        expect(getPrecipUnitKey(true, true)).toBe('perHourPast')
     })
 })
 
