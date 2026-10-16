@@ -19,6 +19,8 @@
         "apps/e2e": {
             // Started by playwright.config.ts as a webServer command.
             "entry": ["fake-upstream.mjs"],
+            // The parity script drives an Android device through the SDK's adb.
+            "ignoreBinaries": ["adb"],
         },
         "apps/web": {},
         "infra": {

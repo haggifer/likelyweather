@@ -22,12 +22,12 @@ export function MethodologyScreen() {
                 <Text role="heading" className="text-3xl font-bold tracking-tight">
                     {t('title')}
                 </Text>
-                <Text className={`${BODY} text-muted-foreground`}>{t('intro')}</Text>
+                <Text className="text-base text-muted-foreground">{t('intro')}</Text>
             </View>
             {METHODOLOGY_SECTIONS.map((section) => (
                 <Card key={section} className="gap-2 py-4">
                     <CardHeader className="px-4">
-                        <CardTitle className="text-lg leading-snug">{t(`${section}.title`)}</CardTitle>
+                        <CardTitle className="text-lg leading-snug font-semibold">{t(`${section}.title`)}</CardTitle>
                     </CardHeader>
                     <CardContent className="gap-2 px-4">
                         {toParagraphs(t(`${section}.body`, METHODOLOGY_VALUES)).map((paragraph) => (

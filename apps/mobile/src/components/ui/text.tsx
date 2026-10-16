@@ -1,7 +1,7 @@
 import { Slot } from '@rn-primitives/slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 import * as React from 'react'
-import { Platform, Text as RNText, StyleSheet, type Role } from 'react-native'
+import { Platform, Text as RNText, StyleSheet, type Role, type TextStyle } from 'react-native'
 import { useResolveClassNames } from 'uniwind'
 import { cn } from '../../lib/cn'
 import { getFontFamily } from '../../theme/fonts'
@@ -62,6 +62,11 @@ const ARIA_LEVEL: Partial<Record<TextVariant, string>> = {
     h4: '4',
 }
 
+// Tabular figures in every text, as the web's body sets them, so a figure takes the same width in both apps. Set as a
+// style: Uniwind 1.12 turns the `tabular-nums` class into `['', 'tabular-nums']`, and Android logs an error for the
+// empty value of every text that has it.
+const TABULAR_FIGURES: TextStyle['fontVariant'] = ['tabular-nums']
+
 const TextClassContext = React.createContext<string | undefined>(undefined)
 
 function Text({
@@ -87,7 +92,7 @@ function Text({
             role={variant ? ROLE[variant] : undefined}
             aria-level={variant ? ARIA_LEVEL[variant] : undefined}
             {...props}
-            style={[props.style, { fontFamily, fontWeight: 'normal' }]}
+            style={[props.style, { fontFamily, fontWeight: 'normal', fontVariant: TABULAR_FIGURES }]}
         />
     )
 }

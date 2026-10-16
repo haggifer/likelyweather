@@ -1,5 +1,6 @@
 import { getVariablePair, getVariableTab, Variable } from '@fa/shared/variables'
 import { useTranslations } from 'use-intl'
+import { cn } from '../../lib/cn'
 import { Text } from '../ui/text'
 import { ToggleGroup, ToggleGroupItem } from '../ui/toggle-group'
 
@@ -34,7 +35,7 @@ export function VariablePairTabs({ value, onChange }: IProps) {
                     value={id}
                     isFirst={i === 0}
                     isLast={i === pair.length - 1}
-                    className="h-9 flex-1 border-border"
+                    className={cn('h-9 flex-1 border-border', id === value && 'bg-accent')}
                 >
                     <Text className="text-sm">{t(id)}</Text>
                 </ToggleGroupItem>

@@ -30,7 +30,7 @@ export function LocateButton({ onLocated, onSearch }: IProps) {
     const handlePress = () => {
         // Offline the request would wait, spinning, for the network; say so at once instead.
         if (!onlineManager.isOnline()) {
-            showSnackbar(te('offline'))
+            showSnackbar(te('offline'), [], { isError: true })
             return
         }
 
@@ -46,24 +46,28 @@ export function LocateButton({ onLocated, onSearch }: IProps) {
                     { label: t('locateUse'), onPress: () => onLocated(toPlace(result.city)) },
                 ])
             },
+            // As on the web: no location is a plain message, a failed request an error.
             onError: (error) =>
-                showSnackbar(error instanceof PositionError ? t('locateUnavailable') : te(getErrorKind(error))),
+                error instanceof PositionError
+                    ? showSnackbar(t('locateUnavailable'))
+                    : showSnackbar(te(getErrorKind(error)), [], { isError: true }),
         })
     }
 
     return (
         <Button
             variant="ghost"
-            size="icon"
+            size="icon-sm"
             onPress={handlePress}
             disabled={locate.isPending}
             accessibilityLabel={t('locate')}
             accessibilityState={{ busy: locate.isPending, disabled: locate.isPending }}
+            className="size-9"
         >
             {locate.isPending ? (
-                <ActivityIndicator size="small" color={colors['muted-foreground']} />
+                <ActivityIndicator size="small" color={colors.foreground} />
             ) : (
-                <Icon as={LocateFixed} className="size-5 text-muted-foreground" />
+                <Icon as={LocateFixed} />
             )}
         </Button>
     )

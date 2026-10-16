@@ -32,14 +32,14 @@ export function PlaceChip({ place, isSelected, onSelect }: IProps) {
                 variant="ghost"
                 onPress={() => onSelect(place.slug)}
                 accessibilityState={{ selected: isSelected }}
-                className="h-9 gap-1.5 rounded-l-full rounded-r-none border-0 pr-1.5 pl-3 active:bg-transparent active:opacity-70 dark:active:bg-transparent"
+                className="h-9 gap-1.5 rounded-l-full rounded-r-none border-0 pr-1 pl-3"
             >
                 <FlagIcon countryCode={place.countryCode} />
                 <Text numberOfLines={1} className={cn('text-sm font-medium', isSelected && 'text-primary-foreground')}>
                     {name}
                 </Text>
             </Button>
-            <FavoriteToggle place={place} size={16} tone={isSelected ? 'inverse' : 'default'} />
+            <FavoriteToggle place={place} size={16} tone={isSelected ? 'inverse' : 'default'} className="pl-1" />
         </View>
     )
 }

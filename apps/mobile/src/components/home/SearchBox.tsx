@@ -21,9 +21,10 @@ import { Input } from '../ui/input'
 import { Text } from '../ui/text'
 import { LocateButton } from './LocateButton'
 
-// Five 44 px rows stay above the keyboard on a small phone; the rest scroll inside the list.
-const ROWS = 'max-h-55'
-const ROW = 'h-11 justify-start gap-2 rounded-none px-3'
+// The web's command list: five 32 px rows under the group's heading (12.25 rem in all, so the keyboard never covers
+// an option); the rest scroll inside the list.
+const ROWS = 'max-h-40'
+const ROW = 'h-8 justify-start gap-2 rounded-sm px-2'
 
 interface IProps {
     onSelectCity: (slug: string) => void
@@ -83,13 +84,13 @@ export function SearchBox({
     const handleSelectResult = (result: GeocodeResult) => {
         // A mutation made offline would wait, spinning, for the network; the web's request fails at once instead.
         if (!onlineManager.isOnline()) {
-            showSnackbar(te('offline'))
+            showSnackbar(te('offline'), [], { isError: true })
             return
         }
 
         search.pickResult(result, {
             onPicked: handleSelectNew,
-            onError: (error) => showSnackbar(te(getErrorKind(error))),
+            onError: (error) => showSnackbar(te(getErrorKind(error)), [], { isError: true }),
         })
     }
 
@@ -114,8 +115,8 @@ export function SearchBox({
     )
 
     const renderRows = (heading: string, rows: ReactNode) => (
-        <View>
-            <Text className="px-3 pt-2.5 pb-1 text-[0.8125rem] font-semibold text-muted-foreground">{heading}</Text>
+        <View className="p-1">
+            <Text className="px-2 py-1.5 text-[0.8125rem] font-medium text-muted-foreground">{heading}</Text>
             <ScrollView className={ROWS} nestedScrollEnabled keyboardShouldPersistTaps="handled">
                 {rows}
             </ScrollView>
@@ -138,12 +139,21 @@ export function SearchBox({
     }
 
     const renderStatus = (status: SearchStatus) => (
-        <View className="flex-row items-center gap-2 p-3" accessible accessibilityLiveRegion="polite">
+        <View
+            className={cn(
+                'flex-row items-center gap-2 px-3 py-2',
+                status === SearchStatus.Empty && 'justify-center py-6',
+            )}
+            accessible
+            accessibilityLiveRegion="polite"
+        >
             {status === SearchStatus.Searching && <ActivityIndicator size="small" color={colors['muted-foreground']} />}
             <Text
                 className={cn(
                     'shrink text-[0.8125rem] text-muted-foreground',
                     status === SearchStatus.Error && 'text-destructive',
+                    // The web's CommandEmpty: centred, in the list's own text colour.
+                    status === SearchStatus.Empty && 'text-sm text-popover-foreground',
                 )}
             >
                 {getStatusText(status)}
@@ -189,10 +199,11 @@ export function SearchBox({
     }, [search.isOpen])
 
     return (
-        <View>
+        // The list floats over what follows, as the web's does, so the search box sits above its siblings.
+        <View className="z-50">
             <View
                 className={cn(
-                    'h-12 flex-row items-center gap-2.5 rounded-lg border border-border bg-card pl-3.5 shadow-sm shadow-black/5',
+                    'h-12 flex-row items-center gap-2.5 rounded-lg border border-border bg-card px-3.5 shadow-sm',
                     search.isOpen && 'border-ring',
                 )}
             >
@@ -218,7 +229,7 @@ export function SearchBox({
                 )}
             </View>
             {search.isListShown && (
-                <View className="mt-1.5 overflow-hidden rounded-lg border border-border bg-popover shadow-lg shadow-black/5">
+                <View className="absolute top-full right-0 left-0 mt-1.5 overflow-hidden rounded-lg border border-border bg-popover shadow-lg">
                     {search.isPlacesView
                         ? renderRows(
                               t('places'),

@@ -25,10 +25,10 @@ import { Skeleton } from '../ui/skeleton'
 import { Text } from '../ui/text'
 import { OverviewPanelsMenu } from './OverviewPanelsMenu'
 
-const CARD = cn('gap-0 py-4', BLEED_CARD)
-const HEADER = 'gap-0 px-4'
-const TITLE_ROW = 'flex-row items-center gap-2'
-const TITLE = 'text-lg font-bold tracking-tight'
+const CARD = cn('gap-0 pt-3 pb-4', BLEED_CARD)
+const HEADER = 'gap-1 px-4'
+const TITLE_ROW = 'flex-row items-center gap-2.5'
+const TITLE = 'text-lg leading-snug font-bold tracking-tight'
 // The age, Refresh and Panels are icons, and Open details takes the rest of the row (author, 2026-10-13).
 const ACTIONS = 'mt-2 mb-3 flex-row items-center gap-2'
 const NO_BREAK_SPACE = ' '
@@ -53,9 +53,9 @@ export function OverviewCardSkeleton({ status }: SkeletonProps) {
                     <LoadingStatus label={status} />
                 </View>
                 <View className={ACTIONS}>
-                    <Skeleton className="size-9" />
-                    <Skeleton className="size-9" />
-                    <Skeleton className="h-9 flex-1" />
+                    <Skeleton className="size-8" />
+                    <Skeleton className="size-8" />
+                    <Skeleton className="h-8 flex-1" />
                 </View>
             </CardHeader>
             <CardContent>
@@ -100,7 +100,7 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching = f
                             <Text className={cn(TITLE, 'font-medium text-muted-foreground')}>, {region}</Text>
                         ) : null}
                     </Text>
-                    <FavoriteToggle place={city} />
+                    <FavoriteToggle place={city} className="size-9" />
                 </View>
                 <View className={ACTIONS}>
                     <UpdatedChip fetchedAt={run.fetchedAt} now={now} isCompact />
@@ -111,9 +111,9 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching = f
                         onRefresh={onRefresh}
                     />
                     <OverviewPanelsMenu panels={storedPanels} onChange={setPanels} isLabelHiddenOnPhones />
-                    <Button onPress={() => router.push(`/city/${city.slug}`)} className="flex-1">
-                        <Text>{t('details')}</Text>
-                        <Icon as={ArrowRight} className="size-4" />
+                    <Button size="sm" onPress={() => router.push(`/city/${city.slug}`)} className="h-8 flex-1">
+                        <Text className="text-sm">{t('details')}</Text>
+                        <Icon as={ArrowRight} />
                     </Button>
                 </View>
             </CardHeader>

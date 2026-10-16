@@ -1,5 +1,5 @@
 {
     "extends": "../../tsconfig.base.json",
-    "compilerOptions": { "types": ["node"] },
-    "include": ["tests", "playwright.config.ts", "global-setup.ts"]
+    "compilerOptions": { "types": ["node"], "allowImportingTsExtensions": true },
+    "include": ["tests", "parity", "playwright.config.ts", "global-setup.ts"]
 }

@@ -24,6 +24,10 @@
     --color-favorite-fill: var(--favorite-fill);
     --color-favorite-idle: var(--favorite-idle);
     --color-success: var(--success);
+    --color-success-text: var(--success-text);
+    --color-info-text: var(--info-text);
+    --color-warning-text: var(--warning-text);
+    --color-destructive-text: var(--destructive-text);
     --color-code-background: var(--code-background);
     --color-ring: var(--ring);
     --color-input: var(--input);
@@ -90,6 +94,12 @@
     --chart-band: #1e5eff;
     --chart-grid: #e6ebf3;
     --band-opacity: 0.12;
+    /* Status text on a tinted badge: the tone with a quarter of the text colour mixed in, so it reads on the tint in
+       both modes. The app's theme takes the mixed values (pnpm --filter @fa/mobile tokens). */
+    --success-text: color-mix(in srgb, var(--success) 75%, var(--foreground));
+    --info-text: color-mix(in srgb, var(--info) 75%, var(--foreground));
+    --warning-text: color-mix(in srgb, var(--warning) 75%, var(--foreground));
+    --destructive-text: color-mix(in srgb, var(--destructive) 75%, var(--foreground));
 
     --font-sans: var(--font-inter), system-ui, sans-serif;
     --font-heading: var(--font-inter), system-ui, sans-serif;
@@ -97,6 +107,8 @@
     --text-base: 0.875rem;
     --radius: 0.625rem;
     --border-width: 1px;
+    /* The cards' and the phone sheet's shadow; the app's theme takes it too (pnpm --filter @fa/mobile tokens). */
+    --shadow-card: 0 1px 2px rgb(15 23 42 / 0.06), 0 8px 24px -12px rgb(15 23 42 / 0.18);
 }
 
 .dark {
@@ -133,6 +145,7 @@
     --chart-median: #f1f5fb;
     --chart-band: #5b8cff;
     --chart-grid: #1e2a44;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
 }
 
 :root {
@@ -179,12 +192,7 @@
     --card-spacing: var(--card-padding);
     border-radius: var(--radius);
     border: var(--border-width) solid var(--border);
-    box-shadow:
-        0 1px 2px rgb(15 23 42 / 0.06),
-        0 8px 24px -12px rgb(15 23 42 / 0.18);
-}
-.dark [data-slot='card'] {
-    box-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+    box-shadow: var(--shadow-card);
 }
 /* On phones a card of dense charts runs edge to edge, without corners or top and bottom borders, so its plot gets the
    screen's whole width; its parent cancels the page's side padding. */
@@ -197,12 +205,7 @@
     /* The city page's cards join into one edge-to-edge sheet like the landing's card, parted by dividers. */
     [data-sheet] {
         background: var(--card);
-        box-shadow:
-            0 1px 2px rgb(15 23 42 / 0.06),
-            0 8px 24px -12px rgb(15 23 42 / 0.18);
-    }
-    .dark [data-sheet] {
-        box-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+        box-shadow: var(--shadow-card);
     }
     [data-sheet] [data-slot='card'] {
         border-radius: 0;

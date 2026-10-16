@@ -7,12 +7,18 @@ const CSS = `
 :root {
     --background: #f7f9fc;
     --primary: #1E5EFF;
+    --primary-text: color-mix(in srgb, var(--primary) 50%, var(--background));
     --font-sans: var(--font-inter), system-ui, sans-serif;
+    --text-base: 0.875rem;
     --radius: 0.625rem;
+    --shadow-card:
+        0 1px 2px rgb(15 23 42 / 0.06),
+        0 8px 24px -12px rgb(15 23 42 / 0.18);
 }
 .dark {
     --background: #0b1220;
     --primary: #5b8cff;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
 }
 :root {
     --row-height: 2.25rem;
@@ -20,26 +26,36 @@ const CSS = `
 `
 
 describe('parseCssTokens', () => {
-    it('reads the light and dark colours and the radius in px', () => {
+    it('reads the light and dark colours (mixes worked out per mode) and shadows, the radius and the text sizes in px', () => {
         expect(parseCssTokens(CSS)).toEqual({
-            light: { background: '#f7f9fc', primary: '#1e5eff' },
-            dark: { background: '#0b1220', primary: '#5b8cff' },
+            light: { background: '#f7f9fc', primary: '#1e5eff', 'primary-text': '#8bacfe' },
+            dark: { background: '#0b1220', primary: '#5b8cff', 'primary-text': '#334f90' },
             radius: 10,
+            text: { 'text-base': 14 },
+            shadows: {
+                light: { 'shadow-card': '0 1px 2px rgba(15, 23, 42, 0.06), 0 8px 24px -12px rgba(15, 23, 42, 0.18)' },
+                dark: { 'shadow-card': '0 1px 2px rgba(0, 0, 0, 0.4)' },
+            },
         })
     })
 
     it('matches the committed tokens, so a globals.css change needs `pnpm --filter @fa/mobile tokens`', () => {
         const css = readFileSync(path.resolve(__dirname, '../../../web/src/app/globals.css'), 'utf8')
 
-        expect({ light: LIGHT, dark: DARK, radius: RADIUS }).toEqual(parseCssTokens(css))
+        const { light, dark, radius } = parseCssTokens(css)
+
+        expect({ light: LIGHT, dark: DARK, radius: RADIUS }).toEqual({ light, dark, radius })
     })
 
-    it('writes the light and dark colours and the radius scale as the Uniwind theme', () => {
+    it('writes the light and dark colours, the radius scale and the text sizes as the Uniwind theme', () => {
         const css = toUniwindCss(parseCssTokens(CSS))
 
         expect(css).toContain('--radius-lg: 10px;')
+        expect(css).toContain('--text-base: 14px;')
+        expect(css).toMatch(/@variant dark \{[^}]*--shadow-card: 0 1px 2px rgba\(0, 0, 0, 0\.4\);/)
         expect(css).toMatch(/@variant light \{\s*--color-background: #f7f9fc;\s*--color-primary: #1e5eff;/)
         expect(css).toMatch(/@variant dark \{\s*--color-background: #0b1220;\s*--color-primary: #5b8cff;/)
+        expect(css).toContain('--color-primary-text: #334f90;')
     })
 
     it('matches the committed app theme, so a globals.css change needs `pnpm --filter @fa/mobile tokens`', () => {

@@ -1,27 +1,30 @@
 import en from '@fa/messages/catalogs/en.json'
+import { PortalHost } from '@rn-primitives/portal'
 import { fireEvent, render, screen } from '@testing-library/react-native'
 import { ReactElement } from 'react'
+import { View } from 'react-native'
 import { createTranslator, IntlProvider } from 'use-intl'
-import { dismissSnackbar, getSnackbar } from '../../lib/snackbar-store'
 import { UpdatedChip } from './UpdatedChip'
-
-// sonner-native ships ESM that Jest does not transform; the snackbar store's own state is all these tests read.
-jest.mock('sonner-native', () => ({ toast: { custom: jest.fn(), dismiss: jest.fn() } }))
 
 const NOW = new Date('2026-10-09T12:00:00Z')
 const AGE = createTranslator({ locale: 'en', messages: en, namespace: 'city' })('forecastAge', { hours: 5 })
 
-const renderInEnglish = (element: ReactElement) =>
-    render(
+// The hint opens where its trigger was measured; the test renderer measures nothing, so the trigger reports a box.
+const renderInEnglish = async (element: ReactElement) => {
+    jest.spyOn(View.prototype, 'measure').mockImplementation((callback) => callback(0, 0, 32, 32, 16, 100))
+
+    await render(
         <IntlProvider locale="en" messages={en} timeZone="UTC">
             {element}
+            <PortalHost />
         </IntlProvider>,
     )
+}
 
 describe('UpdatedChip', () => {
-    afterEach(() => dismissSnackbar())
+    afterEach(() => jest.restoreAllMocks())
 
-    it('shows the run times in the snackbar when tapped', async () => {
+    it('shows the run times in a hint when tapped', async () => {
         await renderInEnglish(
             <UpdatedChip
                 fetchedAt="2026-10-09T07:00:00Z"
@@ -33,10 +36,10 @@ describe('UpdatedChip', () => {
 
         await fireEvent.press(screen.getByRole('button', { name: AGE }))
 
-        expect(getSnackbar()?.message).toContain('00:00 UTC')
+        expect(screen.getByText(/00:00 UTC/)).toBeOnTheScreen()
     })
 
-    it('turns into an icon that tells only its age in the snackbar', async () => {
+    it('turns into an icon that tells only its age in a hint', async () => {
         await renderInEnglish(
             <UpdatedChip
                 fetchedAt="2026-10-09T07:00:00Z"
@@ -51,7 +54,7 @@ describe('UpdatedChip', () => {
 
         await fireEvent.press(screen.getByRole('button', { name: AGE }))
 
-        expect(getSnackbar()?.message).toBe(AGE)
+        expect(screen.getByText(AGE)).toBeOnTheScreen()
     })
 
     it('stays hidden while the data is fresh', async () => {

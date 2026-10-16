@@ -49,8 +49,8 @@ export function MoreMenu() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" hitSlop={4} aria-label={t('more')}>
-                    <Icon as={Menu} className="size-[1.375rem] text-foreground" />
+                <Button variant="ghost" size="icon-sm" hitSlop={4} aria-label={t('more')} className="size-9">
+                    <Icon as={Menu} />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" sideOffset={4} className="w-48">
@@ -61,7 +61,7 @@ export function MoreMenu() {
                         onPress={() => handleNavigate(href)}
                         className={ITEM}
                     >
-                        <Icon as={icon} className="size-4 text-muted-foreground" />
+                        <Icon as={icon} className="size-4" />
                         <Text>{labels[key]}</Text>
                     </DropdownMenuItem>
                 ))}

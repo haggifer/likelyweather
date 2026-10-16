@@ -49,11 +49,12 @@ export function VariableSwitch({ value, onChange }: IProps) {
         <ToggleGroup
             type="single"
             variant="outline"
+            size="sm"
             value={selected}
             // A tap on the selected segment would clear the group; the switch always keeps one variable.
             onValueChange={(next) => next && onChange(next as Variable)}
             accessibilityLabel={t('label')}
-            className="w-full bg-card"
+            className="w-full"
         >
             {PHONE_VARIABLES.map((id, i) => {
                 const isSelected = id === selected
@@ -66,14 +67,17 @@ export function VariableSwitch({ value, onChange }: IProps) {
                         isFirst={i === 0}
                         isLast={i === LAST_INDEX}
                         accessibilityLabel={label}
-                        className={cn('h-9 min-w-0 border-border', isSelected ? 'flex-[3.4] px-2' : 'flex-1 px-0')}
+                        className={cn(
+                            'h-9 min-w-0 border-border',
+                            isSelected ? 'flex-[3.4] bg-accent px-2' : 'flex-1 px-0',
+                        )}
                     >
                         {isSelected ? (
                             <Text numberOfLines={1} className="shrink text-sm">
                                 {label}
                             </Text>
                         ) : (
-                            <ToggleGroupIcon as={ICONS[id]} className="text-muted-foreground" />
+                            <ToggleGroupIcon as={ICONS[id]} />
                         )}
                     </ToggleGroupItem>
                 )

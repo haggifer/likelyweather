@@ -484,7 +484,7 @@ export function SpaghettiChart({
                                     <Text className="mb-1 text-xs text-muted-foreground">{hover.label}</Text>
                                     <View className={cn('mb-1', TOOLTIP_ROW_CLASS)}>
                                         <Text className="text-xs font-semibold">{t('median')}</Text>
-                                        <Text className="text-xs font-semibold tabular-nums">
+                                        <Text className="text-xs font-semibold">
                                             {formatNumber(hoverMedian, info.decimals)}
                                         </Text>
                                     </View>
@@ -501,7 +501,7 @@ export function SpaghettiChart({
                                                     {MODEL_BY_ID[r.modelId].name}
                                                 </Text>
                                             </View>
-                                            <Text className="text-xs font-medium tabular-nums">
+                                            <Text className="text-xs font-medium">
                                                 {formatNumber(r.value, info.decimals)}
                                             </Text>
                                         </View>

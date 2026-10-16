@@ -32,12 +32,17 @@ export function ArchivePeriodPicker({ range, latest, onChange }: IProps) {
     return (
         <Popover>
             <PopoverTrigger ref={triggerRef} asChild>
-                <Button variant="outline" accessibilityLabel={t('periodValue', { range: period })}>
-                    <Icon as={CalendarDays} className="size-4" />
-                    <Text className="tabular-nums">{period}</Text>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    accessibilityLabel={t('periodValue', { range: period })}
+                    className="h-10"
+                >
+                    <Icon as={CalendarDays} />
+                    <Text className="text-sm">{period}</Text>
                 </Button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="p-3">
+            <PopoverContent align="start" className="w-auto p-3">
                 <ArchiveRangeCalendar range={range} latest={latest} onChange={handleChange} />
             </PopoverContent>
         </Popover>

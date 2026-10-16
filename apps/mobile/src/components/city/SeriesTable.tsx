@@ -33,8 +33,6 @@ export function SeriesTable({ steps, series, stats, decimals, timeZone, locale, 
     const t = useTranslations('dashboard')
 
     const cellClass = pairedRuns ? PAIRED_CELL_CLASS : CELL_CLASS
-    // Inter's tabular figures also widen hyphens, so the model names in the head keep the proportional ones.
-    const valueClass = cn(cellClass, 'tabular-nums')
 
     return (
         <ScrollView className="max-h-[26.25rem]" nestedScrollEnabled>
@@ -61,13 +59,13 @@ export function SeriesTable({ steps, series, stats, decimals, timeZone, locale, 
                         </View>
                         {steps.map((step, i) => (
                             <View key={step} className={ROW_CLASS}>
-                                <Text className={cn(valueClass, 'font-semibold')}>
+                                <Text className={cn(cellClass, 'font-semibold')}>
                                     {pairedRuns
                                         ? formatPairedMedian(pairedRuns, i, decimals)
                                         : formatNumber(stats.median[i], decimals)}
                                 </Text>
                                 {series.map((s) => (
-                                    <Text key={s.modelId} className={valueClass}>
+                                    <Text key={s.modelId} className={cellClass}>
                                         {pairedRuns
                                             ? formatPairedModel(pairedRuns, s.modelId, i, decimals)
                                             : formatNumber(s.values[i], decimals)}

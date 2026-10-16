@@ -11,18 +11,19 @@ import { Text } from '../ui/text'
 
 // The web's day cells (ArchiveRangeCalendar there): the selected days join into one bar, the ends filled with the
 // primary colour and the days between them muted.
-const getDayClassName = ({ isSelected, isRangeStart, isRangeEnd }: ArchiveDayState) =>
+const getDayClassName = ({ isSelected, isRangeStart, isRangeEnd, isDisabled }: ArchiveDayState) =>
     cn(
-        'size-9 rounded-md',
+        'size-10',
         isSelected && 'rounded-none bg-muted',
         isRangeStart && 'rounded-l-lg',
         isRangeEnd && 'rounded-r-lg',
-        (isRangeStart || isRangeEnd) && 'bg-primary active:bg-primary/80',
+        (isRangeStart || isRangeEnd) && 'bg-primary',
+        isDisabled && 'opacity-40',
     )
 
 const getDayTextClassName = ({ isSelected, isRangeStart, isRangeEnd, isToday }: ArchiveDayState) =>
     cn(
-        'font-normal tabular-nums',
+        'font-normal',
         isToday && !isSelected && 'font-semibold text-primary',
         (isRangeStart || isRangeEnd) && 'text-primary-foreground',
     )
@@ -35,8 +36,15 @@ interface PageButtonProps {
 }
 
 const PageButton = ({ label, icon, isDisabled, onPress }: PageButtonProps) => (
-    <Button variant="ghost" size="icon" accessibilityLabel={label} disabled={isDisabled} onPress={onPress}>
-        <Icon as={icon} className="size-4" />
+    <Button
+        variant="ghost"
+        size="icon"
+        accessibilityLabel={label}
+        disabled={isDisabled}
+        onPress={onPress}
+        className="size-10"
+    >
+        <Icon as={icon} />
     </Button>
 )
 
@@ -71,7 +79,7 @@ export function ArchiveRangeCalendar({ range, latest, onChange }: IProps) {
     const renderDay = (date: CalendarDate | null, key: number) => {
         const day = date && getDayState(date)
 
-        if (!date || !day || day.isOutsideMonth) return <View key={key} className="size-9" />
+        if (!date || !day || day.isOutsideMonth) return <View key={key} className="size-10" />
 
         return (
             <Button
@@ -133,7 +141,7 @@ export function ArchiveRangeCalendar({ range, latest, onChange }: IProps) {
             <View>
                 <View className="flex-row justify-center" importantForAccessibility="no-hide-descendants">
                     {weekDays.map((weekDay, i) => (
-                        <Text key={i} className="w-9 pb-1 text-center text-xs text-muted-foreground">
+                        <Text key={i} className="w-10 pb-1 text-center text-xs text-muted-foreground">
                             {weekDay}
                         </Text>
                     ))}

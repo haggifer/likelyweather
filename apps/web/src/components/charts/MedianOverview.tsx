@@ -23,6 +23,7 @@ import {
     getPanelScale,
     HOVER_STRIP,
     OVERVIEW_MARGIN_RIGHT,
+    OVERVIEW_PHONE_SIZE,
     OVERVIEW_SIZE,
     OverviewSize,
     PANEL_RADIUS,
@@ -63,20 +64,9 @@ interface SkeletonProps {
     isArchive?: boolean
 }
 
-// On a phone the overview is the landing page's main content, so its panels are taller than in the desktop column
-// (author, 2026-10-09); the readouts above the chart leave it the full width.
 const DESKTOP_SIZE: ChartSize = { ...OVERVIEW_SIZE, isNowLabelAbove: false }
 const PHONE_SIZE: ChartSize = {
-    heights: {
-        [Variable.Temp]: 120,
-        [Variable.Wind]: 115,
-        [Variable.Pressure]: 92,
-        [Variable.Precip]: 92,
-        [Variable.Humidity]: 92,
-        [Variable.Cloud]: 92,
-    },
-    marginLeft: 40,
-    hoverLabelHalfWidth: 36,
+    ...OVERVIEW_PHONE_SIZE,
     // The panel names sit in the panels' top-left corner, where the "now" line always is right after a fetch; above
     // the panels the label centres on its line like the hovered time (author, 2026-10-13).
     isNowLabelAbove: true,

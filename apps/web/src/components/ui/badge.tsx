@@ -17,10 +17,10 @@ const badgeVariants = cva(
                 link: 'text-primary underline-offset-4 hover:underline',
                 // Status chips (as the app's Badge): a tinted pill in the tone's colour, its text mixed toward the foreground
                 // for contrast.
-                ok: 'bg-success/15 font-semibold text-[color-mix(in_srgb,var(--success)_75%,var(--foreground))]',
-                info: 'bg-info/15 font-semibold text-[color-mix(in_srgb,var(--info)_75%,var(--foreground))]',
-                warn: 'bg-warning/15 font-semibold text-[color-mix(in_srgb,var(--warning)_75%,var(--foreground))]',
-                fail: 'bg-destructive/15 font-semibold text-[color-mix(in_srgb,var(--destructive)_75%,var(--foreground))]',
+                ok: 'bg-success/15 font-semibold text-success-text',
+                info: 'bg-info/15 font-semibold text-info-text',
+                warn: 'bg-warning/15 font-semibold text-warning-text',
+                fail: 'bg-destructive/15 font-semibold text-destructive-text',
                 muted: 'bg-muted-foreground/15 font-semibold text-muted-foreground',
             },
         },
