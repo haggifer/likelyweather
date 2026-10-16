@@ -8,14 +8,14 @@ import { fireEvent, render, screen } from '@testing-library/react-native'
 import { ReactNode } from 'react'
 import { ViewProps } from 'react-native'
 import { IntlProvider } from 'use-intl'
-import { DayGrid } from './DayGrid'
+import { CanvasDayGrid } from './CanvasDayGrid'
 import { MedianOverview } from './MedianOverview'
 
 // The day grid is drawn only by the overview's static layer, so its calls count that layer's renders.
-jest.mock('./DayGrid', () => {
-    const actual = jest.requireActual<typeof import('./DayGrid')>('./DayGrid')
+jest.mock('./CanvasDayGrid', () => {
+    const actual = jest.requireActual<typeof import('./CanvasDayGrid')>('./CanvasDayGrid')
 
-    return { DayGrid: jest.fn(actual.DayGrid) }
+    return { CanvasDayGrid: jest.fn(actual.CanvasDayGrid) }
 })
 
 // The tap gesture has no Jest driver; a host view hands its `onSelect` to `fireEvent`.
@@ -96,7 +96,7 @@ describe('MedianOverview', () => {
         await fireEvent(screen.getByLabelText('Overview'), 'layout', { nativeEvent: { layout: { width: 360 } } })
 
         expect(screen.getByTestId('overview-scroll').props.horizontal).toBe(true)
-        expect(screen.getByTestId('overview-plot').props.width).toBeGreaterThan(360)
+        expect(screen.getByTestId('overview-plot').props.style.width).toBeGreaterThan(360)
     })
 
     it('re-renders only the selection layer when a tap picks a slot', async () => {
@@ -105,13 +105,13 @@ describe('MedianOverview', () => {
             TEN_DAYS.map(() => 0),
         )
         await fireEvent(screen.getByLabelText('Overview'), 'layout', { nativeEvent: { layout: { width: 360 } } })
-        const drawn = jest.mocked(DayGrid).mock.calls.length
+        const drawn = jest.mocked(CanvasDayGrid).mock.calls.length
 
         await fireEvent(screen.getByTestId('tap-surface'), 'select', PLOT_LEFT + 10 * MIN_SLOT_WIDTH)
 
         expect(screen.getByText('10.0 °C')).toBeOnTheScreen()
         expect(drawn).toBeGreaterThan(0)
-        expect(jest.mocked(DayGrid).mock.calls.length).toBe(drawn)
+        expect(jest.mocked(CanvasDayGrid).mock.calls.length).toBe(drawn)
     })
 
     it('draws the default four panels and no humidity', async () => {

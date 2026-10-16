@@ -5,6 +5,7 @@ packages:
 allowBuilds:
   '@parcel/watcher': true
   '@prisma/engines': true
+  '@shopify/react-native-skia': true
   '@swc/core': true
   esbuild: true
   prisma: true
