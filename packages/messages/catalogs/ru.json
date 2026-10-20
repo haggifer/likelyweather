@@ -162,7 +162,7 @@
     },
     "overview": {
         "customize": "Выбрать панели",
-        "customizeTitle": "Панели обзора",
+        "customizeTitle": "Видимые панели",
         "moveUp": "Переместить «{name}» вверх",
         "moveDown": "Переместить «{name}» вниз",
         "resetPanels": "Сбросить",

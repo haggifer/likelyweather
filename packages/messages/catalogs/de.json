@@ -162,7 +162,7 @@
     },
     "overview": {
         "customize": "Felder wählen",
-        "customizeTitle": "Felder der Übersicht",
+        "customizeTitle": "Sichtbare Felder",
         "moveUp": "{name} nach oben verschieben",
         "moveDown": "{name} nach unten verschieben",
         "resetPanels": "Zurücksetzen",

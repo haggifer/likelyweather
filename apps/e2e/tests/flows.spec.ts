@@ -146,7 +146,7 @@ test('showing a hidden overview panel draws it without another request', async (
     await page.getByRole('button', { name: 'Panels', exact: true }).click()
     await page.getByRole('button', { name: 'Show Humidity' }).click()
     await page.keyboard.press('Escape')
-    await expect(page.getByRole('dialog', { name: 'Overview panels' })).toBeHidden()
+    await expect(page.getByRole('dialog', { name: 'Visible panels' })).toBeHidden()
 
     await expect(page.getByText('Humidity', { exact: true })).toBeVisible()
     expect(requests).toEqual([])
@@ -159,7 +159,7 @@ test('a panel moves by keyboard with its handle, and Escape cancels a move witho
     await page.getByRole('button', { name: 'Panels', exact: true }).click()
 
     const handle = page.getByRole('button', { name: 'Reorder Temperature' })
-    const rows = page.getByRole('dialog', { name: 'Overview panels' }).getByRole('listitem')
+    const rows = page.getByRole('dialog', { name: 'Visible panels' }).getByRole('listitem')
 
     // The handle reads as pressed while its row is held, and the held row slides down before it is dropped.
     const moveDown = async (finalKey: string) => {
@@ -177,7 +177,7 @@ test('a panel moves by keyboard with its handle, and Escape cancels a move witho
     await expect(handle).toBeFocused()
     await moveDown('Escape')
     await expect(rows.nth(1)).toContainText('Temperature')
-    await expect(page.getByRole('dialog', { name: 'Overview panels' })).toBeVisible()
+    await expect(page.getByRole('dialog', { name: 'Visible panels' })).toBeVisible()
     await page.getByRole('button', { name: 'Hide Temperature' }).click()
     await expect(rows.nth(1).getByRole('button', { name: 'Show Temperature' })).toBeVisible()
 })

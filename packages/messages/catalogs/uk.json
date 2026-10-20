@@ -162,7 +162,7 @@
     },
     "overview": {
         "customize": "Вибрати панелі",
-        "customizeTitle": "Панелі огляду",
+        "customizeTitle": "Видимі панелі",
         "moveUp": "Перемістити «{name}» вгору",
         "moveDown": "Перемістити «{name}» вниз",
         "resetPanels": "Скинути",

@@ -162,7 +162,7 @@
     },
     "overview": {
         "customize": "Choose panels",
-        "customizeTitle": "Overview panels",
+        "customizeTitle": "Visible panels",
         "moveUp": "Move {name} up",
         "moveDown": "Move {name} down",
         "resetPanels": "Reset",

@@ -162,7 +162,7 @@
     },
     "overview": {
         "customize": "Choisir les panneaux",
-        "customizeTitle": "Panneaux de l’aperçu",
+        "customizeTitle": "Panneaux visibles",
         "moveUp": "Monter {name}",
         "moveDown": "Descendre {name}",
         "resetPanels": "Réinitialiser",

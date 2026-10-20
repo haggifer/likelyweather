@@ -162,7 +162,7 @@
     },
     "overview": {
         "customize": "Elegir paneles",
-        "customizeTitle": "Paneles del resumen",
+        "customizeTitle": "Paneles visibles",
         "moveUp": "Subir {name}",
         "moveDown": "Bajar {name}",
         "resetPanels": "Restablecer",
