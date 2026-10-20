@@ -71,10 +71,10 @@ const PHONE_SIZE: ChartSize = {
     // the panels the label centres on its line like the hovered time (author, 2026-10-13).
     isNowLabelAbove: true,
 }
-// Phones stack the readouts in a two-column grid above a full-width chart; from `sm` they form a column beside it, one
-// per panel. The column's gap and padding match ROW_GAP, HOVER_STRIP and AXIS_HEIGHT.
-const GRID = 'grid grid-cols-1 gap-y-3 sm:grid-cols-[minmax(8rem,12rem)_minmax(0,1fr)] sm:gap-x-4'
-const READOUTS = 'grid grid-cols-2 gap-2 sm:flex sm:flex-col sm:gap-3.5 sm:pt-5 sm:pb-5.5'
+// Phones stack the readouts in a two-column grid above a full-width chart (equal columns whose rows line up); from
+// `sm` they form a 12rem column beside it, one per panel. The column's gap and padding match ROW_GAP, HOVER_STRIP and AXIS_HEIGHT.
+const GRID = 'flex flex-col gap-y-3 sm:flex-row sm:gap-x-4 sm:*:last:min-w-0 sm:*:last:flex-1'
+const READOUTS = 'grid grid-cols-2 gap-2 sm:flex sm:w-48 sm:shrink-0 sm:flex-col sm:gap-3.5 sm:pt-5 sm:pb-5.5'
 const STACKED_QUERY = '(width < 40rem)'
 const COLUMN_GAP = 16
 const SKELETON_GAP = 24

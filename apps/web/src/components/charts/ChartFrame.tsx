@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/cn'
 import { BarChart3, Table2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -9,7 +9,6 @@ import { ReactNode, useState } from 'react'
 
 interface IProps {
     title: ReactNode
-    description?: ReactNode
     table?: ReactNode
     // Shown above the chart, not with the table, which already holds what they switch between.
     tabs?: ReactNode
@@ -20,26 +19,15 @@ interface IProps {
     children: ReactNode
 }
 
-export function ChartFrame({
-    title,
-    description,
-    table,
-    tabs,
-    actions,
-    footer,
-    isFetching,
-    className,
-    children,
-}: IProps) {
+export function ChartFrame({ title, table, tabs, actions, footer, isFetching, className, children }: IProps) {
     const t = useTranslations('chart')
     const [isTable, setIsTable] = useState(false)
 
     return (
         <Card className={cn('gap-3', className)}>
-            <CardHeader className="max-sm:items-center">
+            <CardHeader>
                 <CardTitle className="font-semibold max-sm:text-lg">{title}</CardTitle>
-                {description && <CardDescription>{description}</CardDescription>}
-                <CardAction className="flex items-center gap-1.5 max-sm:self-center">
+                <CardAction className="flex items-center gap-1.5">
                     {actions}
                     {table && (
                         <Button

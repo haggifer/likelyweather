@@ -4,13 +4,12 @@ import { View } from 'react-native'
 import { useTranslations } from 'use-intl'
 import { cn } from '../../lib/cn'
 import { Button } from '../ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Icon } from '../ui/icon'
 import { Text } from '../ui/text'
 
 interface IProps {
     title: string
-    description?: string
     // With a table, a toggle in the header swaps the chart and everything under it for the numbers.
     table?: ReactNode
     // Shown above the chart, not with the table, which already holds what they switch between.
@@ -22,7 +21,7 @@ interface IProps {
 }
 
 // The web's ChartFrame: a card with the chart and an optional table view.
-export function ChartFrame({ title, description, table, tabs, isFetching = false, className, children }: IProps) {
+export function ChartFrame({ title, table, tabs, isFetching = false, className, children }: IProps) {
     const t = useTranslations('chart')
 
     const [isTable, setIsTable] = useState(false)
@@ -30,10 +29,7 @@ export function ChartFrame({ title, description, table, tabs, isFetching = false
     return (
         <Card className={cn('gap-3 py-4', className)}>
             <CardHeader className="flex-row items-center gap-1 px-4">
-                <View className="flex-1 gap-1">
-                    <CardTitle className="text-lg leading-snug font-semibold">{title}</CardTitle>
-                    {description && <CardDescription>{description}</CardDescription>}
-                </View>
+                <CardTitle className="flex-1 text-lg leading-snug font-semibold">{title}</CardTitle>
                 {table && (
                     <Button
                         variant="ghost"

@@ -221,9 +221,9 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
                     </div>
                 )}
                 {/* On phones: the chart card with its model list, then the row of day tiles. */}
-                <div className="grid gap-(--card-gap) lg:grid-cols-[minmax(0,1fr)_18.75rem]">
-                    <Skeleton className="h-[25rem] max-sm:h-[37.5rem]" />
-                    <Skeleton className="h-[25rem] max-sm:hidden" />
+                <div className="flex flex-col gap-(--card-gap) lg:flex-row">
+                    <Skeleton className="h-[25rem] max-sm:h-[37.5rem] lg:min-w-0 lg:flex-1" />
+                    <Skeleton className="h-[25rem] max-sm:hidden lg:w-[18.75rem] lg:shrink-0" />
                 </div>
                 <Skeleton className="h-[9rem]" />
             </div>
@@ -252,8 +252,9 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
             {/* On phones the cards join into one edge-to-edge sheet (`data-sheet`, globals.css) parted by dividers, like
                 the landing's card. */}
             <div data-sheet className="flex flex-col gap-(--card-gap) max-sm:-mx-4 max-sm:gap-0">
-                <div className="grid gap-(--card-gap) max-sm:gap-0 lg:grid-cols-[minmax(0,1fr)_20rem]">
+                <div className="flex flex-col gap-(--card-gap) max-sm:gap-0 lg:flex-row">
                     <ChartFrame
+                        className="lg:min-w-0 lg:flex-1"
                         title={title}
                         tabs={isPhone ? <VariablePairTabs /> : undefined}
                         isFetching={latestQuery.isFetching && latestQuery.isPlaceholderData}
@@ -295,7 +296,7 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
                             <div className="p-4">{legend}</div>
                         </>
                     ) : (
-                        <div className="rounded-(--radius) border bg-card p-3">{legend}</div>
+                        <div className="rounded-(--radius) border bg-card p-3 lg:w-80 lg:shrink-0">{legend}</div>
                     )}
                 </div>
                 <Separator className="sm:hidden" />

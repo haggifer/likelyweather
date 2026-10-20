@@ -34,8 +34,8 @@ export default async function MethodologyPage() {
                         {section === 'sources' && (
                             <ul className="mt-1 grid gap-1 sm:grid-cols-2">
                                 {MODELS.map((m) => (
-                                    <li key={m.id} className="grid grid-cols-[1.125rem_1fr] items-start gap-x-2">
-                                        <span className="mt-2 flex">
+                                    <li key={m.id} className="flex items-start gap-2">
+                                        <span className="mt-2 flex w-[1.125rem] shrink-0">
                                             <LineSwatch color={m.color} dash={m.dash} />
                                         </span>
                                         <span>
