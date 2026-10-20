@@ -41,6 +41,8 @@ interface SeriesTableProps {
     timeLabel: string
     // Phones read a pair together, "actual (companion)", whichever sub-tab is open (author, 2026-10-14).
     pairedRuns: PairedRuns | null
+    // The median's eye in the legend hides its column too (author, 2026-10-20).
+    isMedianHidden: boolean
 }
 
 // On phones the switch stays under the top bar, so another variable is one tap away wherever the page is scrolled.
@@ -125,12 +127,13 @@ const SeriesTable = ({
     medianLabel,
     timeLabel,
     pairedRuns,
+    isMedianHidden,
 }: SeriesTableProps) => (
     <Table className="text-xs max-sm:text-sm">
         <TableHeader>
             <TableRow className="group">
                 <TableHead className={STICKY_CORNER_CELL}>{timeLabel}</TableHead>
-                <TableHead className={cn(STICKY_HEAD_CELL, 'text-right')}>{medianLabel}</TableHead>
+                {!isMedianHidden && <TableHead className={cn(STICKY_HEAD_CELL, 'text-right')}>{medianLabel}</TableHead>}
                 {series.map((s) => (
                     <TableHead key={s.modelId} className={cn(STICKY_HEAD_CELL, 'text-right')}>
                         {MODEL_BY_ID[s.modelId].name}
@@ -144,11 +147,13 @@ const SeriesTable = ({
                     <TableCell className={`${STICKY_TIME_CELL} whitespace-nowrap`}>
                         {formatStepLabel(step, timeZone, locale)}
                     </TableCell>
-                    <TableCell className="text-right font-semibold">
-                        {pairedRuns
-                            ? formatPairedMedian(pairedRuns, i, decimals)
-                            : formatNumber(stats.median[i], decimals)}
-                    </TableCell>
+                    {!isMedianHidden && (
+                        <TableCell className="text-right font-semibold">
+                            {pairedRuns
+                                ? formatPairedMedian(pairedRuns, i, decimals)
+                                : formatNumber(stats.median[i], decimals)}
+                        </TableCell>
+                    )}
                     {series.map((s) => (
                         <TableCell key={s.modelId} className="text-right">
                             {pairedRuns
@@ -271,6 +276,7 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
                                 medianLabel={t('median')}
                                 timeLabel={t('time')}
                                 pairedRuns={pairedRuns}
+                                isMedianHidden={isMedianHidden}
                             />
                         }
                     >

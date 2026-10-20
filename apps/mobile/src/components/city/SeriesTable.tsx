@@ -20,14 +20,16 @@ interface IProps {
     locale: string
     // A pair reads "actual (companion)" whichever sub-tab is open (author, 2026-10-14).
     pairedRuns: PairedRuns | null
+    // The median's eye in the legend hides its column too (author, 2026-10-20).
+    isMedianHidden: boolean
 }
 
 // The dashboard chart's numbers: the median, then every model, slot by slot.
-export function SeriesTable({ steps, series, stats, decimals, timeZone, locale, pairedRuns }: IProps) {
+export function SeriesTable({ steps, series, stats, decimals, timeZone, locale, pairedRuns, isMedianHidden }: IProps) {
     const t = useTranslations('dashboard')
 
     const columns: TableColumn[] = [
-        { key: MEDIAN_KEY, label: t('median'), isBold: true },
+        ...(isMedianHidden ? [] : [{ key: MEDIAN_KEY, label: t('median'), isBold: true }]),
         ...series.map((s) => ({ key: s.modelId, label: MODEL_BY_ID[s.modelId].name })),
     ]
     const rowLabels = steps.map((step) => formatStepLabel(step, timeZone, locale))

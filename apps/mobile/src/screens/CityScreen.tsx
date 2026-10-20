@@ -261,6 +261,7 @@ const Dashboard = ({ city }: DashboardProps) => {
                             timeZone={timeZone}
                             locale={locale}
                             pairedRuns={pairedRuns}
+                            isMedianHidden={isMedianHidden}
                         />
                     }
                     steps={latest.steps}
