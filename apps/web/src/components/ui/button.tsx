@@ -54,7 +54,8 @@ function Button({
             data-slot="button"
             data-variant={variant}
             data-size={size}
-            className={cn(buttonVariants({ variant, size, className }))}
+            // Last, because a later font size (the `sm` size's, a call site's) makes tailwind-merge drop a line height.
+            className={cn(buttonVariants({ variant, size, className }), 'leading-none')}
             {...props}
         />
     )

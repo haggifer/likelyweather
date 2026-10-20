@@ -37,7 +37,7 @@ const buttonVariants = cva(
     },
 )
 
-const buttonTextVariants = cva('text-foreground text-sm font-medium', {
+const buttonTextVariants = cva('text-foreground text-sm leading-none font-medium', {
     variants: {
         variant: {
             default: 'text-primary-foreground',

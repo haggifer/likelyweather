@@ -11,7 +11,7 @@ import { useLocale, useTranslations } from 'next-intl'
 
 // The two halves of the pill are ghost buttons without their own border, fill or height: the pill draws them.
 const CHIP_PART =
-    'h-auto rounded-none border-0 py-1 text-[0.8125rem] hover:bg-transparent max-sm:text-sm pointer-coarse:py-2 dark:hover:bg-transparent'
+    'h-7 rounded-none border-0 text-[0.8125rem] hover:bg-transparent max-sm:text-sm pointer-coarse:h-9 dark:hover:bg-transparent'
 
 const getStarTone = (isPinned: boolean, isSelected: boolean) => {
     if (isPinned) return 'fill-favorite-fill text-favorite'

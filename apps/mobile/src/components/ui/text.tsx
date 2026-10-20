@@ -69,6 +69,11 @@ const TABULAR_FIGURES: TextStyle['fontVariant'] = ['tabular-nums']
 
 const TextClassContext = React.createContext<string | undefined>(undefined)
 
+// tailwind-merge drops a line height that a later font size follows, so a call site's `text-sm` would undo the line
+// height a kit part sets (a button's 1, a badge's 16 px); it comes back unless the call site sets its own.
+const getContextLeading = (textClass?: string, className?: string) =>
+    /(^|\s)leading-/.test(className ?? '') ? undefined : textClass?.match(/(?:^|\s)(leading-\S+)/)?.[1]
+
 function Text({
     className,
     asChild = false,
@@ -81,7 +86,7 @@ function Text({
     }) {
     const textClass = React.useContext(TextClassContext)
     const Component = asChild ? Slot : RNText
-    const classes = cn(textVariants({ variant }), textClass, className)
+    const classes = cn(textVariants({ variant }), textClass, className, getContextLeading(textClass, className))
     // The app's Inter: Android picks a loaded font by family name, so the weight from the classes and the style names
     // the family, and `fontWeight` is reset so Android does not embolden a bold file a second time.
     const resolved = useResolveClassNames(classes)
