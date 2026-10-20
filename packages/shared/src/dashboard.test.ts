@@ -6,6 +6,7 @@ import {
     getFutureRange,
     getMostSplitDay,
     getReadoutLabel,
+    getShownLatest,
     getSlotEnd,
 } from './dashboard'
 import { ModelId } from './models'
@@ -24,6 +25,21 @@ const LATEST: LatestResponse = {
         { modelId: ModelId.EcmwfIfs, values: [3, 4, 9] },
     ],
 }
+
+describe('getShownLatest', () => {
+    it('leaves a hidden model out of the series, its directions and the median', () => {
+        const withDirections = { ...LATEST, directions: LATEST.series }
+        const shown = getShownLatest(withDirections, [ModelId.EcmwfIfs])
+
+        expect(shown.series.map((s) => s.modelId)).toEqual([ModelId.Gfs])
+        expect(shown.directions?.map((s) => s.modelId)).toEqual([ModelId.Gfs])
+        expect(getDashboardStats(shown, Variable.Temp, 'UTC', NOW).stats.median).toEqual([1, 2, 3])
+    })
+
+    it('keeps the run as it is when no model is hidden', () => {
+        expect(getShownLatest(LATEST, [])).toBe(LATEST)
+    })
+})
 
 describe('getSlotEnd', () => {
     it('ends a slot 3 hours after it starts', () => {

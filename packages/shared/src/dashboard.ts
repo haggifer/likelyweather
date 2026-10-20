@@ -7,6 +7,7 @@ import {
     EnsembleStats,
 } from './ensemble'
 import { formatDateKey, formatNumber, formatPeriodLabel, formatStepLabel } from './format'
+import { ModelId } from './models'
 import { SLOT_HOURS } from './slots'
 import { addHours, toIsoMinute } from './time'
 import { Variable, VARIABLE_BY_ID } from './variables'
@@ -35,6 +36,17 @@ export interface DashboardSummaryValues {
 const NO_DAY = '–'
 
 export const getSlotEnd = (step: string) => toIsoMinute(addHours(new Date(step), SLOT_HOURS))
+
+// The run without the models the reader turned off, so the median, the range, the wind direction, the disagreement and
+// the summary count only the models on the chart and in the table (author, 2026-10-20).
+export const getShownLatest = (latest: LatestResponse, hidden: ModelId[]): LatestResponse =>
+    hidden.length
+        ? {
+              ...latest,
+              series: latest.series.filter((s) => !hidden.includes(s.modelId)),
+              directions: latest.directions?.filter((d) => !hidden.includes(d.modelId)),
+          }
+        : latest
 
 export const getEnsembleStats = (latest: Pick<LatestResponse, 'series' | 'steps'>) =>
     computeEnsemble(

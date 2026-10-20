@@ -11,7 +11,7 @@ import { PairedRuns } from '@fa/shared/paired-values'
 import { toggleItem } from '@fa/shared/toggle-item'
 import { getVariablePair, getVariableTab, Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { ReactNode, useDeferredValue, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useDeferredValue, useEffect, useState } from 'react'
 import { View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { ChartFrame } from '../components/charts/ChartFrame'
@@ -193,21 +193,17 @@ const Dashboard = ({ city }: DashboardProps) => {
         latestQuery,
         precipQuery,
         latest,
+        shown,
         derived,
         summary: summaryValues,
         pairedRuns,
         retry,
-    } = useDashboardData(city.slug, variable, { now, locale })
+    } = useDashboardData(city.slug, variable, { now, locale, hiddenModels: hidden })
 
     const info = VARIABLE_BY_ID[variable]
     const timeZone = city.timezone
     // A pair is named once ("Temperature"); the sub-tabs show which member is open.
     const title = getVariablePair(variable) ? tTabs(getVariableTab(variable)) : tv(variable)
-    // A stable list, so the chart's memoized drawing survives renders that did not hide or show a model.
-    const visibleSeries = useMemo(
-        () => latest?.series.filter((s) => !hidden.includes(s.modelId)) ?? [],
-        [latest, hidden],
-    )
 
     const handleSwitchCity = (slug: string) => {
         setSelectedCity(slug)
@@ -220,7 +216,7 @@ const Dashboard = ({ city }: DashboardProps) => {
     const handleToggleHidden = (id: ModelId) => setHidden((list) => toggleItem(list, id))
     const handleToggleMedian = () => setIsMedianHidden((v) => !v)
 
-    if (!latest || !derived || !summaryValues) {
+    if (!latest || !shown || !derived || !summaryValues) {
         return (
             <ScreenScroll
                 contentContainerStyle={CONTENT_STYLE}
@@ -259,7 +255,7 @@ const Dashboard = ({ city }: DashboardProps) => {
                     table={
                         <SeriesTable
                             steps={latest.steps}
-                            series={latest.series}
+                            series={shown.series}
                             stats={derived.stats}
                             decimals={info.decimals}
                             timeZone={timeZone}
@@ -269,7 +265,7 @@ const Dashboard = ({ city }: DashboardProps) => {
                     }
                     steps={latest.steps}
                     series={latest.series}
-                    visibleSeries={visibleSeries}
+                    visibleSeries={shown.series}
                     stats={derived.stats}
                     directions={derived.directions}
                     variable={variable}

@@ -187,6 +187,7 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
         latestQuery,
         precipQuery,
         latest,
+        shown,
         derived,
         summary: summaryValues,
         pairedRuns: allPairedRuns,
@@ -195,6 +196,7 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
         now,
         locale,
         isEnabled: isHydrated,
+        hiddenModels: hidden,
     })
 
     const info = VARIABLE_BY_ID[variable]
@@ -209,7 +211,7 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
 
     const cityName = getCityName(city, locale)
 
-    if (!latest || !derived || !summaryValues || !now) {
+    if (!latest || !shown || !derived || !summaryValues || !now) {
         return (
             <div className="flex flex-col gap-(--card-gap)">
                 {VARIABLE_BAR}
@@ -231,7 +233,6 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
         )
     }
 
-    const visibleSeries = latest.series.filter((s) => !hidden.includes(s.modelId))
     const summary = t('summary', { variable: tInline(variable), ...summaryValues })
     const legend = (
         <HoveredLegend
@@ -262,7 +263,7 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
                         table={
                             <SeriesTable
                                 steps={latest.steps}
-                                series={latest.series}
+                                series={shown.series}
                                 stats={derived.stats}
                                 decimals={info.decimals}
                                 timeZone={timeZone}
@@ -275,7 +276,7 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
                     >
                         <HoveredChart
                             steps={latest.steps}
-                            series={visibleSeries}
+                            series={shown.series}
                             stats={derived.stats}
                             variable={variable}
                             timeZone={timeZone}
