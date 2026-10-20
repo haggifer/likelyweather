@@ -4,6 +4,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* The phone layout runs below 992 px, so a tablet gets it too and the place name is never squeezed beside the card's
+   buttons (author, 2026-10-20). Every `sm:` / `max-sm:` utility and the media queries below follow this value. */
+@theme {
+    --breakpoint-sm: 62rem;
+}
+
 @theme inline {
     --color-background: var(--background);
     --color-foreground: var(--foreground);
@@ -166,7 +172,7 @@
         scroll-padding-top: calc(var(--topbar-h) + 0.5rem);
     }
     /* On phones the dashboard also pins its variable switch under the top bar. */
-    @media (width < 40rem) {
+    @media (width < 62rem) {
         html:has([data-pinned-bar]) {
             scroll-padding-top: calc(var(--topbar-h) + 3.75rem);
         }
@@ -196,7 +202,7 @@
 }
 /* On phones a card of dense charts runs edge to edge, without corners or top and bottom borders, so its plot gets the
    screen's whole width; its parent cancels the page's side padding. */
-@media (width < 40rem) {
+@media (width < 62rem) {
     [data-slot='card'][data-bleed] {
         border-radius: 0;
         border-block-width: 0;

@@ -75,7 +75,7 @@ const PHONE_SIZE: ChartSize = {
 // `sm` they form a 12rem column beside it, one per panel. The column's gap and padding match ROW_GAP, HOVER_STRIP and AXIS_HEIGHT.
 const GRID = 'flex flex-col gap-y-3 sm:flex-row sm:gap-x-4 sm:*:last:min-w-0 sm:*:last:flex-1'
 const READOUTS = 'grid grid-cols-2 gap-2 sm:flex sm:w-48 sm:shrink-0 sm:flex-col sm:gap-3.5 sm:pt-5 sm:pb-5.5'
-const STACKED_QUERY = '(width < 40rem)'
+const STACKED_QUERY = '(width < 62rem)'
 const COLUMN_GAP = 16
 const SKELETON_GAP = 24
 const SKELETON_READOUT_REACH = SKELETON_GAP - COLUMN_GAP - DESKTOP_SIZE.marginLeft

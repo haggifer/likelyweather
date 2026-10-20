@@ -12,8 +12,8 @@ export interface UseAppPromoResult {
 // Inlined at build time; unset until there is a release to link to.
 const PROMO_URL = process.env.NEXT_PUBLIC_APP_PROMO_URL
 const DISMISS_EVENT = 'apppromodismiss'
-// Below Tailwind's `sm` breakpoint (40rem), the phone layouts' limit.
-const PHONE_QUERY = '(max-width: 39.9375rem)'
+// Below Tailwind's `sm` breakpoint (62rem, globals.css), the phone layouts' limit.
+const PHONE_QUERY = '(max-width: 61.9375rem)'
 
 const subscribeToNothing = () => () => {}
 

@@ -32,11 +32,11 @@ export function QuotaMeter() {
                 aria-valuetext={t('value', { left, limit: data.limit })}
                 className="flex items-center gap-2 rounded-md px-1.5 py-1 text-xs text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-                <span className="hidden md:inline">{t('short')}</span>
+                <span className="hidden sm:inline">{t('short')}</span>
                 <Progress
                     value={share * 100}
                     aria-hidden="true"
-                    className="hidden h-1.5 w-16 md:flex"
+                    className="hidden h-1.5 w-16 sm:flex"
                     indicatorClassName={isLow ? 'bg-warning' : 'bg-primary'}
                 />
                 <span className="font-medium text-foreground tabular-nums">

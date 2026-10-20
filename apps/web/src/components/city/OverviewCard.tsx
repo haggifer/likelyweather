@@ -91,7 +91,7 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, on
             <CardHeader>
                 <CardTitle className={TITLE}>
                     <FlagIcon countryCode={city.countryCode} className="h-4 w-6 shrink-0" />
-                    <span className="min-w-0 sm:truncate">
+                    <span className="min-w-0">
                         <span className="font-bold">{name}</span>
                         {region && <span className="font-medium text-muted-foreground">, {region}</span>}
                     </span>

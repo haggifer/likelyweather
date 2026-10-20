@@ -78,7 +78,7 @@ export function CityHeader({ city }: IProps) {
                     <div className="flex min-w-0 items-center gap-1.5 max-sm:w-full">
                         <h1 className="flex min-w-0 items-center gap-2.5 text-xl tracking-tight sm:text-2xl">
                             <FlagIcon countryCode={city.countryCode} className="h-4 w-6 shrink-0" />
-                            <span className="sm:truncate" title={region ? `${name}, ${region}` : name}>
+                            <span>
                                 <span className="font-bold">{name}</span>
                                 {region && <span className="font-medium text-muted-foreground">, {region}</span>}
                             </span>
