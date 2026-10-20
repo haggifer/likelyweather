@@ -2,7 +2,7 @@
 
 import { ChartFrame } from '@/components/charts/ChartFrame'
 import { SpaghettiChart } from '@/components/charts/SpaghettiChart'
-import { STICKY_TIME_CELL } from '@/components/charts/table-cells'
+import { STICKY_CORNER_CELL, STICKY_HEAD_CELL, STICKY_TIME_CELL } from '@/components/charts/table-cells'
 import { DisagreementTiles } from '@/components/city/DisagreementTiles'
 import { ModelLegend } from '@/components/city/ModelLegend'
 import { VariablePairTabs } from '@/components/city/VariablePairTabs'
@@ -14,6 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useIsPhone } from '@/hooks/useIsPhone'
 import { useNow } from '@/hooks/useNow'
 import { useUrlSync } from '@/hooks/useUrlSync'
+import { cn } from '@/lib/cn'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { setHoverStep } from '@/store/dashboard-slice'
 import { getReadoutIndex } from '@fa/chart-core/dashboard-stats'
@@ -128,10 +129,10 @@ const SeriesTable = ({
     <Table className="text-xs max-sm:text-sm">
         <TableHeader>
             <TableRow className="group">
-                <TableHead className={STICKY_TIME_CELL}>{timeLabel}</TableHead>
-                <TableHead className="text-right">{medianLabel}</TableHead>
+                <TableHead className={STICKY_CORNER_CELL}>{timeLabel}</TableHead>
+                <TableHead className={cn(STICKY_HEAD_CELL, 'text-right')}>{medianLabel}</TableHead>
                 {series.map((s) => (
-                    <TableHead key={s.modelId} className="text-right">
+                    <TableHead key={s.modelId} className={cn(STICKY_HEAD_CELL, 'text-right')}>
                         {MODEL_BY_ID[s.modelId].name}
                     </TableHead>
                 ))}

@@ -1,7 +1,8 @@
 'use client'
 
-import { STICKY_TIME_CELL } from '@/components/charts/table-cells'
+import { STICKY_CORNER_CELL, STICKY_HEAD_CELL, STICKY_TIME_CELL, TABLE_SCROLL } from '@/components/charts/table-cells'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { cn } from '@/lib/cn'
 import { getPanelSeries } from '@fa/chart-core/overview-readouts'
 import { OverviewMedians } from '@fa/chart-core/overview-stats'
 import { formatOverviewTableCell, getOverviewTableColumns, OverviewTableColumn } from '@fa/chart-core/overview-table'
@@ -36,14 +37,14 @@ export function OverviewTable({ panels, series, chance, timeZone, locale }: IPro
         // by its ancestors (`FILL_HEIGHT_PARENT`); phones keep the dashboard's cap.
         <div
             data-fill-height
-            className="max-h-[26.25rem] overflow-auto sm:max-h-[70vh] sm:min-h-[27rem] sm:flex-1 sm:basis-0"
+            className={cn(TABLE_SCROLL, 'max-h-[26.25rem] sm:max-h-[70vh] sm:min-h-[27rem] sm:flex-1 sm:basis-0')}
         >
             <Table className="text-xs max-sm:text-sm">
                 <TableHeader>
                     <TableRow className="group">
-                        <TableHead className={STICKY_TIME_CELL}>{t('time')}</TableHead>
+                        <TableHead className={STICKY_CORNER_CELL}>{t('time')}</TableHead>
                         {columns.map((column) => (
-                            <TableHead key={column.key} className="text-right">
+                            <TableHead key={column.key} className={cn(STICKY_HEAD_CELL, 'text-right')}>
                                 {getLabel(column)}
                             </TableHead>
                         ))}

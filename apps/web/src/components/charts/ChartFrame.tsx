@@ -1,5 +1,6 @@
 'use client'
 
+import { TABLE_SCROLL } from '@/components/charts/table-cells'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/cn'
@@ -53,7 +54,7 @@ export function ChartFrame({ title, table, tabs, actions, footer, isFetching, cl
                     isFetching && 'opacity-60',
                 )}
             >
-                {isTable && table ? <div className="max-h-[26.25rem] overflow-auto">{table}</div> : children}
+                {isTable && table ? <div className={cn(TABLE_SCROLL, 'max-h-[26.25rem]')}>{table}</div> : children}
                 {footer}
             </CardContent>
         </Card>
