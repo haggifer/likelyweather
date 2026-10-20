@@ -31,7 +31,7 @@ interface SkeletonProps {
 // On phones the card runs edge to edge (`data-bleed`, globals.css), so its charts get the screen's whole width.
 const CARD = 'gap-0 max-sm:pt-3'
 const ACTIONS = 'flex items-center gap-2 max-sm:mt-2 max-sm:mb-3 max-sm:w-full'
-// On phones the age, Refresh, Panels and the table toggle are icons, and Open details takes the rest of the row
+// On phones the age, Refresh, Variables and the table toggle are icons, and Open details takes the rest of the row
 // (author, 2026-10-13); the row is 36 px tall with 16 px icons and text (author, 2026-10-16).
 const PHONE_BUTTON = 'max-sm:h-9 max-sm:flex-1 max-sm:text-[1rem] max-sm:[&_svg]:size-4'
 const PHONE_ICON = 'shrink-0 max-sm:size-9 max-sm:px-0 max-sm:[&_svg]:size-4'

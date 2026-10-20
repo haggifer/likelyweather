@@ -143,10 +143,10 @@ test('showing a hidden overview panel draws it without another request', async (
     page.on('request', (request) => {
         if (request.url().includes('/latest')) requests.push(request.url())
     })
-    await page.getByRole('button', { name: 'Panels', exact: true }).click()
+    await page.getByRole('button', { name: 'Variables', exact: true }).click()
     await page.getByRole('button', { name: 'Show Humidity' }).click()
     await page.keyboard.press('Escape')
-    await expect(page.getByRole('dialog', { name: 'Visible panels' })).toBeHidden()
+    await expect(page.getByRole('dialog', { name: 'Shown variables' })).toBeHidden()
 
     await expect(page.getByText('Humidity', { exact: true })).toBeVisible()
     expect(requests).toEqual([])
@@ -156,10 +156,10 @@ test('a panel moves by keyboard with its handle, and Escape cancels a move witho
     page,
 }) => {
     await page.goto(`/?city=${LONDON}`)
-    await page.getByRole('button', { name: 'Panels', exact: true }).click()
+    await page.getByRole('button', { name: 'Variables', exact: true }).click()
 
     const handle = page.getByRole('button', { name: 'Reorder Temperature' })
-    const rows = page.getByRole('dialog', { name: 'Visible panels' }).getByRole('listitem')
+    const rows = page.getByRole('dialog', { name: 'Shown variables' }).getByRole('listitem')
 
     // The handle reads as pressed while its row is held, and the held row slides down before it is dropped.
     const moveDown = async (finalKey: string) => {
@@ -177,7 +177,7 @@ test('a panel moves by keyboard with its handle, and Escape cancels a move witho
     await expect(handle).toBeFocused()
     await moveDown('Escape')
     await expect(rows.nth(1)).toContainText('Temperature')
-    await expect(page.getByRole('dialog', { name: 'Visible panels' })).toBeVisible()
+    await expect(page.getByRole('dialog', { name: 'Shown variables' })).toBeVisible()
     await page.getByRole('button', { name: 'Hide Temperature' }).click()
     await expect(rows.nth(1).getByRole('button', { name: 'Show Temperature' })).toBeVisible()
 })
