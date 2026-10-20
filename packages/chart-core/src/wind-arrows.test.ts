@@ -5,11 +5,8 @@ const TIMES = [new Date('2026-10-12T00:00Z'), new Date('2026-10-12T03:00Z')]
 const x = scaleUtc().domain(TIMES).range([40, 100])
 
 describe('wind arrows', () => {
-    it('places a mark on every slot, keeping a missing direction for a dot', () => {
-        expect(getWindMarks(x, TIMES, [90, null])).toEqual([
-            { key: '2026-10-12T00:00:00.000Z', x: 40, deg: 90 },
-            { key: '2026-10-12T03:00:00.000Z', x: 100, deg: null },
-        ])
+    it('places a mark on every slot after the left edge, keeping a missing direction for a dot', () => {
+        expect(getWindMarks(x, TIMES, [90, null])).toEqual([{ key: '2026-10-12T03:00:00.000Z', x: 100, deg: null }])
     })
 
     it('turns an arrow to where the wind blows, away from where it comes from', () => {
