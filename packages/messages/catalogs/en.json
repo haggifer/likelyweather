@@ -223,12 +223,15 @@
         "widgets": "Home-screen widgets",
         "widgetsHint": "Touch and hold an empty spot on your home screen, tap Widgets and pick Forecast Arena.",
         "widgetsNone": "No widget is on your home screen yet.",
-        "widgetCity": "A widget shows {city}"
+        "widgetSmall": "Small widget",
+        "widgetMedium": "Detailed widget",
+        "widgetNoCity": "No city chosen",
+        "widgetChange": "Change city"
     },
     "widget": {
         "configureTitle": "Choose the city for this widget",
-        "configureEmpty": "Pick or pin a place in Forecast Arena first; it then appears here.",
         "openApp": "Open Forecast Arena to load {city}",
+        "chooseCity": "Tap to choose a city",
         "next24": "Next 24 h",
         "wind": "Wind",
         "rain": "Rain",

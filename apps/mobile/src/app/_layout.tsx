@@ -25,6 +25,9 @@ import { getFontFamily } from '../theme/fonts'
 // The snackbars' place: as far above the navigation bar as from the screen's sides.
 const TOAST_MARGIN = 16
 
+// A link from a widget opens its screen over Home, so Back returns to the app rather than leaving it.
+export const unstable_settings = { anchor: 'index' }
+
 // The stack lives inside the IntlProvider so screen titles come from the catalogs too.
 const AppStack = () => {
     const tm = useTranslations('mobile')
@@ -51,6 +54,7 @@ const AppStack = () => {
                 {/* Methodology opens with its own heading, as on the web, so the header names nothing. */}
                 <Stack.Screen name="methodology" options={{ title: '' }} />
                 <Stack.Screen name="settings" options={{ title: tm('settings') }} />
+                <Stack.Screen name="widget-city/[id]" options={{ title: tm('widgetChange') }} />
                 <Stack.Screen name="+not-found" options={{ title: '' }} />
             </Stack>
             <Toaster position="bottom-center" offset={insets.bottom + TOAST_MARGIN} swipeToDismissDirection="left" />

@@ -1,6 +1,6 @@
 import { apiGet } from '@fa/api-client/api'
 import { City, LatestResponse } from '@fa/shared/api'
-import { toPlace } from '@fa/shared/places'
+import { Place, toPlace } from '@fa/shared/places'
 import { Variable } from '@fa/shared/variables'
 import { WidgetRepresentation } from 'react-native-android-widget'
 import { settingsStore } from '../lib/settings'
@@ -31,6 +31,7 @@ export const saveWidgetModel = (widgetId: number, model: WidgetModel) =>
     widgetModels.set((models) => ({ ...models, [widgetId]: model }))
 
 export const drawWidget = (
+    widgetId: number,
     widgetName: string,
     city: WidgetCity | null,
     model: WidgetModel | null,
@@ -39,6 +40,7 @@ export const drawWidget = (
     const now = new Date()
 
     return renderForecastWidget({
+        widgetId,
         widgetName,
         city,
         model: getShownModel(city, model, now),
@@ -66,7 +68,7 @@ const resolveWidgetCity = async (widgetId: number, bound: WidgetCity): Promise<W
 export const refreshWidget = async (widgetId: number, widgetName: string): Promise<WidgetRepresentation> => {
     const bound = widgetBindings.get()[widgetId] ?? null
 
-    if (!bound) return drawWidget(widgetName, null, null)
+    if (!bound) return drawWidget(widgetId, widgetName, null, null)
 
     try {
         const city = await resolveWidgetCity(widgetId, bound)
@@ -75,10 +77,28 @@ export const refreshWidget = async (widgetId: number, widgetName: string): Promi
 
         saveWidgetModel(widgetId, model)
 
-        return drawWidget(widgetName, city, model)
+        return drawWidget(widgetId, widgetName, city, model)
     } catch (error) {
         console.warn(`Widget ${widgetId} could not refresh ${bound.slug}: ${String(error)}`)
 
-        return drawWidget(widgetName, bound, widgetModels.get()[widgetId] ?? null)
+        return drawWidget(widgetId, widgetName, bound, widgetModels.get()[widgetId] ?? null)
     }
+}
+
+// A stored place has no time zone, which the widget needs for local days; the city record has it. Without the
+// network the zone stays unknown until the widget's first refresh that reaches the server.
+const getWidgetCity = async (place: Place): Promise<WidgetCity> => {
+    try {
+        return toWidgetCity(await apiGet<City>(`/cities/${place.slug}`))
+    } catch {
+        return { ...place, timezone: null }
+    }
+}
+
+export const bindWidgetCity = async (widgetId: number, widgetName: string, place: Place) => {
+    const city = await getWidgetCity(place)
+
+    widgetBindings.set((bindings) => ({ ...bindings, [widgetId]: city }))
+
+    return refreshWidget(widgetId, widgetName)
 }

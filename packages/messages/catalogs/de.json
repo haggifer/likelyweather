@@ -223,12 +223,15 @@
         "widgets": "Startbildschirm-Widgets",
         "widgetsHint": "Halte eine freie Stelle auf deinem Startbildschirm gedrückt, tippe auf „Widgets“ und wähle „Forecast Arena“ aus.",
         "widgetsNone": "Auf dem Startbildschirm ist noch kein Widget.",
-        "widgetCity": "Ein Widget zeigt {city}"
+        "widgetSmall": "Kleines Widget",
+        "widgetMedium": "Detailliertes Widget",
+        "widgetNoCity": "Keine Stadt gewählt",
+        "widgetChange": "Stadt ändern"
     },
     "widget": {
         "configureTitle": "Stadt für dieses Widget wählen",
-        "configureEmpty": "Wähle oder markiere zuerst einen Ort in Forecast Arena; er erscheint dann hier.",
         "openApp": "Öffne Forecast Arena, um {city} zu laden",
+        "chooseCity": "Tippe, um eine Stadt zu wählen",
         "next24": "Nächste 24 h",
         "wind": "Wind",
         "rain": "Regen",

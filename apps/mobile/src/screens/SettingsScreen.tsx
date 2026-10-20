@@ -18,10 +18,13 @@ import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group'
 import { ScreenScroll } from '../components/ui/ScreenScroll'
 import { Skeleton } from '../components/ui/skeleton'
 import { Text } from '../components/ui/text'
+import { usePlacedWidgets } from '../hooks/usePlacedWidgets'
 import { useSettings } from '../hooks/useSettings'
 import { LanguageSetting, settingsStore, THEME_SETTINGS } from '../lib/settings'
 import { getLegalUrl, REPO_URL } from '../lib/web-links'
+import { MEDIUM_WIDGET } from '../widget/widget-names'
 import { widgetBindings } from '../widget/widget-store'
+import { redrawWidgets } from '../widget/widget-updates'
 
 const LANGUAGE_SETTINGS: LanguageSetting[] = ['system', ...LOCALES]
 const THEME_KEYS = { system: 'themeSystem', light: 'themeLight', dark: 'themeDark' } as const
@@ -32,13 +35,19 @@ const RADIO_HIT_SLOP = 10
 const setLanguage = (value: string) => {
     const language = LANGUAGE_SETTINGS.find((option) => option === value)
 
-    if (language) settingsStore.set((current) => ({ ...current, language }))
+    if (!language) return
+
+    settingsStore.set((current) => ({ ...current, language }))
+    void redrawWidgets()
 }
 
 const setTheme = (value: string) => {
     const theme = THEME_SETTINGS.find((option) => option === value)
 
-    if (theme) settingsStore.set((current) => ({ ...current, theme }))
+    if (!theme) return
+
+    settingsStore.set((current) => ({ ...current, theme }))
+    void redrawWidgets()
 }
 
 const openUrl = (url: string) => void Linking.openURL(url)
@@ -103,10 +112,10 @@ export function SettingsScreen() {
     const router = useRouter()
     const settings = useSettings()
     const bindings = useSyncExternalStore(widgetBindings.subscribe, widgetBindings.get)
+    const placedWidgets = usePlacedWidgets()
 
     const { data: quota } = useQuota()
 
-    const widgetCities = [...new Set(Object.values(bindings).map((city) => getCityName(city, locale)))]
     const quotaStatus = quota ? getQuotaStatus(quota) : null
     const quotaValue = quota && quotaStatus ? tq('value', { left: quotaStatus.left, limit: quota.limit }) : ''
     const version = Constants.expoConfig?.version ?? ''
@@ -161,12 +170,29 @@ export function SettingsScreen() {
                 )}
             </Section>
             <Section title={t('widgets')}>
-                {widgetCities.length ? (
-                    widgetCities.map((city) => (
-                        <Text key={city} className="text-sm">
-                            {t('widgetCity', { city })}
-                        </Text>
-                    ))
+                {placedWidgets.length ? (
+                    placedWidgets.map(({ widgetId, widgetName }) => {
+                        const city = bindings[widgetId]
+
+                        return (
+                            <View key={widgetId} className="min-h-9 flex-row items-center gap-3">
+                                <Text className="flex-1 text-sm" numberOfLines={2}>
+                                    {t(widgetName === MEDIUM_WIDGET ? 'widgetMedium' : 'widgetSmall')}
+                                    {': '}
+                                    {city ? getCityName(city, locale) : t('widgetNoCity')}
+                                </Text>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onPress={() =>
+                                        router.push({ pathname: '/widget-city/[id]', params: { id: widgetId } })
+                                    }
+                                >
+                                    <Text>{t('widgetChange')}</Text>
+                                </Button>
+                            </View>
+                        )
+                    })
                 ) : (
                     <Text className="text-sm">{t('widgetsNone')}</Text>
                 )}

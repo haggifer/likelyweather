@@ -223,12 +223,15 @@
         "widgets": "Widgets de l’écran d’accueil",
         "widgetsHint": "Appuyez longuement sur un emplacement libre de votre écran d’accueil, sélectionnez « Widgets », puis choisissez « Forecast Arena ».",
         "widgetsNone": "Aucun widget sur l’écran d’accueil pour l’instant.",
-        "widgetCity": "Un widget affiche {city}"
+        "widgetSmall": "Petit widget",
+        "widgetMedium": "Widget détaillé",
+        "widgetNoCity": "Aucune ville choisie",
+        "widgetChange": "Changer de ville"
     },
     "widget": {
         "configureTitle": "Choisissez la ville de ce widget",
-        "configureEmpty": "Cherchez ou épinglez d’abord un lieu dans Forecast Arena ; il apparaîtra ici.",
         "openApp": "Ouvrez Forecast Arena pour charger {city}",
+        "chooseCity": "Touchez pour choisir une ville",
         "next24": "Prochaines 24 h",
         "wind": "Vent",
         "rain": "Pluie",
