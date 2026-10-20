@@ -3,10 +3,11 @@
 import { TABLE_SCROLL } from '@/components/charts/table-cells'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useViewMode } from '@/hooks/useViewMode'
 import { cn } from '@/lib/cn'
 import { BarChart3, Table2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { ReactNode, useState } from 'react'
+import { ReactNode } from 'react'
 
 interface IProps {
     title: ReactNode
@@ -22,7 +23,7 @@ interface IProps {
 
 export function ChartFrame({ title, table, tabs, actions, footer, isFetching, className, children }: IProps) {
     const t = useTranslations('chart')
-    const [isTable, setIsTable] = useState(false)
+    const { isTable, toggleTable } = useViewMode()
 
     return (
         <Card className={cn('gap-3', className)}>
@@ -35,7 +36,7 @@ export function ChartFrame({ title, table, tabs, actions, footer, isFetching, cl
                             variant="ghost"
                             size="sm"
                             className="max-sm:text-sm"
-                            onClick={() => setIsTable((v) => !v)}
+                            onClick={toggleTable}
                             aria-pressed={isTable}
                             aria-label={isTable ? t('showChart') : t('showTable')}
                         >

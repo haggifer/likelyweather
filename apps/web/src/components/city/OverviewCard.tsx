@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useOverviewPanels } from '@/hooks/useOverviewPanels'
+import { useViewMode } from '@/hooks/useViewMode'
 import { cn } from '@/lib/cn'
 import { FILL_HEIGHT_PARENT } from '@/lib/fill-height'
 import { isRefreshOffered } from '@fa/api-client/refresh-due'
@@ -22,7 +23,7 @@ import { PanelVariable } from '@fa/shared/overview-panels'
 import { ArrowRight, BarChart3, Loader2, Table2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
 interface SkeletonProps {
     status: string
@@ -76,7 +77,7 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, on
     const locale = useLocale()
     const { panels: storedPanels, setPanels } = useOverviewPanels()
 
-    const [isTable, setIsTable] = useState(false)
+    const { isTable, toggleTable } = useViewMode()
 
     const name = getCityName(city, locale)
     const region = getCityRegion(city, locale)
@@ -123,7 +124,7 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, on
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setIsTable((v) => !v)}
+                        onClick={toggleTable}
                         aria-pressed={isTable}
                         aria-label={isTable ? tc('showChart') : tc('showTable')}
                         className={PHONE_ICON}

@@ -1,7 +1,8 @@
 import { BarChart3, Table2 } from 'lucide-react-native'
-import { ReactNode, useState } from 'react'
+import { ReactNode } from 'react'
 import { View } from 'react-native'
 import { useTranslations } from 'use-intl'
+import { useViewMode } from '../../hooks/useViewMode'
 import { cn } from '../../lib/cn'
 import { Button } from '../ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
@@ -24,7 +25,7 @@ interface IProps {
 export function ChartFrame({ title, table, tabs, isFetching = false, className, children }: IProps) {
     const t = useTranslations('chart')
 
-    const [isTable, setIsTable] = useState(false)
+    const { isTable, toggleTable } = useViewMode()
 
     return (
         <Card className={cn('gap-3 py-4', className)}>
@@ -34,7 +35,7 @@ export function ChartFrame({ title, table, tabs, isFetching = false, className, 
                     <Button
                         variant="ghost"
                         size="sm"
-                        onPress={() => setIsTable((v) => !v)}
+                        onPress={toggleTable}
                         accessibilityLabel={isTable ? t('showChart') : t('showTable')}
                         accessibilityState={{ selected: isTable }}
                     >

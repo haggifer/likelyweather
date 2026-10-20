@@ -6,10 +6,11 @@ import { getCityName } from '@fa/shared/format'
 import { getVisiblePanels, PanelVariable } from '@fa/shared/overview-panels'
 import { useRouter } from 'expo-router'
 import { ArrowRight, BarChart3, Table2 } from 'lucide-react-native'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { useOverviewPanels } from '../../hooks/useOverviewPanels'
+import { useViewMode } from '../../hooks/useViewMode'
 import { cn } from '../../lib/cn'
 import { MedianOverview, MedianOverviewSkeleton } from '../charts/MedianOverview'
 import { OverviewTable } from '../charts/OverviewTable'
@@ -87,7 +88,7 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching = f
     const router = useRouter()
     const { panels: storedPanels, setPanels } = useOverviewPanels()
 
-    const [isTable, setIsTable] = useState(false)
+    const { isTable, toggleTable } = useViewMode()
 
     const name = getCityName(city, locale)
     const region = getCityRegion(city, locale)
@@ -120,7 +121,7 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching = f
                     <Button
                         variant="outline"
                         size="sm"
-                        onPress={() => setIsTable((v) => !v)}
+                        onPress={toggleTable}
                         accessibilityLabel={isTable ? tc('showChart') : tc('showTable')}
                         accessibilityState={{ selected: isTable }}
                         className="size-9 px-0"
