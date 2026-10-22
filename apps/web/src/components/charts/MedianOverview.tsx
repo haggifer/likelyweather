@@ -3,6 +3,7 @@
 import { Skeleton } from '@/components/ui/skeleton'
 import { useChartScroll } from '@/hooks/useChartScroll'
 import { useChartTheme } from '@/hooks/useChartTheme'
+import { useDragScroll } from '@/hooks/useDragScroll'
 import { useElementWidth } from '@/hooks/useElementWidth'
 import { useFocusVisible } from '@/hooks/useFocusVisible'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -211,6 +212,7 @@ export function MedianOverview({
         geometry.marginLeft,
         OVERVIEW_MARGIN_RIGHT,
     ])
+    const dragScroll = useDragScroll()
 
     // Everything that does not follow the pointer is built once per data, size or theme change; a hover redraws only
     // the crosshair, the dots and the labels.
@@ -463,7 +465,11 @@ export function MedianOverview({
                 ref={ref}
                 className={cn('relative min-w-0 rounded-sm select-none', isFocusVisible && 'ring-2 ring-ring')}
             >
-                <div ref={scrollRef} className="overflow-x-auto overscroll-x-contain [scrollbar-width:thin]">
+                <div
+                    ref={scrollRef}
+                    {...dragScroll}
+                    className="overflow-x-auto overscroll-x-contain [scrollbar-width:thin] pointer-fine:cursor-grab pointer-fine:active:cursor-grabbing"
+                >
                     {/* The static drawing sits on its own compositing layer under the interactive one, so a hover
                         repaints only the crosshair, the dots and the label. */}
                     <div className="relative" style={{ width: contentWidth }}>

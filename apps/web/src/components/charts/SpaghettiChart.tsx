@@ -2,6 +2,7 @@
 
 import { useChartScroll } from '@/hooks/useChartScroll'
 import { useChartTheme } from '@/hooks/useChartTheme'
+import { useDragScroll } from '@/hooks/useDragScroll'
 import { useElementWidth } from '@/hooks/useElementWidth'
 import { useFocusVisible } from '@/hooks/useFocusVisible'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -150,6 +151,7 @@ export function SpaghettiChart({
         margin.left,
         margin.right,
     ])
+    const dragScroll = useDragScroll()
 
     // Everything that does not follow the pointer is built once per data, size or theme change, so a hover redraws
     // only the crosshair, the dots and the label (a pointer move cost 50–100 ms on a slow CPU before).
@@ -350,7 +352,11 @@ export function SpaghettiChart({
 
     return (
         <div ref={ref} className={cn('relative w-full rounded-sm select-none', isFocusVisible && 'ring-2 ring-ring')}>
-            <div ref={scrollRef} className="overflow-x-auto overscroll-x-contain [scrollbar-width:thin]">
+            <div
+                ref={scrollRef}
+                {...dragScroll}
+                className="overflow-x-auto overscroll-x-contain [scrollbar-width:thin] pointer-fine:cursor-grab pointer-fine:active:cursor-grabbing"
+            >
                 {/* Three stacked drawings: the hovered span's shade under everything, the static chart on its own
                     compositing layer, and the crosshair with the pointer area on top, so a hover repaints only the small
                     top and bottom drawings and not ten model lines across ten days. */}

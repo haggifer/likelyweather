@@ -132,6 +132,26 @@ test('a focused chart shows its focus ring around the scrolling plot', async ({ 
     expect(shadow).not.toBe('none')
 })
 
+test('a mouse drag anywhere on a chart scrolls it sideways and picks no slot', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'a finger scrolls the chart natively')
+
+    await page.goto(`/?city=${LONDON}`)
+
+    const chart = page.getByRole('img', { name: /^Median forecast for London/ })
+    const scroller = chart.locator('xpath=ancestor::div[contains(@class, "overflow-x-auto")][1]')
+    const box = (await scroller.boundingBox())!
+    const start = { x: box.x + box.width * 0.7, y: box.y + box.height / 2 }
+    const scrollLeft = await scroller.evaluate((node) => node.scrollLeft)
+
+    await page.mouse.move(start.x, start.y)
+    await page.mouse.down()
+    await page.mouse.move(start.x - 200, start.y, { steps: 10 })
+    await page.mouse.up()
+
+    await expect.poll(() => scroller.evaluate((node) => node.scrollLeft)).toBe(scrollLeft + 200)
+    await expect(chart.locator('circle')).toHaveCount(0)
+})
+
 // Every overview series arrives with the first load: asking for one later would collect a newer run for that panel
 // alone once the stored one is 3 hours old.
 test('showing a hidden overview panel draws it without another request', async ({ page }) => {
