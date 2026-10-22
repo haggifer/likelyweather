@@ -1,0 +1,50 @@
+diff --git a/android/src/main/java/com/reactnativeandroidwidget/RNWidget.java b/android/src/main/java/com/reactnativeandroidwidget/RNWidget.java
+index 1c12d1fd5ef3d2580474893b49a1d27e18ae0923..491263b7f8a7dd79af121b113d09a2a45a784006 100644
+--- a/android/src/main/java/com/reactnativeandroidwidget/RNWidget.java
++++ b/android/src/main/java/com/reactnativeandroidwidget/RNWidget.java
+@@ -2,6 +2,7 @@ package com.reactnativeandroidwidget;
+ 
+ import android.app.PendingIntent;
+ import android.appwidget.AppWidgetManager;
++import android.appwidget.AppWidgetProviderInfo;
+ import android.content.ComponentName;
+ import android.content.Intent;
+ import android.graphics.Bitmap;
+@@ -32,6 +33,7 @@ import com.reactnativeandroidwidget.builder.WidgetWithViews;
+ import java.io.ByteArrayOutputStream;
+ import java.util.ArrayList;
+ import java.util.List;
++import java.util.Locale;
+ 
+ public class RNWidget {
+     private final ReactApplicationContext appContext;
+@@ -59,12 +61,28 @@ public class RNWidget {
+         }
+     }
+ 
++    // A widget can bring its own native layout, `rn_widget_<provider class in lower case>` in the app's resources, for
++    // views a drawn image cannot hold, such as a ticking TextClock. It keeps the default layout's ids.
++    private int getLayoutId(int widgetId) {
++        AppWidgetProviderInfo info = AppWidgetManager.getInstance(appContext).getAppWidgetInfo(widgetId);
++
++        if (info == null) {
++            return R.layout.rn_widget;
++        }
++
++        String className = info.provider.getShortClassName();
++        String name = "rn_widget_" + className.substring(className.lastIndexOf('.') + 1).toLowerCase(Locale.ROOT);
++        int layoutId = appContext.getResources().getIdentifier(name, "layout", appContext.getPackageName());
++
++        return layoutId != 0 ? layoutId : R.layout.rn_widget;
++    }
++
+     public void drawWidget(int widgetId) throws Exception {
+         ReadableMap light = config.getMap("light");
+         ReadableMap dark = config.getMap("dark");
+ 
+         ReadableMap configClone = Arguments.makeNativeMap(light.toHashMap());
+-        RemoteViews remoteWidgetView = new RemoteViews(appContext.getPackageName(), R.layout.rn_widget);
++        RemoteViews remoteWidgetView = new RemoteViews(appContext.getPackageName(), getLayoutId(widgetId));
+ 
+         WidgetWithViews widgetWithViews = WidgetFactory.buildWidgetFromRoot(
+             appContext,

@@ -5,8 +5,8 @@ import { Variable } from '@fa/shared/variables'
 import { Platform } from 'react-native'
 import { getWidgetInfo, requestWidgetUpdate, requestWidgetUpdateById } from 'react-native-android-widget'
 import { buildWidgetModel, isNewerRun, WidgetData } from './widget-model'
-import { WIDGET_NAMES } from './widget-names'
-import { bindWidgetCity, drawWidget, saveWidgetModel, toWidgetCity } from './widget-render'
+import { CLOCK_WIDGET, WIDGET_NAMES } from './widget-names'
+import { bindWidgetCity, drawWidget, refreshWidget, saveWidgetModel, toWidgetCity } from './widget-render'
 import { widgetBindings, widgetModels } from './widget-store'
 
 export interface PlacedWidget {
@@ -14,14 +14,15 @@ export interface PlacedWidget {
     widgetName: string
 }
 
-// The widget draws temperature, wind and precipitation; a reader who hides one of their panels leaves the app without
-// that run, and the widget then waits for its own 3-hourly update rather than saving a partial model.
-const getWidgetData = (hourly: OverviewHourly): Required<WidgetData> | null => {
+// The widgets draw temperature, wind, precipitation and cloud cover; while the app lacks one of those runs, a widget
+// waits for its own 3-hourly update rather than saving a partial model.
+const getWidgetData = (hourly: OverviewHourly): WidgetData | null => {
     const temp = hourly[Variable.Temp]
     const wind = hourly[Variable.Wind]
     const precip = hourly[Variable.Precip]
+    const cloud = hourly[Variable.Cloud]
 
-    return temp && wind && precip ? { temp, wind, precip } : null
+    return temp && wind && precip && cloud ? { temp, wind, precip, cloud } : null
 }
 
 // When the app loads a city, every widget bound to it redraws from that data without a fetch of its own, unless the
@@ -41,6 +42,9 @@ export const updateWidgetsForCity = async (city: City, hourly: OverviewHourly) =
                     const saved = widgetModels.get()[widgetId] ?? null
 
                     if (bound?.slug !== city.slug) return drawWidget(widgetId, widgetName, bound, saved)
+
+                    // The app holds no current temperature, so the clock widget fetches its own whole model.
+                    if (widgetName === CLOCK_WIDGET) return refreshWidget(widgetId, widgetName)
 
                     const fresh = toWidgetCity(city)
 

@@ -1,31 +1,63 @@
 import { apiGet } from '@fa/api-client/api'
-import { City, LatestResponse } from '@fa/shared/api'
+import { City, CurrentResponse, LatestResponse } from '@fa/shared/api'
 import { Place, toPlace } from '@fa/shared/places'
 import { Variable } from '@fa/shared/variables'
 import { WidgetRepresentation } from 'react-native-android-widget'
 import { settingsStore } from '../lib/settings'
 import { renderForecastWidget } from './forecast-widget'
 import { buildWidgetModel, getShownModel, WidgetCity, WidgetData, WidgetModel } from './widget-model'
-import { MEDIUM_WIDGET } from './widget-names'
+import { CLOCK_WIDGET, MEDIUM_WIDGET } from './widget-names'
 import { widgetBindings, widgetModels } from './widget-store'
 import { getAppLocale, getTranslator } from './widget-translator'
 
 const getLatest = (slug: string, variable: Variable) => apiGet<LatestResponse>(`/cities/${slug}/latest`, { variable })
 
-// Only what the widget's size shows: the small one needs temperature alone.
-const fetchWidgetData = async (city: WidgetCity, widgetName: string): Promise<WidgetData> => {
-    if (widgetName !== MEDIUM_WIDGET) return { temp: await getLatest(city.slug, Variable.Temp) }
-
+const fetchMediumData = async (slug: string): Promise<WidgetData> => {
     const [temp, wind, precip] = await Promise.all([
-        getLatest(city.slug, Variable.Temp),
-        getLatest(city.slug, Variable.Wind),
-        getLatest(city.slug, Variable.Precip),
+        getLatest(slug, Variable.Temp),
+        getLatest(slug, Variable.Wind),
+        getLatest(slug, Variable.Precip),
     ])
 
     return { temp, wind, precip }
 }
 
-export const toWidgetCity = (city: City): WidgetCity => ({ ...toPlace(city), timezone: city.timezone })
+// Without a current temperature the widget shows the medians' value for now instead.
+const getCurrent = (slug: string) =>
+    apiGet<CurrentResponse>(`/cities/${slug}/current`).catch((error) => {
+        console.warn(`The current temperature for ${slug} is unavailable: ${String(error)}`)
+
+        return null
+    })
+
+const fetchClockData = async (slug: string): Promise<WidgetData> => {
+    const [temp, cloud, precip, current] = await Promise.all([
+        getLatest(slug, Variable.Temp),
+        getLatest(slug, Variable.Cloud),
+        getLatest(slug, Variable.Precip),
+        getCurrent(slug),
+    ])
+
+    return { temp, cloud, precip, current }
+}
+
+// Only what the widget shows: the small one needs temperature alone, the clock one the sky's condition too.
+const fetchWidgetData = async (city: WidgetCity, widgetName: string): Promise<WidgetData> => {
+    switch (widgetName) {
+        case MEDIUM_WIDGET:
+            return fetchMediumData(city.slug)
+        case CLOCK_WIDGET:
+            return fetchClockData(city.slug)
+        default:
+            return { temp: await getLatest(city.slug, Variable.Temp) }
+    }
+}
+
+export const toWidgetCity = (city: City): WidgetCity => ({
+    ...toPlace(city),
+    timezone: city.timezone,
+    coordinates: { lat: city.lat, lon: city.lon },
+})
 
 export const saveWidgetModel = (widgetId: number, model: WidgetModel) =>
     widgetModels.set((models) => ({ ...models, [widgetId]: model }))
@@ -51,10 +83,10 @@ export const drawWidget = (
     })
 }
 
-// A widget placed offline is bound to a place without a time zone; the first refresh that reaches the server fills
-// it in and keeps it.
+// A widget placed offline is bound to a place without a time zone or coordinates; the first refresh that reaches the
+// server fills them in and keeps them.
 const resolveWidgetCity = async (widgetId: number, bound: WidgetCity): Promise<WidgetCity> => {
-    if (bound.timezone !== null) return bound
+    if (bound.timezone !== null && bound.coordinates) return bound
 
     const city = toWidgetCity(await apiGet<City>(`/cities/${bound.slug}`))
 

@@ -1,22 +1,29 @@
 import { getNearestIndex } from '@fa/chart-core/spaghetti-geometry'
-import { LatestResponse } from '@fa/shared/api'
+import { CurrentResponse, LatestResponse } from '@fa/shared/api'
 import { HOUR_MS } from '@fa/shared/constants'
 import { getDashboardStats, getEnsembleStats } from '@fa/shared/dashboard'
 import { DisagreementLabel } from '@fa/shared/ensemble'
+import { Coordinates } from '@fa/shared/geo'
 import { Place } from '@fa/shared/places'
 import { buildSlots, getChartStart, getSlotStart, SLOT_HOURS, toSlotLatest } from '@fa/shared/slots'
+import { getTemperatureTrend, TemperatureTrend, TREND_HOURS } from '@fa/shared/temperature-trend'
 import { getLocalDateKey } from '@fa/shared/time'
 import { Variable } from '@fa/shared/variables'
+import { getWeatherCondition, WeatherCondition } from '@fa/shared/weather-condition'
 
 export interface WidgetCity extends Place {
     // null until the city record has been read: a widget placed offline knows only the stored place.
     timezone: string | null
+    // Where the sun is decides between a sun and a moon; absent until the city record has been read.
+    coordinates?: Coordinates
 }
 
 export interface WidgetData {
     temp: LatestResponse
     wind?: LatestResponse
     precip?: LatestResponse
+    cloud?: LatestResponse
+    current?: CurrentResponse | null
 }
 
 // Numbers only: the widget formats them in the reader's language and recomputes the age when it draws, so a model
@@ -32,6 +39,11 @@ export interface WidgetModel {
     labelDay: string | null
     wind: number | null
     precipTotal: number | null
+    // The current slot's sky from the medians, and where the median temperature goes next, for the clock widget.
+    condition?: WeatherCondition | null
+    trend?: TemperatureTrend | null
+    // The clock widget's temperature now, from a nearby station when there is one; the medians only set its trend.
+    current?: CurrentResponse | null
 }
 
 const SUMMARY_HOURS = 24
@@ -55,6 +67,14 @@ const getMedianAt = (latest: LatestResponse, now: Date) => {
     )
 
     return getEnsembleStats(latest).median[index] ?? null
+}
+
+// A slotted total belongs to the slot the time is in, not to the nearest slot start, which in a slot's second half
+// is the next one.
+const getMedianInSlot = (latest: LatestResponse, slotStart: Date) => {
+    const index = latest.steps.findIndex((step) => new Date(step).getTime() === slotStart.getTime())
+
+    return index < 0 ? null : (getEnsembleStats(latest).median[index] ?? null)
 }
 
 // The next 24 hours from the current local slot, as the overview's readouts summarise them.
@@ -84,20 +104,33 @@ export const buildWidgetModel = (city: WidgetCity, data: WidgetData, now: Date):
     const temp = toSlots(data.temp, timeZone, Variable.Temp)
     const wind = data.wind ? toSlots(data.wind, timeZone, Variable.Wind) : null
     const precip = data.precip ? toSlots(data.precip, timeZone, Variable.Precip) : null
+    const cloud = data.cloud ? toSlots(data.cloud, timeZone, Variable.Cloud) : null
     const from = getSlotStart(now, timeZone)
     const next24 = getNext24(temp, from)
     const today = getDashboardStats(temp, Variable.Temp, timeZone, now).disagreement[0]
+    const tempNow = getMedianAt(temp, now)
+    const tempLater = getMedianAt(temp, new Date(now.getTime() + TREND_HOURS * HOUR_MS))
+    const condition = cloud
+        ? getWeatherCondition({
+              cloud: getMedianAt(cloud, now),
+              precip: precip ? getMedianInSlot(precip, from) : null,
+              temp: tempNow,
+          })
+        : null
 
     return {
         city,
         fetchedAt: data.temp.fetchedAt,
-        temp: getMedianAt(temp, now),
+        temp: tempNow,
         tempMin: getMin(next24),
         tempMax: getMax(next24),
         label: today?.label ?? null,
         labelDay: today?.day ?? null,
         wind: wind ? getMedianAt(wind, now) : null,
         precipTotal: precip ? getTotal(getNext24(precip, from)) : null,
+        condition,
+        trend: getTemperatureTrend(tempNow, tempLater),
+        current: data.current ?? null,
     }
 }
 

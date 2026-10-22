@@ -22,12 +22,16 @@ import { usePlacedWidgets } from '../hooks/usePlacedWidgets'
 import { useSettings } from '../hooks/useSettings'
 import { LanguageSetting, settingsStore, THEME_SETTINGS } from '../lib/settings'
 import { getLegalUrl, REPO_URL } from '../lib/web-links'
-import { MEDIUM_WIDGET } from '../widget/widget-names'
+import { CLOCK_WIDGET, MEDIUM_WIDGET } from '../widget/widget-names'
 import { widgetBindings } from '../widget/widget-store'
 import { redrawWidgets } from '../widget/widget-updates'
 
 const LANGUAGE_SETTINGS: LanguageSetting[] = ['system', ...LOCALES]
 const THEME_KEYS = { system: 'themeSystem', light: 'themeLight', dark: 'themeDark' } as const
+const WIDGET_LABEL_KEYS: Record<string, 'widgetMedium' | 'widgetClock'> = {
+    [MEDIUM_WIDGET]: 'widgetMedium',
+    [CLOCK_WIDGET]: 'widgetClock',
+}
 const SMALL = 'text-xs text-muted-foreground'
 // The radio's own circle is small; its touch area fills the 36 px row without reaching into the next one.
 const RADIO_HIT_SLOP = 10
@@ -177,7 +181,7 @@ export function SettingsScreen() {
                         return (
                             <View key={widgetId} className="min-h-9 flex-row items-center gap-3">
                                 <Text className="flex-1 text-sm" numberOfLines={2}>
-                                    {t(widgetName === MEDIUM_WIDGET ? 'widgetMedium' : 'widgetSmall')}
+                                    {t(WIDGET_LABEL_KEYS[widgetName] ?? 'widgetSmall')}
                                     {': '}
                                     {city ? getCityName(city, locale) : t('widgetNoCity')}
                                 </Text>

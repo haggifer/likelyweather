@@ -13,6 +13,8 @@
             "ignoreDependencies": ["@fa/fixtures"],
         },
         "apps/mobile": {
+            // Config plugins that app.json names by path.
+            "entry": ["plugins/*.js"],
             // knip's Expo plugin expects expo-updates from app.json; EAS Update is added with the first release.
             "ignoreDependencies": ["expo-updates"],
         },

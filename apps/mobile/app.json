@@ -76,10 +76,23 @@
                             "resizeMode": "horizontal|vertical",
                             "updatePeriodMillis": 10800000,
                             "widgetFeatures": "reconfigurable"
+                        },
+                        {
+                            "name": "ForecastClock",
+                            "label": "Forecast Arena clock",
+                            "description": "The time, the date and the weather for one city",
+                            "minWidth": "250dp",
+                            "minHeight": "110dp",
+                            "targetCellWidth": 4,
+                            "targetCellHeight": 2,
+                            "resizeMode": "horizontal|vertical",
+                            "updatePeriodMillis": 1800000,
+                            "widgetFeatures": "reconfigurable"
                         }
                     ]
                 }
-            ]
+            ],
+            "./plugins/with-widget-layouts"
         ],
         "experiments": {
             "typedRoutes": true,

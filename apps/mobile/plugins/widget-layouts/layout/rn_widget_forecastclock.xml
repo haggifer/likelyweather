@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- react-native-android-widget's rn_widget layout with the time and date on the left: TextClocks tick on the
+     launcher's own clock, which a drawn image redrawn by the app cannot do. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/rn_widget_image_light"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent"
+        android:scaleType="matrix"
+        android:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/rn_widget_image_dark"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent"
+        android:scaleType="matrix"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"
+        android:orientation="vertical"
+        android:paddingStart="12dp"
+        android:paddingTop="4dp">
+
+        <!-- The light digits' side bearing would set the time further in than the date; the margins line their
+             left edges up and close the gap the digits leave above the date. -->
+        <TextClock
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="-4dp"
+            android:layout_marginBottom="-10dp"
+            android:fontFamily="sans-serif-light"
+            android:format12Hour="h:mm"
+            android:format24Hour="H:mm"
+            android:includeFontPadding="false"
+            android:shadowColor="#59000000"
+            android:shadowDy="1"
+            android:shadowRadius="4"
+            android:textColor="#FFFFFF"
+            android:textSize="76sp" />
+
+        <TextClock
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:format12Hour="EEE, d MMMM"
+            android:format24Hour="EEE, d MMMM"
+            android:shadowColor="#59000000"
+            android:shadowDy="1"
+            android:shadowRadius="4"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/rn_widget_clickable_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <FrameLayout
+        android:id="@+id/rn_widget_collection_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</FrameLayout>

@@ -225,6 +225,7 @@
         "widgetsNone": "No widget is on your home screen yet.",
         "widgetSmall": "Small widget",
         "widgetMedium": "Detailed widget",
+        "widgetClock": "Clock widget",
         "widgetNoCity": "No city chosen",
         "widgetChange": "Change city"
     },
@@ -235,7 +236,14 @@
         "next24": "Next 24 h",
         "wind": "Wind",
         "rain": "Rain",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "condition": {
+            "clear": "Clear",
+            "partlyCloudy": "Partly cloudy",
+            "cloudy": "Cloudy",
+            "rain": "Rain",
+            "snow": "Snow"
+        }
     },
     "archive": {
         "title": "Past weather",

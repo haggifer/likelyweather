@@ -7,11 +7,13 @@ import { DisagreementLabel } from '@fa/shared/ensemble'
 import { formatNumber, getCityName } from '@fa/shared/format'
 import { getAgeHours } from '@fa/shared/time'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
-import { ColorProp, FlexWidget, TextWidget, WidgetRepresentation } from 'react-native-android-widget'
+import { isDaylight } from '@fa/shared/weather-condition'
+import { ColorProp, FlexWidget, SvgWidget, TextWidget, WidgetRepresentation } from 'react-native-android-widget'
 import { ThemeSetting } from '../lib/settings'
 import { DARK, LIGHT } from '../theme/tokens'
+import { getTrendIcon, getWeatherIcon } from './weather-icons'
 import { WidgetCity, WidgetModel } from './widget-model'
-import { MEDIUM_WIDGET } from './widget-names'
+import { CLOCK_WIDGET, MEDIUM_WIDGET } from './widget-names'
 import { Translator } from './widget-translator'
 
 type Colors = typeof LIGHT
@@ -25,6 +27,16 @@ const CHIP_ALPHA = 0.16
 // The card colour, translucent: the wallpaper shows through, and the text stays readable on any of them.
 const TINT_ALPHA = 0.72
 const APP_NAME = 'Forecast Arena'
+// The clock widget has no card: like the native time beside it, its text is white with a soft shadow over the
+// wallpaper, in either theme.
+const ON_WALLPAPER = {
+    color: '#ffffff',
+    textShadowColor: 'rgba(0, 0, 0, 0.35)',
+    textShadowRadius: 4,
+    textShadowOffset: { width: 0, height: 1 },
+} as const
+// The weather keeps clear of the time beside it: a long condition such as "Переменная облачность" wraps instead.
+const CLOCK_WEATHER_WIDTH = 140
 
 const hex = (color: string) => color as ColorProp
 
@@ -155,6 +167,61 @@ const WidgetView = ({ widgetId, widgetName, model, city, colors, t, locale, now 
     )
 }
 
+// The drawn half of the clock widget: its left stays empty for the native time and date, and the weather sits on the
+// right, the only part a tap opens the app from.
+const ClockView = ({ widgetId, model, city, t, now }: ViewProps) => {
+    const temp = model
+        ? `${formatNumber(model.current?.temp ?? model.temp, 0)}${VARIABLE_BY_ID[Variable.Temp].unit}`
+        : null
+    const condition = model?.condition ?? null
+    const trend = model?.trend ?? null
+    const isDay = city?.coordinates ? isDaylight(city.coordinates, now) : true
+
+    return (
+        <FlexWidget
+            style={{
+                height: 'match_parent',
+                width: 'match_parent',
+                flexDirection: 'row',
+                justifyContent: 'flex-end',
+                alignItems: 'flex-start',
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+            }}
+        >
+            <FlexWidget
+                clickAction="OPEN_URI"
+                clickActionData={{ uri: city ? getCityLink(city.slug) : getPickerLink(widgetId) }}
+                style={{ width: CLOCK_WEATHER_WIDTH, flexDirection: 'column', alignItems: 'flex-end' }}
+            >
+                {condition && <SvgWidget svg={getWeatherIcon(condition, isDay)} style={{ height: 44, width: 44 }} />}
+                {temp && condition && (
+                    <TextWidget
+                        text={t(`widget.condition.${condition}`)}
+                        maxLines={2}
+                        truncate="END"
+                        style={{ marginTop: 2, fontSize: 14, textAlign: 'right', ...ON_WALLPAPER }}
+                    />
+                )}
+                {temp ? (
+                    <FlexWidget style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <TextWidget text={temp} maxLines={1} style={{ fontSize: 18, ...ON_WALLPAPER }} />
+                        {trend && (
+                            <SvgWidget svg={getTrendIcon(trend)} style={{ marginLeft: 4, height: 18, width: 18 }} />
+                        )}
+                    </FlexWidget>
+                ) : (
+                    <TextWidget
+                        text={t('widget.chooseCity')}
+                        maxLines={2}
+                        style={{ fontSize: 14, textAlign: 'right', ...ON_WALLPAPER }}
+                    />
+                )}
+            </FlexWidget>
+        </FlexWidget>
+    )
+}
+
 interface IProps {
     widgetId: number
     widgetName: string
@@ -171,6 +238,8 @@ interface IProps {
 // numbers held through a failed refresh from passing for current ones. A tap opens the city in the app, or the city
 // picker while the widget has none.
 export const renderForecastWidget = ({ theme, ...props }: IProps): WidgetRepresentation => {
+    if (props.widgetName === CLOCK_WIDGET) return <ClockView {...props} colors={LIGHT} />
+
     const light = <WidgetView {...props} colors={LIGHT} />
     const dark = <WidgetView {...props} colors={DARK} />
 

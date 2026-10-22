@@ -225,6 +225,7 @@
         "widgetsNone": "Auf dem Startbildschirm ist noch kein Widget.",
         "widgetSmall": "Kleines Widget",
         "widgetMedium": "Detailliertes Widget",
+        "widgetClock": "Uhr-Widget",
         "widgetNoCity": "Keine Stadt gewählt",
         "widgetChange": "Stadt ändern"
     },
@@ -235,7 +236,14 @@
         "next24": "Nächste 24 h",
         "wind": "Wind",
         "rain": "Regen",
-        "cancel": "Abbrechen"
+        "cancel": "Abbrechen",
+        "condition": {
+            "clear": "Klar",
+            "partlyCloudy": "Teilweise bewölkt",
+            "cloudy": "Bewölkt",
+            "rain": "Regen",
+            "snow": "Schnee"
+        }
     },
     "archive": {
         "title": "Vergangenes Wetter",

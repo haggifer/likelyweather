@@ -225,6 +225,7 @@
         "widgetsNone": "Aún no hay ningún widget en tu pantalla de inicio.",
         "widgetSmall": "Widget pequeño",
         "widgetMedium": "Widget detallado",
+        "widgetClock": "Widget con reloj",
         "widgetNoCity": "Sin ciudad elegida",
         "widgetChange": "Cambiar ciudad"
     },
@@ -235,7 +236,14 @@
         "next24": "Próximas 24 h",
         "wind": "Viento",
         "rain": "Lluvia",
-        "cancel": "Cancelar"
+        "cancel": "Cancelar",
+        "condition": {
+            "clear": "Despejado",
+            "partlyCloudy": "Parcialmente nublado",
+            "cloudy": "Nublado",
+            "rain": "Lluvia",
+            "snow": "Nieve"
+        }
     },
     "archive": {
         "title": "Tiempo pasado",

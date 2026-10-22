@@ -225,6 +225,7 @@
         "widgetsNone": "Aucun widget sur l’écran d’accueil pour l’instant.",
         "widgetSmall": "Petit widget",
         "widgetMedium": "Widget détaillé",
+        "widgetClock": "Widget horloge",
         "widgetNoCity": "Aucune ville choisie",
         "widgetChange": "Changer de ville"
     },
@@ -235,7 +236,14 @@
         "next24": "Prochaines 24 h",
         "wind": "Vent",
         "rain": "Pluie",
-        "cancel": "Annuler"
+        "cancel": "Annuler",
+        "condition": {
+            "clear": "Dégagé",
+            "partlyCloudy": "Partiellement nuageux",
+            "cloudy": "Nuageux",
+            "rain": "Pluie",
+            "snow": "Neige"
+        }
     },
     "archive": {
         "title": "Météo passée",
