@@ -1,5 +1,6 @@
 import {
     ArchiveQuerySchema,
+    CurrentResponse,
     DEFAULT_LOCALE,
     GeocodeQuerySchema,
     GeocodeResponse,
@@ -15,6 +16,7 @@ import { MODELS } from '@fa/shared/models'
 import { Router } from 'express'
 import { getArchivePayload, isCompleteArchive } from './domain/archive'
 import { ensureFreshSnapshot, findNearestCity, getStarterCities, requireCity, trackCity } from './domain/cities'
+import { getCurrentMaxAge, getCurrentTemperature } from './domain/current'
 import { getErrorMessage, HttpError } from './domain/errors'
 import { getLatestPayload } from './domain/latest'
 import { getQuota, quotaExceeded, trySpendQuota } from './domain/quota'
@@ -110,6 +112,19 @@ apiRouter.get('/cities/:slug/latest', rateLimit('read'), async (req, res) => {
     const payload = await getLatestPayload(meta, variable)
 
     sendJson(res, payload, { maxAge: getLatestMaxAge(meta, new Date()) })
+})
+
+// One answer per city and quarter hour, which CloudFront shares until the quarter ends. It spends no quota: it asks
+// for airport reports and, when none qualifies, one Open-Meteo value, at most once a quarter hour per city.
+apiRouter.get('/cities/:slug/current', rateLimit('read'), async (req, res) => {
+    const now = new Date()
+
+    const city = await requireCity(getParam(req, 'slug'))
+    const current = await getCurrentTemperature(city, now).catch(
+        toUpstreamError('The current temperature is unavailable'),
+    )
+
+    sendJson(res, current satisfies CurrentResponse, { maxAge: getCurrentMaxAge(now) })
 })
 
 // Past weather does not change once stored, so a browser may keep a complete answer for a day (CloudFront keeps its

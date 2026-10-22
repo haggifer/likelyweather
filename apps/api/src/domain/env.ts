@@ -8,6 +8,8 @@ const EnvSchema = z.object({
     OPEN_METEO_GEOCODING_BASE: z.url().default('https://geocoding-api.open-meteo.com'),
     OPEN_METEO_ARCHIVE_BASE: z.url().default('https://archive-api.open-meteo.com'),
     METNO_BASE: z.url().default('https://api.met.no'),
+    AVIATION_WEATHER_BASE: z.url().default('https://aviationweather.gov'),
+    // Also sent to the Aviation Weather Center, which asks callers to identify themselves the same way.
     METNO_USER_AGENT: z.string().min(8).default(DEFAULT_METNO_USER_AGENT),
     // Without it the caches, limits and claims live in process memory (tests, quick local runs).
     REDIS_URL: z.string().optional(),

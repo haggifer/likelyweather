@@ -98,6 +98,17 @@ export const LatestResponseSchema = z.object({
 })
 export type LatestResponse = z.infer<typeof LatestResponseSchema>
 
+// The temperature now: a nearby station's last reading carried forward by the models' change since, or the models'
+// value for the current quarter hour when no station qualifies.
+export const CurrentResponseSchema = z.object({
+    temp: z.number(),
+    source: z.enum(['station', 'model']),
+    // When the reading (or the model value) the temperature starts from is for.
+    observedAt: z.string(),
+    station: z.object({ id: z.string(), name: z.string(), distanceKm: z.number() }).optional(),
+})
+export type CurrentResponse = z.infer<typeof CurrentResponseSchema>
+
 const DateKey = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
 
 // A city's past weather for whole local days (`archive.ts` holds the range rules the API checks).
