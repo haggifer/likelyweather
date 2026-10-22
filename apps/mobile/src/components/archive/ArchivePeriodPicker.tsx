@@ -35,7 +35,7 @@ export function ArchivePeriodPicker({ range, latest, onChange }: IProps) {
                     variant="outline"
                     size="sm"
                     accessibilityLabel={t('periodValue', { range: period })}
-                    className="h-10"
+                    className="h-9"
                 >
                     <Icon as={CalendarDays} />
                     <Text className="text-sm">{period}</Text>

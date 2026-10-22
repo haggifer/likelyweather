@@ -2,13 +2,19 @@
 
 import { ArchivePeriodPicker } from '@/components/archive/ArchivePeriodPicker'
 import { MedianOverview, MedianOverviewSkeleton } from '@/components/charts/MedianOverview'
+import { OverviewTable } from '@/components/charts/OverviewTable'
 import { FavoriteToggle } from '@/components/city/FavoriteToggle'
+import { PHONE_ICON } from '@/components/city/overview-controls'
 import { OverviewPanelsMenu } from '@/components/city/OverviewPanelsMenu'
+import { ViewModeToggle } from '@/components/city/ViewModeToggle'
 import { ErrorNotice } from '@/components/shell/ErrorNotice'
 import { FlagIcon } from '@/components/shell/FlagIcon'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useArchiveSettings } from '@/hooks/useArchiveSettings'
 import { useNow } from '@/hooks/useNow'
+import { useViewMode } from '@/hooks/useViewMode'
+import { cn } from '@/lib/cn'
+import { FILL_HEIGHT_PARENT } from '@/lib/fill-height'
 import { useArchive } from '@fa/api-client/hooks/useArchive'
 import { useCity } from '@fa/api-client/hooks/useCity'
 import { getArchiveHourlySeries } from '@fa/chart-core/archive-stats'
@@ -33,13 +39,14 @@ interface IProps {
 }
 
 // A city's past weather drawn like the forecast overview: the reader's panels (the archive keeps its own choice), the
-// period picker and the source.
+// period picker, the overview's chart or table and the source.
 export function ArchiveCard({ slug }: IProps) {
     const t = useTranslations('archive')
     const locale = useLocale()
     // The period and its calendar keep the day the page opened on, so the city's midnight neither moves nor refetches them.
     const openedAt = useFirstValue(useNow())
     const { settings, setSettings } = useArchiveSettings()
+    const { isTable } = useViewMode()
 
     const { data: city, error: cityError, refetch: refetchCity } = useCity(slug)
 
@@ -75,6 +82,18 @@ export function ArchiveCard({ slug }: IProps) {
             )
         }
 
+        if (isTable) {
+            return (
+                <OverviewTable
+                    panels={visible}
+                    series={series}
+                    chance={null}
+                    timeZone={city.timezone}
+                    locale={locale}
+                />
+            )
+        }
+
         return (
             <MedianOverview
                 key={getArchiveRangeKey(shown)}
@@ -106,7 +125,7 @@ export function ArchiveCard({ slug }: IProps) {
     }
 
     return (
-        <Card data-bleed className="gap-0 max-sm:pt-3">
+        <Card data-bleed className={cn('gap-0 max-sm:pt-3', FILL_HEIGHT_PARENT)}>
             <CardHeader>
                 <CardTitle className="flex min-w-0 items-center gap-2.5 text-lg tracking-tight sm:text-xl">
                     {city ? (
@@ -125,18 +144,22 @@ export function ArchiveCard({ slug }: IProps) {
                     )}
                 </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col gap-1">
+            <CardContent className={cn('flex flex-col gap-1', FILL_HEIGHT_PARENT)}>
                 {range && openedAt && city && (
-                    <div className="mt-2 mb-2 flex flex-wrap items-start justify-between gap-3">
+                    <div className="mt-2 mb-2 flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                            <OverviewPanelsMenu
+                                panels={settings.panels}
+                                onChange={handlePanels}
+                                isLabelHiddenOnPhones
+                                className={PHONE_ICON}
+                            />
+                            <ViewModeToggle className={PHONE_ICON} />
+                        </div>
                         <ArchivePeriodPicker
                             range={range}
                             latest={getLatestArchiveDate(openedAt, city.timezone)}
                             onChange={handleRange}
-                        />
-                        <OverviewPanelsMenu
-                            panels={settings.panels}
-                            onChange={handlePanels}
-                            className="mb-1 ml-auto shrink-0 pointer-coarse:mb-0 pointer-coarse:h-10"
                         />
                     </div>
                 )}

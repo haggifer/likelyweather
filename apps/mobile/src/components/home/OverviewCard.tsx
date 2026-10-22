@@ -5,7 +5,7 @@ import { getCityRegion } from '@fa/shared/city-region'
 import { getCityName } from '@fa/shared/format'
 import { getVisiblePanels, PanelVariable } from '@fa/shared/overview-panels'
 import { useRouter } from 'expo-router'
-import { ArrowRight, BarChart3, Table2 } from 'lucide-react-native'
+import { ArrowRight } from 'lucide-react-native'
 import { useMemo } from 'react'
 import { View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
@@ -26,6 +26,7 @@ import { LoadingStatus } from '../ui/LoadingStatus'
 import { Skeleton } from '../ui/skeleton'
 import { Text } from '../ui/text'
 import { OverviewPanelsMenu } from './OverviewPanelsMenu'
+import { ViewModeToggle } from './ViewModeToggle'
 
 const CARD = cn('gap-0 pt-3 pb-4', BLEED_CARD)
 const HEADER = 'gap-1 px-4'
@@ -83,12 +84,11 @@ interface IProps {
 // `anchor` is the local 3-hour slot the run was fetched in, where the chart starts.
 export function OverviewCard({ city, panels, hourly, anchor, now, isFetching = false, onRefresh }: IProps) {
     const t = useTranslations('overview')
-    const tc = useTranslations('chart')
     const locale = useLocale()
     const router = useRouter()
     const { panels: storedPanels, setPanels } = useOverviewPanels()
 
-    const { isTable, toggleTable } = useViewMode()
+    const { isTable } = useViewMode()
 
     const name = getCityName(city, locale)
     const region = getCityRegion(city, locale)
@@ -118,16 +118,7 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching = f
                         onRefresh={onRefresh}
                     />
                     <OverviewPanelsMenu panels={storedPanels} onChange={setPanels} isLabelHiddenOnPhones />
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onPress={toggleTable}
-                        accessibilityLabel={isTable ? tc('showChart') : tc('showTable')}
-                        accessibilityState={{ selected: isTable }}
-                        className="size-9 px-0"
-                    >
-                        <Icon as={isTable ? BarChart3 : Table2} className="size-4" />
-                    </Button>
+                    <ViewModeToggle />
                     <Button
                         variant="outline-primary"
                         size="sm"

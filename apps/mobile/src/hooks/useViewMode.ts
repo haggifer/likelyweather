@@ -8,7 +8,7 @@ export interface UseViewModeResult {
 
 const toggleTable = () => viewModeStore.set((mode) => (mode === 'table' ? 'chart' : 'table'))
 
-// The overview's and the dashboard's chart or table, the last one picked on this device.
+// The overview's, the archive's and the dashboard's chart or table, the last one picked on this device.
 export function useViewMode(): UseViewModeResult {
     const mode = useSyncExternalStore(viewModeStore.subscribe, viewModeStore.get)
 

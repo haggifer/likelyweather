@@ -1,5 +1,5 @@
-// Whether the overview and the dashboard show their numbers as charts or as tables. The last choice is kept per device
-// under one key (`fa.viewMode`, listed in the privacy policy) and opens both views the same way (author, 2026-10-20).
+// Whether the overview, the archive and the dashboard show their numbers as charts or as tables. The last choice is
+// kept per device under one key (`fa.viewMode`, listed in the privacy policy) and opens every view the same way.
 export type ViewMode = 'chart' | 'table'
 
 export const VIEW_MODE_KEY = 'fa.viewMode'

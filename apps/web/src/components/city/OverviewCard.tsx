@@ -3,9 +3,11 @@
 import { MedianOverview, MedianOverviewSkeleton } from '@/components/charts/MedianOverview'
 import { OverviewTable } from '@/components/charts/OverviewTable'
 import { FavoriteToggle } from '@/components/city/FavoriteToggle'
+import { PHONE_ICON } from '@/components/city/overview-controls'
 import { OverviewPanelsMenu } from '@/components/city/OverviewPanelsMenu'
 import { RefreshButton } from '@/components/city/RefreshButton'
 import { UpdatedChip } from '@/components/city/UpdatedChip'
+import { ViewModeToggle } from '@/components/city/ViewModeToggle'
 import { FlagIcon } from '@/components/shell/FlagIcon'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -20,7 +22,7 @@ import { City } from '@fa/shared/api'
 import { getCityRegion } from '@fa/shared/city-region'
 import { getCityName } from '@fa/shared/format'
 import { PanelVariable } from '@fa/shared/overview-panels'
-import { ArrowRight, BarChart3, Loader2, Table2 } from 'lucide-react'
+import { ArrowRight, Loader2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useMemo } from 'react'
@@ -34,9 +36,8 @@ const CARD = 'gap-0 max-sm:pt-3'
 const ACTIONS = 'flex items-center gap-2 max-sm:mt-2 max-sm:mb-3 max-sm:w-full'
 const CONTENT = 'sm:mt-2'
 // On phones the age, Refresh, Variables and the table toggle are icons, and Open details takes the rest of the row
-// (author, 2026-10-13); the row is 36 px tall with 16 px icons and text (author, 2026-10-16).
+// with 16 px text.
 const PHONE_BUTTON = 'max-sm:h-9 max-sm:flex-1 max-sm:text-[1rem] max-sm:[&_svg]:size-4'
-const PHONE_ICON = 'shrink-0 max-sm:size-9 max-sm:px-0 max-sm:[&_svg]:size-4'
 const TITLE = 'flex min-w-0 flex-1 items-center gap-2.5 text-lg tracking-tight sm:text-xl'
 
 // Same header and panel structure as the loaded card, so nothing moves when the data arrives.
@@ -74,11 +75,10 @@ interface IProps {
 // `anchor` is the local 3-hour slot the run was fetched in, where the chart starts.
 export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, onRefresh }: IProps) {
     const t = useTranslations('overview')
-    const tc = useTranslations('chart')
     const locale = useLocale()
     const { panels: storedPanels, setPanels } = useOverviewPanels()
 
-    const { isTable, toggleTable } = useViewMode()
+    const { isTable } = useViewMode()
 
     const name = getCityName(city, locale)
     const region = getCityRegion(city, locale)
@@ -121,18 +121,7 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, on
                         isLabelHiddenOnPhones
                         className={PHONE_ICON}
                     />
-                    {/* An icon on phones, labelled from `sm` up (author, 2026-10-16). */}
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={toggleTable}
-                        aria-pressed={isTable}
-                        aria-label={isTable ? tc('showChart') : tc('showTable')}
-                        className={PHONE_ICON}
-                    >
-                        {isTable ? <BarChart3 /> : <Table2 />}
-                        <span className="max-sm:sr-only">{isTable ? tc('chart') : tc('table')}</span>
-                    </Button>
+                    <ViewModeToggle className={PHONE_ICON} />
                     <Button asChild variant="outline-primary" size="sm" className={PHONE_BUTTON}>
                         <Link href={`/city/${city.slug}`}>
                             {t('details')} <ArrowRight />

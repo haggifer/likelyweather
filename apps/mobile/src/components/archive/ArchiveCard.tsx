@@ -18,10 +18,13 @@ import { View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { useArchiveSettings } from '../../hooks/useArchiveSettings'
 import { useNow } from '../../hooks/useNow'
+import { useViewMode } from '../../hooks/useViewMode'
 import { cn } from '../../lib/cn'
 import { MedianOverview, MedianOverviewSkeleton } from '../charts/MedianOverview'
+import { OverviewTable } from '../charts/OverviewTable'
 import { FavoriteToggle } from '../city/FavoriteToggle'
 import { OverviewPanelsMenu } from '../home/OverviewPanelsMenu'
+import { ViewModeToggle } from '../home/ViewModeToggle'
 import { Card, CardContent, CardHeader } from '../ui/card'
 import { BLEED_CARD } from '../ui/EdgeSheet'
 import { ErrorNotice } from '../ui/ErrorNotice'
@@ -35,7 +38,7 @@ interface IProps {
 }
 
 // A city's past weather drawn like Home's overview: the reader's panels (the archive keeps its own choice), the
-// period picker and the source.
+// period picker, the overview's chart or table and the source.
 export function ArchiveCard({ slug }: IProps) {
     const t = useTranslations('archive')
     const to = useTranslations('overview')
@@ -43,6 +46,7 @@ export function ArchiveCard({ slug }: IProps) {
     // The period and its calendar keep the day the page opened on, so the city's midnight neither moves nor refetches them.
     const openedAt = useFirstValue(useNow())
     const { settings, setSettings } = useArchiveSettings()
+    const { isTable } = useViewMode()
 
     const { data: city, error: cityError, refetch: refetchCity } = useCity(slug)
 
@@ -80,6 +84,18 @@ export function ArchiveCard({ slug }: IProps) {
                 <View accessible accessibilityLiveRegion="polite" accessibilityLabel={t('fetching', { name })}>
                     <MedianOverviewSkeleton panels={visible} isArchive />
                 </View>
+            )
+        }
+
+        if (isTable) {
+            return (
+                <OverviewTable
+                    panels={visible}
+                    series={series}
+                    chance={null}
+                    timeZone={city.timezone}
+                    locale={locale}
+                />
             )
         }
 
@@ -133,13 +149,20 @@ export function ArchiveCard({ slug }: IProps) {
             </CardHeader>
             <CardContent className="gap-1 px-4">
                 {range && city && (
-                    <View className="mt-2 mb-2 flex-row flex-wrap items-start justify-between gap-3">
+                    <View className="mt-2 mb-2 flex-row flex-wrap items-center justify-between gap-3">
+                        <View className="flex-row items-center gap-2">
+                            <OverviewPanelsMenu
+                                panels={settings.panels}
+                                onChange={handlePanels}
+                                isLabelHiddenOnPhones
+                            />
+                            <ViewModeToggle />
+                        </View>
                         <ArchivePeriodPicker
                             range={range}
                             latest={getLatestArchiveDate(openedAt, city.timezone)}
                             onChange={handleRange}
                         />
-                        <OverviewPanelsMenu panels={settings.panels} onChange={handlePanels} className="ml-auto" />
                     </View>
                 )}
                 {renderChart()}
