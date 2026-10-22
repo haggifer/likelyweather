@@ -133,7 +133,7 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, on
                         {isTable ? <BarChart3 /> : <Table2 />}
                         <span className="max-sm:sr-only">{isTable ? tc('chart') : tc('table')}</span>
                     </Button>
-                    <Button asChild size="sm" className={PHONE_BUTTON}>
+                    <Button asChild variant="outline-primary" size="sm" className={PHONE_BUTTON}>
                         <Link href={`/city/${city.slug}`}>
                             {t('details')} <ArrowRight />
                         </Link>

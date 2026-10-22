@@ -14,6 +14,7 @@ const buttonVariants = cva(
             variant: {
                 default: 'bg-primary',
                 outline: 'border-border bg-background dark:bg-input/30',
+                'outline-primary': 'border-primary bg-background dark:bg-input/30',
                 secondary: 'bg-secondary',
                 ghost: '',
                 destructive: 'bg-destructive/10 dark:bg-destructive/20',
@@ -42,6 +43,7 @@ const buttonTextVariants = cva('text-foreground text-sm leading-none font-medium
         variant: {
             default: 'text-primary-foreground',
             outline: '',
+            'outline-primary': 'text-primary',
             secondary: 'text-secondary-foreground',
             ghost: '',
             destructive: 'text-destructive',

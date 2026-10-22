@@ -128,7 +128,12 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching = f
                     >
                         <Icon as={isTable ? BarChart3 : Table2} className="size-4" />
                     </Button>
-                    <Button size="sm" onPress={() => router.push(`/city/${city.slug}`)} className="h-9 flex-1">
+                    <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onPress={() => router.push(`/city/${city.slug}`)}
+                        className="h-9 flex-1"
+                    >
                         <Text className="text-[1rem]">{t('details')}</Text>
                         <Icon as={ArrowRight} className="size-4" />
                     </Button>
