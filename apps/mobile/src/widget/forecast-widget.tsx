@@ -35,8 +35,11 @@ const ON_WALLPAPER = {
     textShadowRadius: 4,
     textShadowOffset: { width: 0, height: 1 },
 } as const
-// The weather keeps clear of the time beside it: a long condition such as "Переменная облачность" wraps instead.
-const CLOCK_WEATHER_WIDTH = 140
+// Room for the longest condition, "Переменная облачность", on one line at full size, while staying right of the time
+// on a phone's four columns; a label that still does not fit is set smaller rather than wrapped.
+const CLOCK_WEATHER_WIDTH = 176
+// Tall enough to set the temperature under it on the date's line beside it.
+const WEATHER_ICON_SIZE = 48
 
 const hex = (color: string) => color as ColorProp
 
@@ -185,7 +188,6 @@ const ClockView = ({ widgetId, model, city, t, now }: ViewProps) => {
                 flexDirection: 'row',
                 justifyContent: 'flex-end',
                 alignItems: 'flex-start',
-                paddingHorizontal: 12,
                 paddingVertical: 8,
             }}
         >
@@ -194,18 +196,29 @@ const ClockView = ({ widgetId, model, city, t, now }: ViewProps) => {
                 clickActionData={{ uri: city ? getCityLink(city.slug) : getPickerLink(widgetId) }}
                 style={{ width: CLOCK_WEATHER_WIDTH, flexDirection: 'column', alignItems: 'flex-end' }}
             >
-                {condition && <SvgWidget svg={getWeatherIcon(condition, isDay)} style={{ height: 44, width: 44 }} />}
+                {condition && (
+                    <SvgWidget
+                        svg={getWeatherIcon(condition, isDay)}
+                        style={{ height: WEATHER_ICON_SIZE, width: WEATHER_ICON_SIZE }}
+                    />
+                )}
                 {temp && condition && (
                     <TextWidget
                         text={t(`widget.condition.${condition}`)}
-                        maxLines={2}
-                        truncate="END"
-                        style={{ marginTop: 2, fontSize: 14, textAlign: 'right', ...ON_WALLPAPER }}
+                        maxLines={1}
+                        style={{
+                            width: 'match_parent',
+                            marginTop: 2,
+                            fontSize: 14,
+                            adjustsFontSizeToFit: true,
+                            textAlign: 'right',
+                            ...ON_WALLPAPER,
+                        }}
                     />
                 )}
                 {temp ? (
                     <FlexWidget style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <TextWidget text={temp} maxLines={1} style={{ fontSize: 18, ...ON_WALLPAPER }} />
+                        <TextWidget text={temp} maxLines={1} style={{ fontSize: 16, ...ON_WALLPAPER }} />
                         {trend && (
                             <SvgWidget svg={getTrendIcon(trend)} style={{ marginLeft: 4, height: 18, width: 18 }} />
                         )}
