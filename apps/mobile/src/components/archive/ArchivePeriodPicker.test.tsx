@@ -3,7 +3,6 @@ import uk from '@fa/messages/catalogs/uk.json'
 import { ArchiveRange, formatArchiveRange } from '@fa/shared/archive'
 import { PortalHost } from '@rn-primitives/portal'
 import { fireEvent, render, screen } from '@testing-library/react-native'
-import { View } from 'react-native'
 import { IntlProvider } from 'use-intl'
 import { ArchivePeriodPicker } from './ArchivePeriodPicker'
 
@@ -23,11 +22,6 @@ const openPicker = async (onChange: (range: ArchiveRange) => void) => {
 }
 
 describe('ArchivePeriodPicker', () => {
-    beforeEach(() => {
-        // The popover opens where the layout puts its button; the test renderer has no layout to measure.
-        jest.spyOn(View.prototype, 'measure').mockImplementation((callback) => callback(0, 0, 200, 40, 16, 120))
-    })
-
     it('shows the period as DD.MM.YYYY whatever the language', async () => {
         await render(
             <IntlProvider locale="uk" messages={uk}>

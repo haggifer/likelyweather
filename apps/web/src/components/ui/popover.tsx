@@ -42,7 +42,8 @@ function PopoverContent({
     )
 }
 
-// shadcn's card-like popover, for content a reader works with (a list of settings) rather than a hint.
+// shadcn's card-like popover, for content a reader works with (a list of settings) rather than a hint. Radix flips it
+// to the roomier side but never shortens it, so it is capped at the room it has there and scrolls inside.
 function PopoverPanel({
     className,
     align = 'end',
@@ -57,7 +58,7 @@ function PopoverPanel({
                 sideOffset={sideOffset}
                 collisionPadding={8}
                 className={cn(
-                    'z-50 w-72 origin-(--radix-popover-content-transform-origin) rounded-md border bg-popover p-3 text-sm text-popover-foreground shadow-md outline-none data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
+                    'z-50 max-h-(--radix-popover-content-available-height) w-72 origin-(--radix-popover-content-transform-origin) overflow-y-auto rounded-md border bg-popover p-3 text-sm text-popover-foreground shadow-md outline-none data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
                     className,
                 )}
                 {...props}

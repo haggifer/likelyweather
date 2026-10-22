@@ -60,6 +60,20 @@ test('an Android phone sees the "Get the app" bar on the landing and city pages 
     await expect(bar).toHaveCount(0)
 })
 
+// A phone held sideways has no room above or below the period button for the calendar.
+test('the archive calendar keeps its month controls on screen on a phone held sideways', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'phone layout only')
+
+    await page.setViewportSize({ width: 852, height: 393 })
+    await page.goto(`/archive?city=${KYIV}`)
+    await page.getByRole('button', { name: /^Period: / }).click()
+
+    const dialog = page.getByRole('dialog', { name: 'Period' })
+
+    await expect(dialog.getByRole('button', { name: 'Previous year' })).toBeInViewport()
+    await expect(dialog.getByRole('button', { name: 'Next year' })).toBeInViewport()
+})
+
 // Ten days never squeeze into a phone: the chart grows past its card and scrolls inside it, never the page.
 test('the overview chart scrolls inside its card', async ({ page, isMobile }) => {
     test.skip(!isMobile, 'phone layout only')
