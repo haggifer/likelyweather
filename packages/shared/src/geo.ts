@@ -10,7 +10,7 @@ const EARTH_RADIUS_KM = 6371
 // keep an exact position out of the request.
 const COORDINATE_DECIMALS = 2
 
-const toRadians = (degrees: number) => (degrees * Math.PI) / 180
+export const toRadians = (degrees: number) => (degrees * Math.PI) / 180
 
 const haversine = (angle: number) => Math.sin(angle / 2) ** 2
 
