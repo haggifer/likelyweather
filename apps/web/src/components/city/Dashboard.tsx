@@ -22,7 +22,7 @@ import { useDashboardData } from '@fa/hooks/useDashboardData'
 import { Series } from '@fa/shared/api'
 import { getReadoutLabel } from '@fa/shared/dashboard'
 import { EnsembleStats } from '@fa/shared/ensemble'
-import { formatNumber, formatStepLabel, getCityName } from '@fa/shared/format'
+import { formatNumber, formatTableStepLabel, getCityName } from '@fa/shared/format'
 import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { formatPairedMedian, formatPairedModel, PairedRuns } from '@fa/shared/paired-values'
 import { getVariablePair, getVariableTab, Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
@@ -145,7 +145,7 @@ const SeriesTable = ({
             {steps.map((step, i) => (
                 <TableRow key={step} className="group">
                     <TableCell className={`${STICKY_TIME_CELL} whitespace-nowrap`}>
-                        {formatStepLabel(step, timeZone, locale)}
+                        {formatTableStepLabel(step, timeZone, locale)}
                     </TableCell>
                     {!isMedianHidden && (
                         <TableCell className="text-right font-semibold">

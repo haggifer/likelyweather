@@ -1,7 +1,7 @@
 import { getPanelSeries } from '@fa/chart-core/overview-readouts'
 import { OverviewMedians } from '@fa/chart-core/overview-stats'
 import { formatOverviewTableCell, getOverviewTableColumns, OverviewTableColumn } from '@fa/chart-core/overview-table'
-import { formatStepLabel } from '@fa/shared/format'
+import { formatTableStepLabel } from '@fa/shared/format'
 import { PanelVariable } from '@fa/shared/overview-panels'
 import { VARIABLE_BY_ID } from '@fa/shared/variables'
 import { useTranslations } from 'use-intl'
@@ -27,7 +27,7 @@ export function OverviewTable({ panels, series, chance, timeZone, locale }: IPro
 
     const steps = getPanelSeries(series, panels[0]).steps
     const overviewColumns = getOverviewTableColumns(panels, chance !== null)
-    const rowLabels = steps.map((step) => formatStepLabel(step, timeZone, locale))
+    const rowLabels = steps.map((step) => formatTableStepLabel(step, timeZone, locale))
 
     const getLabel = ({ variable }: OverviewTableColumn) =>
         variable ? `${tv(variable)}, ${VARIABLE_BY_ID[variable].unit}` : `${tc('chanceOfRain')}, %`

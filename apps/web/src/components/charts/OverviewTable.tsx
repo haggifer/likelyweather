@@ -6,7 +6,7 @@ import { cn } from '@/lib/cn'
 import { getPanelSeries } from '@fa/chart-core/overview-readouts'
 import { OverviewMedians } from '@fa/chart-core/overview-stats'
 import { formatOverviewTableCell, getOverviewTableColumns, OverviewTableColumn } from '@fa/chart-core/overview-table'
-import { formatStepLabel } from '@fa/shared/format'
+import { formatTableStepLabel } from '@fa/shared/format'
 import { PanelVariable } from '@fa/shared/overview-panels'
 import { VARIABLE_BY_ID } from '@fa/shared/variables'
 import { useTranslations } from 'next-intl'
@@ -54,7 +54,7 @@ export function OverviewTable({ panels, series, chance, timeZone, locale }: IPro
                     {steps.map((step, i) => (
                         <TableRow key={step} className="group">
                             <TableCell className={`${STICKY_TIME_CELL} whitespace-nowrap`}>
-                                {formatStepLabel(step, timeZone, locale)}
+                                {formatTableStepLabel(step, timeZone, locale)}
                             </TableCell>
                             {columns.map((column) => (
                                 <TableCell key={column.key} className="text-right">

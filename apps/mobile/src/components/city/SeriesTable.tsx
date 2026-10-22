@@ -1,6 +1,6 @@
 import { Series } from '@fa/shared/api'
 import { EnsembleStats } from '@fa/shared/ensemble'
-import { formatNumber, formatStepLabel } from '@fa/shared/format'
+import { formatNumber, formatTableStepLabel } from '@fa/shared/format'
 import { MODEL_BY_ID } from '@fa/shared/models'
 import { formatPairedMedian, formatPairedModel, PairedRuns } from '@fa/shared/paired-values'
 import { useTranslations } from 'use-intl'
@@ -32,7 +32,7 @@ export function SeriesTable({ steps, series, stats, decimals, timeZone, locale, 
         ...(isMedianHidden ? [] : [{ key: MEDIAN_KEY, label: t('median'), isBold: true }]),
         ...series.map((s) => ({ key: s.modelId, label: MODEL_BY_ID[s.modelId].name })),
     ]
-    const rowLabels = steps.map((step) => formatStepLabel(step, timeZone, locale))
+    const rowLabels = steps.map((step) => formatTableStepLabel(step, timeZone, locale))
 
     const getCell = (i: number, { key }: TableColumn) => {
         if (key === MEDIAN_KEY) {

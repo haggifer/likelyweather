@@ -13,7 +13,7 @@ export interface TableColumn {
 // top and the time column at the left, both on the muted background (author, 2026-10-16 and 2026-10-20).
 const ROW_CLASS = 'min-h-9 flex-row items-center border-b border-border'
 const HEAD_ROW_CLASS = cn(ROW_CLASS, 'h-11 bg-muted')
-const TIME_CLASS = 'w-28 px-2 text-sm'
+const TIME_CLASS = 'w-42 px-2 text-sm'
 // The time cells ride along the sideways scroll, so they stay put while the other columns pass under them.
 const PINNED_CLASS = 'z-1 self-stretch justify-center bg-muted'
 // With the header outside the rows' scroller, the frame keeps the web's `max-h-[26.25rem]`: a 2.75rem header and the
