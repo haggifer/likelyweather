@@ -54,30 +54,6 @@
                 {
                     "widgets": [
                         {
-                            "name": "ForecastSmall",
-                            "label": "Forecast Arena",
-                            "description": "Median temperature and today’s agreement for one city",
-                            "minWidth": "110dp",
-                            "minHeight": "50dp",
-                            "targetCellWidth": 2,
-                            "targetCellHeight": 1,
-                            "resizeMode": "horizontal|vertical",
-                            "updatePeriodMillis": 10800000,
-                            "widgetFeatures": "reconfigurable"
-                        },
-                        {
-                            "name": "ForecastMedium",
-                            "label": "Forecast Arena (detailed)",
-                            "description": "Temperature, the next 24 hours, wind and rain for one city",
-                            "minWidth": "250dp",
-                            "minHeight": "110dp",
-                            "targetCellWidth": 4,
-                            "targetCellHeight": 2,
-                            "resizeMode": "horizontal|vertical",
-                            "updatePeriodMillis": 10800000,
-                            "widgetFeatures": "reconfigurable"
-                        },
-                        {
                             "name": "ForecastClock",
                             "label": "Forecast Arena clock",
                             "description": "The time, the date and the weather for one city",

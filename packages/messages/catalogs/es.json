@@ -223,19 +223,13 @@
         "widgets": "Widgets de la pantalla de inicio",
         "widgetsHint": "Mantén pulsado un espacio vacío de tu pantalla de inicio, pulsa en «Widgets» y elige «Forecast Arena».",
         "widgetsNone": "Aún no hay ningún widget en tu pantalla de inicio.",
-        "widgetSmall": "Widget pequeño",
-        "widgetMedium": "Widget detallado",
         "widgetClock": "Widget con reloj",
         "widgetNoCity": "Sin ciudad elegida",
         "widgetChange": "Cambiar ciudad"
     },
     "widget": {
         "configureTitle": "Elige la ciudad de este widget",
-        "openApp": "Abre Forecast Arena para cargar {city}",
         "chooseCity": "Toca para elegir una ciudad",
-        "next24": "Próximas 24 h",
-        "wind": "Viento",
-        "rain": "Lluvia",
         "cancel": "Cancelar",
         "condition": {
             "clear": "Despejado",

@@ -223,19 +223,13 @@
         "widgets": "Виджеты на главном экране",
         "widgetsHint": "Удерживайте пустое место на главном экране, нажмите «Виджеты» и выберите Forecast Arena.",
         "widgetsNone": "На главном экране пока нет виджета.",
-        "widgetSmall": "Маленький виджет",
-        "widgetMedium": "Подробный виджет",
         "widgetClock": "Виджет с часами",
         "widgetNoCity": "Город не выбран",
         "widgetChange": "Сменить город"
     },
     "widget": {
         "configureTitle": "Выберите город для этого виджета",
-        "openApp": "Откройте Forecast Arena, чтобы загрузить {city}",
         "chooseCity": "Нажмите, чтобы выбрать город",
-        "next24": "Следующие 24 ч",
-        "wind": "Ветер",
-        "rain": "Осадки",
         "cancel": "Отмена",
         "condition": {
             "clear": "Ясно",

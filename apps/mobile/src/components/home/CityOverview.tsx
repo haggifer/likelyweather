@@ -42,9 +42,9 @@ export function CityOverview({ slug }: IProps) {
         if (failure) showSnackbar(te(getErrorKind(failure)), [], { isError: true })
     }
 
-    // A home-screen widget showing this city redraws with the run the app just loaded.
+    // A home-screen widget showing this city fetches its weather again when the app has loaded the city.
     useEffect(() => {
-        if (city && isReady && isSettled) void updateWidgetsForCity(city, hourly)
+        if (city && isReady && isSettled) void updateWidgetsForCity(city)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [city, fetchedAts, isSettled])
 

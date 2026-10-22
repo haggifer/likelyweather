@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react'
-import { getPlacedWidgets, PlacedWidget } from '../widget/widget-updates'
+import { getPlacedWidgetIds } from '../widget/widget-updates'
 
 // The launcher holds the list of placed widgets; it is read once when the screen opens.
-export function usePlacedWidgets(): PlacedWidget[] {
-    const [widgets, setWidgets] = useState<PlacedWidget[]>([])
+export function usePlacedWidgetIds(): number[] {
+    const [widgetIds, setWidgetIds] = useState<number[]>([])
 
     useEffect(() => {
         let isActive = true
 
-        getPlacedWidgets()
+        getPlacedWidgetIds()
             .then((placed) => {
-                if (isActive) setWidgets(placed)
+                if (isActive) setWidgetIds(placed)
             })
             .catch((error) => console.warn(`Widget list failed: ${String(error)}`))
 
@@ -19,5 +19,5 @@ export function usePlacedWidgets(): PlacedWidget[] {
         }
     }, [])
 
-    return widgets
+    return widgetIds
 }

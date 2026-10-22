@@ -18,20 +18,15 @@ import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group'
 import { ScreenScroll } from '../components/ui/ScreenScroll'
 import { Skeleton } from '../components/ui/skeleton'
 import { Text } from '../components/ui/text'
-import { usePlacedWidgets } from '../hooks/usePlacedWidgets'
+import { usePlacedWidgetIds } from '../hooks/usePlacedWidgetIds'
 import { useSettings } from '../hooks/useSettings'
 import { LanguageSetting, settingsStore, THEME_SETTINGS } from '../lib/settings'
 import { getLegalUrl, REPO_URL } from '../lib/web-links'
-import { CLOCK_WIDGET, MEDIUM_WIDGET } from '../widget/widget-names'
 import { widgetBindings } from '../widget/widget-store'
 import { redrawWidgets } from '../widget/widget-updates'
 
 const LANGUAGE_SETTINGS: LanguageSetting[] = ['system', ...LOCALES]
 const THEME_KEYS = { system: 'themeSystem', light: 'themeLight', dark: 'themeDark' } as const
-const WIDGET_LABEL_KEYS: Record<string, 'widgetMedium' | 'widgetClock'> = {
-    [MEDIUM_WIDGET]: 'widgetMedium',
-    [CLOCK_WIDGET]: 'widgetClock',
-}
 const SMALL = 'text-xs text-muted-foreground'
 // The radio's own circle is small; its touch area fills the 36 px row without reaching into the next one.
 const RADIO_HIT_SLOP = 10
@@ -51,7 +46,6 @@ const setTheme = (value: string) => {
     if (!theme) return
 
     settingsStore.set((current) => ({ ...current, theme }))
-    void redrawWidgets()
 }
 
 const openUrl = (url: string) => void Linking.openURL(url)
@@ -116,7 +110,7 @@ export function SettingsScreen() {
     const router = useRouter()
     const settings = useSettings()
     const bindings = useSyncExternalStore(widgetBindings.subscribe, widgetBindings.get)
-    const placedWidgets = usePlacedWidgets()
+    const placedWidgetIds = usePlacedWidgetIds()
 
     const { data: quota } = useQuota()
 
@@ -174,14 +168,14 @@ export function SettingsScreen() {
                 )}
             </Section>
             <Section title={t('widgets')}>
-                {placedWidgets.length ? (
-                    placedWidgets.map(({ widgetId, widgetName }) => {
+                {placedWidgetIds.length ? (
+                    placedWidgetIds.map((widgetId) => {
                         const city = bindings[widgetId]
 
                         return (
                             <View key={widgetId} className="min-h-9 flex-row items-center gap-3">
                                 <Text className="flex-1 text-sm" numberOfLines={2}>
-                                    {t(WIDGET_LABEL_KEYS[widgetName] ?? 'widgetSmall')}
+                                    {t('widgetClock')}
                                     {': '}
                                     {city ? getCityName(city, locale) : t('widgetNoCity')}
                                 </Text>

@@ -23,7 +23,7 @@ const Configuration = ({ widgetInfo, renderWidget, setResult }: WidgetConfigurat
     const t = useTranslations('widget')
 
     const handlePick = async (place: Place) => {
-        renderWidget(await bindWidgetCity(widgetInfo.widgetId, widgetInfo.widgetName, place))
+        renderWidget(await bindWidgetCity(widgetInfo.widgetId, place))
         setResult('ok')
     }
 
