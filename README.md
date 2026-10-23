@@ -130,8 +130,9 @@ One CDK stack (`infra/`, deployed to your AWS profile's region; use `eu-central-
 2. Apply migrations from your machine with the unpooled URL: `DIRECT_URL=<url> DATABASE_URL=<url> pnpm db:deploy` (deploys never migrate), then `pnpm db:seed` with the same variables. On a live stack, a migration that only adds runs before the deploy; one that drops columns the running code reads runs after it.
 3. Once per account and region: `pnpm build && pnpm cdk:bootstrap --profile <profile>`.
 4. Deploy: `pnpm build && pnpm cdk:deploy --profile <profile> -c budgetEmail=<address> -c githubRepo=<owner>/<repo>`. The stack output `SiteUrl` is the site. Confirm the SNS subscription e-mail once, or the error alarm reaches nobody.
+5. Optionally, a domain of your own: request an ACM certificate in **us-east-1** (CloudFront takes certificates from no other region) for the domain and its `www` name, validate it through DNS, and deploy with `-c certificateArn=<arn>` (and `-c domainName=<domain>` for a domain other than `likelyweather.com`). The distribution then answers on both names, and `www` redirects to the bare domain with a 301. Point both names at the stack output `DistributionDomainName` with CNAME records; a DNS host that proxies traffic (Cloudflare's orange cloud) must not, because the API reads the viewer's own address and country from CloudFront.
 
-After that, pushes to `main` deploy through GitHub OIDC once CI has passed on them (`.github/workflows/deploy.yml`), as soon as the repository has the variables `AWS_DEPLOY_ROLE_ARN` (stack output `DeployRoleArn`) and `AWS_REGION`, and the secret `BUDGET_EMAIL`.
+After that, pushes to `main` deploy through GitHub OIDC once CI has passed on them (`.github/workflows/deploy.yml`), as soon as the repository has the variables `AWS_DEPLOY_ROLE_ARN` (stack output `DeployRoleArn`) and `AWS_REGION`, the secret `BUDGET_EMAIL`, and, with a domain, the variable `CERTIFICATE_ARN`.
 
 ## Design decisions
 
