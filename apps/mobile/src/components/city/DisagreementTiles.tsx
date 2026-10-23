@@ -38,7 +38,7 @@ export function DisagreementTiles({ days, variable, className }: IProps) {
     return (
         <Card className={cn('gap-3 py-4', className)}>
             <CardHeader className="gap-1 px-4">
-                <CardTitle className="text-base font-semibold">{t('title')}</CardTitle>
+                <CardTitle className="text-[1rem] font-semibold">{t('title')}</CardTitle>
                 <CardDescription className="text-sm">{description}</CardDescription>
             </CardHeader>
             <CardContent>

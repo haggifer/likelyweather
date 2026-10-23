@@ -26,7 +26,7 @@ export function DisagreementTiles({ days, variable }: IProps) {
     return (
         <Card className="gap-3">
             <CardHeader>
-                <CardTitle className="font-semibold max-sm:text-base">{t('title')}</CardTitle>
+                <CardTitle className="text-[1rem] font-semibold">{t('title')}</CardTitle>
                 <CardDescription>
                     {t(variable === Variable.Precip ? 'descriptionPrecip' : 'description', {
                         variable: tInline(variable),
