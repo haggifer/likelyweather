@@ -149,7 +149,7 @@ export function ArchiveCard({ slug }: IProps) {
             </CardHeader>
             <CardContent className="gap-1 px-4">
                 {range && city && (
-                    <View className="mt-2 mb-2 flex-row flex-wrap items-center justify-between gap-3">
+                    <View className="mt-2 flex-row flex-wrap items-center justify-between gap-3">
                         <View className="flex-row items-center gap-2">
                             <OverviewPanelsMenu
                                 panels={settings.panels}
