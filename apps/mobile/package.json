@@ -71,7 +71,7 @@
         "react": "19.2.3",
         "react-dom": "19.2.3",
         "react-native": "0.86.3",
-        "react-native-android-widget": "^0.22.1",
+        "react-native-android-widget": "0.22.1",
         "react-native-gesture-handler": "~2.32.0",
         "react-native-mmkv": "^4.3.2",
         "react-native-nitro-modules": "^0.37.1",
