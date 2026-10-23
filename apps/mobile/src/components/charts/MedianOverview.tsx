@@ -213,6 +213,8 @@ export function MedianOverview({
             </View>
             <View
                 onLayout={onLayout}
+                // The web's phone `-ml-3`: the axis column starts closer to the screen's edge than the readouts.
+                className="-ml-3"
                 style={{ height: layout.totalHeight }}
                 accessible
                 accessibilityRole="image"

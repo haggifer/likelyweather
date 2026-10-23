@@ -463,7 +463,10 @@ export function MedianOverview({
             </div>
             <div
                 ref={ref}
-                className={cn('relative min-w-0 rounded-sm select-none', isFocusVisible && 'ring-2 ring-ring')}
+                className={cn(
+                    'relative min-w-0 rounded-sm select-none max-sm:-ml-3',
+                    isFocusVisible && 'ring-2 ring-ring',
+                )}
             >
                 {/* The scroller starts after the pinned axis, so its scrollbar runs under the plot only; the drawing moves back
                     by as much, so every x and scroll position stays where it was. */}
