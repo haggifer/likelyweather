@@ -40,7 +40,6 @@ export function ChartFrame({ title, table, tabs, isFetching = false, emptyMessag
                         size="sm"
                         onPress={toggleTable}
                         accessibilityLabel={isTable ? t('showChart') : t('showTable')}
-                        accessibilityState={{ selected: isTable }}
                     >
                         <Icon as={isTable ? BarChart3 : Table2} />
                         <Text className="text-sm">{isTable ? t('chart') : t('table')}</Text>

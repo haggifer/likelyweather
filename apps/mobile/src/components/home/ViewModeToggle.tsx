@@ -15,7 +15,6 @@ export function ViewModeToggle() {
             size="sm"
             onPress={toggleTable}
             accessibilityLabel={isTable ? t('showCharts') : t('showTable')}
-            accessibilityState={{ selected: isTable }}
             className="size-9 px-0"
         >
             <Icon as={isTable ? BarChart3 : Table2} className="size-4" />

@@ -45,10 +45,11 @@ describe('ModelLegend', () => {
         expect(screen.queryByText(/Wind from/)).toBeNull()
     })
 
-    it('says whether the median is hidden', async () => {
+    // The label already says what a tap does; a state on top would read "Show median, selected".
+    it('names the median eye after its action, without a state', async () => {
         await renderLegend({ isMedianHidden: true })
 
-        expect(screen.getByRole('switch', { name: en.legend.showMedian })).toBeChecked()
+        expect(screen.getByRole('button', { name: en.legend.showMedian })).not.toBeSelected()
     })
 
     it('hides a model with its eye and offers to show every model again', async () => {

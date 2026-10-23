@@ -6,7 +6,6 @@ import { cn } from '../../lib/cn'
 import { placesStore } from '../../lib/places-store'
 import { Hint } from '../shell/Hint'
 import { Button } from '../ui/button'
-import { Toggle } from '../ui/toggle'
 import { FavoriteStar } from './FavoriteStar'
 
 const STAR_SIZE = 20
@@ -47,14 +46,14 @@ export function FavoriteToggle({ place, className }: IProps) {
     }
 
     return (
-        <Toggle
-            pressed={isPinned}
-            onPressedChange={handleToggle}
+        <Button
+            variant="ghost"
+            onPress={handleToggle}
             hitSlop={8}
             accessibilityLabel={label}
-            className={cn('h-auto min-w-0 bg-transparent px-0', className)}
+            className={cn('h-auto min-w-0 px-0', className)}
         >
             {star}
-        </Toggle>
+        </Button>
     )
 }

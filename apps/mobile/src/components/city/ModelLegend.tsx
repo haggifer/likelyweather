@@ -15,7 +15,6 @@ import { Button } from '../ui/button'
 import { Icon } from '../ui/icon'
 import { LineSwatch } from '../ui/LineSwatch'
 import { Text } from '../ui/text'
-import { Toggle } from '../ui/toggle'
 
 // The eye button is 36 px and takes taps across 44 px, the web's `touch:hit-area`.
 const EYE_HIT_SLOP = 4
@@ -151,16 +150,16 @@ export function ModelLegend({
                         {medianText} <Text className="text-sm font-normal text-muted-foreground">{unit}</Text>
                     </Text>
                 )}
-                {/* The web's aria-pressed: a toggle that is on while the median is hidden. */}
-                <Toggle
-                    pressed={isMedianHidden}
-                    onPressedChange={onToggleMedian}
+                <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    className={EYE_BUTTON_CLASS}
+                    onPress={onToggleMedian}
                     hitSlop={EYE_HIT_SLOP}
                     accessibilityLabel={isMedianHidden ? t('showMedian') : t('hideMedian')}
-                    className="size-9 min-w-9 bg-transparent px-0"
                 >
                     {isMedianHidden ? EYE_OFF : EYE}
-                </Toggle>
+                </Button>
             </View>
             <View className="gap-y-0.5">
                 {rows.map(({ modelId, value, isHidden }) => (

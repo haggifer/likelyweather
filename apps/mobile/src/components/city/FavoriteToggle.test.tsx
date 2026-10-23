@@ -40,11 +40,11 @@ describe('FavoriteToggle', () => {
         placesStore.set(() => ({ favorites: [], recents: [] }))
 
         await renderToggle()
-        await fireEvent.press(screen.getByRole('switch', { name: t('pinCity', { name: PLACE.name }) }))
+        await fireEvent.press(screen.getByRole('button', { name: t('pinCity', { name: PLACE.name }) }))
 
-        const star = screen.getByRole('switch', { name: t('unpinCity', { name: PLACE.name }) })
+        const star = screen.getByRole('button', { name: t('unpinCity', { name: PLACE.name }) })
 
-        expect(star).toBeChecked()
+        expect(star).not.toBeSelected()
         expect(placesStore.get().favorites.map((p) => p.id)).toEqual([PLACE.id])
 
         await fireEvent.press(star)
