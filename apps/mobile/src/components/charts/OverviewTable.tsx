@@ -4,6 +4,7 @@ import { formatOverviewTableCell, getOverviewTableColumns, OverviewTableColumn }
 import { formatTableStepLabel } from '@fa/shared/format'
 import { PanelVariable } from '@fa/shared/overview-panels'
 import { VARIABLE_BY_ID } from '@fa/shared/variables'
+import { View } from 'react-native'
 import { useTranslations } from 'use-intl'
 import { FixedColumnTable, TableColumn } from './FixedColumnTable'
 
@@ -42,12 +43,14 @@ export function OverviewTable({ panels, series, chance, timeZone, locale }: IPro
         )
 
     return (
-        <FixedColumnTable
-            timeLabel={t('time')}
-            rowLabels={rowLabels}
-            columns={columns}
-            getCell={getCell}
-            cellClassName={CELL_CLASS}
-        />
+        <View className="mt-1">
+            <FixedColumnTable
+                timeLabel={t('time')}
+                rowLabels={rowLabels}
+                columns={columns}
+                getCell={getCell}
+                cellClassName={CELL_CLASS}
+            />
+        </View>
     )
 }

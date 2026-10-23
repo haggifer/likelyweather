@@ -37,7 +37,7 @@ export function OverviewTable({ panels, series, chance, timeZone, locale }: IPro
         // by its ancestors (`FILL_HEIGHT_PARENT`); phones keep the dashboard's cap.
         <div
             data-fill-height
-            className={cn(TABLE_SCROLL, 'max-h-[26.25rem] sm:max-h-[70vh] sm:min-h-[27rem] sm:flex-1 sm:basis-0')}
+            className={cn(TABLE_SCROLL, 'mt-1 max-h-[26.25rem] sm:max-h-[70vh] sm:min-h-[27rem] sm:flex-1 sm:basis-0')}
         >
             <Table className="text-xs max-sm:text-sm">
                 <TableHeader>
