@@ -108,7 +108,7 @@
     },
     "dashboard": {
         "fetching": "Récupération de dix modèles pour {name}…",
-        "summary": "La médiane ({variable}) des dix prochains jours va de {min} à {max} {unit} sur {count} modèles. Ils divergent le plus le {day} (écart {spread} {unit}).",
+        "summary": "La médiane ({variable}) des dix prochains jours va de {min} à {max} {unit} sur {count, plural, one {# modèle} other {# modèles}}. Ils divergent le plus le {day} (écart {spread} {unit}).",
         "median": "Médiane",
         "time": "Heure (locale)",
         "windArrows": "Les flèches indiquent où souffle le vent médian ; choisissez une heure pour voir d’où il vient."
@@ -180,7 +180,7 @@
         "dropped": "{name} déposé en position {position} sur {count}.",
         "dragCancelled": "{name} revient à sa place.",
         "details": "Voir les détails",
-        "aria": "Prévision médiane pour {name} sur {count} modèles",
+        "aria": "Prévision médiane pour {name} sur {count, plural, one {# modèle} other {# modèles}}",
         "fetching": "Récupération de dix modèles pour {name}…",
         "loading": "Chargement…",
         "perSlot": "{unit} / {hours} h à venir",
