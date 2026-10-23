@@ -9,6 +9,8 @@ Android app with a home-screen widget shows the same.
 [![CI](https://github.com/haggifer/forecast-arena/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/haggifer/forecast-arena/actions/workflows/ci.yml)
 [![License: PolyForm Noncommercial](https://img.shields.io/badge/license-PolyForm%20Noncommercial-blue)](LICENSE)
 
+![The London dashboard: ten models' temperature forecasts with their band and median, and the disagreement by day](.github/readme/dashboard.png)
+
 A pnpm and Turborepo monorepo: a Next.js web app, an Expo (React Native) Android app and an Express REST API on
 Postgres (Prisma) and Redis, deployed to AWS Lambda and CloudFront with CDK. Live data comes from Open-Meteo and MET
 Norway.
