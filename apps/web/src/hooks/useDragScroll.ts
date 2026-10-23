@@ -20,10 +20,10 @@ const DRAG_THRESHOLD_PX = 4
 const isOnScrollbar = (e: PointerEvent<HTMLDivElement>) =>
     e.clientY - e.currentTarget.getBoundingClientRect().top >= e.currentTarget.clientHeight
 
-// A mouse drags a scrolling chart sideways from anywhere on it, as a finger does; CSS has no drag-to-scroll. The
-// handlers run in the capture phase because the plot stops its own `pointerdown` from bubbling. Once a press becomes a
-// drag the scroller captures the pointer, so the plot loses its hover, and the click that ends the drag is swallowed
-// so it picks no slot.
+// A mouse drags a sideways scroller (a chart, a row of tiles) from anywhere on it, as a finger does; CSS has no
+// drag-to-scroll. The handlers run in the capture phase because a chart's plot stops its own `pointerdown` from
+// bubbling. Once a press becomes a drag the scroller captures the pointer, so a plot loses its hover, and the click that
+// ends the drag is swallowed so it picks no slot.
 export function useDragScroll(): UseDragScrollResult {
     const startRef = useRef<DragStart | null>(null)
     const isClickSwallowedRef = useRef(false)

@@ -152,6 +152,29 @@ test('a mouse drag anywhere on a chart scrolls it sideways and picks no slot', a
     await expect(chart.locator('circle')).toHaveCount(0)
 })
 
+// The recording's days do not fit a narrow window; a mouse drags the row like a finger, and it snaps to a tile on release.
+test('a mouse drag scrolls the disagreement tiles sideways', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'a finger scrolls the tiles natively')
+
+    await page.setViewportSize({ width: 480, height: 900 })
+    await page.goto(`/city/${KYIV}`)
+
+    const row = page.getByRole('region', { name: 'Disagreement by day' })
+
+    await row.scrollIntoViewIfNeeded()
+    await expect.poll(() => row.evaluate((node) => node.scrollWidth - node.clientWidth)).toBeGreaterThan(100)
+
+    const box = (await row.boundingBox())!
+    const start = { x: box.x + box.width * 0.8, y: box.y + box.height / 2 }
+
+    await page.mouse.move(start.x, start.y)
+    await page.mouse.down()
+    await page.mouse.move(start.x - 150, start.y, { steps: 10 })
+    await page.mouse.up()
+
+    await expect.poll(() => row.evaluate((node) => node.scrollLeft)).toBeGreaterThan(100)
+})
+
 // Every overview series arrives with the first load: asking for one later would collect a newer run for that panel
 // alone once the stored one is 3 hours old.
 test('showing a hidden overview panel draws it without another request', async ({ page }) => {

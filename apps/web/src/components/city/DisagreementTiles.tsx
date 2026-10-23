@@ -2,6 +2,7 @@
 
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useDragScroll } from '@/hooks/useDragScroll'
 import { formatSpread } from '@fa/shared/dashboard'
 import { DayDisagreement } from '@fa/shared/ensemble'
 import { formatDateKey, formatDayTileLines, formatNumber } from '@fa/shared/format'
@@ -18,6 +19,8 @@ export function DisagreementTiles({ days, variable }: IProps) {
     const t = useTranslations('disagreement')
     const tInline = useTranslations('variablesInline')
     const locale = useLocale()
+    const dragScroll = useDragScroll()
+
     const { unit, decimals, disagreement } = VARIABLE_BY_ID[variable]
 
     return (
@@ -33,14 +36,15 @@ export function DisagreementTiles({ days, variable }: IProps) {
                     })}
                 </CardDescription>
             </CardHeader>
-            {/* One row of days sharing the card's width; where 4.75 rem each (5.625 rem on phones) do not fit, the row scrolls
-                sideways, so the region must be reachable and named for keyboard and screen-reader users. Margins rather than
-                the card's padding keep its scrollbar as wide as the tiles. */}
+            {/* One row of days sharing the card's width; where 95 px each do not fit, the row scrolls sideways, also by a
+                mouse drag, so the region must be reachable and named for keyboard and screen-reader users. Margins rather than
+                the card's padding keep its scrollbar as wide as the tiles; the tiles snap only once the drag lets go. */}
             <CardContent
+                {...dragScroll}
                 tabIndex={days.length > 0 ? 0 : undefined}
                 role={days.length > 0 ? 'region' : undefined}
                 aria-label={days.length > 0 ? t('title') : undefined}
-                className="mx-(--card-spacing) flex snap-x snap-mandatory gap-2 overflow-x-auto rounded-md px-0 pb-1 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="mx-(--card-spacing) flex snap-x snap-mandatory gap-2 overflow-x-auto rounded-md px-0 pb-1 outline-none focus-visible:ring-2 focus-visible:ring-ring pointer-fine:cursor-grab pointer-fine:select-none pointer-fine:active:cursor-grabbing pointer-fine:active:snap-none"
             >
                 {days.map((d) => (
                     <div
