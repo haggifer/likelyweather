@@ -48,7 +48,7 @@ export function AppPromoBanner() {
                 <Button
                     variant="ghost"
                     size="icon-sm"
-                    className="pointer-coarse:size-9"
+                    className="touch:size-9"
                     onClick={dismiss}
                     aria-label={t('dismiss')}
                 >

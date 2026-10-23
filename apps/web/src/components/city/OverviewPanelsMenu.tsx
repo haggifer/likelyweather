@@ -77,7 +77,7 @@ const PanelRow = ({ variable, isShown, isToggleDisabled, onToggle }: RowProps) =
                 size="icon"
                 {...attributes}
                 aria-label={t('dragPanel', { name })}
-                className="rounded-md text-muted-foreground pointer-coarse:size-10"
+                className="rounded-md text-muted-foreground touch:size-10"
             >
                 <GripVertical className="size-4" />
             </Button>
@@ -88,7 +88,7 @@ const PanelRow = ({ variable, isShown, isToggleDisabled, onToggle }: RowProps) =
                 aria-label={t(isShown ? 'hidePanel' : 'showPanel', { name })}
                 disabled={isToggleDisabled}
                 onClick={() => onToggle(variable)}
-                className="pointer-coarse:size-10"
+                className="touch:size-10"
             >
                 {isShown ? <Eye className="text-primary" /> : <EyeOff className="text-muted-foreground" />}
             </Button>
@@ -184,7 +184,7 @@ export function OverviewPanelsMenu({ panels, onChange: setPanels, isLabelHiddenO
                 <Button
                     variant="outline"
                     size="sm"
-                    className="mt-3 w-full max-sm:text-sm"
+                    className="mt-3 w-full touch:h-9 max-sm:text-sm"
                     onClick={() => setPanels(() => DEFAULT_OVERVIEW_PANELS)}
                 >
                     {t('resetPanels')}

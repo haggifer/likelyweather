@@ -51,7 +51,7 @@ export function LocateButton({ onLocated, onSearch }: IProps) {
         <Button
             variant="ghost"
             size="icon-sm"
-            className="pointer-coarse:size-9"
+            className="touch:size-9"
             onClick={handleLocate}
             disabled={nearest.isPending}
             aria-busy={nearest.isPending}

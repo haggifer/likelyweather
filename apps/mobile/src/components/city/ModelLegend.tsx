@@ -17,10 +17,10 @@ import { LineSwatch } from '../ui/LineSwatch'
 import { Text } from '../ui/text'
 import { Toggle } from '../ui/toggle'
 
-// The eye button is 32 px and takes taps across 40 px, the web's `pointer-coarse:after:-inset-1.5`.
+// The eye button is 36 px and takes taps across 44 px, the web's `touch:hit-area`.
 const EYE_HIT_SLOP = 4
 const EYE_CLASS = 'size-3.5'
-const EYE_BUTTON_CLASS = 'size-8'
+const EYE_BUTTON_CLASS = 'size-9'
 // A model's row is laid out like the median's (author, 2026-10-14): the same swatch length, gaps and padding.
 const ROW_CLASS = 'min-h-10 flex-row items-center gap-1.5 py-1 pr-0.5 pl-2'
 
@@ -157,7 +157,7 @@ export function ModelLegend({
                     onPressedChange={onToggleMedian}
                     hitSlop={EYE_HIT_SLOP}
                     accessibilityLabel={isMedianHidden ? t('showMedian') : t('hideMedian')}
-                    className="size-8 min-w-8 bg-transparent px-0"
+                    className="size-9 min-w-9 bg-transparent px-0"
                 >
                     {isMedianHidden ? EYE_OFF : EYE}
                 </Toggle>

@@ -30,7 +30,7 @@ export function QuotaMeter() {
                 aria-valuemax={data.limit}
                 aria-valuenow={left}
                 aria-valuetext={t('value', { left, limit: data.limit })}
-                className="flex items-center gap-2 rounded-md px-1.5 py-1 text-xs text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex items-center gap-2 rounded-md px-1.5 py-1 text-xs text-muted-foreground outline-none touch:h-9 focus-visible:ring-2 focus-visible:ring-ring"
             >
                 <span className="hidden sm:inline">{t('short')}</span>
                 <Progress

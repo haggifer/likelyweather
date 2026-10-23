@@ -39,7 +39,7 @@ export function SnackbarToast({ message, actions, isError = false, onAction }: I
                                 key={action.label}
                                 onPress={() => onAction(action)}
                                 className={cn(
-                                    'h-6 rounded-sm px-2',
+                                    'h-9 rounded-sm px-3',
                                     isMain ? 'bg-foreground' : 'bg-black/8 dark:bg-white/30',
                                 )}
                             >

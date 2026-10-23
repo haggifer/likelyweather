@@ -21,10 +21,10 @@ import { Input } from '../ui/input'
 import { Text } from '../ui/text'
 import { LocateButton } from './LocateButton'
 
-// The web's command list: five 32 px rows under the group's heading (12.25 rem in all, so the keyboard never covers
-// an option); the rest scroll inside the list.
+// The web's command list: 36 px rows under the group's heading, 12.25 rem in all, so the keyboard never covers an
+// option; the rest scroll inside the list.
 const ROWS = 'max-h-40'
-const ROW = 'h-8 justify-start gap-2 rounded-sm px-2'
+const ROW = 'h-9 justify-start gap-2 rounded-sm px-2'
 
 interface IProps {
     onSelectCity: (slug: string) => void

@@ -38,7 +38,7 @@ export function LanguageSwitch() {
                     variant="ghost"
                     size="sm"
                     aria-label={t('language')}
-                    className={cn('pointer-coarse:h-9', isPending && 'opacity-60')}
+                    className={cn('touch:h-9', isPending && 'opacity-60')}
                 >
                     <Languages />
                     <span className="text-xs font-semibold uppercase">{locale}</span>

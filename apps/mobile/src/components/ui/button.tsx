@@ -5,10 +5,10 @@ import { IconClassContext } from './icon'
 import { TextClassContext } from './text'
 
 // The web's variants and sizes (apps/web/src/components/ui/button.tsx). The web gives a touch screen bigger controls
-// element by element (`pointer-coarse:h-9`), so a call site sets the same size here; a press nudges the button down
-// as on the web.
+// element by element (`touch:h-9`), so a call site sets the same size here; a press nudges the button down as on the
+// web. As the web's `touch:` minimum, no button is under 36 px, and `hitSlop` stretches what a finger can hit to 44.
 const buttonVariants = cva(
-    'group shrink-0 flex-row items-center justify-center gap-1.5 rounded-lg border border-transparent active:translate-y-px',
+    'group min-h-9 min-w-9 shrink-0 flex-row items-center justify-center gap-1.5 rounded-lg border border-transparent active:translate-y-px',
     {
         variants: {
             variant: {
@@ -88,6 +88,7 @@ function Button({ className, variant, size, ...props }: ButtonProps) {
                 <Pressable
                     className={cn(props.disabled && 'opacity-50', buttonVariants({ variant, size }), className)}
                     role="button"
+                    hitSlop={4}
                     {...props}
                 />
             </IconClassContext.Provider>

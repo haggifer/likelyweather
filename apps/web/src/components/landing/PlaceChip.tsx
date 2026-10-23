@@ -11,7 +11,7 @@ import { useLocale, useTranslations } from 'next-intl'
 
 // The two halves of the pill are ghost buttons without their own border, fill or height: the pill draws them.
 const CHIP_PART =
-    'h-7 rounded-none border-0 text-[0.8125rem] hover:bg-transparent max-sm:text-sm pointer-coarse:h-9 dark:hover:bg-transparent'
+    'h-7 rounded-none border-0 text-[0.8125rem] hover:bg-transparent max-sm:text-sm touch:h-9 dark:hover:bg-transparent'
 
 const getStarTone = (isPinned: boolean, isSelected: boolean) => {
     if (isPinned) return 'fill-favorite-fill text-favorite'
@@ -61,7 +61,7 @@ export function PlaceChip({ place, isSelected, isPinned, onSelect }: IProps) {
                 aria-pressed={isPinned}
                 aria-label={starLabel}
                 title={starLabel}
-                className={cn(CHIP_PART, 'rounded-r-full pr-2.5 pl-1', hoverText)}
+                className={cn(CHIP_PART, 'rounded-r-full pr-2.5 pl-1 touch:min-w-9', hoverText)}
             >
                 <Star className={cn('size-4', getStarTone(isPinned, isSelected))} aria-hidden="true" />
             </Button>

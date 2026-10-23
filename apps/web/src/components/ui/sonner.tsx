@@ -29,8 +29,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
                 } as React.CSSProperties
             }
             toastOptions={{
+                // Sonner sets its buttons' 24 px height on a more specific selector, so the touch size is marked important.
                 classNames: {
                     toast: 'cn-toast',
+                    actionButton: 'touch:h-9! touch:px-3!',
+                    cancelButton: 'touch:h-9! touch:px-3!',
                 },
             }}
             {...props}

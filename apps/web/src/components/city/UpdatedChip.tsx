@@ -53,7 +53,7 @@ export function UpdatedChip({ issueTime, fetchedAt, timeZone, now, isIconOnPhone
                 variant="ghost"
                 aria-label={isIconOnPhones ? age : undefined}
                 className={cn(
-                    'h-auto shrink-0 rounded-full border-0 p-0 hover:bg-transparent dark:hover:bg-transparent',
+                    'h-auto shrink-0 rounded-full border-0 p-0 hover:bg-transparent touch:min-h-9 touch:hit-area dark:hover:bg-transparent',
                     isIconOnPhones && 'max-sm:size-9',
                     className,
                 )}

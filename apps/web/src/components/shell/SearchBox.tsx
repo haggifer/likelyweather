@@ -177,7 +177,7 @@ export function SearchBox({
                                     value={`place-${place.id}`}
                                     onSelect={() => handleSelectPlace(place)}
                                     onMouseDown={(e) => e.preventDefault()}
-                                    className="flex items-center gap-2"
+                                    className="flex items-center gap-2 touch:min-h-9"
                                 >
                                     <FlagIcon countryCode={place.countryCode} />
                                     <span className="truncate">{getCityLabel(place, locale)}</span>
@@ -196,7 +196,7 @@ export function SearchBox({
                                     onSelect={() => handleSelectResult(result)}
                                     onMouseDown={(e) => e.preventDefault()}
                                     disabled={search.isTracking}
-                                    className="flex items-center gap-2"
+                                    className="flex items-center gap-2 touch:min-h-9"
                                 >
                                     <FlagIcon countryCode={result.countryCode} />
                                     <span className="truncate">{getResultLabel(result)}</span>

@@ -38,10 +38,10 @@ export function CityShell({ slug, children }: IProps) {
             <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-1.5">
                     <Skeleton className="h-8 w-64 max-sm:w-44" />
-                    <Skeleton className="size-7 pointer-coarse:size-9 max-sm:ml-auto" />
-                    <Skeleton className="size-7 pointer-coarse:size-9" />
+                    <Skeleton className="size-7 touch:size-9 max-sm:ml-auto" />
+                    <Skeleton className="size-7 touch:size-9" />
                 </div>
-                <Skeleton className="h-7 w-24 self-end pointer-coarse:h-9 max-sm:hidden" />
+                <Skeleton className="h-7 w-24 self-end touch:h-9 max-sm:hidden" />
                 <Skeleton className="h-9 w-full sm:w-96" />
                 <Skeleton className="h-[25rem] w-full max-sm:h-[37.5rem]" />
             </div>

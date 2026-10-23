@@ -30,8 +30,7 @@ export function PlaceChips({ places, chips, slug, onSelect }: IProps) {
                     onSelect={onSelect}
                 />
             ))}
-            {!chips &&
-                CHIP_PLACEHOLDERS.map((i) => <Skeleton key={i} className="h-7 w-24 rounded-full pointer-coarse:h-9" />)}
+            {!chips && CHIP_PLACEHOLDERS.map((i) => <Skeleton key={i} className="h-7 w-24 rounded-full touch:h-9" />)}
         </div>
     )
 }

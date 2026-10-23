@@ -117,7 +117,7 @@ export function CityHeader({ city }: IProps) {
                             isAvailable={isOutdated}
                             isFetching={isFetching}
                             onRefresh={handleRefresh}
-                            className="pointer-coarse:h-9 max-sm:text-sm"
+                            className="touch:h-9 max-sm:text-sm"
                         />
                     </div>
                 </div>

@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { ReactNode } from 'react'
 
 const REPO_URL = process.env.NEXT_PUBLIC_REPO_URL
+// On touch screens a 36 px box around the text, its negative margins keeping the footer's height.
+const LINK = 'hover:text-foreground touch:-my-2 touch:inline-flex touch:h-9 touch:items-center touch:hit-area'
 
 const renderExternalLink = (href: string, chunks: ReactNode) => (
     <a href={href} className="underline underline-offset-2" target="_blank" rel="noreferrer">
@@ -25,14 +27,14 @@ export async function Footer() {
                     })}
                 </p>
                 <nav className="ml-auto flex flex-wrap gap-x-4 gap-y-1 max-sm:mx-auto max-sm:justify-center max-sm:text-sm">
-                    <Link href="/privacy" className="hover:text-foreground">
+                    <Link href="/privacy" className={LINK}>
                         {tl('privacy')}
                     </Link>
-                    <Link href="/terms" className="hover:text-foreground">
+                    <Link href="/terms" className={LINK}>
                         {tl('terms')}
                     </Link>
                     {REPO_URL && (
-                        <a href={REPO_URL} className="hover:text-foreground" target="_blank" rel="noreferrer">
+                        <a href={REPO_URL} className={LINK} target="_blank" rel="noreferrer">
                             {t('repo')}
                         </a>
                     )}

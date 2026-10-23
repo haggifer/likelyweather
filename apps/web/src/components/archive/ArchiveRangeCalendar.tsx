@@ -21,7 +21,7 @@ interface DayProps {
 // The selected days join into one bar: the ends filled with the primary colour, the days between them muted.
 const getDayClassName = ({ isSelected, isRangeStart, isRangeEnd, isDisabled, isToday }: ArchiveDayState) =>
     cn(
-        'size-9 font-normal tabular-nums pointer-coarse:size-10',
+        'size-9 font-normal tabular-nums touch:size-10',
         isToday && !isSelected && 'font-semibold text-primary',
         isSelected && 'rounded-none bg-muted text-foreground hover:bg-muted',
         isRangeStart && 'rounded-l-lg',
@@ -68,7 +68,7 @@ const PageButton = ({ label, icon: PageIcon, isDisabled, onPress }: PageButtonPr
         aria-label={label}
         disabled={isDisabled}
         onClick={onPress}
-        className="pointer-coarse:size-10"
+        className="touch:size-10"
     >
         <PageIcon />
     </Button>

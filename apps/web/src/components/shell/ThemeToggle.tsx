@@ -17,7 +17,7 @@ export function ThemeToggle() {
         <Button
             variant="ghost"
             size="icon-sm"
-            className="pointer-coarse:size-9"
+            className="touch:size-9"
             onClick={() => setColorMode(next)}
             aria-label={label}
             title={label}

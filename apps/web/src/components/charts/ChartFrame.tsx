@@ -35,7 +35,7 @@ export function ChartFrame({ title, table, tabs, actions, footer, isFetching, cl
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="max-sm:text-sm"
+                            className="touch:h-9 max-sm:text-sm"
                             onClick={toggleTable}
                             aria-pressed={isTable}
                             aria-label={isTable ? t('showChart') : t('showTable')}
