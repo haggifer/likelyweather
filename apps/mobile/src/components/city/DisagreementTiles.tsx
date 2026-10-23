@@ -10,8 +10,8 @@ import { Badge } from '../ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 import { Text } from '../ui/text'
 
-// A tile's `min-w-[5.3125rem]` (the web's minimum, 85 px) and the row's `gap-2`, which the row snaps by.
-const TILE_WIDTH = 85
+// A tile's `min-w-[5.9375rem]` (the web's minimum, 95 px) and the row's `gap-2`, which the row snaps by.
+const TILE_WIDTH = 95
 const TILE_GAP = 8
 
 interface IProps {
@@ -56,7 +56,7 @@ export function DisagreementTiles({ days, variable, className }: IProps) {
                         {days.map((d) => (
                             <View
                                 key={d.day}
-                                className="min-w-[5.3125rem] flex-1 items-center gap-1.5 rounded-md border border-border p-2"
+                                className="min-w-[5.9375rem] flex-1 items-center gap-1.5 rounded-md border border-border p-2"
                             >
                                 <View>
                                     {formatDayTileLines(d.day, locale).map((line) => (

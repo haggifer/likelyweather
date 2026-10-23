@@ -45,7 +45,7 @@ export function DisagreementTiles({ days, variable }: IProps) {
                 {days.map((d) => (
                     <div
                         key={d.day}
-                        className="flex min-w-[5.3125rem] flex-1 shrink-0 snap-start flex-col gap-1.5 rounded-md border p-2 max-sm:items-center max-sm:text-center"
+                        className="flex min-w-[5.9375rem] flex-1 shrink-0 snap-start flex-col gap-1.5 rounded-md border p-2 max-sm:items-center max-sm:text-center"
                     >
                         <span className="text-xs text-muted-foreground max-sm:hidden">
                             {formatDateKey(d.day, locale, { weekday: 'short', day: 'numeric', month: 'short' })}
