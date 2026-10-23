@@ -28,7 +28,7 @@ export function ChartFrame({ title, table, tabs, isFetching = false, className, 
     const { isTable, toggleTable } = useViewMode()
 
     return (
-        <Card className={cn('gap-3 py-4', className)}>
+        <Card className={cn('gap-2 py-4', className)}>
             <CardHeader className="flex-row items-center gap-1 px-4">
                 <CardTitle className="flex-1 text-lg leading-snug font-semibold">{title}</CardTitle>
                 {table && (

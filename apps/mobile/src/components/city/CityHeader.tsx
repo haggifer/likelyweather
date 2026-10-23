@@ -51,7 +51,8 @@ export function CityHeader({ city, onSelectCity }: IProps) {
     }
 
     return (
-        <View className="gap-2">
+        // Pulled into the screen's 12 px gap, so the variable bar's buttons sit 8 px under it, the web's 0.5rem.
+        <View className="-mb-2 gap-2">
             <CityTitle name={name} region={getCityRegion(city, locale)} countryCode={city.countryCode}>
                 <FavoriteToggle place={city} className="size-9" />
                 <Button

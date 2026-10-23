@@ -60,7 +60,7 @@ export function CityHeader({ city }: IProps) {
     }
 
     return (
-        <div className="mb-(--card-gap) flex flex-col gap-2 sm:gap-3">
+        <div className="mb-2 flex flex-col gap-2 sm:gap-3">
             <Button
                 asChild
                 variant="ghost"

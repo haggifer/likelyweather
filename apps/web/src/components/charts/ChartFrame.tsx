@@ -26,7 +26,7 @@ export function ChartFrame({ title, table, tabs, actions, footer, isFetching, cl
     const { isTable, toggleTable } = useViewMode()
 
     return (
-        <Card className={cn('gap-3', className)}>
+        <Card className={cn('gap-2', className)}>
             <CardHeader>
                 <CardTitle className="font-semibold max-sm:text-lg">{title}</CardTitle>
                 <CardAction className="flex items-center gap-1.5">
