@@ -4,7 +4,7 @@ import { Coordinates, getDistanceKm } from '@fa/shared/geo'
 import { slugify } from '@fa/shared/seeds'
 import { floorToStep } from '@fa/shared/time'
 import { delay } from 'es-toolkit'
-import { claim, dedupe, isMarked, mark, releaseClaim } from './cache'
+import { claim, dedupe, isMarked, mark, releaseClaim, unmark } from './cache'
 import { collect } from './collector'
 import { COUNTRY_STARTERS } from './country-starters'
 import { getErrorMessage, HttpError } from './errors'
@@ -14,8 +14,13 @@ import { getPlace } from './sources/geocoding'
 import { addCity, getCityById, getCityBySlug, getLatestSnapshotMeta, getNearestCity, StoredSnapshotMeta } from './store'
 
 const PARTIAL_RETRY_MS = 15 * 60_000
-// After a refresh that got nothing, the stored run is served without fetching for as long as a partial run stands.
-const FAILED_COOLDOWN_SECONDS = PARTIAL_RETRY_MS / 1000
+// A refresh that falls short (a source failed, or nothing came back) is retried once after a short cooldown; when the
+// retry falls short too, the stored run is served for as long as a complete one stands, so a source outage costs each
+// viewed city a unit of quota every 3 hours, not every 15 minutes.
+const RETRY_COOLDOWN_SECONDS = PARTIAL_RETRY_MS / 1000
+const OUTAGE_COOLDOWN_SECONDS = REFRESH_AFTER_HOURS * 3600
+// Outlives either cooldown, so the refresh that follows one knows it is a retry.
+const RETRY_MEMORY_SECONDS = OUTAGE_COOLDOWN_SECONDS + RETRY_COOLDOWN_SECONDS
 const REFRESH_CLAIM_SECONDS = 30
 const WAIT_POLL_MS = 500
 // With the 16.5-second worst case of a fetch, a waiting request still answers inside the 30-second limit.
@@ -69,6 +74,15 @@ const waitForRefresh = async (city: City, stored: StoredSnapshotMeta | null) => 
 
 const getCooldownName = (city: City) => `refresh-failed:${city.id}`
 
+const getRetryName = (city: City) => `refresh-retry:${city.id}`
+
+const coolDown = async (city: City) => {
+    const isRetry = await isMarked(getRetryName(city))
+
+    await mark(getRetryName(city), RETRY_MEMORY_SECONDS)
+    await mark(getCooldownName(city), isRetry ? OUTAGE_COOLDOWN_SECONDS : RETRY_COOLDOWN_SECONDS)
+}
+
 const serveStored = (city: City, stored: StoredSnapshotMeta | null) => {
     if (!stored) throw new HttpError(502, 'upstream_error', `No forecast source answered for ${city.name}`)
 
@@ -76,24 +90,25 @@ const serveStored = (city: City, stored: StoredSnapshotMeta | null) => {
 }
 
 // Source failures never throw from `collect`; without any data the stored snapshot is served, or the view fails.
-// A failure past that (the database, the partition DDL) also falls back to the stored run, but is logged. Either way
-// the stored run stays due, so a cooldown holds further fetches back: otherwise, while the sources are down, every
-// view would spend a unit of quota and wait for the timeouts again.
+// A failure past that (the database, the partition DDL) also falls back to the stored run, but is logged. Whenever a
+// refresh falls short the stored run stays due, so a cooldown holds further fetches back: otherwise, while a source is
+// down, every view would spend a unit of quota and wait for the timeouts again.
 const fetchSnapshot = async (city: City, stored: StoredSnapshotMeta | null): Promise<StoredSnapshotMeta> => {
     try {
         const { run, snapshot } = await collect({ city })
 
         await pruneQuietly()
 
-        if (snapshot) return { ...snapshot, runStatus: run.status }
+        if (run.status === 'OK') await unmark(getRetryName(city))
+        else await coolDown(city)
 
-        await mark(getCooldownName(city), FAILED_COOLDOWN_SECONDS)
+        if (snapshot) return { ...snapshot, runStatus: run.status }
 
         return serveStored(city, stored)
     } catch (error) {
         if (error instanceof HttpError) throw error
 
-        await mark(getCooldownName(city), FAILED_COOLDOWN_SECONDS)
+        await coolDown(city)
 
         if (!stored) throw error
 
@@ -151,7 +166,7 @@ export const trackCity = async (geocodeId: number, onCreate: () => Promise<void>
 // never wait more than one upstream round trip. Each Lambda instance serves one request at a time, so the
 // parallel requests of one page meet in a shared claim: the first fetches and spends the client's quota, the others
 // wait for its snapshot. With no quota left the stored snapshot is served as it is, and the claim is given back so
-// the next viewer does not wait 12 seconds for a fetch that never starts. After a refresh that got nothing, the
+// the next viewer does not wait 12 seconds for a fetch that never starts. After a refresh that fell short, the
 // stored run is served as it is until the cooldown ends.
 export const ensureFreshSnapshot = (city: City, client?: string): Promise<StoredSnapshotMeta> =>
     dedupe(`refresh:${city.id}`, async () => {

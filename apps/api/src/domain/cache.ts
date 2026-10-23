@@ -221,4 +221,6 @@ export const releaseClaim = (name: string) => safely(() => getStore().del(`claim
 // A short-lived marker, such as a cooldown. With Redis down it is never set, so nothing is held back.
 export const mark = (name: string, ttlSeconds: number) => cacheSet(`mark:${name}`, 1, ttlSeconds)
 
+export const unmark = (name: string) => safely(() => getStore().del(`mark:${name}`), undefined)
+
 export const isMarked = async (name: string) => (await cacheGet<number>(`mark:${name}`)) !== undefined
