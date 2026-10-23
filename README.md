@@ -1,10 +1,19 @@
 # Forecast Arena
 
-Ten weather models for any city and how much they disagree. Public, no login. Measuring which model has been right is a separate feature planned after the MVP.
+Compare what ten weather models forecast for any city, and see where they disagree. Viewers can hide or highlight any
+model, switch between eight variables, turn any chart into a table, and look up a city's past weather back to 1940. An
+Android app with a home-screen widget shows the same.
 
-A pnpm and Turborepo monorepo: a Next.js web app, an Expo (React Native) app in progress and an Express REST API on Postgres (Prisma) and Redis, with an AWS CDK stack for Lambda and CloudFront. Live data comes from Open-Meteo and MET Norway. The [design decisions](#design-decisions) a newcomer is most likely to undo are at the end.
+**[Try it live](https://dom3g5nxr3yi9.cloudfront.net)** (no sign-up)
 
-## Run it
+[![CI](https://github.com/haggifer/forecast-arena/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/haggifer/forecast-arena/actions/workflows/ci.yml)
+[![License: PolyForm Noncommercial](https://img.shields.io/badge/license-PolyForm%20Noncommercial-blue)](LICENSE)
+
+A pnpm and Turborepo monorepo: a Next.js web app, an Expo (React Native) Android app and an Express REST API on
+Postgres (Prisma) and Redis, deployed to AWS Lambda and CloudFront with CDK. Live data comes from Open-Meteo and MET
+Norway.
+
+## Getting started
 
 Needs Node 22, pnpm and Docker.
 
@@ -18,50 +27,8 @@ pnpm api                  # Docker services, then the API on http://localhost:40
 pnpm web                  # in a second terminal: the web app on http://localhost:3000
 ```
 
-Open any city and its forecast is fetched within a few seconds; search for any other city to open it the same way. Nothing is collected on a schedule (the Android widget, which its owner places, is the one scheduled reader, every 30 minutes): a city's forecast is fetched when someone opens it and the stored one is 3 hours old, the same moment the page offers Refresh, and a run that lost a source (a PARTIAL run) is fetched again after 15 minutes, and after a fetch that got nothing the stored run is served for 15 minutes before the next try. The web app forwards `/api/*` to the API, so the browser sees one origin.
-
-### Mobile app
-
-`apps/mobile` is the same product as an Expo app for Android (SDK 57, Expo Router, New Architecture), drawn with React Native, React Native Skia (every chart) and `react-native-svg` (icons, flags and legend swatches) from the same packages as the web: the API client and its hooks, the chart geometry and dashboard maths, the places rules and the five catalogs.
-
-- **Home:** search any place (or "Use my location", which beyond the nearest stored city's 50 km asks Android's geocoder for the town's name and searches it), the four place chips with their stars, the ten-day overview that scrolls sideways (a tap picks a slot), the age chip and Refresh, and "Open details".
-- **City:** the city's header (the star and the pencil, which switches city; the age chip and Refresh once the run is outdated), the variable switch pinned under it while the screen scrolls (temperature and wind each with sub-tabs for feels-like and gusts), the multi-model chart with its bands and median and a table view, the model list (the eye hides a model, the median too), and the disagreement tiles in one row.
-- **Methodology** and **Settings:** language and theme (device default or chosen), the day's request quota, the placed widgets with their cities (each can change city), and links to the privacy policy and terms on the site.
-- **Offline:** forecasts, places and settings live on the device (MMKV); the query cache is restored at launch and kept for a day, a restored forecast that is 3 hours old is fetched again when first shown, and queries wait while the network is down.
-- **Home-screen widget** (`react-native-android-widget`, 4 × 2), a clock and the weather over the wallpaper like a phone's own: on the left the time and date, native TextClocks the launcher ticks (a pnpm patch lets a widget bring its own Android layout, `apps/mobile/plugins/widget-layouts`); on the right the sky's icon and condition from the models' medians (a sun or a moon by the sun's position over the city), the current temperature (`GET /cities/:slug/current`: the nearest airport report within 25 km and 75 minutes, corrected for height and moved by the models' change since, or Open-Meteo's value for the current quarter hour) and its 3-hour trend. Placing it opens a city picker with the app's search, "Use my location" and the viewer's places; a tap on the weather opens that picker again (over Home, the stack's `anchor`), and Settings lists the placed widgets with a Change city button for each, since some launchers never reopen a widget's configuration. It refreshes every 30 minutes and whenever the Home overview loads its city, redraws at once when the language changes, and keeps its last numbers offline.
-
-Development builds call the live API unless `apps/mobile/.env.local` sets `EXPO_PUBLIC_API_ORIGIN` (`apps/mobile/.env.example`; for the local API also run `adb reverse tcp:4000 tcp:4000`). The app needs a development build, not Expo Go, and an Android device or emulator; builds need a JDK 17 or 21 (on PATH or in `JAVA_HOME`, not Android Studio's bundled 25) and CMake 4.1.2 from Android Studio's SDK Manager, the version `app.json` pins through `expo-build-properties` because the SDK's default CMake ships a ninja that cannot stat the long paths of a pnpm workspace on Windows.
-
-```bash
-pnpm --filter @fa/mobile android   # build, install and start the development build
-pnpm mobile                        # Metro for an installed development build
-pnpm --filter @fa/mobile tokens    # regenerate src/theme/tokens.ts after editing apps/web/src/app/globals.css
-pnpm --filter @fa/mobile icons     # regenerate the app icons and splash from the web's cloud-sun logo
-```
-
-iOS builds run only in the cloud (`eas build --profile simulator --platform ios`): without a Mac the app is checked in a simulator, never on an iPhone.
-
-## What works
-
-| Screen         | Route                | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| -------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Landing        | `/?city=`            | Search and four place chips switch the city in place: favorites (the star by a city name or on a chip) first, then the latest searches (up to 50 listed in the empty search box), kept in local storage; a first visit starts from the four largest places of the visitor's country (CloudFront's `CloudFront-Viewer-Country`, a table generated from GeoNames in `apps/api/src/domain/country-starters.ts`), topped up with New York, London, Paris and Kyiv; without `?city=` the first chip opens; the overview shows the median of all models for the next ten days in local 3-hour slots (temperature with feels-like, wind speed with gusts and direction arrows, pressure, precipitation with the chance of rain per slot) with a synced crosshair; a chart never squeezes a slot below the width of a three-digit label and scrolls sideways under its pinned axis instead, opening at now; a now line marks the current time, and the run's age chip and Refresh appear once the data is 3 hours old; Table swaps the readouts and chart for every panel's numbers slot by slot; "Open details" goes to the dashboard |
-| City dashboard | `/city/[slug]`       | Back link, in-place city switcher, run time and Refresh; eight variables (temperature, feels-like, wind speed, wind gusts, pressure, precipitation, humidity, cloud cover); D3 spaghetti chart over ten days in local 3-hour slots, scrolling sideways like the overview from the slot the run was fetched in (now line at the current time), the min–max band, median, precipitation as median bars with per-model ticks, hovered as the 3-hour period each bar covers, hovered time above the chart, keyboard stepping; side list sorted by value (hover a model to highlight it, the eye hides it: its line and table column go, and the median, band, wind direction, disagreement and summary count only the models left); disagreement tiles in one full-width row (it scrolls when the days do not fit); wind arrows; an age chip that turns amber when the data is old; table view on every chart                                                                                                                                                                                                                      |
-| Archive        | `/archive?city=`     | A city's past weather for a period of up to 12 days (1940 to yesterday, two date fields), drawn like the overview but hour by hour, with its own panel choice; the same search and chips; the period and panels kept in local storage (`fa.archive`); from Open-Meteo's Historical Weather API (ERA5 and the ECMWF IFS analysis), fetched once per city and period and stored for good (`ArchiveHour`), so a period already stored costs no request                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| Methodology    | `/methodology`       | Sources, grids, median and spread, disagreement, limits, attribution                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| Privacy, Terms | `/privacy`, `/terms` | Privacy policy and terms of use, in English, from MDX in `apps/web/src/content/legal`; linked from the footer                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-
-"Use my location" in the landing search card opens the nearest stored city when it is within 50 km (`GET /api/cities/nearest`, coordinates rounded to about a kilometre, nothing stored), and otherwise names it with its distance. On the dashboard the median line hides and shows like any model.
-
-A daily quota per user (60 upstream fetches a day per client, 600 for the whole app) is shown as a meter in the top bar; the last answer is kept in local storage so the meter is there as soon as a page opens.
-
-Android phones get a dismissible "Get the app" bar on the landing and city pages when `NEXT_PUBLIC_APP_PROMO_URL` names the latest APK release at build time (`apps/web/.env.example`); dismissed, it stays away for 30 days.
-
-Phones and tablets (below 992 px, Tailwind's `sm` redefined in `globals.css`) get their own layouts where the desktop ones don't fit, so a place name never has to be cut beside the card's buttons (a long one wraps at every width): the dashboard pins the variable switch under the top bar and puts the model list under the chart, and day labels shorten to fit. The phone switch has six tabs: temperature and wind each open sub-tabs above the chart (actual or feels-like, speed or gusts), and their table and model list read both as "actual (feels like)"; the age chip and Refresh show only once the run is outdated; the landing overview's row of 36 px buttons adds a table toggle, which shows every panel's median and second line slot by slot; tables keep the card's padding and pin the time column on a muted background. The Android app has the same design.
-
-Ukrainian, English, Spanish, German, French and Russian (language menu in the top bar; the non-English catalogs are machine-drafted and need a native review), light and dark mode.
-
-## Scripts
+Open any city and its forecast is fetched within a few seconds; search for any other city to open it the same way. The
+web app forwards `/api/*` to the API, so the browser sees one origin.
 
 | Command                                                        | What it does                                                                                    |
 | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
@@ -73,9 +40,62 @@ Ukrainian, English, Spanish, German, French and Russian (language menu in the to
 | `pnpm check:messages`                                          | Key and ICU argument parity across the six catalogs, and literal key usage in code              |
 | `pnpm knip`                                                    | Unused files, exports and dependencies across the workspace (`knip.jsonc`)                      |
 | `pnpm e2e`                                                     | Playwright flows on desktop and phone against a fake upstream (run `pnpm build` first)          |
-| `pnpm cdk:synth` / `cdk:diff` / `cdk:deploy` / `cdk:bootstrap` | The AWS CDK stack in `infra/` (run `pnpm build` first; see [Deploy](#deploy))                   |
+| `pnpm cdk:synth` / `cdk:diff` / `cdk:deploy` / `cdk:bootstrap` | The AWS CDK stack in `infra/` (run `pnpm build` first; see [Deployment](#deployment))           |
 | `pnpm --filter @fa/web flags`                                  | Re-copy the SVG country flags into `apps/web/public/flags`                                      |
 | `pnpm --filter @fa/e2e parity --screen <screen>`               | Compare a screen's texts in the web's phone layout and the running Android app (`--help`)       |
+
+### Mobile app
+
+The app needs a development build, not Expo Go, and an Android device or emulator. Builds need a JDK 17 or 21 (on
+`PATH` or in `JAVA_HOME`, not Android Studio's bundled 25) and CMake 4.1.2 from Android Studio's SDK Manager, which
+`app.json` pins because the SDK's default CMake ships a ninja that can't handle a pnpm workspace's long paths on
+Windows. Development builds call the live API unless `apps/mobile/.env.local` sets `EXPO_PUBLIC_API_ORIGIN`
+(`apps/mobile/.env.example`; for the local API also run `adb reverse tcp:4000 tcp:4000`).
+
+```bash
+pnpm --filter @fa/mobile android   # build, install and start the development build
+pnpm mobile                        # Metro for an installed development build
+pnpm --filter @fa/mobile tokens    # regenerate src/theme/tokens.ts after editing apps/web/src/app/globals.css
+pnpm --filter @fa/mobile icons     # regenerate the app icons and splash from the web's cloud-sun logo
+```
+
+iOS builds run only in the cloud (`eas build --profile simulator --platform ios`) and are checked in a simulator.
+
+## Highlights
+
+- **One product on two platforms.** The web app and the Android app share the API client, chart geometry, ensemble
+  maths, hooks and message catalogs as workspace packages, and a parity check compares every text of a screen in both
+  apps by the size of its glyphs.
+- **Charts from one geometry package.** `@fa/chart-core` computes scales, ticks and paths without the DOM; the web draws
+  them with D3 and SVG, the app on a GPU canvas with React Native Skia.
+- **The server returns raw series; the client derives everything**: medians, ranges, 3-hour slots and disagreement are
+  pure, unit-tested functions in `@fa/shared`.
+- **Fetched on demand, never on a schedule.** A city's forecast is collected when someone opens it and the stored run
+  is 3 hours old, under a per-client daily quota that protects the free upstream tiers.
+- **Postgres partitioned by week, Redis never on the critical path**: old forecasts leave with their partition, and any
+  Redis error degrades to no cache and no limit, never an outage.
+- **Serverless on AWS from one CDK stack**: web and API on Lambda behind CloudFront, deployed from CI through GitHub
+  OIDC with no stored keys, with an error alarm and a budget alarm.
+
+## Features
+
+| Screen         | Route                | What it shows                                                                                                                                                                                                                                                                                                                                |
+| -------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Landing        | `/?city=`            | Search and four place chips (favorites first, then recent searches; a first visit starts from the largest places of the visitor's country), and the median of all models for the next ten days in local 3-hour slots: temperature, wind with direction arrows, pressure and precipitation with the chance of rain, or every panel as a table |
+| City dashboard | `/city/[slug]`       | Eight variables on a chart of every model over ten days, with the min–max band and the median; precipitation as median bars with per-model ticks; the model list sorted by value, where hovering highlights a model and the eye hides it from the chart and every summary; a disagreement tile per day; a table view of every chart          |
+| Archive        | `/archive?city=`     | A city's past weather for up to 12 days, from 1940 to yesterday, hour by hour, from Open-Meteo's Historical Weather API; a period is fetched once and stored for good                                                                                                                                                                        |
+| Methodology    | `/methodology`       | Sources, grids, median and spread, disagreement, limits, attribution                                                                                                                                                                                                                                                                         |
+| Privacy, Terms | `/privacy`, `/terms` | Privacy policy and terms of use, from MDX in `apps/web/src/content/legal`                                                                                                                                                                                                                                                                    |
+
+The **Android app** has the same home, city, methodology and settings screens as the web's phone layout, with "Use my
+location" through Android's geocoder. Forecasts, places and settings live on the device (MMKV), so it works offline.
+Its **home-screen widget** (4 × 2) shows a clock and the weather over the wallpaper, with the current temperature from
+the nearest airport report or Open-Meteo's current value and its 3-hour trend; it refreshes every 30 minutes.
+
+A daily quota per client (60 upstream fetches, 600 for the whole app) shows as a meter in the top bar. The UI comes in
+Ukrainian, English, Spanish, German, French and Russian (the non-English catalogs are machine-drafted and need a native
+review), in light and dark mode, with phone and tablet layouts below 992 px. Android phones get a dismissible "Get the
+app" bar when `NEXT_PUBLIC_APP_PROMO_URL` names an APK release at build time.
 
 ## Architecture
 
@@ -88,7 +108,15 @@ Browser ── TanStack Query ──▶ /api/* ──▶ Express REST (zod-valid
                                             └─ cities / health ─▶ Postgres
 ```
 
-## Layout
+- **Web:** Next.js App Router, Tailwind v4 and shadcn/ui on a token system, Redux Toolkit for UI state, TanStack Query
+  for server state, D3 for the charts, next-intl; on Lambda behind CloudFront.
+- **Mobile:** Expo with Expo Router, React Native Reusables on Uniwind, React Native Skia for the charts, MMKV storage.
+- **API:** Express 5 REST on Lambda (Web Adapter) behind CloudFront, with the zod contract from `@fa/shared`.
+- **Data:** Prisma on Postgres (Neon), forecasts partitioned by issue week; Redis (Upstash) for the geocode and payload
+  caches, rate limits, the quota and the daily retention claim.
+- **CI:** lint, knip, typecheck, tests, the catalog check, end-to-end tests, the build and `cdk synth`.
+
+## Structure
 
 ```
 apps/
@@ -102,59 +130,77 @@ apps/
 packages/
   shared/         zod API contract, model palette, variables, ensemble maths, resampling, 3-hour slots, formatting, places rules
   api-client/     fetch wrapper (configurable origin and POST digest), TanStack Query hooks, the query client
-  messages/       the five message catalogs and their loader
+  messages/       the message catalogs and their loader
   db/             Prisma schema, migrations (weekly Forecast partitions), seed, partition maintenance
   chart-core/     DOM-free chart geometry: scales, ticks, day labels, spaghetti paths
   hooks/          React hooks both apps share, with no DOM or React Native code (view logic above the kits)
   fixtures/       real upstream responses and a collector snapshot for tests
+infra/            the AWS CDK stack
 ```
 
-## Target architecture
+## Deployment
 
-What is built and what is still planned.
+One CDK stack (`infra/`, deployed to your AWS profile's region; use `eu-central-1`, where Neon and Upstash run) holds
+the web and API functions, CloudFront with security headers, an error alarm e-mailed through SNS, the GitHub deploy
+role and a monthly budget alarm. Postgres (Neon) and Redis (Upstash) are external.
 
-- **Web:** Next.js App Router, Tailwind v4 and shadcn/ui with a token system, Redux Toolkit for UI state, TanStack Query for server state, D3 for the charts, next-intl (uk, en, es, de, fr, ru). On Lambda behind CloudFront (the target named Amplify Hosting, which does not support Next.js 16).
-- **API:** Express 5 REST on AWS Lambda (Web Adapter) behind CloudFront, with the same zod contract.
-- **Data:** Prisma on Postgres (Neon) with forecasts partitioned by issue time; Redis (Upstash) for the geocode and payload caches, rate limits, the quota and the daily retention claim.
-- **Collection:** on demand only, in the API, when a city is opened and its stored forecast is 3 hours old; nothing runs on a schedule but the Android widget's 30-minute redraw, which reads like an open.
-- **Infrastructure and tooling:** one AWS CDK stack; a pnpm and Turborepo monorepo (`apps/web`, `apps/api`, `apps/mobile`, `apps/e2e`, `packages/shared`, `packages/api-client`, `packages/chart-core`, `packages/hooks`, `packages/messages`, `packages/db`, `packages/fixtures`, `infra`); CI runs lint, knip, typecheck, tests, the catalog check, end-to-end tests, the build and `cdk synth`.
-- **Not built:** a daily Gemini Flash brief with a claim checker.
-
-The web app runs on Lambda instead of Amplify. Truth, skill scores, the scoreboard and the evolution view are out of the MVP.
-
-## Deploy
-
-One CDK stack (`infra/`, deployed to your AWS profile's region; use `eu-central-1`, where Neon and Upstash run) holds the web and API functions, CloudFront with security headers, an error alarm e-mailed through SNS, the GitHub deploy role and a monthly budget alarm. Postgres (Neon) and Redis (Upstash) are external.
-
-1. Create three SecureString parameters the functions read at cold start: `/forecast-arena/DATABASE_URL` (the pooled connection string), `/forecast-arena/REDIS_URL` (`rediss://…`) and `/forecast-arena/METNO_USER_AGENT`. The API refuses to start on AWS when `METNO_USER_AGENT` is missing, and logs a warning when `REDIS_URL` is.
-2. Apply migrations from your machine with the unpooled URL: `DIRECT_URL=<url> DATABASE_URL=<url> pnpm db:deploy` (deploys never migrate), then `pnpm db:seed` with the same variables. On a live stack, a migration that only adds runs before the deploy; one that drops columns the running code reads runs after it.
+1. Create three SecureString parameters the functions read at cold start: `/forecast-arena/DATABASE_URL` (the pooled
+   connection string), `/forecast-arena/REDIS_URL` (`rediss://…`) and `/forecast-arena/METNO_USER_AGENT`. The API
+   refuses to start on AWS without `METNO_USER_AGENT`, and logs a warning without `REDIS_URL`.
+2. Apply migrations from your machine with the unpooled URL: `DIRECT_URL=<url> DATABASE_URL=<url> pnpm db:deploy`
+   (deploys never migrate), then `pnpm db:seed` with the same variables. On a live stack, a migration that only adds
+   runs before the deploy; one that drops columns the running code reads runs after it.
 3. Once per account and region: `pnpm build && pnpm cdk:bootstrap --profile <profile>`.
-4. Deploy: `pnpm build && pnpm cdk:deploy --profile <profile> -c budgetEmail=<address> -c githubRepo=<owner>/<repo>`. The stack output `SiteUrl` is the site. Confirm the SNS subscription e-mail once, or the error alarm reaches nobody.
+4. Deploy: `pnpm build && pnpm cdk:deploy --profile <profile> -c budgetEmail=<address> -c githubRepo=<owner>/<repo>`.
+   The stack output `SiteUrl` is the site. Confirm the SNS subscription e-mail once, or the error alarm reaches nobody.
 
-After that, pushes to `main` deploy through GitHub OIDC once CI has passed on them (`.github/workflows/deploy.yml`), as soon as the repository has the variables `AWS_DEPLOY_ROLE_ARN` (stack output `DeployRoleArn`) and `AWS_REGION`, and the secret `BUDGET_EMAIL`.
+After that, pushes to `main` deploy through GitHub OIDC once CI has passed on them (`.github/workflows/deploy.yml`), as
+soon as the repository has the variables `AWS_DEPLOY_ROLE_ARN` (stack output `DeployRoleArn`) and `AWS_REGION`, and
+the secret `BUDGET_EMAIL`.
 
 ## Design decisions
 
 The ones a newcomer is most likely to undo by accident:
 
-- **Models are compared with each other, not with observations.** Accuracy needs truth data and its own UI; it is a post-MVP feature.
-- **The server returns raw series; the client derives everything.** Medians, ranges, slots, disagreement and labels are pure functions in `packages/shared`, unit-tested. Feels-like is the one value computed when a run is stored, with Open-Meteo's own formula (`packages/shared/src/apparent-temperature.ts`), so met.no gets the same formula and the sunshine it needs is never stored.
-- **Charts start where the data starts.** They start at the local 3-hour slot the run was fetched in, with a now line at the current time; forecast queries never refetch on a timer (a refetch past 3 hours would collect the city and spend the viewer's quota without a click, and swap a newer run in under the reader), so a chart only moves on Refresh.
+- **Models are compared with each other, not with observations.** Accuracy needs truth data and its own UI; it is a
+  post-MVP feature, along with skill scores and a scoreboard.
+- **The server returns raw series; the client derives everything.** Medians, ranges, slots, disagreement and labels are
+  pure functions in `packages/shared`. Feels-like is the one value computed when a run is stored, with Open-Meteo's own
+  formula (`apparent-temperature.ts`), so met.no gets the same one.
+- **Charts start where the data starts**: at the local 3-hour slot the run was fetched in, with a now line. Forecast
+  queries never refetch on a timer, since a refetch past 3 hours would collect the city, spend the viewer's quota and
+  swap a newer run in under the reader; a chart only moves on Refresh.
 - **Precipitation is a total over a span:** bars, not lines, and hovered as the period each bar covers.
-- **The design is frozen in `globals.css`.** The Theme Lab that chose it was removed; it is in the history if a redesign needs it.
-- **Redis is never on the critical path.** Upstash's free plan only; any Redis error means no cache, no limit and a granted claim for that call, never an outage or a bill.
-- **One hourly grid per run, weekly partitions.** A run covers 14 days (9 hours back and 327 ahead, the most one Open-Meteo call covers); a model's rows stop where its forecast does. Forecast rows are partitioned by issue week and dropped after 14 days by the first fetch of each day.
+- **The design is frozen in `globals.css`**, and the app's theme is generated from it.
+- **Redis is never on the critical path.** Upstash's free plan only; any Redis error means no cache, no limit and a
+  granted claim for that call, never an outage or a bill.
+- **One hourly grid per run, weekly partitions.** A run covers 14 days (9 hours back and 327 ahead, the most one
+  Open-Meteo call covers); forecast rows are partitioned by issue week and dropped after 14 days by the first fetch of
+  each day.
 - **The model palette is fixed,** with dash patterns where two colors are too close for color-vision deficiencies.
-- **Forecasts are fetched on demand, with one scheduled reader.** Opening a city fetches it when its stored forecast is 3 hours old (`isRefreshDue`, shared with the UI's Refresh); a PARTIAL run is retried after 15 minutes, and a fetch that got nothing waits 15 minutes before the next; everyone else then reads the stored one. The Android widget is the one scheduled reader: Android redraws it every 30 minutes through the same `/latest` route, where a stored run is still refreshed only once it is 3 hours old, so it costs its owner's quota and nobody else's; its current temperature (`/current`) spends no quota and is worked out once per city and quarter hour. A scheduled collector refreshed cities nobody opened and was removed; don't add one back for a feature without weighing that cost.
-- **Limits and the quota count per client: an IPv4 address or an IPv6 /64.** An IPv4-mapped address counts as IPv4, and a global daily cap protects the free upstream tiers. Keying IPv6 by the full address would let one /64 rotate through endless fresh quotas.
-- **The mobile app and the web's phone layout stay in sync.** Every change to what a phone shows or does lands in both apps, so neither drifts into a second product; only platform features (the widget, the "Get the app" bar, the landing page's pitch, which an installed app doesn't need) stay one-sided.
-- **The mobile app shares code and one UI library family with the web** (2026-10-13). Component code can't be shared without react-native-web (Radix renders DOM), so each app has its own kit from the same family, shadcn/ui on the web and React Native Reusables in the app, with the same component names, variants and props, and the app's Uniwind theme generated from `globals.css` (colours, radii and the web's type-size overrides, so a class means the same size in both apps). A react-native-web spike (2026-10-14/15) rendered one shared component inside Next.js, but it needed a self-owned `className` bridge and a patch to react-native-web, and an audit found most of the web UI should stay per platform; the author kept two kits, with parity enforced mechanically instead: one generated theme, and `pnpm --filter @fa/e2e parity`, which compares every text of a screen in both apps by the size of its glyphs. Everything above the kits is shared: `@fa/shared`, `@fa/api-client`, `@fa/chart-core`, `@fa/hooks` and `@fa/messages`. Both apps run the React version the Expo SDK pins (19.2.3), so the shared packages resolve one React; upgrade React with the Expo SDK. Shared packages declare `react` only as a peer.
-- **The app's charts draw on a GPU canvas** (2026-10-16). On Android `react-native-svg` rasterises a whole `<Svg>` into a new bitmap on the CPU after any change, and the ten-day overview was one 2,400 dp wide `<Svg>`: a panel toggle took 300–480 ms on a 480 dpi phone, against an instant redraw on the web. The overview, the archive and the dashboard chart now draw with React Native Skia 2 (the version the Expo SDK pins), each on one screen-wide canvas, replaying the plot shifted by the scroll offset on the UI thread, from the same `@fa/chart-core` path strings. WebView or Expo DOM charts, Victory Native XL, ECharts, the SVG chart libraries and native chart views were compared and set aside.
+- **Forecasts are fetched on demand, with one scheduled reader.** Opening a city fetches it when its stored run is 3
+  hours old (`isRefreshDue`, shared with Refresh). The Android widget reads every 30 minutes on its owner's quota. A
+  scheduled collector refreshed cities nobody opened and was removed; weigh that cost before adding one back.
+- **Limits and the quota count per client: an IPv4 address or an IPv6 /64.** Keying IPv6 by the full address would let
+  one /64 rotate through endless fresh quotas; a global daily cap protects the free upstream tiers.
+- **The mobile app and the web's phone layout stay in sync.** Every change to what a phone shows or does lands in both
+  apps; only platform features (the widget, the "Get the app" bar, the landing page's pitch) stay one-sided.
+- **Shared code, two UI kits from one family.** Components can't be shared without react-native-web (Radix renders DOM),
+  which needed a `className` bridge and a patch in a spike, so the web uses shadcn/ui and the app React Native Reusables,
+  with the same names, variants and props. Both apps run the React version the Expo SDK pins; upgrade them together.
+- **The app's charts draw on a GPU canvas.** On Android `react-native-svg` rasterises a whole `<Svg>` on the CPU after
+  any change, so a panel toggle took 300–480 ms; React Native Skia draws the same `@fa/chart-core` paths on one
+  screen-wide canvas. WebView charts, Victory Native XL, ECharts and SVG chart libraries were set aside.
 
 ## Data and attribution
 
-Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0) and [MET Norway](https://api.met.no/) (CC BY 4.0). Geocoding by Open-Meteo (GeoNames). Open-Meteo's free API is for non-commercial use, like the code itself. Flags from `country-flag-icons` (MIT).
+Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0) and [MET Norway](https://api.met.no/) (CC BY 4.0).
+Geocoding by Open-Meteo (GeoNames). Open-Meteo's free API is for non-commercial use, like the code itself. Flags from
+`country-flag-icons` (MIT).
 
 ## License
 
-The code is source-available under the [PolyForm Noncommercial License 1.0.0](LICENSE): anyone may read, run, change and share it for any noncommercial purpose (personal study, hobby projects, research, education, charities, public bodies), and nobody may use it commercially, including selling it or anything built on it. It is not an open-source license in the OSI sense. The weather data stays under its providers' CC BY 4.0 terms.
+The code is source-available under the [PolyForm Noncommercial License 1.0.0](LICENSE): anyone may read, run, change and
+share it for any noncommercial purpose (personal study, hobby projects, research, education, charities, public bodies),
+and nobody may use it commercially, including selling it or anything built on it. It is not an open-source license in
+the OSI sense. The weather data stays under its providers' CC BY 4.0 terms.
