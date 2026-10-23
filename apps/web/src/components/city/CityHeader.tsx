@@ -65,7 +65,7 @@ export function CityHeader({ city }: IProps) {
                 asChild
                 variant="ghost"
                 size="sm"
-                className="-ml-2 self-start text-muted-foreground max-sm:h-9 max-sm:text-sm"
+                className="-ml-2 self-start text-muted-foreground max-sm:-my-1 max-sm:h-11 max-sm:text-sm sm:pointer-coarse:-my-2 sm:pointer-coarse:h-11"
             >
                 <Link href={`/?city=${city.slug}`}>
                     <ArrowLeft /> {t('back')}
@@ -83,7 +83,7 @@ export function CityHeader({ city }: IProps) {
                                 {region && <span className="font-medium text-muted-foreground">, {region}</span>}
                             </span>
                         </h1>
-                        <div className="flex shrink-0 items-center gap-1.5 max-sm:ml-auto">
+                        <div className="flex shrink-0 items-center gap-1 max-sm:ml-auto">
                             <FavoriteToggle place={city} />
                             <Button
                                 ref={pencilRef}
@@ -92,7 +92,7 @@ export function CityHeader({ city }: IProps) {
                                 onClick={() => setIsEditing(true)}
                                 aria-label={t('change')}
                                 title={t('change')}
-                                className="shrink-0 text-muted-foreground pointer-coarse:size-9"
+                                className="shrink-0 text-muted-foreground touch:size-9 touch:hit-area"
                             >
                                 <Pencil />
                             </Button>

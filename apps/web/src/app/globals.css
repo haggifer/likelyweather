@@ -10,6 +10,23 @@
     --breakpoint-sm: 62rem;
 }
 
+/* Where a finger may tap: the phone layout, whatever the pointer, and any touch screen. Controls there are at least
+   36 px (`touch:size-9`, `touch:h-9`). */
+@custom-variant touch (@media (width < 62rem) or (pointer: coarse));
+
+/* Stretches what a finger can hit to 44 × 44 px, Apple's minimum and WCAG's 2.5.5, without growing the control: for
+   controls with at least 4 px of room around them, so a neighbour's area meets it in the gap rather than overlapping. */
+@utility hit-area {
+    position: relative;
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset-block: min(0px, calc((100% - 2.75rem) / 2));
+        inset-inline: min(0px, calc((100% - 2.75rem) / 2));
+    }
+}
+
 @theme inline {
     --color-background: var(--background);
     --color-foreground: var(--foreground);

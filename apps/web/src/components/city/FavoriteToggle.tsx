@@ -37,7 +37,7 @@ export function FavoriteToggle({ place, className }: IProps) {
             aria-pressed={isPinned}
             aria-label={label}
             title={isAvailable ? label : undefined}
-            className={cn('shrink-0 pointer-coarse:size-9', !places && 'invisible', className)}
+            className={cn('shrink-0 touch:size-9 touch:hit-area', !places && 'invisible', className)}
         >
             <Star className={cn('size-5', isPinned ? 'fill-favorite-fill text-favorite' : 'text-favorite-idle')} />
         </Button>

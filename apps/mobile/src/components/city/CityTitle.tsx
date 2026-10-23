@@ -22,7 +22,7 @@ export function CityTitle({ name, region, countryCode, children }: IProps) {
                     {region && <Text className="text-xl font-medium text-muted-foreground">, {region}</Text>}
                 </Text>
             </View>
-            {children && <View className="flex-row items-center gap-1.5">{children}</View>}
+            {children && <View className="flex-row items-center gap-1">{children}</View>}
         </View>
     )
 }
