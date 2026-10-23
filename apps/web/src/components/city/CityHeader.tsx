@@ -65,7 +65,7 @@ export function CityHeader({ city }: IProps) {
                 asChild
                 variant="ghost"
                 size="sm"
-                className="-ml-2 self-start text-muted-foreground max-sm:-my-1 max-sm:h-11 max-sm:text-sm sm:pointer-coarse:-my-2 sm:pointer-coarse:h-11"
+                className="-my-1 -ml-2 h-9 self-start text-muted-foreground max-sm:h-11 max-sm:text-sm sm:pointer-coarse:-my-2 sm:pointer-coarse:h-11"
             >
                 <Link href={`/?city=${city.slug}`}>
                     <ArrowLeft /> {t('back')}
