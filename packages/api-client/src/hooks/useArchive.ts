@@ -8,7 +8,11 @@ import { apiGet } from '../api'
 export function useArchive(slug: string | null, range: ArchiveRange | null): UseQueryResult<ArchiveResponse, Error> {
     return useQuery({
         queryKey: ['archive', slug, range?.from, range?.to],
-        queryFn: () => apiGet<ArchiveResponse>(`/cities/${slug}/archive`, { from: range!.from, to: range!.to }),
+        queryFn: () =>
+            apiGet<ArchiveResponse>(`/cities/${encodeURIComponent(slug!)}/archive`, {
+                from: range!.from,
+                to: range!.to,
+            }),
         enabled: Boolean(slug && range),
         select: toPeriodArchive,
         staleTime: Infinity,
