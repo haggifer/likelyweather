@@ -36,9 +36,9 @@ interface IProps {
     className?: string
 }
 
-// Eight variables leave room for every label only from `lg`; below it only the selected one is named, the others
-// keep their icon and their accessible name. On phones the named segment takes the room its label needs and the
-// others share the rest, as in the app. Phones name a pair once (Temperature, Wind) and pick its member with the
+// From `sm` up every variable is named (German, the longest, fits a 992 px window with 3 px to spare). On phones only
+// the selected one is named, the others keep their icon and their accessible name; the named segment takes the room its
+// label needs and the others share the rest, as in the app. Phones name a pair once (Temperature, Wind) and pick its member with the
 // sub-tabs above the chart (`VariablePairTabs`).
 export function VariableSwitch({ className }: IProps) {
     const t = useTranslations('variables')
@@ -79,7 +79,7 @@ export function VariableSwitch({ className }: IProps) {
                         )}
                     >
                         <Icon className={cn('size-3.5 shrink-0', id === selected && 'max-sm:hidden')} />
-                        <span className={cn('truncate', id !== selected && 'max-lg:sr-only')}>{label}</span>
+                        <span className={cn('truncate', id !== selected && 'max-sm:sr-only')}>{label}</span>
                     </ToggleGroupItem>
                 )
             })}
