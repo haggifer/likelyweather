@@ -9,7 +9,7 @@ import Link from 'next/link'
 import { ReactNode } from 'react'
 
 const ICONS: Record<NavKey, ReactNode> = {
-    forecast: <CloudSun />,
+    overview: <CloudSun />,
     details: <ChartSpline />,
     archive: <Archive />,
     methodology: <BookOpen />,

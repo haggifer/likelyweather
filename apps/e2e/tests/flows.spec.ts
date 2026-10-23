@@ -258,16 +258,16 @@ test('the archive picks its period on a range calendar, capped at twelve days, a
     }
 })
 
-test('the header marks Forecast on the landing and Details on a city dashboard', async ({ page, isMobile }) => {
+test('the header marks Overview on the landing and Details on a city dashboard', async ({ page, isMobile }) => {
     test.skip(isMobile, 'phones reach the pages through the menu')
 
     const nav = page.getByRole('navigation', { name: 'Main' })
 
     await page.goto('/')
-    await expect(nav.getByRole('link', { name: 'Forecast' })).toHaveAttribute('aria-current', 'page')
+    await expect(nav.getByRole('link', { name: 'Overview' })).toHaveAttribute('aria-current', 'page')
     await page.goto(`/city/${KYIV}`)
     await expect(nav.getByRole('link', { name: 'Details' })).toHaveAttribute('aria-current', 'page')
-    await expect(nav.getByRole('link', { name: 'Forecast' })).not.toHaveAttribute('aria-current')
+    await expect(nav.getByRole('link', { name: 'Overview' })).not.toHaveAttribute('aria-current')
 })
 
 // Details opens the city the overview shows, not only the default place.

@@ -33,13 +33,13 @@ describe('MoreMenu', () => {
         jest.spyOn(View.prototype, 'measure').mockImplementation((callback) => callback(0, 0, 36, 36, 300, 40))
     })
 
-    it('lists Forecast first and goes back to Home instead of stacking another one', async () => {
+    it('lists Overview first and goes back to Home instead of stacking another one', async () => {
         mockPathname = '/archive'
         await openMenu()
 
         const items = screen.getAllByRole('menuitem')
 
-        expect(items[0]).toHaveTextContent(en.nav.forecast)
+        expect(items[0]).toHaveTextContent(en.nav.overview)
 
         await fireEvent.press(items[0])
 
@@ -50,7 +50,7 @@ describe('MoreMenu', () => {
     it('only closes on Home itself', async () => {
         mockPathname = '/'
         await openMenu()
-        await fireEvent.press(screen.getByRole('menuitem', { name: en.nav.forecast }))
+        await fireEvent.press(screen.getByRole('menuitem', { name: en.nav.overview }))
 
         expect(mockDismissTo).not.toHaveBeenCalled()
         expect(screen.queryByRole('menuitem')).toBeNull()

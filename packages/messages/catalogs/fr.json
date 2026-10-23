@@ -18,7 +18,7 @@
     },
     "nav": {
         "main": "Principal",
-        "forecast": "Prévisions",
+        "overview": "Aperçu",
         "details": "Détails",
         "archive": "Archives",
         "more": "Autres pages",

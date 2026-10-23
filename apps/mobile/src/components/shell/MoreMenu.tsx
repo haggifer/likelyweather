@@ -10,7 +10,7 @@ import { Icon } from '../ui/icon'
 import { Text } from '../ui/text'
 
 interface MenuItem {
-    key: 'forecast' | 'details' | 'archive' | 'methodology' | 'settings'
+    key: 'overview' | 'details' | 'archive' | 'methodology' | 'settings'
     icon: LucideIcon
     href: Href
 }
@@ -20,14 +20,14 @@ const HOME: Href = '/'
 const ITEM = 'min-h-9 gap-2.5 px-4'
 
 const getItems = (citySlug: string | null): MenuItem[] => [
-    { key: 'forecast', icon: CloudSun, href: HOME },
+    { key: 'overview', icon: CloudSun, href: HOME },
     { key: 'details', icon: ChartSpline, href: citySlug ? `/city/${citySlug}` : HOME },
     { key: 'archive', icon: Archive, href: '/archive' },
     { key: 'methodology', icon: BookOpen, href: '/methodology' },
     { key: 'settings', icon: Settings, href: '/settings' },
 ]
 
-// The web header's pages (Forecast, Details, the Archive, then Methodology), on every screen's header; Settings joins
+// The web header's pages (Overview, Details, the Archive, then Methodology), on every screen's header; Settings joins
 // them because the app has no top-bar controls for language and theme. Details opens the city Home's overview shows.
 export function MoreMenu() {
     const t = useTranslations('nav')
@@ -39,14 +39,14 @@ export function MoreMenu() {
 
     const items = getItems(selectedCity ?? getDefaultPlace(places)?.slug ?? null)
     const labels = {
-        forecast: t('forecast'),
+        overview: t('overview'),
         details: t('details'),
         archive: t('archive'),
         methodology: t('methodology'),
         settings: tm('settings'),
     }
 
-    // Forecast goes back to Home rather than stacking a second one, and a page already on screen stays as it is.
+    // The overview goes back to Home rather than stacking a second one, and a page already on screen stays as it is.
     const handleNavigate = (href: Href) => {
         if (href === HOME) {
             if (pathname !== HOME) router.dismissTo(HOME)

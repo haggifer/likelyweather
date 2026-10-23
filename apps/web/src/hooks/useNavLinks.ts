@@ -3,7 +3,7 @@ import { getDefaultPlace } from '@fa/shared/places'
 import { usePathname, useRouter } from 'next/navigation'
 import { MouseEvent } from 'react'
 
-export type NavKey = 'forecast' | 'details' | 'archive' | 'methodology'
+export type NavKey = 'overview' | 'details' | 'archive' | 'methodology'
 
 interface NavLink {
     key: NavKey
@@ -27,7 +27,7 @@ const getShownCity = () =>
 const isPlainClick = (e: MouseEvent<HTMLAnchorElement>) =>
     e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey
 
-// The header's pages: the forecast, a city's details, the archive and the methodology. Details opens the city the
+// The header's pages: the overview, a city's details, the archive and the methodology. Details opens the city the
 // overview shows: the one picked on the page, or else the overview's default place; a city's dashboard is that page,
 // whichever city it shows.
 export function useNavLinks(): UseNavLinksResult {
@@ -38,7 +38,7 @@ export function useNavLinks(): UseNavLinksResult {
     const place = places ? getDefaultPlace(places) : null
 
     const links: NavLink[] = [
-        { key: 'forecast', href: '/', isCurrent: pathname === '/' },
+        { key: 'overview', href: '/', isCurrent: pathname === '/' },
         { key: 'details', href: place ? `/city/${place.slug}` : '/', isCurrent: CITY_PATH.test(pathname) },
         { key: 'archive', href: '/archive', isCurrent: pathname === '/archive' },
         { key: 'methodology', href: '/methodology', isCurrent: pathname === '/methodology' },
