@@ -8,11 +8,12 @@ import { buildWidgetModel, getShownModel, WidgetCity, WidgetData, WidgetModel } 
 import { widgetBindings, widgetModels } from './widget-store'
 import { getAppLocale, getTranslator } from './widget-translator'
 
-const getLatest = (slug: string, variable: Variable) => apiGet<LatestResponse>(`/cities/${slug}/latest`, { variable })
+const getLatest = (slug: string, variable: Variable) =>
+    apiGet<LatestResponse>(`/cities/${encodeURIComponent(slug)}/latest`, { variable })
 
 // Without a current temperature the widget shows the medians' value for now instead.
 const getCurrent = (slug: string) =>
-    apiGet<CurrentResponse>(`/cities/${slug}/current`).catch((error) => {
+    apiGet<CurrentResponse>(`/cities/${encodeURIComponent(slug)}/current`).catch((error) => {
         console.warn(`The current temperature for ${slug} is unavailable: ${String(error)}`)
 
         return null
@@ -63,7 +64,7 @@ export const drawSaved = (widgetId: number) =>
 const resolveWidgetCity = async (widgetId: number, bound: WidgetCity): Promise<WidgetCity> => {
     if (bound.timezone !== null && bound.coordinates) return bound
 
-    const city = toWidgetCity(await apiGet<City>(`/cities/${bound.slug}`))
+    const city = toWidgetCity(await apiGet<City>(`/cities/${encodeURIComponent(bound.slug)}`))
 
     widgetBindings.set((bindings) => ({ ...bindings, [widgetId]: city }))
 
@@ -95,7 +96,7 @@ export const refreshWidget = async (widgetId: number): Promise<WidgetRepresentat
 // network the zone stays unknown until the widget's first refresh that reaches the server.
 const getWidgetCity = async (place: Place): Promise<WidgetCity> => {
     try {
-        return toWidgetCity(await apiGet<City>(`/cities/${place.slug}`))
+        return toWidgetCity(await apiGet<City>(`/cities/${encodeURIComponent(place.slug)}`))
     } catch {
         return { ...place, timezone: null }
     }
