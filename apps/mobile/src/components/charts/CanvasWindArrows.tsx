@@ -18,7 +18,7 @@ interface IProps {
     mutedColor: string
 }
 
-// `WindArrows` on a Skia canvas: each slot's median wind direction as an arrow, a dot where no model gave one.
+// Each slot's median wind direction as an arrow, a dot where no model gave one.
 export function CanvasWindArrows({ x, times, directions, y, color, mutedColor }: IProps) {
     return (
         <Group>
