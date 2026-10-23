@@ -39,11 +39,7 @@ const toWidgetCity = (city: City): WidgetCity => ({
 const saveWidgetModel = (widgetId: number, model: WidgetModel) =>
     widgetModels.set((models) => ({ ...models, [widgetId]: model }))
 
-export const drawWidget = (
-    widgetId: number,
-    city: WidgetCity | null,
-    model: WidgetModel | null,
-): WidgetRepresentation => {
+const drawWidget = (widgetId: number, city: WidgetCity | null, model: WidgetModel | null): WidgetRepresentation => {
     const locale = getAppLocale()
 
     return renderForecastWidget({
