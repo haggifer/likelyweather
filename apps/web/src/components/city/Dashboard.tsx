@@ -39,9 +39,9 @@ interface SeriesTableProps {
     locale: string
     medianLabel: string
     timeLabel: string
-    // Phones read a pair together, "actual (companion)", whichever sub-tab is open (author, 2026-10-14).
+    // Phones read a pair together, "actual (companion)", whichever sub-tab is open.
     pairedRuns: PairedRuns | null
-    // The median's eye in the legend hides its column too (author, 2026-10-20).
+    // The median's eye in the legend hides its column too.
     isMedianHidden: boolean
 }
 
@@ -62,7 +62,7 @@ const toHoverIndex = (steps: string[], hoverStep: string | null) => (hoverStep ?
 type HoveredChartProps = Omit<ComponentProps<typeof SpaghettiChart>, 'hoverIndex' | 'onHoverIndex'>
 
 // Only the chart and the legend read the hovered step, so a pointer move re-renders them and not the whole dashboard
-// (the tiles, the frame, the other legend), which made a hover cost 50–100 ms on a slow CPU.
+// (the tiles, the frame, the other legend), which costs 50–100 ms a hover on a slow CPU.
 const HoveredChart = (props: HoveredChartProps) => {
     const dispatch = useAppDispatch()
     const hoverStep = useAppSelector((s) => s.dashboard.hoverStep)
@@ -299,7 +299,7 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
                             now={now}
                             isMedianHidden={isMedianHidden}
                         />
-                        {/* Phones go without the note (author, 2026-10-14): the legend names the direction. */}
+                        {/* Phones go without the note: the legend names the direction. */}
                         {variable === Variable.Wind && (
                             <p className="mt-1 text-xs text-muted-foreground max-sm:hidden">{t('windArrows')}</p>
                         )}
@@ -325,7 +325,7 @@ interface IProps {
 }
 
 // The switch shows a tap at once; the dashboard redraws for it in the background and its chart fades until it has
-// (`data-switching`, the author's lag report of 2026-10-14).
+// (`data-switching`).
 export function Dashboard({ slug }: IProps) {
     const { isHydrated } = useUrlSync()
     const selectedVariable = useAppSelector((s) => s.dashboard.variable)

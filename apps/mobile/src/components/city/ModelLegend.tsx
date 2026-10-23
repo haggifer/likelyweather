@@ -20,7 +20,7 @@ import { Text } from '../ui/text'
 const EYE_HIT_SLOP = 4
 const EYE_CLASS = 'size-3.5'
 const EYE_BUTTON_CLASS = 'size-9'
-// A model's row is laid out like the median's (author, 2026-10-14): the same swatch length, gaps and padding.
+// A model's row is laid out like the median's: the same swatch length, gaps and padding.
 const ROW_CLASS = 'min-h-10 flex-row items-center gap-1.5 py-1 pr-0.5 pl-2'
 
 // Shared elements, so an unchanged eye is not rebuilt on every tap of the chart; the class picks the theme's colour.
@@ -43,7 +43,7 @@ interface RowProps {
     onToggleHidden: (id: ModelId) => void
 }
 
-// One model's row; a tap on the chart re-renders only the rows whose value text changed.
+// A tap on the chart re-renders only the rows whose value text changed.
 const ModelRow = memo(function ModelRow({ modelId, value, isHidden, onToggleHidden }: RowProps) {
     const t = useTranslations('legend')
 
@@ -78,7 +78,7 @@ interface IProps {
     variable: Variable
     // The median wind direction at the readout time: a phone can't hover the arrows, so the readout names it.
     direction?: number | null
-    // A pair reads "actual (companion)" whichever sub-tab is open (author, 2026-10-14).
+    // A pair reads "actual (companion)" whichever sub-tab is open.
     pairedRuns?: PairedRuns | null
     hidden: ModelId[]
     isMedianHidden: boolean
@@ -87,8 +87,6 @@ interface IProps {
     onReset: () => void
 }
 
-// The models at the chart's readout time in one column, highest first, under the median; the eye hides a model, the
-// median too.
 export function ModelLegend({
     series,
     median,

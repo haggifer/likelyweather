@@ -9,7 +9,6 @@ interface IProps {
     className?: string
 }
 
-// The overview's and the archive's charts or table switch: an icon on phones, labelled from `sm` up.
 export function ViewModeToggle({ className }: IProps) {
     const t = useTranslations('chart')
     const { isTable, toggleTable } = useViewMode()

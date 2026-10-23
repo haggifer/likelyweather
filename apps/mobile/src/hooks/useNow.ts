@@ -24,7 +24,6 @@ const subscribe = (onChange: () => void) => {
 
 const getSnapshot = () => current
 
-// The current time, refreshed every minute and whenever the app returns to the foreground.
 export function useNow(): Date {
     return useSyncExternalStore(subscribe, getSnapshot)
 }

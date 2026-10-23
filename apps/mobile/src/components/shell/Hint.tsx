@@ -8,8 +8,8 @@ interface IProps {
     className?: string
 }
 
-// The web's Hint on a touch screen: a tap on the control opens its explanation in a bubble under it, and a tap
-// anywhere closes it. The control gets the tap, so it takes no action of its own (a Refresh with nothing to fetch).
+// The web's Hint on a touch screen. The control gets the tap, so it takes no action of its own (a Refresh with
+// nothing to fetch).
 export function Hint({ content, children, className }: IProps) {
     return (
         <Popover>

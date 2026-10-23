@@ -6,7 +6,7 @@ interface IProps {
     hasTiles?: boolean
 }
 
-// The web's phone skeleton (Dashboard and CityShell there): the chart card with its model list, then the day tiles.
+// The web's phone skeleton (Dashboard and CityShell there).
 export function DashboardSkeleton({ hasTiles = true }: IProps) {
     return (
         <View className="gap-4">

@@ -14,7 +14,7 @@ import { placesStore } from '../lib/places-store'
 import { showSnackbar } from '../lib/snackbar-store'
 
 interface IProps {
-    // The widget's city now, marked and first in the list.
+    // Marked and first in the list.
     current?: Place | null
     onPick: (place: Place) => Promise<void>
 }

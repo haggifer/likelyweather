@@ -1,4 +1,3 @@
-// Bundles the API into one ESM file for `pnpm start`, and packages it for Lambda with the Web Adapter's start script.
 import { build } from 'esbuild'
 import { createWriteStream, writeFileSync } from 'node:fs'
 import yazl from 'yazl'

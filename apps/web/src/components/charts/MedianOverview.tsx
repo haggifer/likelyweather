@@ -69,11 +69,11 @@ const DESKTOP_SIZE: ChartSize = { ...OVERVIEW_SIZE, isNowLabelAbove: false }
 const PHONE_SIZE: ChartSize = {
     ...OVERVIEW_PHONE_SIZE,
     // The panel names sit in the panels' top-left corner, where the "now" line always is right after a fetch; above
-    // the panels the label centres on its line like the hovered time (author, 2026-10-13).
+    // the panels the label centres on its line like the hovered time.
     isNowLabelAbove: true,
 }
-// Phones stack the readouts in a two-column grid above a full-width chart (equal columns whose rows line up); from
-// `sm` they form a 12rem column beside it, one per panel. The column's gap and padding match ROW_GAP, HOVER_STRIP and AXIS_HEIGHT.
+// The phone readouts are a grid so their two equal columns line up row by row. From `sm` the column's gap and padding
+// match ROW_GAP, HOVER_STRIP and AXIS_HEIGHT.
 const GRID = 'flex flex-col gap-y-3 sm:flex-row sm:gap-x-4 sm:*:last:min-w-0 sm:*:last:flex-1'
 const READOUTS = 'grid grid-cols-2 gap-2 sm:flex sm:w-48 sm:shrink-0 sm:flex-col sm:gap-3.5 sm:pt-5 sm:pb-5.5'
 const STACKED_QUERY = '(width < 62rem)'
@@ -92,7 +92,6 @@ const getGeometry = (size: ChartSize, panels: PanelVariable[], hasChance: boolea
 export function MedianOverviewSkeleton({ panels, isArchive = false }: SkeletonProps) {
     const { panels: stored } = useOverviewPanels()
 
-    // The overview's own choice unless a page with its own panels (the archive) passes them.
     const visible = panels ?? getVisiblePanels(stored)
 
     return (
@@ -149,12 +148,9 @@ interface IProps {
     isArchive?: boolean
 }
 
-// Median of all models for each of the reader's panels on one time axis of 3-hour slots; a precipitation bar is the
-// amount of the 3 hours after its slot, and the strip under the bars the share of models above 0.2 mm in it. Readouts
-// follow the crosshair, or the slot nearest to `now`; the hovered slot's time sits above the panels. `now` draws the
-// "now" line at the exact current time, which is inside the first slot right after a refresh, and shades the past.
-// The archive draws a city's past weather the same way, every hour and narrower, without a now line or a chance of
-// rain.
+// A precipitation bar is the amount of the 3 hours after its slot, and the strip under the bars the share of models
+// above 0.2 mm in it. `now` draws the "now" line at the exact current time, which is inside the first slot right after
+// a refresh. The archive draws every hour, without a now line or a chance of rain.
 export function MedianOverview({
     panels,
     series,

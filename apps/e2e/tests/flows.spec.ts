@@ -204,7 +204,6 @@ test('a panel moves by keyboard with its handle, and Escape cancels a move witho
     const handle = page.getByRole('button', { name: 'Reorder Temperature' })
     const rows = page.getByRole('dialog', { name: 'Shown variables' }).getByRole('listitem')
 
-    // The handle reads as pressed while its row is held, and the held row slides down before it is dropped.
     const moveDown = async (finalKey: string) => {
         await page.keyboard.press('Space')
         await expect(handle).toHaveAttribute('aria-pressed', 'true')
@@ -270,7 +269,6 @@ test('the header marks Overview on the landing and Details on a city dashboard',
     await expect(nav.getByRole('link', { name: 'Overview' })).not.toHaveAttribute('aria-current')
 })
 
-// Details opens the city the overview shows, not only the default place.
 test('Details in the header opens the dashboard of the city the overview shows', async ({ page, isMobile }) => {
     test.skip(isMobile, 'phones reach the pages through the menu')
 
@@ -371,7 +369,6 @@ test('the star explains why it is disabled once four places are favorites', asyn
 
     await expect(star).toBeDisabled()
 
-    // A touch screen opens the hint on a tap, a mouse on hover.
     if (isMobile) {
         await star.locator('..').tap()
         await expect(page.getByRole('dialog')).toContainText('You already have 4 favorites')
@@ -412,7 +409,7 @@ test('the star on a chip pins the city to the front and unpins it again', async 
     await expect(chips.getByRole('button', { name: 'Add Paris to favorites' })).toBeVisible()
 })
 
-// On phones a tap meant for a city never pins it: the chip shows the star, and the overview card's star pins.
+// On phones a tap meant for a city never pins it, so the chips carry no star button; the overview card's star pins.
 test('a phone chip only shows its star, and a tap on it opens the city', async ({ page, isMobile }) => {
     test.skip(!isMobile, 'phone layout only')
 

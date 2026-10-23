@@ -38,7 +38,7 @@ export function Landing() {
         <div className={cn('flex flex-col gap-4 pt-0 pb-0 sm:gap-6 sm:pt-5 sm:pb-6', FILL_HEIGHT_PARENT)}>
             <section className="flex flex-col items-center gap-3 text-center sm:gap-5">
                 {/* The search and the overview say what the page is for; the heading stays for screen readers and search
-                    engines (author, 2026-10-12). */}
+                    engines. */}
                 <h1 className="sr-only">{t('heading')}</h1>
                 <div className="flex w-full flex-col items-center gap-3">
                     <SearchBox isLocateShown onSelectCity={(next) => void setSlug(next)} className="max-w-2xl" />

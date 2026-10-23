@@ -24,7 +24,6 @@ interface IProps {
     font: SkFont | null
 }
 
-// Local midnights of the city in every panel, with each day's label centred in its span.
 export function CanvasDayGrid({ x, start, end, timeZone, locale, spans, labelY, lineColor, labelColor, font }: IProps) {
     const midnights = useMemo(() => getLocalMidnights(start, end, timeZone), [start, end, timeZone])
     const labels = getDayLabels(midnights, { x, start, end, timeZone, locale, fontSize: CHART_FONT_SIZE })

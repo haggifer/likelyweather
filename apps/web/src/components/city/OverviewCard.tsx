@@ -36,8 +36,6 @@ interface SkeletonProps {
 const CARD = 'gap-0 max-sm:pt-3'
 const ACTIONS = 'flex items-center gap-2 max-sm:mt-2 max-sm:mb-3 max-sm:w-full'
 const CONTENT = 'relative sm:mt-2'
-// On phones the age, Refresh, Variables and the table toggle are icons, and Open details takes the rest of the row
-// with 14 px text.
 const PHONE_BUTTON = 'touch:h-9 max-sm:flex-1 max-sm:text-sm max-sm:[&_svg]:size-4'
 const TITLE = 'flex min-w-0 flex-1 items-center gap-2.5 text-lg tracking-tight sm:text-xl'
 

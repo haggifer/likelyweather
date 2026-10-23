@@ -20,7 +20,6 @@ interface IProps {
     locale: string
 }
 
-// The web's OverviewTable: every panel's median and its second line, slot by slot.
 export function OverviewTable({ panels, series, chance, timeZone, locale }: IProps) {
     const t = useTranslations('dashboard')
     const tv = useTranslations('variables')

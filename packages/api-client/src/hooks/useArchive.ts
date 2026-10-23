@@ -16,7 +16,6 @@ export function useArchive(slug: string | null, range: ArchiveRange | null): Use
         enabled: Boolean(slug && range),
         select: toPeriodArchive,
         staleTime: Infinity,
-        // Another period keeps the last chart on screen until its own arrives.
         placeholderData: keepPreviousData,
         // The API spends the unit before it asks Open-Meteo, so a retry after a failed fetch would charge it twice;
         // the reader retries from the error notice.

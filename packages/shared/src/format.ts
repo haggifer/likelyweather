@@ -67,15 +67,14 @@ export const formatDayLabel = (iso: string, timeZone: string, locale: string, st
 export const formatDateKey = (day: string, locale: string, options: Intl.DateTimeFormatOptions) =>
     formatTime(`${day}T12:00:00Z`, 'UTC', locale, options)
 
-// The viewer's own zone, for times that belong to no city (the quota reset). Read it only after mount: the
-// server renders in UTC, so using it in the first render would mismatch on hydration.
-// A day tile's two lines on phones: the weekday, then the date (author, 2026-10-14).
 export const formatDayTileLines = (day: string, locale: string) =>
     [
         formatDateKey(day, locale, { weekday: 'short' }),
         formatDateKey(day, locale, { day: 'numeric', month: 'short' }),
     ] as const
 
+// For times that belong to no city (the quota reset). Read it only after mount: the server renders in UTC, so using
+// it in the first render would mismatch on hydration.
 export const getViewerTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone
 
 export const formatNumber = (value: number | null | undefined, decimals = 1) => {
@@ -129,7 +128,6 @@ const toLocalMidnight = (day: number, timeZone: string) => {
     return localMs < day ? new Date(midnight.getTime() + HOUR_MS) : midnight
 }
 
-// The instant a local calendar day (`2026-10-12`) starts in a time zone.
 export const getLocalMidnight = (dateKey: string, timeZone: string) =>
     toLocalMidnight(Date.parse(`${dateKey}T00:00:00Z`), timeZone)
 

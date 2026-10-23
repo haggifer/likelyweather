@@ -20,7 +20,6 @@ interface IProps {
     locale: string
 }
 
-// The overview's numbers, slot by slot: every panel's median and its second line, like the dashboard's table.
 export function OverviewTable({ panels, series, chance, timeZone, locale }: IProps) {
     const t = useTranslations('dashboard')
     const tv = useTranslations('variables')
@@ -33,8 +32,8 @@ export function OverviewTable({ panels, series, chance, timeZone, locale }: IPro
         variable ? `${tv(variable)}, ${VARIABLE_BY_ID[variable].unit}` : `${tc('chanceOfRain')}, %`
 
     return (
-        // From `sm` up the table takes the window's free height, between 27rem and 70vh (author, 2026-10-16), passed down
-        // by its ancestors (`FILL_HEIGHT_PARENT`); phones keep the dashboard's cap.
+        // From `sm` up the table takes the window's free height, passed down by its ancestors (`FILL_HEIGHT_PARENT`);
+        // phones keep the dashboard's cap.
         <div
             data-fill-height
             className={cn(TABLE_SCROLL, 'mt-1 max-h-[26.25rem] sm:max-h-[70vh] sm:min-h-[27rem] sm:flex-1 sm:basis-0')}

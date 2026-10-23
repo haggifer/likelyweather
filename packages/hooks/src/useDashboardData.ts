@@ -59,11 +59,9 @@ const isSettled = (query: UseQueryResult<LatestResponse, Error>) =>
 const getPrefetchStaleTime = (runId: string) => (query: Query<LatestResponse, Error>) =>
     query.state.data?.runId === runId ? Infinity : 0
 
-// A city dashboard's data in both apps: the chosen variable's run and the precipitation run, which anchors the chart
-// because every variable shares it (a newer run re-anchors it), re-gridded onto the chart's slots, with its ensemble
-// statistics and the summary's values. Once that run is on screen the city's other variables load in the background,
-// so a switch draws from the cache instead of waiting for the network (author's lag report, 2026-10-14); the API serves
-// them from the run it has just refreshed, so they spend no quota.
+// The precipitation run anchors the chart because every variable shares it (a newer run re-anchors it). Once that run
+// is on screen the city's other variables load in the background, so a switch draws from the cache instead of waiting
+// for the network; the API serves them from the run it has just refreshed, so they spend no quota.
 export function useDashboardData(
     slug: string,
     variable: Variable,

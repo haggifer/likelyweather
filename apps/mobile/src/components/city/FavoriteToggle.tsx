@@ -16,8 +16,8 @@ interface IProps {
     className?: string
 }
 
-// Pins a place to the front of the chips. With four favorites already the star looks disabled and a tap explains the
-// limit in a hint bubble, as on the web.
+// With four favorites already the star only looks disabled, so a tap can still explain the limit in a hint bubble, as
+// on the web.
 export function FavoriteToggle({ place, className }: IProps) {
     const t = useTranslations('city')
     const locale = useLocale()

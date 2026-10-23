@@ -13,12 +13,11 @@ interface IProps {
     // With the run's start time and the city's zone, a tap on the chip shows the run's times, the web's tooltip.
     issueTime?: string
     timeZone?: string
-    // The overview card's row has room for icons only (author, 2026-10-13): a warning clock whose snackbar tells only
-    // its age (author, 2026-10-14).
+    // The overview card's row has room for icons only: a warning clock whose hint tells only its age.
     isCompact?: boolean
 }
 
-// How old the data on screen is, shown once Refresh turns on; amber once it is past the stale mark.
+// Shown once Refresh turns on; amber once the data is past the stale mark.
 export function UpdatedChip({ fetchedAt, now, issueTime, timeZone, isCompact = false }: IProps) {
     const t = useTranslations('city')
     const locale = useLocale()
@@ -35,7 +34,7 @@ export function UpdatedChip({ fetchedAt, now, issueTime, timeZone, isCompact = f
 
     if (isCompact) {
         return (
-            // The compact clock takes the web's phone box; its hint tells only the age (author, 2026-10-14).
+            // The compact clock takes the web's phone box.
             <Hint content={label}>
                 <Button
                     variant="ghost"

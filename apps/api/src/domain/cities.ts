@@ -145,8 +145,7 @@ export const findNearestCity = async (coordinates: Coordinates): Promise<Nearest
     return { city, distanceKm: getDistanceKm(coordinates, city) }
 }
 
-// Adds a geocoded place to the stored cities, named in every locale, so its slug can be opened. `onCreate` runs
-// before the geocoder is asked for a city not stored yet (the hourly limit).
+// `onCreate` (the hourly track limit) runs only when the geocoder has to be asked, for a city not stored yet.
 export const trackCity = async (geocodeId: number, onCreate: () => Promise<void> = async () => {}) => {
     const existing = await getCityById(geocodeId)
 
@@ -161,12 +160,9 @@ export const trackCity = async (geocodeId: number, onCreate: () => Promise<void>
     return addCity(toCity(place, getLocalNames(places)))
 }
 
-// A city whose newest snapshot is due for a refresh is fetched again: there is no scheduled collection, so views
-// never wait more than one upstream round trip. Each Lambda instance serves one request at a time, so the
-// parallel requests of one page meet in a shared claim: the first fetches and spends the client's quota, the others
-// wait for its snapshot. With no quota left the stored snapshot is served as it is, and the claim is given back so
-// the next viewer does not wait 12 seconds for a fetch that never starts. After a refresh that fell short, the
-// stored run is served as it is until the cooldown ends.
+// Each Lambda instance serves one request at a time, so the parallel requests of one page meet in a shared claim: the
+// first fetches and spends the client's quota, the others wait for its snapshot. With no quota left the claim is given
+// back, so the next viewer does not wait 12 seconds for a fetch that never starts.
 export const ensureFreshSnapshot = (city: City, client?: string): Promise<StoredSnapshotMeta> =>
     dedupe(`refresh:${city.id}`, async () => {
         const now = new Date()

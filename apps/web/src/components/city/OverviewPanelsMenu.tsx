@@ -104,9 +104,8 @@ interface IProps {
     className?: string
 }
 
-// Which panels show and in which order (author, 2026-10-13): each row drags from anywhere on it (author, 2026-10-16)
-// and shows or hides with its eye. The keyboard drags too (Space on the handle, the arrows, Space again), with the moves read out to screen
-// readers. The last shown panel stays.
+// Each row drags from anywhere on it and shows or hides with its eye. The keyboard drags too (Space on the handle, the
+// arrows, Space again), with the moves read out to screen readers. The last shown panel stays.
 export function OverviewPanelsMenu({ panels, onChange: setPanels, isLabelHiddenOnPhones = false, className }: IProps) {
     const t = useTranslations('overview')
     const tv = useTranslations('variables')

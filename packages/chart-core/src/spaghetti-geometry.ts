@@ -141,7 +141,6 @@ export const getSpaghettiMargin = (compact: boolean, hasArrows: boolean): Margin
 export const getSpaghettiHeight = (width: number, height: number) =>
     width < NARROW_WIDTH ? Math.min(height, NARROW_HEIGHT) : height
 
-// The middle of the arrow row at the bottom of a chart `height` tall.
 export const getArrowRowY = (height: number) => height - ARROW_ROW / 2 - 2
 
 export const getSeriesYDomain = (series: Series[], variable: Variable) =>
@@ -161,7 +160,6 @@ export const getStepMs = (times: Date[]) =>
 // Each model's amount is a tick across its bar, no wider than this.
 export const getTickWidth = (barWidth: number) => Math.min(barWidth, MAX_TICK_WIDTH)
 
-// Bars that would overflow the plot are not drawn.
 export const getDrawnBars = (
     times: Date[],
     x: ScaleTime<number, number>,
@@ -177,7 +175,6 @@ export const getDrawnBars = (
 export const getIndexRange = (bars: DrawnBar[], isBars: boolean, count: number): [number, number] =>
     isBars && bars.length ? [bars[0].i, bars[bars.length - 1].i] : [0, count - 1]
 
-// The step a pointer at `at` selects: the sum it is over, or the nearest step of a line.
 export const getIndexAt = (times: Date[], at: Date, stepMs: number, isBars: boolean) =>
     isBars ? getSpanIndex(times, at, stepMs) : getNearestIndex(times, at)
 

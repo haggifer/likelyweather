@@ -158,7 +158,7 @@ export function SpaghettiChart({
     const dragScroll = useDragScroll()
 
     // Everything that does not follow the pointer is built once per data, size or theme change, so a hover redraws
-    // only the crosshair, the dots and the label (a pointer move cost 50–100 ms on a slow CPU before).
+    // only the crosshair, the dots and the label.
     const staticLayer = useMemo(
         () => (
             <g>

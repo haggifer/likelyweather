@@ -14,8 +14,7 @@ interface IProps {
 
 const CHIP_PLACEHOLDERS = Array.from({ length: MAX_PLACES }, (_, i) => i)
 
-// The viewer's places as one-tap shortcuts, on the landing page and the archive alike; placeholders hold their room
-// while the places are read or chosen. The group's name is for screen readers only (author, 2026-10-14).
+// Placeholders hold their room while the places are read or chosen.
 export function PlaceChips({ places, chips, slug, onSelect }: IProps) {
     const t = useTranslations('landing')
 

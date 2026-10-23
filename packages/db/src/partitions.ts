@@ -50,7 +50,7 @@ const createPartition = async (prisma: PrismaClient, start: Date) => {
     }
 }
 
-// Creates the weekly partitions covering `issueTime` and the following week, so writes never hit a missing range.
+// The following week is created ahead too, so writes never hit a missing range.
 export const ensureForecastPartitions = async (prisma: PrismaClient, issueTime: Date) => {
     const first = getWeekStart(issueTime)
 

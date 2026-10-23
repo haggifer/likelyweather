@@ -10,7 +10,6 @@ export interface UseOverviewPanelsResult {
 const setPanels = (update: (panels: OverviewPanels) => OverviewPanels) =>
     settingsStore.set((settings) => ({ ...settings, overviewPanels: update(settings.overviewPanels) }))
 
-// The overview's panels and their order, kept on the device with the other settings.
 export function useOverviewPanels(): UseOverviewPanelsResult {
     const { overviewPanels } = useSettings()
 

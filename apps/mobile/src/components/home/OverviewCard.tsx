@@ -33,8 +33,8 @@ const CARD = cn('gap-0 pt-3 pb-4', BLEED_CARD)
 const HEADER = 'gap-1 px-4'
 const TITLE_ROW = 'flex-row items-center gap-2.5'
 const TITLE = 'text-lg leading-snug font-bold tracking-tight'
-// The age, Refresh, Variables and the table toggle are icons, and Open details takes the rest of the row (author,
-// 2026-10-13); the row is 36 px tall with 16 px icons and text (author, 2026-10-16).
+// The age, Refresh, Variables and the table toggle are icons, and Open details takes the rest of the row; the row is
+// 36 px tall with 16 px icons and text.
 const ACTIONS = 'mt-2 mb-3 flex-row items-center gap-2'
 const NO_BREAK_SPACE = ' '
 
@@ -42,8 +42,7 @@ interface SkeletonProps {
     status: string
 }
 
-// The loaded card's rows, the web's OverviewCardSkeleton: the status in the title's place, the buttons, then the
-// reader's readouts and panels, so nothing moves when the data arrives.
+// The loaded card's rows, as the web's OverviewCardSkeleton, so nothing moves when the data arrives.
 export function OverviewCardSkeleton({ status }: SkeletonProps) {
     const { panels } = useOverviewPanels()
 

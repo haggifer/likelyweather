@@ -8,7 +8,6 @@ const BRAND = 'Likely Weather'
 const WORD = 'text-[1rem] leading-[1.02rem] tracking-tight'
 const WORD_STYLE = { fontFamily: LOGO_FONT_FAMILY }
 
-// The web top bar's brand: the cloud-sun logo and the name on two lines.
 export function Wordmark() {
     return (
         <View className="flex-row items-center gap-2" accessible role="heading" aria-label={BRAND}>

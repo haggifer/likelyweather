@@ -39,8 +39,7 @@ interface IProps {
     slug: string
 }
 
-// A city's past weather drawn like the forecast overview: the reader's panels (the archive keeps its own choice), the
-// period picker, the overview's chart or table and the source.
+// The archive keeps its own choice of panels, apart from the overview's.
 export function ArchiveCard({ slug }: IProps) {
     const t = useTranslations('archive')
     const locale = useLocale()

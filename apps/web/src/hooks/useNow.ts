@@ -29,8 +29,8 @@ const getSnapshot = () => current
 
 const getServerSnapshot = () => null
 
-// The current time, refreshed every minute. It is null during server rendering and hydration so anything drawn
-// from it (the "now" line, past/future splits) never mismatches the server HTML.
+// Null during server rendering and hydration, so anything drawn from it (the "now" line, past/future splits) never
+// mismatches the server HTML.
 export function useNow(): Date | null {
     return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 }

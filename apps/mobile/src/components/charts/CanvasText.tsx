@@ -32,7 +32,7 @@ interface IProps {
     halo?: Halo
 }
 
-// A chart label placed like SVG text; nothing is drawn until the font has loaded.
+// A null font, still loading, draws nothing.
 export function CanvasText({ font, text, x, y, color, anchor = 'start', halo }: IProps) {
     const startX = getStartX(font, text, x, anchor)
 

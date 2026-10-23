@@ -5,8 +5,7 @@ import { Inter_700Bold } from '@expo-google-fonts/inter/700Bold'
 import { Lexend_600SemiBold } from '@expo-google-fonts/lexend/600SemiBold'
 import { TextStyle } from 'react-native'
 
-// The web's typefaces: Inter, and Lexend for the logo. Each weight is its own file: the package root would bundle
-// all of them.
+// Each weight is its own file: a package root would bundle all of them.
 export const FONT_ASSETS = { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, Lexend_600SemiBold }
 
 type FontFamily = keyof typeof FONT_ASSETS

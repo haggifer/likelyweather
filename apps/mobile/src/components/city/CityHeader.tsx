@@ -23,10 +23,9 @@ interface IProps {
     onSelectCity: (slug: string) => void
 }
 
-// The name doubles as a switcher: the pencil swaps both lines for a search box holding the current name, selected so
-// typing replaces it. Picking a result opens that city; a tap elsewhere or Android's back keeps this one, as a blur
-// or Escape does on the web. The second line carries the age chip and Refresh, right-aligned together, as on the web's phone header, and
-// only once the run is outdated (author, 2026-10-14).
+// The pencil swaps both lines for a search box holding the current name, selected so typing replaces it; a tap
+// elsewhere or Android's back keeps this city, as a blur or Escape does on the web. The second line, the age chip and
+// Refresh right-aligned as on the web's phone header, shows only once the run is outdated.
 export function CityHeader({ city, onSelectCity }: IProps) {
     const t = useTranslations('city')
     const locale = useLocale()

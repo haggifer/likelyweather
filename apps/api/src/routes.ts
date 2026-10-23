@@ -131,8 +131,7 @@ apiRouter.get('/cities/:slug/current', rateLimit('read'), async (req, res) => {
 // own copy for at most 5 minutes); an answer with gaps is not kept, so the hours still missing are asked for again.
 const ARCHIVE_MAX_AGE_SECONDS = 24 * 60 * 60
 
-// Read from the database when the hours are stored; otherwise fetched once from Open-Meteo, spending one unit of the
-// viewer's quota at most.
+// The quota is spent only when the hours are not all stored and have to be fetched from Open-Meteo.
 apiRouter.get('/cities/:slug/archive', rateLimit('read'), async (req, res) => {
     const range = parseQuery(req, ArchiveQuerySchema)
     const client = getClientKey(req)

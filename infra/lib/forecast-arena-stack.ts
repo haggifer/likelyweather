@@ -28,7 +28,6 @@ interface SiteDomain {
 }
 
 export interface ForecastArenaStackProps extends StackProps {
-    // Receives the budget and alarm e-mails.
     alertEmail: string
     // "owner/name"; deploys from GitHub Actions may assume the deploy role only from this repository's branch.
     githubRepo: string
@@ -51,8 +50,6 @@ const ADAPTER_ENVIRONMENT = {
     PORT: '8080',
 }
 
-// Lambda code comes from what `pnpm build` writes (a directory, or the API's prepared zip); synth fails early if it is
-// missing.
 const bundle = (relative: string) => {
     const asset = path.join(REPO_ROOT, relative)
 
@@ -133,7 +130,6 @@ const getDomainSettings = (scope: Construct, domain: SiteDomain) => ({
     certificate: acm.Certificate.fromCertificateArn(scope, 'Certificate', domain.certificateArn),
 })
 
-// Pages come from the web function and /api/* from the API function.
 const createDistribution = (
     scope: Construct,
     webUrl: lambda.IFunctionUrl,
@@ -177,7 +173,7 @@ const createDistribution = (
             viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
             cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
             originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
-            // HSTS, nosniff, same-origin framing and a referrer policy; the API sets its own through helmet.
+            // /api/* carries no such policy: the API sets its own headers through helmet.
             responseHeadersPolicy: cloudfront.ResponseHeadersPolicy.SECURITY_HEADERS,
             functionAssociations: wwwRedirect
                 ? [{ function: wwwRedirect, eventType: cloudfront.FunctionEventType.VIEWER_REQUEST }]
@@ -264,7 +260,7 @@ export class ForecastArenaStack extends Stack {
             `arn:aws:lambda:${this.region}:753240598075:layer:LambdaAdapterLayerArm64:${WEB_ADAPTER_LAYER_VERSION}`,
         )
 
-        // The standalone Next.js server; Amplify Hosting does not support Next.js 16.
+        // Amplify Hosting does not support Next.js 16, so the standalone server runs on Lambda.
         const web = createAdapterFunction(this, 'Web', bundle('apps/web/.next/lambda.zip'), webAdapter, {
             ...ADAPTER_ENVIRONMENT,
             HOSTNAME: '127.0.0.1',

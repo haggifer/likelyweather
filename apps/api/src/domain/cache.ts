@@ -1,5 +1,3 @@
-// Shared expiring state for every API instance: the geocode and payload caches, rate limits, the daily quota and
-// the daily retention claim. Redis (Upstash in the cloud) when REDIS_URL is set, process memory otherwise.
 // Redis is never on the critical path: any Redis error degrades to "no cache, no limit, claim granted" for that
 // call, so an outage or a refused request costs latency, not availability.
 import { Redis } from 'ioredis'
@@ -9,11 +7,9 @@ import { getErrorMessage } from './errors'
 interface KeyValue {
     get(key: string): Promise<string | null>
     set(key: string, value: string, ttlSeconds: number): Promise<void>
-    // Increments the counter in the current fixed window and returns the new count.
     incrementWindow(key: string, windowSeconds: number): Promise<number>
     // Increments every counter only if none has reached its limit; counters expire at `expiresAt` (Unix seconds).
     incrementWithinLimits(keys: string[], limits: number[], expiresAt: number): Promise<boolean>
-    // Sets the key only if it is absent, with a TTL; true when this caller now holds it.
     setIfAbsent(key: string, value: string, ttlSeconds: number): Promise<boolean>
     del(key: string): Promise<void>
 }
@@ -140,7 +136,6 @@ class MemoryKeyValue implements KeyValue {
     }
 }
 
-// Runs a Redis call, or returns `fallback` when Redis fails.
 const safely = async <T>(run: () => Promise<T>, fallback: T): Promise<T> => {
     try {
         return await run()
@@ -210,15 +205,13 @@ export const getCounter = async (key: string) => {
 export const incrementWithinLimits = (keys: string[], limits: number[], expiresAt: Date) =>
     safely(() => getStore().incrementWithinLimits(keys, limits, Math.floor(expiresAt.getTime() / 1000)), true)
 
-// Claims `claim:<name>` for `ttlSeconds`, the equivalent of `SET NX EX`: true for the first caller only. When Redis
-// fails every caller gets the claim, so the work it guards must be safe to repeat.
+// When Redis fails every caller gets the claim, so the work it guards must be safe to repeat.
 export const claim = (name: string, ttlSeconds: number) =>
     safely(() => getStore().setIfAbsent(`claim:${name}`, '1', ttlSeconds), true)
 
-// Gives a claim back before its TTL, for a holder that will not do the work after all.
 export const releaseClaim = (name: string) => safely(() => getStore().del(`claim:${name}`), undefined)
 
-// A short-lived marker, such as a cooldown. With Redis down it is never set, so nothing is held back.
+// With Redis down a mark is never set, so nothing is held back.
 export const mark = (name: string, ttlSeconds: number) => cacheSet(`mark:${name}`, 1, ttlSeconds)
 
 export const unmark = (name: string) => safely(() => getStore().del(`mark:${name}`), undefined)

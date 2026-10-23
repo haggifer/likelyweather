@@ -18,13 +18,12 @@ interface IProps {
     decimals: number
     timeZone: string
     locale: string
-    // A pair reads "actual (companion)" whichever sub-tab is open (author, 2026-10-14).
+    // A pair reads "actual (companion)" whichever sub-tab is open.
     pairedRuns: PairedRuns | null
-    // The median's eye in the legend hides its column too (author, 2026-10-20).
+    // The median's eye in the legend hides its column too.
     isMedianHidden: boolean
 }
 
-// The dashboard chart's numbers: the median, then every model, slot by slot.
 export function SeriesTable({ steps, series, stats, decimals, timeZone, locale, pairedRuns, isMedianHidden }: IProps) {
     const t = useTranslations('dashboard')
 

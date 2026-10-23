@@ -74,7 +74,6 @@ export const getStarterPlaces = (cities: Place[]): Places => repairPlaces([], ci
 export const getPlaceChips = ({ favorites, recents }: Places): Place[] =>
     [...favorites, ...recents].slice(0, MAX_PLACES)
 
-// The place the overview opens with when nothing else is picked: the first chip.
 export const getDefaultPlace = (places: Places): Place | null => getPlaceChips(places)[0] ?? null
 
 export const getPlaceList = ({ favorites, recents }: Places): Place[] =>

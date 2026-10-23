@@ -65,7 +65,6 @@ const getMedianInSlot = (latest: LatestResponse, slotStart: Date) => {
     return index < 0 ? null : (getEnsembleStats(latest).median[index] ?? null)
 }
 
-// The sky now and the temperature's trend from the medians, with the same shared maths as the app and the web.
 export const buildWidgetModel = (city: WidgetCity, data: WidgetData, now: Date): WidgetModel => {
     const timeZone = city.timezone ?? 'UTC'
 

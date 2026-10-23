@@ -35,7 +35,6 @@ export const BAND_OPACITY = 0.12
 
 const readColor = (read: ColorReader, key: ColorKey) => read(CHART_COLOR_TOKENS[key], key)
 
-// The chart colours of a palette: `read` returns the colour of a token, for the chart colour `key`.
 export const getChartColors = (read: ColorReader): ChartColors => ({
     foreground: readColor(read, 'foreground'),
     muted: readColor(read, 'muted'),

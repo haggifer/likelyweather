@@ -30,11 +30,9 @@ const getSuffixedDatabaseUrl = () => {
 
 const SUFFIXED_DATABASE_URL = getSuffixedDatabaseUrl()
 
-// The development database with an `_e2e` suffix, unless E2E_DATABASE_URL names one.
 export const E2E_DATABASE_URL = process.env.E2E_DATABASE_URL ?? SUFFIXED_DATABASE_URL
 
-// The API and the web app run against the fake upstream, so no test reaches Open-Meteo or met.no. The API keeps
-// its quota and caches in memory (empty REDIS_URL), so every run starts with a full quota.
+// An empty REDIS_URL keeps the API's quota and caches in memory, so every run starts with a full quota.
 export default defineConfig({
     testDir: 'tests',
     globalSetup: './global-setup.ts',

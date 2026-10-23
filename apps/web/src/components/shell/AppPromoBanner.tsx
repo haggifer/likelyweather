@@ -11,7 +11,6 @@ import { useEffect } from 'react'
 const HEIGHT_VARIABLE = '--app-promo-h'
 const HEIGHT = 'calc(4.5rem + env(safe-area-inset-bottom))'
 
-// One dismissible bar for Android phones: there is an app, and here is its APK. Not a modal, not a notification.
 export function AppPromoBanner() {
     const t = useTranslations('promo')
 

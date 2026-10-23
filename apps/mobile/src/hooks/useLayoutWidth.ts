@@ -6,7 +6,6 @@ export interface UseLayoutWidthResult {
     onLayout: (e: LayoutChangeEvent) => void
 }
 
-// A chart's width comes from its container's layout; before the first layout nothing is drawn.
 export function useLayoutWidth(): UseLayoutWidthResult {
     const [width, setWidth] = useState(0)
 

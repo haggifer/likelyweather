@@ -59,7 +59,6 @@ interface PanelDrawingProps {
     likelyFont: SkFont | null
 }
 
-// One panel's gridlines and median (bars for precipitation), with the strip under it.
 const PanelDrawing = ({
     row,
     series,
@@ -262,7 +261,6 @@ interface SelectionDrawingProps {
     font: SkFont | null
 }
 
-// The picked slot: its time above the panels, a line through every panel and a dot on each median.
 const SelectionDrawing = ({ selection: { x, labelX, label, dots }, layout, chart, font }: SelectionDrawingProps) => (
     <Group>
         <CanvasText
@@ -376,9 +374,9 @@ interface IProps {
     chart: ChartTheme
 }
 
-// The overview's drawing on one screen-wide GPU canvas. On Android react-native-svg rasterises a whole <Svg> on the
-// CPU after any change; here the plot is recorded once and replayed shifted by the scroll offset on the UI thread, so
-// a scroll renders nothing in React and a change redraws no bitmap.
+// Drawn on one screen-wide GPU canvas: on Android react-native-svg rasterises a whole <Svg> on the CPU after any
+// change; here the plot is recorded once and replayed shifted by the scroll offset on the UI thread, so a scroll
+// renders nothing in React and a change redraws no bitmap.
 export function OverviewCanvas({
     width,
     scrollX,

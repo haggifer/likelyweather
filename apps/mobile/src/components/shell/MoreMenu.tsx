@@ -16,7 +16,7 @@ interface MenuItem {
 }
 
 const HOME: Href = '/'
-// 36 px rows (author, 2026-10-16), like the web's phone menu and the language options.
+// 36 px rows, like the web's phone menu and the language options.
 const ITEM = 'min-h-9 gap-2.5 px-4'
 
 const getItems = (citySlug: string | null): MenuItem[] => [
@@ -27,8 +27,8 @@ const getItems = (citySlug: string | null): MenuItem[] => [
     { key: 'settings', icon: Settings, href: '/settings' },
 ]
 
-// The web header's pages (Overview, Details, the Archive, then Methodology), on every screen's header; Settings joins
-// them because the app has no top-bar controls for language and theme. Details opens the city Home's overview shows.
+// Settings joins the web header's pages because the app has no top-bar controls for language and theme. Details opens
+// the city Home's overview shows.
 export function MoreMenu() {
     const t = useTranslations('nav')
     const tm = useTranslations('mobile')

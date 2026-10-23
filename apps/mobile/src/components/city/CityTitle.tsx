@@ -11,7 +11,6 @@ interface IProps {
     children?: ReactNode
 }
 
-// The screen's heading: flag, name and region wrapping together, as the web's phone header.
 export function CityTitle({ name, region, countryCode, children }: IProps) {
     return (
         <View className="min-h-12 flex-row items-center gap-1.5">

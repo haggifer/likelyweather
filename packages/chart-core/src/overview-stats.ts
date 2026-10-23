@@ -29,8 +29,6 @@ interface HourlyResult {
 const toSlots = ({ steps, series }: LatestResponse, slots: string[], variable: Variable) =>
     series.map((s) => toSlotSeries(steps, s.values, slots, VARIABLE_BY_ID[variable].aggregation))
 
-// The landing overview's numbers, the same on the web and in the app: the median of all models per 3-hour slot for
-// every variable it draws, the median wind direction, and the share of models above 0.2 mm in each slot.
 export const getOverviewMedians = (hourly: OverviewHourly, slots: string[]): OverviewMedians =>
     Object.fromEntries(
         OVERVIEW_VARIABLES.flatMap((variable) => {
@@ -70,14 +68,13 @@ export const getHourlyByVariable = (results: HourlyResult[]): OverviewHourly =>
         }),
     )
 
-// A panel is drawn once its series and its second line have arrived.
 export const getReadyPanels = (panels: PanelVariable[], hourly: OverviewHourly) =>
     panels.filter((panel) => getPanelDataVariables([panel]).every((variable) => hourly[variable]))
 
 // The runs of the shown panels come from one fetch, so any of them carries the run's times and model count.
 export const getOverviewRun = (hourly: OverviewHourly, panels: PanelVariable[]) => hourly[panels[0]]
 
-// Everything the overview chart draws, from the local 3-hour slot the run was fetched in (`anchor`).
+// `anchor` is the local 3-hour slot the run was fetched in.
 export const getOverviewSeries = (hourly: OverviewHourly, anchor: Date): OverviewSeries => {
     const slots = buildSlots(anchor)
 

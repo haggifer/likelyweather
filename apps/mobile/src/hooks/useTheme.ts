@@ -14,7 +14,6 @@ export interface Theme {
 const LIGHT_CHART = getChartTheme(LIGHT)
 const DARK_CHART = getChartTheme(DARK)
 
-// The app's setting wins; "system" follows the device.
 export function useTheme(): Theme {
     const scheme = useColorScheme()
     const { theme } = useSettings()

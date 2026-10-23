@@ -6,7 +6,6 @@ import { ThemeToggle } from '@/components/shell/ThemeToggle'
 import { CloudSun } from 'lucide-react'
 import Link from 'next/link'
 
-// From `sm` the bar holds the whole nav with the quota, language and theme controls.
 export function TopBar() {
     return (
         <header className="sticky top-0 z-30 border-b bg-background/90 backdrop-blur supports-backdrop-filter:bg-background/75">

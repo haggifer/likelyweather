@@ -4,7 +4,8 @@ import { getCounter, incrementWithinLimits } from './cache'
 import { HttpError } from './errors'
 
 // Daily budget of upstream requests (Open-Meteo, met.no, geocoding) made on a client's behalf: a city refresh once the
-// stored forecast is 3 hours old, or a geocoding search the cache cannot answer. Reading stored data is free. The
+// stored forecast is 3 hours old, an archive period not fully stored yet, or a geocoding search the cache cannot
+// answer. Reading stored data is free. The
 // app-wide cap keeps the total within Open-Meteo's free tier for about ten active users even if each model counts as
 // its own variables.
 export const DAILY_QUOTA = 60
@@ -28,8 +29,7 @@ export const getQuota = async (client: string, now = new Date()): Promise<QuotaR
     }
 }
 
-// Counts one upstream request, or returns false without counting when the client or the app has none left. The
-// check and both increments are one atomic step in Redis.
+// The check and both increments are one atomic step in Redis.
 export const trySpendQuota = (client: string, now = new Date()) =>
     incrementWithinLimits(
         [getKey(client, now), getKey(GLOBAL_CLIENT, now)],

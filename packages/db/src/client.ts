@@ -36,8 +36,8 @@ export const loadLocalEnv = () => {
     for (const [key, value] of Object.entries(parseEnv(text))) process.env[key] ??= value
 }
 
-// One client per process. The pg driver adapter works locally and against Neon's pooled endpoint, so the same code
-// runs in Docker, CI and Lambda.
+// The pg driver adapter works locally and against Neon's pooled endpoint, so the same code runs in Docker, CI and
+// Lambda.
 export const getPrisma = () => {
     if (!isLocalEnvLoaded) {
         loadLocalEnv()

@@ -1,11 +1,9 @@
 import { OverviewVariable, Variable } from './variables'
 
-// A panel of the overview chart. Feels-like and gusts are not panels: they are drawn as second lines of temperature
-// and wind (author, 2026-10-12).
+// Feels-like and gusts are not panels: they are drawn as second lines of temperature and wind.
 export type PanelVariable =
     Variable.Temp | Variable.Wind | Variable.Pressure | Variable.Precip | Variable.Humidity | Variable.Cloud
 
-// Which panels a reader shows and in which order, kept per device.
 export interface OverviewPanels {
     order: PanelVariable[]
     hidden: PanelVariable[]
@@ -60,7 +58,6 @@ export const parseOverviewPanels = (raw: string | null): OverviewPanels => {
     }
 }
 
-// A dragged panel lands at `to` and the panels between shift by one.
 export const movePanelTo = (panels: OverviewPanels, variable: PanelVariable, to: number): OverviewPanels => {
     const from = panels.order.indexOf(variable)
 
@@ -83,7 +80,6 @@ export const togglePanel = (panels: OverviewPanels, variable: PanelVariable): Ov
     return { ...panels, hidden: [...panels.hidden, variable] }
 }
 
-// The series the shown panels draw: each panel's own and its second line.
 export const getPanelDataVariables = (panels: PanelVariable[]): OverviewVariable[] =>
     panels.flatMap((v) => {
         const secondary = SECONDARY_VARIABLE[v]

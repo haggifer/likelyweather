@@ -9,8 +9,7 @@ export interface TableColumn {
     isBold?: boolean
 }
 
-// The kit has no table: rows are views with the web table's bottom border and cell padding. The header row stays at the
-// top and the time column at the left, both on the muted background (author, 2026-10-16 and 2026-10-20).
+// The kit has no table: rows are views with the web table's bottom border and cell padding.
 const ROW_CLASS = 'min-h-9 flex-row items-center border-b border-border'
 const HEAD_ROW_CLASS = cn(ROW_CLASS, 'h-11 bg-muted')
 const TIME_CLASS = 'w-42 px-2 text-sm'
@@ -22,7 +21,7 @@ const ROWS_CLASS = 'max-h-[23.5rem]'
 
 interface IProps {
     timeLabel: string
-    // One label per row, the slot's local time.
+    // Each row's slot in local time.
     rowLabels: string[]
     columns: TableColumn[]
     getCell: (rowIndex: number, column: TableColumn) => string
@@ -30,8 +29,8 @@ interface IProps {
     cellClassName: string
 }
 
-// A chart's numbers in a capped frame rather than a page stretched by 81 rows. The rows scroll inside the sideways
-// scroller, so its scrollbar sits at the frame's bottom edge, and it stays drawn (author, 2026-10-20).
+// Capped so 81 rows don't stretch the page. The rows scroll inside the sideways scroller, so its scrollbar sits at
+// the frame's bottom edge.
 export function FixedColumnTable({ timeLabel, rowLabels, columns, getCell, cellClassName }: IProps) {
     const scrollX = useSharedValue(0)
 

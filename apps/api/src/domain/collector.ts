@@ -111,8 +111,7 @@ const checkRunStatus = (rows: number, warnings: string[]): RunStatus => {
 export const countRows = (snapshot: Pick<Snapshot, 'models'>) =>
     Object.values(snapshot.models).reduce((sum, series) => sum + series.temp.filter((v) => v !== null).length, 0)
 
-// Fetches every source for one city onto the hourly grid and stores it as one run. Source failures never throw:
-// they become warnings, and the run is FAILED only when no model returned data.
+// Source failures never throw: they become warnings, and the run is FAILED only when no model returned data.
 export const collect = async ({ city, now = new Date() }: CollectOptions): Promise<CollectResult> => {
     const issueTime = toIsoMinute(floorToStep(now))
     const runId = getRunId(city.id, issueTime)

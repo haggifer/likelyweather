@@ -1,7 +1,6 @@
 // Worklets: the sheet's rows follow the finger on the UI thread, which cannot call the shared package's plain
 // functions, so the drag keeps its own preview order and the drop commits it through `movePanelTo`.
 
-// The slot a dragged row of one fixed height lands in from its offset from the top of the list.
 export const getDropIndex = (top: number, rowHeight: number, count: number) => {
     'worklet'
 

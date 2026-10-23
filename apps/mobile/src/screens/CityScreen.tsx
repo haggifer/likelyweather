@@ -180,8 +180,6 @@ interface DashboardProps {
     city: City
 }
 
-// The web dashboard's phone layout: the header, the variable switch pinned under the native header, the chart card
-// with its model list, the disagreement tiles and the precipitation panel.
 const Dashboard = ({ city }: DashboardProps) => {
     const t = useTranslations('dashboard')
     const tv = useTranslations('variables')
@@ -196,8 +194,7 @@ const Dashboard = ({ city }: DashboardProps) => {
     const [hidden, setHidden] = useState<ModelId[]>([])
     const [isMedianHidden, setIsMedianHidden] = useState(false)
 
-    // The switch shows a tap at once; the screen redraws for it in the background and fades until it has (author's lag
-    // report, 2026-10-14).
+    // The switch shows a tap at once; the screen redraws for it in the background and fades until it has.
     const variable = useDeferredValue(selectedVariable)
 
     const {
@@ -344,7 +341,7 @@ export function CityScreen() {
         )
     }
 
-    // The header (name with star and pencil; Refresh only joins it for an outdated run), the switch and the cards.
+    // The header's skeleton holds only the star and the pencil: Refresh joins them just for an outdated run.
     if (!city) {
         return (
             <ScreenScroll contentContainerStyle={CONTENT_STYLE} scrollEnabled={false}>

@@ -67,8 +67,8 @@ const resolveWidgetCity = async (widgetId: number, bound: WidgetCity): Promise<W
     return city
 }
 
-// Fetches the bound city's latest run (the API serves it from the CDN unless a newer run is due) and its current
-// temperature, and draws them; on any failure the widget keeps its last numbers.
+// The API serves the latest run from the CDN unless a newer run is due; on any failure the widget keeps its last
+// numbers.
 export const refreshWidget = async (widgetId: number): Promise<WidgetRepresentation> => {
     const bound = widgetBindings.get()[widgetId] ?? null
 

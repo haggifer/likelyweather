@@ -92,8 +92,6 @@ const getDayState = (state: RangeCalendarState, date: CalendarDate, latest: stri
     }
 }
 
-// The archive period's range calendar, shared by both apps, which only draw it: one month at a time from 1940 to
-// yesterday in the city, the first tap starting the period and the second ending it within 12 days, which applies it.
 export function useArchiveRangeState({
     range,
     latest,

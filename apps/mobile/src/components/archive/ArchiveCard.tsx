@@ -38,8 +38,6 @@ interface IProps {
     slug: string
 }
 
-// A city's past weather drawn like Home's overview: the reader's panels (the archive keeps its own choice), the
-// period picker, the overview's chart or table and the source.
 export function ArchiveCard({ slug }: IProps) {
     const t = useTranslations('archive')
     const to = useTranslations('overview')

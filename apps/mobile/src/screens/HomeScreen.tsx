@@ -13,9 +13,8 @@ import { useSelectedCity } from '../hooks/useSelectedCity'
 import { placesStore } from '../lib/places-store'
 import { setSelectedCity } from '../lib/selected-city-store'
 
-// The landing page on a phone without the web's hero, which an installed app has no need to pitch: search, the
-// viewer's chips and the selected city's ten-day overview. Picking a city switches the overview in place, as on the
-// web (`?city=`); a link can still name one with `?city=`.
+// The web's landing page without its hero, which an installed app has no need to pitch. Picking a city switches the
+// overview in place, as on the web (`?city=`); a link can still name one with `?city=`.
 export function HomeScreen() {
     const t = useTranslations('overview')
     const places = usePlaces()

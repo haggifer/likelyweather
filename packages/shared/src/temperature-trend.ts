@@ -12,7 +12,7 @@ const STEADY_BELOW = 1
 const FAST_FROM = 3
 export const TREND_HOURS = 3
 
-// The temperature now and TREND_HOURS later; null when either is unknown.
+// `later` is the temperature TREND_HOURS after `now`.
 export const getTemperatureTrend = (now: number | null, later: number | null) => {
     if (now === null || later === null) return null
 

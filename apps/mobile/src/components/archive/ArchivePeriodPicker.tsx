@@ -14,8 +14,7 @@ interface IProps {
     onChange: (range: ArchiveRange) => void
 }
 
-// The web's phone period picker: DD.MM.YYYY – DD.MM.YYYY on a button that opens the range calendar in a dialog. The
-// second tap of a period applies it and closes the calendar, so each period costs at most one request.
+// The second tap of a period applies it and closes the calendar, so each period costs at most one request.
 export function ArchivePeriodPicker({ range, latest, onChange }: IProps) {
     const t = useTranslations('archive')
 

@@ -1,4 +1,3 @@
-// Postgres through Prisma.
 import { getPrisma, Prisma } from '@fa/db/client'
 import {
     dropExpiredForecastPartitions as dropExpiredPartitions,
@@ -31,7 +30,6 @@ export interface Snapshot extends SnapshotMeta, SeriesGrid {}
 
 export type RunStatus = 'OK' | 'PARTIAL' | 'FAILED'
 
-// A stored snapshot with the status of the run that wrote it.
 export interface StoredSnapshotMeta extends SnapshotMeta {
     runStatus: RunStatus
 }
@@ -63,10 +61,10 @@ const COLUMNS: Record<SeriesField, keyof Prisma.ForecastCreateManyInput> = {
     cloud: 'cloudPct',
 }
 const FIELDS = Object.keys(COLUMNS) as SeriesField[]
-// A refresh writes a few thousand rows (fourteen days for the longest models); the default 5 s left no room on a slow
-// connection, and the request still ends inside the function's 30 s.
+// A refresh writes a few thousand rows (fourteen days for the longest models), more than Prisma's default 5 s allows
+// on a slow connection; 10 s still ends inside the function's 30 s.
 const WRITE_TIMEOUT_MS = 10_000
-// Every run is fetched on demand now; the column still holds the origin of older scheduled and imported runs.
+// Every run written here is fetched on demand; the column's other origins mark older scheduled and imported runs.
 const ORIGIN = 'PREVIEW' as const
 
 const ensuredWeeks = new Map<number, Promise<void>>()
@@ -177,7 +175,6 @@ const toGridModels = (rows: GridRow[], fields: SeriesField[], steps: string[]) =
     return models
 }
 
-// A city's stored past hours in [start, end), oldest first.
 export const readArchiveHours = async (cityId: number, start: Date, end: Date): Promise<ArchiveHourValues[]> => {
     const rows = await getPrisma().archiveHour.findMany({
         where: { cityId, time: { gte: start, lt: end } },
@@ -320,7 +317,7 @@ export const getLatestSnapshotMeta = async (cityId: number) => {
     return row ? toMeta(row) : null
 }
 
-// The stored grid of one snapshot, limited to `fields` and `modelIds` when given. Models without rows are absent.
+// Models without rows are absent from the grid.
 export const getSnapshotGrid = async (
     meta: SnapshotMeta,
     fields: SeriesField[] = FIELDS,
@@ -348,7 +345,7 @@ export const getLatestSnapshot = async (cityId: number, modelIds?: ModelId[]): P
 export const deleteSnapshotsBefore = (cutoff: Date) =>
     getPrisma().snapshot.deleteMany({ where: { issueTime: { lt: cutoff } } })
 
-// Runs older than the forecasts they produced; deleting a run also deletes its snapshots.
+// Deleting a run also deletes its snapshots.
 export const deleteRunsBefore = (cutoff: Date) =>
     getPrisma().collectionRun.deleteMany({ where: { issueTime: { lt: cutoff } } })
 

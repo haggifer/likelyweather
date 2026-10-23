@@ -20,7 +20,7 @@ export interface DayDisagreement {
 const getStepValues = (series: (number | null)[][], index: number) =>
     series.map((values) => values[index]).filter((v): v is number => v !== null && v !== undefined)
 
-// Precipitation steps are 6-hour sums ending at the step, so each is attributed to the day of its last hour.
+// A precipitation step is a sum ending at the step, so it is attributed to the day of its last hour.
 const getStepDay = (step: string, variable: Variable, timeZone: string) =>
     variable === Variable.Precip
         ? getLocalDateKey(new Date(new Date(step).getTime() - 1).toISOString(), timeZone)

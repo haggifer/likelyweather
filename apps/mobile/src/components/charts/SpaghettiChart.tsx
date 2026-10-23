@@ -105,7 +105,6 @@ interface BarTicksProps {
     y: ScaleLinear<number, number>
 }
 
-// Each model's amount as a tick across its bar.
 const BarTicks = ({ series, i, center, tickWidth, y }: BarTicksProps) =>
     series.map((s) => {
         const v = s.values[i]
@@ -305,8 +304,6 @@ interface SelectionDrawingProps {
     font: SkFont | null
 }
 
-// The picked slot over the static drawing: its bar raised (precipitation) or a line with every model's dot, and its
-// time above the plot.
 const SelectionDrawing = ({
     hover,
     series,
@@ -430,11 +427,9 @@ interface IProps {
     isMedianHidden?: boolean
 }
 
-// Every model as a line (precipitation: a tick per model over the median bar), the min–max band, the median, local
-// day boundaries and the now line, as on the web, on one screen-wide GPU canvas. On Android react-native-svg
-// rasterises a whole <Svg> on the CPU after any change; here the plot is recorded once and replayed shifted by the
-// scroll offset on the UI thread, so a scroll renders nothing in React and a change redraws no bitmap. A tap picks a
-// 3-hour slot; a drag scrolls.
+// Drawn on one screen-wide GPU canvas: on Android react-native-svg rasterises a whole <Svg> on the CPU after any
+// change; here the plot is recorded once and replayed shifted by the scroll offset on the UI thread, so a scroll
+// renders nothing in React and a change redraws no bitmap. A tap picks a 3-hour slot; a drag scrolls.
 export function SpaghettiChart({
     steps,
     series,

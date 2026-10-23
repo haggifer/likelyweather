@@ -8,7 +8,6 @@ export interface UseChartFontsResult {
     panelName: SkFont | null
 }
 
-// The chart labels' two weights of Inter at the chart's text size, and the overview's larger panel names, for a Skia canvas; null until loaded.
 export function useChartFonts(): UseChartFontsResult {
     const regular = useFont(FONT_ASSETS.Inter_400Regular, CHART_FONT_SIZE)
     const semiBold = useFont(FONT_ASSETS.Inter_600SemiBold, CHART_FONT_SIZE)

@@ -37,9 +37,7 @@ interface IProps {
     autoFocus?: boolean
 }
 
-// Typing three letters searches any place; picking a result stores it and makes it the newest recent place. While
-// the field is focused and empty it lists the viewer's places instead, favorites first. The keyboard's Search key
-// picks the first row, as Enter does on the web.
+// The keyboard's Search key picks the first row, as Enter does on the web.
 export function SearchBox({
     onSelectCity,
     onDismiss,
@@ -75,7 +73,6 @@ export function SearchBox({
         onSelectCity(place.slug)
     }
 
-    // A new pick, or the located city, becomes the newest recent place.
     const handleSelectNew = (place: Place) => {
         placesStore.set((current) => addRecent(current, place))
         handleSelectPlace(place)

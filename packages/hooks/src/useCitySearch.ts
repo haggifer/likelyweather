@@ -43,8 +43,6 @@ export interface UseCitySearchResult {
     pickResult: (result: GeocodeResult, handlers: PickHandlers) => void
 }
 
-// The search box of both apps without its drawing: the text, the debounced geocoder query, the ranked results, which
-// list shows, and the pick that tracks a result.
 export function useCitySearch({
     initialQuery,
     locale,

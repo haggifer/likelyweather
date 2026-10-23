@@ -11,8 +11,7 @@ export interface WindMark {
 export const WIND_ARROW_PATH = 'M0,-7 L4,3 L0,1 L-4,3 Z'
 export const WIND_DOT_RADIUS = 1.5
 
-// A mark on the plot's left edge (the axis's first slot) would be half hidden under the pinned axis, so it is left out
-// (author, 2026-10-20).
+// A mark on the plot's left edge (the axis's first slot) would be half hidden under the pinned axis, so it is left out.
 export const getWindMarks = (x: ScaleTime<number, number>, times: Date[], directions: (number | null)[]) =>
     directions
         .map((deg, i): WindMark => ({ key: times[i].toISOString(), x: x(times[i]), deg }))

@@ -16,15 +16,12 @@ interface IProps {
     table?: ReactNode
     // Shown above the chart, not with the table, which already holds what they switch between.
     tabs?: ReactNode
-    // The card fades while newer data replaces what it shows.
     isFetching?: boolean
-    // Shown over the chart and the table when they have no value to draw.
     emptyMessage?: string | null
     className?: string
     children: ReactNode
 }
 
-// The web's ChartFrame: a card with the chart and an optional table view.
 export function ChartFrame({ title, table, tabs, isFetching = false, emptyMessage, className, children }: IProps) {
     const t = useTranslations('chart')
 

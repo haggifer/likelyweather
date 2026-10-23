@@ -4,7 +4,6 @@ import { useViewMode } from '../../hooks/useViewMode'
 import { Button } from '../ui/button'
 import { Icon } from '../ui/icon'
 
-// The web's ViewModeToggle on phones: the overview's and the archive's charts or table switch as a 36 px icon.
 export function ViewModeToggle() {
     const t = useTranslations('chart')
     const { isTable, toggleTable } = useViewMode()

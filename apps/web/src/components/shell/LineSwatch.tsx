@@ -4,8 +4,8 @@ interface IProps {
     width?: number
 }
 
-// A model's line as the legend and the methodology draw it. Round caps would close a dash pattern's gaps at this
-// stroke width, so dashed models get butt caps, like the chart lines.
+// Round caps would close a dash pattern's gaps at this stroke width, so dashed models get butt caps, like the chart
+// lines.
 export function LineSwatch({ color, dash, width = 18 }: IProps) {
     return (
         <svg width={width} height="6" aria-hidden="true" className="shrink-0">

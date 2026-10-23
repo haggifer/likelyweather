@@ -1,6 +1,5 @@
 import { BAND_OPACITY, getChartColors, ChartTheme as SharedChartTheme } from '@fa/chart-core/chart-theme'
 
-// The colours both apps' charts draw with, and the ones only the web's draw with.
 export interface ChartTheme extends SharedChartTheme {
     primary: string
     warning: string

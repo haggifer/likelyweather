@@ -33,7 +33,6 @@ export const getCurrentMaxAge = (now: Date) => Math.ceil((getQuarterHourEnd(now)
 const byDistanceThenNewest = (a: StationReading, b: StationReading) =>
     a.distanceKm - b.distanceKm || b.observation.observedAt.getTime() - a.observation.observedAt.getTime()
 
-// The nearest station within the radius that has a report young enough, with its newest such report.
 export const pickStationReading = (observations: Observation[], place: Coordinates, now: Date) => {
     const readings = observations
         .filter(({ observedAt }) => observedAt <= now && now.getTime() - observedAt.getTime() <= MAX_OBSERVATION_AGE_MS)
@@ -60,8 +59,8 @@ export const getMedianAt = (run: TemperatureRun, at: Date) => {
     return before + (after - before) * share
 }
 
-// How much the models say the temperature changed between the report and now. A model that runs warm or cold at
-// this place does so at both times, so its bias cancels; without a run the reading is carried as it is.
+// Only the models' change since the report is added to it: a model that runs warm or cold at this place does so at
+// both times, so its bias cancels; without a run the reading is carried as it is.
 export const getModelChange = (run: TemperatureRun | null, from: Date, to: Date) => {
     const [start, end] = run ? [getMedianAt(run, from), getMedianAt(run, to)] : [null, null]
 
@@ -110,6 +109,5 @@ const loadCurrent = async (city: City, now: Date): Promise<CurrentResponse> => {
     return estimateFromStation(reading, city, getModelChange(run, reading.observation.observedAt, now))
 }
 
-// One answer per city and quarter hour, shared by every caller through the cache.
 export const getCurrentTemperature = (city: City, now: Date) =>
     cached(`current:${city.id}:${getQuarterHourEnd(now)}`, getCurrentMaxAge(now), () => loadCurrent(city, now))

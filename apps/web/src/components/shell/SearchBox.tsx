@@ -76,7 +76,6 @@ export function SearchBox({
         goToCity(place.slug)
     }
 
-    // A new pick, or the located city, becomes the newest recent place.
     const handleSelectNew = (place: Place) => {
         updatePlaces((current) => addRecent(current, place))
         handleSelectPlace(place)

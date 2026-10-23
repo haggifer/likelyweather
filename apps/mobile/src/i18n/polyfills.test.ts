@@ -3,7 +3,7 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 
 // Under Jest, Node's own Intl answers, so only the source can show whether Hermes gets every language's data. A
-// language missing here falls back to another one's names: Russian once showed Ukrainian country names.
+// language missing here falls back to another one's names, such as Ukrainian country names in Russian.
 const SOURCE = readFileSync(join(__dirname, 'polyfills.ts'), 'utf8')
 const POLYFILLS = ['intl-pluralrules', 'intl-relativetimeformat', 'intl-displaynames']
 

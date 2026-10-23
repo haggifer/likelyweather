@@ -14,7 +14,7 @@ interface IProps {
     likelyFont: SkFont | null
 }
 
-// `ChanceStrip` on a Skia canvas: the chance of rain under the precipitation bars; likely slots stand out.
+// The web's `ChanceStrip` on a Skia canvas.
 export function CanvasChanceStrip({ labels, y, color, mutedColor, font, likelyFont }: IProps) {
     return (
         <Group>

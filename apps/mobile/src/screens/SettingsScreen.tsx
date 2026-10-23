@@ -99,7 +99,6 @@ const LinkRow = ({ label, onPress, isExternal = false }: LinkRowProps) => (
     </Button>
 )
 
-// Language and theme (kept on the device), the day's request quota, the widgets' cities and the legal links.
 export function SettingsScreen() {
     const t = useTranslations('mobile')
     const tq = useTranslations('shell.quota')

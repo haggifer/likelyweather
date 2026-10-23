@@ -27,8 +27,6 @@ export interface UseCityOverviewResult {
     retry: () => void
 }
 
-// The landing overview's data in both apps: the city, the runs of every overview variable, the shown panels that can
-// be drawn, and their state.
 export function useCityOverview(slug: string, visible: PanelVariable[]): UseCityOverviewResult {
     const { data: city, error: cityError, refetch: refetchCity, fetchStatus: cityFetchStatus } = useCity(slug)
     const results = useHourlyAll(slug, Boolean(city))

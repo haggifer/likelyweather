@@ -5,8 +5,8 @@ interface IProps {
     message: string
 }
 
-// The web's NoDataOverlay: over a chart or its table with no value to show. The frame stays under it, so its legend can
-// still turn models back on and the controls around it still change the period.
+// The frame stays under the overlay, so its legend can still turn models back on and the controls around it still
+// change the period.
 export function NoDataOverlay({ message }: IProps) {
     return (
         <View pointerEvents="none" className="absolute inset-0 items-center justify-center p-4">

@@ -13,7 +13,6 @@ interface NavLink {
 
 export interface UseNavLinksResult {
     links: NavLink[]
-    // Follows Details to the city the page shows, when it shows one.
     handleClick: (link: NavLink, e: MouseEvent<HTMLAnchorElement>) => void
 }
 
@@ -27,9 +26,8 @@ const getShownCity = () =>
 const isPlainClick = (e: MouseEvent<HTMLAnchorElement>) =>
     e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey
 
-// The header's pages: the overview, a city's details, the archive and the methodology. Details opens the city the
-// overview shows: the one picked on the page, or else the overview's default place; a city's dashboard is that page,
-// whichever city it shows.
+// Details opens the city the overview shows: the one picked on the page, or else the overview's default place; a
+// city's dashboard is that page, whichever city it shows.
 export function useNavLinks(): UseNavLinksResult {
     const pathname = usePathname()
     const router = useRouter()
