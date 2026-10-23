@@ -8,13 +8,19 @@ import { Button } from '../components/ui/button'
 import { FlagIcon } from '../components/ui/FlagIcon'
 import { Text } from '../components/ui/text'
 import { usePlaces } from '../hooks/usePlaces'
+import { cn } from '../lib/cn'
 import { placesStore } from '../lib/places-store'
 
 interface IProps {
+    // The widget's city now, marked and first in the list.
+    current?: Place | null
     onPick: (place: Place) => Promise<void>
 }
 
-export function WidgetCityPicker({ onPick }: IProps) {
+const getPickList = (places: Place[], current: Place | null) =>
+    current ? [current, ...places.filter((place) => place.slug !== current.slug)] : places
+
+export function WidgetCityPicker({ current = null, onPick }: IProps) {
     const t = useTranslations('search')
     const locale = useLocale()
     const places = usePlaces()
@@ -23,7 +29,7 @@ export function WidgetCityPicker({ onPick }: IProps) {
     // A second tap can land before the rows render disabled; the widget takes the first place only.
     const isPickingRef = useRef(false)
 
-    const list = getPlaceList(places)
+    const list = getPickList(getPlaceList(places), current)
 
     const handlePick = async (place: Place) => {
         if (isPickingRef.current) return
@@ -52,7 +58,11 @@ export function WidgetCityPicker({ onPick }: IProps) {
                             variant="outline"
                             onPress={() => void handlePick(place)}
                             disabled={pending !== null}
-                            className="h-auto min-h-12 justify-start gap-2 bg-card px-3"
+                            accessibilityState={{ selected: place.slug === current?.slug }}
+                            className={cn(
+                                'h-auto min-h-12 justify-start gap-2 px-3',
+                                place.slug === current?.slug ? 'border-primary/40 bg-accent' : 'bg-card',
+                            )}
                         >
                             <FlagIcon countryCode={place.countryCode} />
                             <Text numberOfLines={1} className="flex-1 text-[0.9375rem] font-normal">

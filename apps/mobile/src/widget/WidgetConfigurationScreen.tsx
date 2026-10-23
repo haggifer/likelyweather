@@ -16,6 +16,7 @@ import { useAppliedTheme } from '../hooks/useAppliedTheme'
 import { CATALOGS } from '../lib/catalogs'
 import { queryClient } from '../lib/query-cache'
 import { bindWidgetCity } from './widget-render'
+import { widgetBindings } from './widget-store'
 import { getAppLocale } from './widget-translator'
 import { WidgetCityPicker } from './WidgetCityPicker'
 
@@ -34,7 +35,7 @@ const Configuration = ({ widgetInfo, renderWidget, setResult }: WidgetConfigurat
                     <Text role="heading" className="text-xl font-bold">
                         {t('configureTitle')}
                     </Text>
-                    <WidgetCityPicker onPick={handlePick} />
+                    <WidgetCityPicker current={widgetBindings.get()[widgetInfo.widgetId] ?? null} onPick={handlePick} />
                     <Button variant="link" onPress={() => setResult('cancel')} className="h-12 self-end px-3">
                         <Text className="text-[0.9375rem]">{t('cancel')}</Text>
                     </Button>
