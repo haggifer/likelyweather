@@ -7,7 +7,8 @@ export interface UseChartScrollResult {
 }
 
 // A chart wider than its container opens at now, and a new `resetKey` (another run, city or chart width) opens it
-// there again; anything else, such as another variable, keeps the reader's place.
+// there again; anything else, such as another variable, keeps the reader's place. The scroller starts after the pinned
+// axis (`insetLeft`), so the chart's visible width is the scroller's plus that inset.
 export function useChartScroll(
     resetKey: string,
     initialScrollLeft: number,
@@ -23,7 +24,7 @@ export function useChartScroll(
 
             node.scrollLeft = getRevealScrollLeft(x, {
                 scrollLeft: node.scrollLeft,
-                viewportWidth: node.clientWidth,
+                viewportWidth: node.clientWidth + insetLeft,
                 insetLeft,
                 insetRight,
             })

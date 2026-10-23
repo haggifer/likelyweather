@@ -465,14 +465,17 @@ export function MedianOverview({
                 ref={ref}
                 className={cn('relative min-w-0 rounded-sm select-none', isFocusVisible && 'ring-2 ring-ring')}
             >
+                {/* The scroller starts after the pinned axis, so its scrollbar runs under the plot only; the drawing moves back
+                    by as much, so every x and scroll position stays where it was. */}
                 <div
                     ref={scrollRef}
                     {...dragScroll}
                     className="overflow-x-auto overscroll-x-contain [scrollbar-width:thin] pointer-fine:cursor-grab pointer-fine:active:cursor-grabbing"
+                    style={{ marginLeft: geometry.marginLeft }}
                 >
                     {/* The static drawing sits on its own compositing layer under the interactive one, so a hover
                         repaints only the crosshair, the dots and the label. */}
-                    <div className="relative" style={{ width: contentWidth }}>
+                    <div className="relative" style={{ width: contentWidth, marginLeft: -geometry.marginLeft }}>
                         <svg
                             width={contentWidth}
                             height={geometry.totalHeight}

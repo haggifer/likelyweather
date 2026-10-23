@@ -352,15 +352,18 @@ export function SpaghettiChart({
 
     return (
         <div ref={ref} className={cn('relative w-full rounded-sm select-none', isFocusVisible && 'ring-2 ring-ring')}>
+            {/* The scroller starts after the pinned axis, so its scrollbar runs under the plot only; the drawing moves back by
+                as much, so every x and scroll position stays where it was. */}
             <div
                 ref={scrollRef}
                 {...dragScroll}
                 className="overflow-x-auto overscroll-x-contain [scrollbar-width:thin] pointer-fine:cursor-grab pointer-fine:active:cursor-grabbing"
+                style={{ marginLeft: margin.left }}
             >
                 {/* Three stacked drawings: the hovered span's shade under everything, the static chart on its own
                     compositing layer, and the crosshair with the pointer area on top, so a hover repaints only the small
                     top and bottom drawings and not ten model lines across ten days. */}
-                <div className="relative" style={{ width: contentWidth }}>
+                <div className="relative" style={{ width: contentWidth, marginLeft: -margin.left }}>
                     <svg
                         width={contentWidth}
                         height={height}
