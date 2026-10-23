@@ -88,9 +88,12 @@ function Text({
     const Component = asChild ? Slot : RNText
     const classes = cn(textVariants({ variant }), textClass, className, getContextLeading(textClass, className))
     // The app's Inter: Android picks a loaded font by family name, so the weight from the classes and the style names
-    // the family, and `fontWeight` is reset so Android does not embolden a bold file a second time.
+    // the family, and `fontWeight` is reset so Android does not embolden a bold file a second time. A family the
+    // style names itself (the logo's Lexend) stays.
     const resolved = useResolveClassNames(classes)
-    const fontFamily = getFontFamily(StyleSheet.flatten([resolved, props.style])?.fontWeight)
+    const fontFamily =
+        StyleSheet.flatten(props.style)?.fontFamily ??
+        getFontFamily(StyleSheet.flatten([resolved, props.style])?.fontWeight)
     return (
         <Component
             className={classes}

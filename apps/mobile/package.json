@@ -26,6 +26,7 @@
     },
     "dependencies": {
         "@expo-google-fonts/inter": "^0.4.2",
+        "@expo-google-fonts/lexend": "^0.4.1",
         "@fa/api-client": "workspace:*",
         "@fa/chart-core": "workspace:*",
         "@fa/hooks": "workspace:*",

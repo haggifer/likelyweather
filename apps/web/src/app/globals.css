@@ -33,6 +33,7 @@
     --font-sans: var(--font-sans);
     --font-mono: var(--font-mono);
     --font-heading: var(--font-heading);
+    --font-logo: var(--font-logo);
     --color-chart-1: var(--chart-1);
     --color-chart-2: var(--chart-2);
     --color-chart-3: var(--chart-3);
@@ -126,6 +127,7 @@
 
     --font-sans: var(--font-inter), system-ui, sans-serif;
     --font-heading: var(--font-inter), system-ui, sans-serif;
+    --font-logo: var(--font-lexend), system-ui, sans-serif;
     --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
     --text-base: 0.875rem;
     /* No text outside the charts is under 13 px; its line keeps `text-xs`'s 16 px. */
