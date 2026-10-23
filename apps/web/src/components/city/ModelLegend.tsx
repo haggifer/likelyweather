@@ -160,7 +160,6 @@ export function ModelLegend({
                     className={EYE_BUTTON}
                     onClick={() => dispatch(toggleMedian())}
                     aria-label={isMedianHidden ? t('showMedian') : t('hideMedian')}
-                    aria-pressed={isMedianHidden}
                 >
                     {isMedianHidden ? EYE_OFF : EYE}
                 </Button>

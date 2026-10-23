@@ -50,7 +50,6 @@ export function ChartFrame({
                             size="sm"
                             className="touch:h-9 max-sm:text-sm"
                             onClick={toggleTable}
-                            aria-pressed={isTable}
                             aria-label={isTable ? t('showChart') : t('showTable')}
                         >
                             {isTable ? <BarChart3 /> : <Table2 />}

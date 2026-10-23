@@ -344,10 +344,7 @@ test('a pinned city moves to the front of the chips and opens the landing page',
     await page.goto(`/city/${LONDON}`)
     await page.getByRole('button', { name: 'Add London to favorites' }).click()
 
-    await expect(page.getByRole('button', { name: 'Remove London from favorites' })).toHaveAttribute(
-        'aria-pressed',
-        'true',
-    )
+    await expect(page.getByRole('button', { name: 'Remove London from favorites' })).toBeVisible()
 
     await page.goto('/')
 
@@ -408,14 +405,11 @@ test('the star on a chip pins the city to the front and unpins it again', async 
     await chips.getByRole('button', { name: 'Add Paris to favorites' }).click()
 
     await expect.poll(() => getChipNames(page)).toEqual(['Paris', 'New York', 'London', 'Kyiv'])
-    await expect(chips.getByRole('button', { name: 'Remove Paris from favorites' })).toHaveAttribute(
-        'aria-pressed',
-        'true',
-    )
+    await expect(chips.getByRole('button', { name: 'Remove Paris from favorites' })).toBeVisible()
 
     await chips.getByRole('button', { name: 'Remove Paris from favorites' }).click()
 
-    await expect(chips.getByRole('button', { name: 'Add Paris to favorites' })).toHaveAttribute('aria-pressed', 'false')
+    await expect(chips.getByRole('button', { name: 'Add Paris to favorites' })).toBeVisible()
 })
 
 // On phones a tap meant for a city never pins it: the chip shows the star, and the overview card's star pins.

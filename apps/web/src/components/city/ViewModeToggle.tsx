@@ -19,7 +19,6 @@ export function ViewModeToggle({ className }: IProps) {
             variant="outline"
             size="sm"
             onClick={toggleTable}
-            aria-pressed={isTable}
             aria-label={isTable ? t('showCharts') : t('showTable')}
             className={className}
         >
