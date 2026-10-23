@@ -38,7 +38,7 @@ const ACTIONS = 'flex items-center gap-2 max-sm:mt-2 max-sm:mb-3 max-sm:w-full'
 const CONTENT = 'relative sm:mt-2'
 // On phones the age, Refresh, Variables and the table toggle are icons, and Open details takes the rest of the row
 // with 14 px text.
-const PHONE_BUTTON = 'max-sm:h-9 max-sm:flex-1 max-sm:text-sm max-sm:[&_svg]:size-4'
+const PHONE_BUTTON = 'touch:h-9 max-sm:flex-1 max-sm:text-sm max-sm:[&_svg]:size-4'
 const TITLE = 'flex min-w-0 flex-1 items-center gap-2.5 text-lg tracking-tight sm:text-xl'
 
 // Same header and panel structure as the loaded card, so nothing moves when the data arrives.
@@ -51,10 +51,10 @@ export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
             </CardTitle>
             <CardAction className={ACTIONS}>
                 <Skeleton className="hidden h-7 w-28 rounded-full lg:block" />
-                <Skeleton className="h-7 w-22 max-sm:size-9" />
-                <Skeleton className="h-7 w-20 max-sm:size-9" />
-                <Skeleton className="h-7 w-18 max-sm:size-9" />
-                <Skeleton className="h-7 w-30 max-sm:h-9 max-sm:flex-1" />
+                <Skeleton className="h-7 w-22 touch:h-9 max-sm:w-9" />
+                <Skeleton className="h-7 w-20 touch:h-9 max-sm:w-9" />
+                <Skeleton className="h-7 w-18 touch:h-9 max-sm:w-9" />
+                <Skeleton className="h-7 w-30 touch:h-9 max-sm:flex-1" />
             </CardAction>
         </CardHeader>
         <CardContent className={CONTENT}>

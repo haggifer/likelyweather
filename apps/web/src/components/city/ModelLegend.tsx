@@ -121,7 +121,7 @@ export function ModelLegend({
                     <Button
                         variant="link"
                         size="xs"
-                        className="h-auto p-0 text-xs max-sm:text-sm"
+                        className="h-auto p-0 text-xs touch:hit-area max-sm:text-sm"
                         onClick={() => dispatch(showAllModels())}
                     >
                         {t('reset')}

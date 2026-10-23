@@ -19,7 +19,7 @@ export function MainNav() {
                     onClick={(e) => handleClick(link, e)}
                     aria-current={link.isCurrent ? 'page' : undefined}
                     className={cn(
-                        'rounded-md px-2.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
+                        'rounded-md px-2.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors touch:py-2 hover:bg-muted hover:text-foreground',
                         link.isCurrent && 'bg-muted text-foreground',
                     )}
                 >
