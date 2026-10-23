@@ -258,18 +258,27 @@ test('the archive picks its period on a range calendar, capped at twelve days, a
     }
 })
 
-test('the header marks Forecast as the current page on the landing and on a city dashboard', async ({
-    page,
-    isMobile,
-}) => {
+test('the header marks Forecast on the landing and Details on a city dashboard', async ({ page, isMobile }) => {
     test.skip(isMobile, 'phones reach the pages through the menu')
 
-    const forecast = page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Forecast' })
+    const nav = page.getByRole('navigation', { name: 'Main' })
 
-    for (const path of ['/', `/city/${KYIV}`]) {
-        await page.goto(path)
-        await expect(forecast).toHaveAttribute('aria-current', 'page')
-    }
+    await page.goto('/')
+    await expect(nav.getByRole('link', { name: 'Forecast' })).toHaveAttribute('aria-current', 'page')
+    await page.goto(`/city/${KYIV}`)
+    await expect(nav.getByRole('link', { name: 'Details' })).toHaveAttribute('aria-current', 'page')
+    await expect(nav.getByRole('link', { name: 'Forecast' })).not.toHaveAttribute('aria-current')
+})
+
+// Details opens the city the overview shows, not only the default place.
+test('Details in the header opens the dashboard of the city the overview shows', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'phones reach the pages through the menu')
+
+    await page.goto(`/?city=${LONDON}`)
+    await expect(getOverviewTitle(page)).toContainText('London')
+    await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Details' }).click()
+
+    await expect(page).toHaveURL(new RegExp(`/city/${LONDON}`))
 })
 
 test('an unknown city page says so and offers the search', async ({ page }) => {

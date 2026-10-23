@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
     addRecent,
     DEFAULT_PLACES,
+    getDefaultPlace,
     getPlaceChips,
     getPlaceList,
     getStarterPlaces,
@@ -131,6 +132,14 @@ describe('places', () => {
 
         expect(pinned.favorites).toEqual([LONDON])
         expect(togglePlace(pinned, LONDON).favorites).toEqual([])
+    })
+})
+
+describe('getDefaultPlace', () => {
+    it('is the first chip, a favorite before the recents', () => {
+        expect(getDefaultPlace(START)).toEqual(NEW_YORK)
+        expect(getDefaultPlace({ favorites: [KYIV], recents: [NEW_YORK] })).toEqual(KYIV)
+        expect(getDefaultPlace({ favorites: [], recents: [] })).toBeNull()
     })
 })
 

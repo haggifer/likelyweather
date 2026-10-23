@@ -1,8 +1,10 @@
 import en from '@fa/messages/catalogs/en.json'
+import { DEFAULT_PLACES, getDefaultPlace } from '@fa/shared/places'
 import { PortalHost } from '@rn-primitives/portal'
 import { fireEvent, render, screen } from '@testing-library/react-native'
 import { View } from 'react-native'
 import { IntlProvider } from 'use-intl'
+import { setSelectedCity } from '../../lib/selected-city-store'
 import { MoreMenu } from './MoreMenu'
 
 const mockPush = jest.fn()
@@ -62,5 +64,23 @@ describe('MoreMenu', () => {
         await fireEvent.press(screen.getByRole('menuitem', { name: en.nav.archive }))
 
         expect(mockPush).toHaveBeenCalledWith('/archive')
+    })
+
+    // The selected city lives for the session, so the default place is checked before a city is picked.
+    it('opens the details of the overview default place before a city is picked', async () => {
+        mockPathname = '/'
+        await openMenu()
+        await fireEvent.press(screen.getByRole('menuitem', { name: en.nav.details }))
+
+        expect(mockPush).toHaveBeenCalledWith(`/city/${getDefaultPlace(DEFAULT_PLACES)!.slug}`)
+    })
+
+    it('opens the details of the city the overview shows', async () => {
+        setSelectedCity('kyiv-ua-703448')
+        mockPathname = '/'
+        await openMenu()
+        await fireEvent.press(screen.getByRole('menuitem', { name: en.nav.details }))
+
+        expect(mockPush).toHaveBeenCalledWith('/city/kyiv-ua-703448')
     })
 })

@@ -19,6 +19,7 @@
     "nav": {
         "main": "Hauptmenü",
         "forecast": "Vorhersage",
+        "details": "Details",
         "archive": "Archiv",
         "more": "Weitere Seiten",
         "methodology": "Methodik"
