@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useViewMode } from '@/hooks/useViewMode'
 import { cn } from '@/lib/cn'
-import { BarChart3, Table2 } from 'lucide-react'
+import { BarChart3, Loader2, Table2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { ReactNode } from 'react'
 
@@ -50,13 +50,19 @@ export function ChartFrame({ title, table, tabs, actions, footer, isFetching, cl
             <CardContent
                 // On phones the chart runs close to the card's left edge, while the table keeps the card's padding.
                 className={cn(
-                    'transition-opacity in-data-switching:opacity-60',
+                    'relative transition-opacity in-data-switching:opacity-60',
                     !isTable && 'max-sm:pl-1',
                     isFetching && 'opacity-60',
                 )}
             >
                 {isTable && table ? <div className={cn(TABLE_SCROLL, 'max-h-[26.25rem]')}>{table}</div> : children}
                 {footer}
+                {/* Only a switch slower than 300 ms shows it; the spin is a transform, which keeps turning while the chart is
+                    computed. */}
+                <Loader2
+                    aria-hidden="true"
+                    className="pointer-events-none absolute top-1/2 left-1/2 size-6 -translate-1/2 animate-spin text-muted-foreground opacity-0 transition-opacity in-data-switching:opacity-100 in-data-switching:delay-300"
+                />
             </CardContent>
         </Card>
     )

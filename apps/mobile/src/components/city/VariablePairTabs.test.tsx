@@ -1,6 +1,6 @@
 import en from '@fa/messages/catalogs/en.json'
 import { Variable } from '@fa/shared/variables'
-import { fireEvent, render, screen } from '@testing-library/react-native'
+import { act, fireEvent, render, screen } from '@testing-library/react-native'
 import { IntlProvider } from 'use-intl'
 import { VariablePairTabs } from './VariablePairTabs'
 
@@ -20,14 +20,21 @@ describe('VariablePairTabs', () => {
         expect(screen.getByRole('radio', { name: en.subVariables.feels })).toBeChecked()
     })
 
-    it('switches within the pair and keeps the open one when it is tapped again', async () => {
+    it('turns a tapped tab on at once, hands it on a frame later and keeps the open one when it is tapped again', async () => {
+        jest.useFakeTimers()
         const onChange = jest.fn()
 
         await renderTabs(Variable.Wind, onChange)
         await fireEvent.press(screen.getByRole('radio', { name: en.subVariables.wind }))
         await fireEvent.press(screen.getByRole('radio', { name: en.subVariables.gusts }))
 
+        expect(screen.getByRole('radio', { name: en.subVariables.gusts })).toBeChecked()
+        expect(onChange).not.toHaveBeenCalled()
+
+        await act(() => jest.runAllTimers())
+
         expect(onChange.mock.calls).toEqual([[Variable.Gusts]])
+        jest.useRealTimers()
     })
 
     it('renders nothing for a variable without a companion', async () => {

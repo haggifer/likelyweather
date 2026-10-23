@@ -1,6 +1,6 @@
 import en from '@fa/messages/catalogs/en.json'
 import { PHONE_VARIABLES, Variable } from '@fa/shared/variables'
-import { fireEvent, render, screen } from '@testing-library/react-native'
+import { act, fireEvent, render, screen } from '@testing-library/react-native'
 import { IntlProvider } from 'use-intl'
 import { VariableSwitch } from './VariableSwitch'
 
@@ -41,13 +41,20 @@ describe('VariableSwitch', () => {
         expect(getClassName(en.variableTabs.temp)).toContain('flex-1')
     })
 
-    it('switches on a tap and keeps the selected variable when it is tapped again', async () => {
+    it('turns a tapped tab on at once, hands it on a frame later and keeps the selected one when it is tapped again', async () => {
+        jest.useFakeTimers()
         const onChange = jest.fn()
 
         await renderSwitch(Variable.Temp, onChange)
         await fireEvent.press(screen.getByRole('radio', { name: en.variableTabs.temp }))
         await fireEvent.press(screen.getByRole('radio', { name: en.variableTabs.wind }))
 
+        expect(screen.getByRole('radio', { name: en.variableTabs.wind })).toBeChecked()
+        expect(onChange).not.toHaveBeenCalled()
+
+        await act(() => jest.runAllTimers())
+
         expect(onChange.mock.calls).toEqual([[Variable.Wind]])
+        jest.useRealTimers()
     })
 })

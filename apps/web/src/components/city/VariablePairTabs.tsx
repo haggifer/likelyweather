@@ -1,8 +1,10 @@
 'use client'
 
+import { TAB_TRANSITION_MS } from '@/components/city/tab-transition'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { setVariable } from '@/store/dashboard-slice'
+import { usePendingValue } from '@fa/hooks/usePendingValue'
 import { getVariablePair, getVariableTab, Variable } from '@fa/shared/variables'
 import { useTranslations } from 'next-intl'
 
@@ -12,7 +14,11 @@ export function VariablePairTabs() {
     const t = useTranslations('subVariables')
     const tTabs = useTranslations('variableTabs')
     const dispatch = useAppDispatch()
-    const variable = useAppSelector((s) => s.dashboard.variable)
+    const { value: variable, setValue: setPicked } = usePendingValue(
+        useAppSelector((s) => s.dashboard.variable),
+        (next) => dispatch(setVariable(next)),
+        TAB_TRANSITION_MS,
+    )
 
     const pair = getVariablePair(variable)
 
@@ -25,7 +31,7 @@ export function VariablePairTabs() {
             spacing={0}
             value={variable}
             // A tap on the open sub-tab would clear the group; one of the pair always stays open.
-            onValueChange={(v) => v && dispatch(setVariable(v as Variable))}
+            onValueChange={(v) => v && setPicked(v as Variable)}
             aria-label={t('label', { variable: tTabs(getVariableTab(variable)) })}
             className="w-full"
         >

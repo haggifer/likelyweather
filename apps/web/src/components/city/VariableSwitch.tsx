@@ -1,10 +1,12 @@
 'use client'
 
+import { TAB_TRANSITION_MS } from '@/components/city/tab-transition'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useIsPhone } from '@/hooks/useIsPhone'
 import { cn } from '@/lib/cn'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { setVariable } from '@/store/dashboard-slice'
+import { usePendingValue } from '@fa/hooks/usePendingValue'
 import { getVariablePair, getVariableTab, PHONE_VARIABLES, Variable, VARIABLES } from '@fa/shared/variables'
 import {
     Cloud,
@@ -44,8 +46,12 @@ export function VariableSwitch({ className }: IProps) {
     const t = useTranslations('variables')
     const tTabs = useTranslations('variableTabs')
     const dispatch = useAppDispatch()
-    const variable = useAppSelector((s) => s.dashboard.variable)
     const isPhone = useIsPhone()
+    const { value: variable, setValue: setPicked } = usePendingValue(
+        useAppSelector((s) => s.dashboard.variable),
+        (next) => dispatch(setVariable(next)),
+        TAB_TRANSITION_MS,
+    )
 
     const ids = isPhone ? PHONE_VARIABLES : ALL_VARIABLES
     const selected = isPhone ? getVariableTab(variable) : variable
@@ -59,7 +65,7 @@ export function VariableSwitch({ className }: IProps) {
             size="sm"
             spacing={0}
             value={selected}
-            onValueChange={(v) => v && dispatch(setVariable(v as Variable))}
+            onValueChange={(v) => v && setPicked(v as Variable)}
             aria-label={t('label')}
             className={className}
         >

@@ -1,3 +1,4 @@
+import { usePendingValue } from '@fa/hooks/usePendingValue'
 import { getVariablePair, getVariableTab, PHONE_VARIABLES, Variable } from '@fa/shared/variables'
 import {
     Cloud,
@@ -37,9 +38,11 @@ interface IProps {
 // icon and keep their accessible name. The named segment takes the room its label needs, the web's `flex-[3.4]`; a
 // longer name ends in an ellipsis. A pair is named once (Temperature, Wind); its sub-tabs above the chart pick the
 // member (`VariablePairTabs`).
-export function VariableSwitch({ value, onChange }: IProps) {
+export function VariableSwitch({ value: current, onChange }: IProps) {
     const t = useTranslations('variables')
     const tTabs = useTranslations('variableTabs')
+    // The tab turns on in its own frame; the screen redraws for it after, so the switch never waits for the chart.
+    const { value, setValue } = usePendingValue(current, onChange)
 
     const selected = getVariableTab(value)
 
@@ -52,7 +55,7 @@ export function VariableSwitch({ value, onChange }: IProps) {
             size="sm"
             value={selected}
             // A tap on the selected segment would clear the group; the switch always keeps one variable.
-            onValueChange={(next) => next && onChange(next as Variable)}
+            onValueChange={(next) => next && setValue(next as Variable)}
             accessibilityLabel={t('label')}
             className="w-full"
         >
