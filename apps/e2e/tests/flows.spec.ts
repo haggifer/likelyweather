@@ -284,7 +284,7 @@ test('Details in the header opens the dashboard of the city the overview shows',
 test('an unknown city page says so and offers the search', async ({ page }) => {
     await page.goto('/city/nowhere-xx-1')
 
-    await expect(page.getByRole('heading', { name: 'This city is not in Forecast Arena' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'This city is not in Likely Weather' })).toBeVisible()
     await expect(page.getByRole('combobox', { name: 'Search any place' })).toBeVisible()
 })
 
@@ -293,7 +293,7 @@ test('the language menu switches the interface to Ukrainian', async ({ page }) =
     await page.getByRole('button', { name: 'Language' }).click()
     await page.getByRole('menuitemradio', { name: 'Українська' }).click()
 
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Forecast Arena: порівняння прогнозів погоди')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Likely Weather: порівняння прогнозів погоди')
 })
 
 for (const path of ['/', `/city/${KYIV}`]) {

@@ -95,7 +95,7 @@
         "refresh": "Refresh",
         "refreshTitle": "Check for a newer run and restart the chart at the current time",
         "upToDate": "Up to date: fetched less than {hours} hours ago.",
-        "notFound": "This city is not in Forecast Arena",
+        "notFound": "This city is not in Likely Weather",
         "notFoundBody": "Search for it to open its forecast within seconds.",
         "chanceOfRain": "Chance of rain",
         "back": "Back to overview",
@@ -133,16 +133,16 @@
         "empty": "No future steps in this run."
     },
     "landing": {
-        "heading": "Forecast Arena: compare weather forecasts",
+        "heading": "Likely Weather: compare weather forecasts",
         "seeds": "Start with"
     },
     "methodology": {
         "title": "Methodology",
-        "intro": "Where Forecast Arena’s numbers come from, how they are combined, and where they stop being trustworthy.",
+        "intro": "Where Likely Weather’s numbers come from, how they are combined, and where they stop being trustworthy.",
         "europeOnly": "Europe only",
         "sources": {
             "title": "Sources",
-            "body": "Forecast Arena compares ten weather models: nine come through Open-Meteo and one from MET Norway (listed below). Each model publishes a new forecast four times a day, and a city shows the latest one available when it was last updated, for the next ten days.\nThe forecasts are grouped into 3-hour periods on the city’s local clock. Temperature, wind, pressure, humidity and cloud cover are the values at the start of each period; precipitation is the amount that falls during it.\nRegional models cover Europe only, so a city elsewhere is compared across fewer models. MET Norway forecasts hour by hour for about the first two and a half days only; after that, the other models carry on.\nThe feels-like temperature is worked out for every model from its temperature, humidity, wind and sunshine (Steadman’s apparent temperature). MET Norway gives no sunshine, so its feels-like is the value in the shade. Wind gusts come from the Open-Meteo models only.\nPast weather comes from Open-Meteo’s historical data: the ERA5 reanalysis back to 1940 and, for the most recent days, the ECMWF analysis. It is one value per hour, not a median of models.\nThe Android widget’s current temperature is the latest report from the nearest airport within 25 km, if it is at most 75 minutes old, from the US Aviation Weather Center. It is adjusted for the height between the airport and the city (6.5 °C per kilometre) and for how much the models expect the temperature to have changed since the report. Without such an airport, the widget shows Open-Meteo’s estimate of the current temperature."
+            "body": "Likely Weather compares ten weather models: nine come through Open-Meteo and one from MET Norway (listed below). Each model publishes a new forecast four times a day, and a city shows the latest one available when it was last updated, for the next ten days.\nThe forecasts are grouped into 3-hour periods on the city’s local clock. Temperature, wind, pressure, humidity and cloud cover are the values at the start of each period; precipitation is the amount that falls during it.\nRegional models cover Europe only, so a city elsewhere is compared across fewer models. MET Norway forecasts hour by hour for about the first two and a half days only; after that, the other models carry on.\nThe feels-like temperature is worked out for every model from its temperature, humidity, wind and sunshine (Steadman’s apparent temperature). MET Norway gives no sunshine, so its feels-like is the value in the shade. Wind gusts come from the Open-Meteo models only.\nPast weather comes from Open-Meteo’s historical data: the ERA5 reanalysis back to 1940 and, for the most recent days, the ECMWF analysis. It is one value per hour, not a median of models.\nThe Android widget’s current temperature is the latest report from the nearest airport within 25 km, if it is at most 75 minutes old, from the US Aviation Weather Center. It is adjusted for the height between the airport and the city (6.5 °C per kilometre) and for how much the models expect the temperature to have changed since the report. Without such an airport, the widget shows Open-Meteo’s estimate of the current temperature."
         },
         "median": {
             "title": "Median and spread",
@@ -154,7 +154,7 @@
         },
         "limits": {
             "title": "Limits",
-            "body": "A model’s value describes a grid square, not a street corner, and the grid’s height can differ from the city’s, which matters for temperature. Agreement is not accuracy: models that share data or physics can agree and still be wrong together. Forecast Arena compares the models with each other, not with the weather that actually happened."
+            "body": "A model’s value describes a grid square, not a street corner, and the grid’s height can differ from the city’s, which matters for temperature. Agreement is not accuracy: models that share data or physics can agree and still be wrong together. Likely Weather compares the models with each other, not with the weather that actually happened."
         },
         "thresholds": "{variable}: agree under {agree} {unit}, split from {split} {unit}",
         "attribution": "Weather data by Open-Meteo.com (CC BY 4.0) and MET Norway (CC BY 4.0). Geocoding by Open-Meteo, based on GeoNames."
@@ -199,7 +199,7 @@
     "errors": {
         "quotaExceeded": "You have used today's requests. Stored forecasts stay available, and new ones resume after the daily reset.",
         "rateLimited": "Too many requests. Wait a minute and try again.",
-        "notFound": "This city is not in Forecast Arena.",
+        "notFound": "This city is not in Likely Weather.",
         "pending": "The forecast is still being fetched. Try again in a moment.",
         "unavailable": "The weather services are not answering. Try again later.",
         "generic": "Something went wrong. Try again in a moment.",
@@ -208,7 +208,7 @@
     },
     "promo": {
         "label": "Get the Android app",
-        "title": "Forecast Arena for Android",
+        "title": "Likely Weather for Android",
         "body": "Your location, home-screen widget, works offline",
         "cta": "Get the app",
         "dismiss": "Dismiss",
@@ -226,7 +226,7 @@
         "about": "About",
         "version": "Version {version}",
         "widgets": "Home-screen widgets",
-        "widgetsHint": "Touch and hold an empty spot on your home screen, tap Widgets and pick Forecast Arena.",
+        "widgetsHint": "Touch and hold an empty spot on your home screen, tap Widgets and pick Likely Weather.",
         "widgetsNone": "No widget is on your home screen yet.",
         "widgetClock": "Clock widget",
         "widgetNoCity": "No city chosen",
@@ -246,7 +246,7 @@
     },
     "archive": {
         "title": "Past weather",
-        "heading": "Forecast Arena: past weather",
+        "heading": "Likely Weather: past weather",
         "period": "Period",
         "periodValue": "Period: {range}",
         "previousMonth": "Previous month",

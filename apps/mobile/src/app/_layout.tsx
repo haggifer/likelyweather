@@ -48,7 +48,7 @@ const AppStack = () => {
                     headerRight: () => <MoreMenu />,
                 }}
             >
-                <Stack.Screen name="index" options={{ title: 'Forecast Arena', headerTitle: () => <Wordmark /> }} />
+                <Stack.Screen name="index" options={{ title: 'Likely Weather', headerTitle: () => <Wordmark /> }} />
                 <Stack.Screen name="city/[slug]" options={{ title: '' }} />
                 <Stack.Screen name="archive" options={{ title: ta('title') }} />
                 {/* Methodology opens with its own heading, as on the web, so the header names nothing. */}

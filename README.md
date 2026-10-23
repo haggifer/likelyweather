@@ -1,4 +1,4 @@
-# Forecast Arena
+# Likely Weather
 
 Ten weather models for any city and how much they disagree. Public, no login. Measuring which model has been right is a separate feature planned after the MVP.
 

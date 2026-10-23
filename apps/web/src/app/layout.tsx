@@ -20,7 +20,7 @@ const FONT_VARIABLES = `${inter.variable} ${jetbrainsMono.variable} ${lexend.var
 export const generateMetadata = async (): Promise<Metadata> => {
     const t = await getTranslations('app')
 
-    return { title: { default: 'Forecast Arena', template: '%s · Forecast Arena' }, description: t('tagline') }
+    return { title: { default: 'Likely Weather', template: '%s · Likely Weather' }, description: t('tagline') }
 }
 
 export default async function RootLayout({ children }: LayoutProps<'/'>) {

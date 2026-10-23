@@ -95,7 +95,7 @@
         "refresh": "Aktualisieren",
         "refreshTitle": "Nach einem neueren Lauf suchen und das Diagramm ab jetzt beginnen",
         "upToDate": "Aktuell: vor weniger als {hours} Stunden abgerufen.",
-        "notFound": "Diese Stadt ist nicht in Forecast Arena enthalten",
+        "notFound": "Diese Stadt ist nicht in Likely Weather enthalten",
         "notFoundBody": "Suche sie, um ihre Vorhersage in wenigen Sekunden zu öffnen.",
         "chanceOfRain": "Regenwahrscheinlichkeit",
         "back": "Zurück zur Übersicht",
@@ -133,16 +133,16 @@
         "empty": "Dieser Lauf hat keine künftigen Schritte."
     },
     "landing": {
-        "heading": "Forecast Arena: Wettervorhersagen vergleichen",
+        "heading": "Likely Weather: Wettervorhersagen vergleichen",
         "seeds": "Starte mit"
     },
     "methodology": {
         "title": "Methodik",
-        "intro": "Woher die Zahlen von Forecast Arena kommen, wie sie zusammengeführt werden und wo man ihnen nicht mehr trauen sollte.",
+        "intro": "Woher die Zahlen von Likely Weather kommen, wie sie zusammengeführt werden und wo man ihnen nicht mehr trauen sollte.",
         "europeOnly": "nur Europa",
         "sources": {
             "title": "Quellen",
-            "body": "Forecast Arena vergleicht zehn Wettermodelle: Neun kommen über Open-Meteo, eines von MET Norway (Liste unten). Jedes Modell veröffentlicht viermal am Tag eine neue Vorhersage, und eine Stadt zeigt die neueste, die bei ihrer letzten Aktualisierung verfügbar war, für die nächsten zehn Tage.\nDie Vorhersagen sind in 3-Stunden-Abschnitte nach der Ortszeit der Stadt gegliedert. Temperatur, Wind, Luftdruck, Luftfeuchtigkeit und Bewölkung sind die Werte zu Beginn eines Abschnitts; der Niederschlag ist die Menge, die darin fällt.\nRegionale Modelle decken nur Europa ab, deshalb wird eine Stadt anderswo mit weniger Modellen verglichen. MET Norway sagt nur für etwa die ersten zweieinhalb Tage stündlich vorher; danach übernehmen die anderen Modelle.\nDie gefühlte Temperatur wird für jedes Modell aus seiner Temperatur, Luftfeuchtigkeit, Wind und Sonneneinstrahlung berechnet (scheinbare Temperatur nach Steadman). MET Norway liefert keine Sonneneinstrahlung, daher ist seine gefühlte Temperatur der Wert im Schatten. Windböen kommen nur von den Open-Meteo-Modellen.\nDas vergangene Wetter stammt aus den historischen Daten von Open-Meteo: der ERA5-Reanalyse zurück bis 1940 und, für die letzten Tage, der ECMWF-Analyse. Es ist ein Wert pro Stunde, kein Median der Modelle.\nDie aktuelle Temperatur im Android-Widget ist die letzte Meldung des nächsten Flughafens im Umkreis von 25 km, wenn sie höchstens 75 Minuten alt ist, vom Aviation Weather Center der USA. Sie wird um den Höhenunterschied zwischen Flughafen und Stadt (6,5 °C pro Kilometer) korrigiert und darum, wie stark sich die Temperatur laut den Modellen seit der Meldung verändert hat. Gibt es keinen solchen Flughafen, zeigt das Widget die Schätzung der aktuellen Temperatur von Open-Meteo."
+            "body": "Likely Weather vergleicht zehn Wettermodelle: Neun kommen über Open-Meteo, eines von MET Norway (Liste unten). Jedes Modell veröffentlicht viermal am Tag eine neue Vorhersage, und eine Stadt zeigt die neueste, die bei ihrer letzten Aktualisierung verfügbar war, für die nächsten zehn Tage.\nDie Vorhersagen sind in 3-Stunden-Abschnitte nach der Ortszeit der Stadt gegliedert. Temperatur, Wind, Luftdruck, Luftfeuchtigkeit und Bewölkung sind die Werte zu Beginn eines Abschnitts; der Niederschlag ist die Menge, die darin fällt.\nRegionale Modelle decken nur Europa ab, deshalb wird eine Stadt anderswo mit weniger Modellen verglichen. MET Norway sagt nur für etwa die ersten zweieinhalb Tage stündlich vorher; danach übernehmen die anderen Modelle.\nDie gefühlte Temperatur wird für jedes Modell aus seiner Temperatur, Luftfeuchtigkeit, Wind und Sonneneinstrahlung berechnet (scheinbare Temperatur nach Steadman). MET Norway liefert keine Sonneneinstrahlung, daher ist seine gefühlte Temperatur der Wert im Schatten. Windböen kommen nur von den Open-Meteo-Modellen.\nDas vergangene Wetter stammt aus den historischen Daten von Open-Meteo: der ERA5-Reanalyse zurück bis 1940 und, für die letzten Tage, der ECMWF-Analyse. Es ist ein Wert pro Stunde, kein Median der Modelle.\nDie aktuelle Temperatur im Android-Widget ist die letzte Meldung des nächsten Flughafens im Umkreis von 25 km, wenn sie höchstens 75 Minuten alt ist, vom Aviation Weather Center der USA. Sie wird um den Höhenunterschied zwischen Flughafen und Stadt (6,5 °C pro Kilometer) korrigiert und darum, wie stark sich die Temperatur laut den Modellen seit der Meldung verändert hat. Gibt es keinen solchen Flughafen, zeigt das Widget die Schätzung der aktuellen Temperatur von Open-Meteo."
         },
         "median": {
             "title": "Median und Streuung",
@@ -154,7 +154,7 @@
         },
         "limits": {
             "title": "Grenzen",
-            "body": "Der Wert eines Modells beschreibt eine Gitterzelle, keine Straßenecke, und die Höhe des Gitters kann von der der Stadt abweichen, was für die Temperatur wichtig ist. Einigkeit ist keine Genauigkeit: Modelle mit gemeinsamen Daten oder gemeinsamer Physik können sich einig sein und trotzdem gemeinsam danebenliegen. Forecast Arena vergleicht die Modelle miteinander, nicht mit dem Wetter, das tatsächlich eingetreten ist."
+            "body": "Der Wert eines Modells beschreibt eine Gitterzelle, keine Straßenecke, und die Höhe des Gitters kann von der der Stadt abweichen, was für die Temperatur wichtig ist. Einigkeit ist keine Genauigkeit: Modelle mit gemeinsamen Daten oder gemeinsamer Physik können sich einig sein und trotzdem gemeinsam danebenliegen. Likely Weather vergleicht die Modelle miteinander, nicht mit dem Wetter, das tatsächlich eingetreten ist."
         },
         "thresholds": "{variable}: einig unter {agree} {unit}, gespalten ab {split} {unit}",
         "attribution": "Wetterdaten von Open-Meteo.com (CC BY 4.0) und MET Norway (CC BY 4.0). Geokodierung von Open-Meteo auf Basis von GeoNames."
@@ -199,7 +199,7 @@
     "errors": {
         "quotaExceeded": "Die heutigen Anfragen sind aufgebraucht. Gespeicherte Vorhersagen bleiben verfügbar, neue gibt es nach dem täglichen Zurücksetzen.",
         "rateLimited": "Zu viele Anfragen. Bitte eine Minute warten und erneut versuchen.",
-        "notFound": "Diese Stadt ist nicht in Forecast Arena enthalten.",
+        "notFound": "Diese Stadt ist nicht in Likely Weather enthalten.",
         "pending": "Die Vorhersage wird noch abgerufen. Bitte gleich noch einmal versuchen.",
         "unavailable": "Die Wetterdienste antworten nicht. Bitte später erneut versuchen.",
         "generic": "Etwas ist schiefgelaufen. Bitte gleich noch einmal versuchen.",
@@ -208,7 +208,7 @@
     },
     "promo": {
         "label": "Android-App holen",
-        "title": "Forecast Arena für Android",
+        "title": "Likely Weather für Android",
         "body": "Dein Standort, Startbildschirm-Widget, funktioniert offline",
         "cta": "App holen",
         "dismiss": "Schließen",
@@ -226,7 +226,7 @@
         "about": "Über die App",
         "version": "Version {version}",
         "widgets": "Startbildschirm-Widgets",
-        "widgetsHint": "Halte eine freie Stelle auf deinem Startbildschirm gedrückt, tippe auf „Widgets“ und wähle „Forecast Arena“ aus.",
+        "widgetsHint": "Halte eine freie Stelle auf deinem Startbildschirm gedrückt, tippe auf „Widgets“ und wähle „Likely Weather“ aus.",
         "widgetsNone": "Auf dem Startbildschirm ist noch kein Widget.",
         "widgetClock": "Uhr-Widget",
         "widgetNoCity": "Keine Stadt gewählt",
@@ -246,7 +246,7 @@
     },
     "archive": {
         "title": "Vergangenes Wetter",
-        "heading": "Forecast Arena: vergangenes Wetter",
+        "heading": "Likely Weather: vergangenes Wetter",
         "period": "Zeitraum",
         "periodValue": "Zeitraum: {range}",
         "previousMonth": "Vorheriger Monat",

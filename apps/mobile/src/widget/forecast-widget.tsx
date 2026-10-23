@@ -26,7 +26,7 @@ const WEATHER_ICON_SIZE = 48
 
 // The app's city picker for this widget, the search it was placed with: some launchers never offer to configure a
 // placed widget again.
-const getPickerLink = (widgetId: number) => `forecastarena://widget-city/${widgetId}`
+const getPickerLink = (widgetId: number) => `likelyweather://widget-city/${widgetId}`
 
 interface IProps {
     widgetId: number

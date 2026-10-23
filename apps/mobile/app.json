@@ -1,18 +1,18 @@
 {
     "expo": {
-        "name": "Forecast Arena",
-        "slug": "forecast-arena",
+        "name": "Likely Weather",
+        "slug": "likelyweather",
         "version": "0.1.0",
         "orientation": "portrait",
         "icon": "./assets/images/icon.png",
-        "scheme": "forecastarena",
+        "scheme": "likelyweather",
         "userInterfaceStyle": "automatic",
         "ios": {
-            "bundleIdentifier": "io.github.haggifer.forecastarena",
+            "bundleIdentifier": "com.likelyweather.app",
             "icon": "./assets/expo.icon"
         },
         "android": {
-            "package": "io.github.haggifer.forecastarena",
+            "package": "com.likelyweather.app",
             "adaptiveIcon": {
                 "backgroundColor": "#ffffff",
                 "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -49,7 +49,7 @@
             [
                 "expo-location",
                 {
-                    "locationWhenInUsePermission": "Forecast Arena uses your location once, when you tap Use my location, to open the nearest city.",
+                    "locationWhenInUsePermission": "Likely Weather uses your location once, when you tap Use my location, to open the nearest city.",
                     "isAndroidBackgroundLocationEnabled": false,
                     "isIosBackgroundLocationEnabled": false
                 }
@@ -60,7 +60,7 @@
                     "widgets": [
                         {
                             "name": "ForecastClock",
-                            "label": "Forecast Arena clock",
+                            "label": "Likely Weather clock",
                             "description": "The time, the date and the weather for one city",
                             "minWidth": "250dp",
                             "minHeight": "110dp",
