@@ -9,6 +9,10 @@ export interface ApiConfig {
 
 type Params = Record<string, string | number | undefined | null>
 
+// The API answers within its function's 30-second limit, so a request still open well past that hangs on a stalled
+// connection, which React Native's fetch never gives up on: it fails instead, and the screen offers Retry.
+const REQUEST_TIMEOUT_MS = 40_000
+
 export class ApiRequestError extends Error {
     constructor(
         public status: number,
@@ -38,18 +42,30 @@ const toQuery = (params?: Params) => {
     return entries.length ? `?${new URLSearchParams(entries.map(([k, v]) => [k, String(v)]))}` : ''
 }
 
+// Hermes has no AbortSignal.timeout, so the timer is set by hand; it also covers reading the body.
 const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
-    const res = await fetch(`${config.baseUrl}${path}`, init)
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
-    if (!res.ok) {
-        const body: ApiError | null = await res.json().catch(() => null)
+    try {
+        const res = await fetch(`${config.baseUrl}${path}`, { ...init, signal: controller.signal })
 
-        throw new ApiRequestError(res.status, body?.error?.code ?? 'http_error', body?.error?.message ?? res.statusText)
+        if (!res.ok) {
+            const error: ApiError | null = await res.json().catch(() => null)
+
+            throw new ApiRequestError(
+                res.status,
+                error?.error?.code ?? 'http_error',
+                error?.error?.message ?? res.statusText,
+            )
+        }
+
+        const body: T = await res.json()
+
+        return body
+    } finally {
+        clearTimeout(timer)
     }
-
-    const body: T = await res.json()
-
-    return body
 }
 
 export const configureApi = (overrides: Partial<ApiConfig>) => void Object.assign(config, overrides)
