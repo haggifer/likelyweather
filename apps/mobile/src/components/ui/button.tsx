@@ -52,7 +52,7 @@ const buttonTextVariants = cva('text-foreground text-sm leading-none font-medium
         size: {
             default: '',
             xs: 'text-xs',
-            sm: 'text-[0.8rem]',
+            sm: 'text-[0.8125rem]',
             lg: '',
             icon: '',
             'icon-xs': '',

@@ -55,7 +55,7 @@ export function AppPromoBanner() {
                     <X />
                 </Button>
             </div>
-            <p className="px-4 pb-2 text-[0.6875rem] leading-snug text-muted-foreground">{t('note')}</p>
+            <p className="px-4 pb-2 text-xs leading-snug text-muted-foreground">{t('note')}</p>
         </section>
     )
 }

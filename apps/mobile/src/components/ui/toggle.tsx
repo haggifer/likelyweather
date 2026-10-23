@@ -41,7 +41,7 @@ const toggleVariants = cva(
 
 const toggleTextVariants = cva('text-sm text-foreground font-medium', {
     variants: {
-        size: { default: '', sm: 'text-[0.8rem]', lg: '' },
+        size: { default: '', sm: 'text-[0.8125rem]', lg: '' },
     },
     defaultVariants: { size: 'default' },
 })

@@ -128,6 +128,9 @@
     --font-heading: var(--font-inter), system-ui, sans-serif;
     --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
     --text-base: 0.875rem;
+    /* No text outside the charts is under 13 px; its line keeps `text-xs`'s 16 px. */
+    --text-xs: 0.8125rem;
+    --text-xs--line-height: 1rem;
     --radius: 0.625rem;
     --border-width: 1px;
     /* The cards' and the phone sheet's shadow; the app's theme takes it too (pnpm --filter @fa/mobile tokens). */
