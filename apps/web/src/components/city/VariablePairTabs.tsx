@@ -27,7 +27,7 @@ export function VariablePairTabs() {
             // A tap on the open sub-tab would clear the group; one of the pair always stays open.
             onValueChange={(v) => v && dispatch(setVariable(v as Variable))}
             aria-label={t('label', { variable: tTabs(getVariableTab(variable)) })}
-            className="mb-3 w-full"
+            className="w-full"
         >
             {pair.map((id) => (
                 <ToggleGroupItem key={id} value={id} className="h-9 flex-1 text-sm data-[state=on]:bg-accent">

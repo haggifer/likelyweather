@@ -27,7 +27,7 @@ export function VariablePairTabs({ value, onChange }: IProps) {
             // A tap on the open sub-tab would clear the group; one of the pair always stays open.
             onValueChange={(next) => next && onChange(next as Variable)}
             accessibilityLabel={t('label', { variable: tTabs(getVariableTab(value)) })}
-            className="mb-3 w-full"
+            className="w-full"
         >
             {pair.map((id, i) => (
                 <ToggleGroupItem
