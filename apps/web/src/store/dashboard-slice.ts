@@ -9,9 +9,6 @@ interface DashboardState {
     highlightedModel: ModelId | null
     hiddenModels: ModelId[]
     isMedianHidden: boolean
-    // The variable switch shows its phone design (pairs merged, sub-tabs above the chart) on a phone or wherever its
-    // named design does not fit; the switch measures it, the details page reads it.
-    isSwitchCompact: boolean
 }
 
 const initialState: DashboardState = {
@@ -20,7 +17,6 @@ const initialState: DashboardState = {
     highlightedModel: null,
     hiddenModels: [],
     isMedianHidden: false,
-    isSwitchCompact: false,
 }
 
 const dashboardSlice = createSlice({
@@ -43,9 +39,6 @@ const dashboardSlice = createSlice({
         toggleMedian: (state) => {
             state.isMedianHidden = !state.isMedianHidden
         },
-        setSwitchCompact: (state, action: PayloadAction<boolean>) => {
-            state.isSwitchCompact = action.payload
-        },
         showAllModels: (state) => {
             state.hiddenModels = []
             state.isMedianHidden = false
@@ -53,14 +46,7 @@ const dashboardSlice = createSlice({
     },
 })
 
-export const {
-    setVariable,
-    setHoverStep,
-    setHighlightedModel,
-    toggleHiddenModel,
-    toggleMedian,
-    showAllModels,
-    setSwitchCompact,
-} = dashboardSlice.actions
+export const { setVariable, setHoverStep, setHighlightedModel, toggleHiddenModel, toggleMedian, showAllModels } =
+    dashboardSlice.actions
 
 export const dashboardReducer = dashboardSlice.reducer

@@ -6,12 +6,11 @@ import { cn } from '@/lib/cn'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { setHighlightedModel, showAllModels, toggleHiddenModel, toggleMedian } from '@/store/dashboard-slice'
 import { Series } from '@fa/shared/api'
-import { isComputedView } from '@fa/shared/dashboard'
 import { formatNumber, formatWindDirection } from '@fa/shared/format'
 import { getLegendRows } from '@fa/shared/legend-rows'
 import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { formatPairedMedian, formatPairedModel, PairedRuns } from '@fa/shared/paired-values'
-import { getDataVariable, Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
+import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Eye, EyeOff } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { memo } from 'react'
@@ -94,27 +93,18 @@ export function ModelLegend({
 }: IProps) {
     const t = useTranslations('legend')
     const tc = useTranslations('chart')
-    const tv = useTranslations('variables')
     const dispatch = useAppDispatch()
     const hidden = useAppSelector((s) => s.dashboard.hiddenModels)
     const isMedianHidden = useAppSelector((s) => s.dashboard.isMedianHidden)
 
     const { decimals, unit } = VARIABLE_BY_ID[variable]
-    const modelInfo = VARIABLE_BY_ID[getDataVariable(variable)]
-    const isComputed = isComputedView(variable)
     const rows = getLegendRows(series, readoutIndex, hidden)
     const medianText = pairedRuns
         ? formatPairedMedian(pairedRuns, readoutIndex, decimals)
         : formatNumber(median, decimals)
 
-    // The chance of rain lists each model's own amount, so its rows carry their unit.
-    const formatRow = (modelId: ModelId, value: number | null) => {
-        if (pairedRuns) return formatPairedModel(pairedRuns, modelId, readoutIndex, decimals)
-
-        return isComputed
-            ? `${formatNumber(value, modelInfo.decimals)} ${modelInfo.unit}`
-            : formatNumber(value, decimals)
-    }
+    const formatRow = (modelId: ModelId, value: number | null) =>
+        pairedRuns ? formatPairedModel(pairedRuns, modelId, readoutIndex, decimals) : formatNumber(value, decimals)
 
     return (
         <div className="flex flex-col gap-2">
@@ -156,9 +146,7 @@ export function ModelLegend({
                             strokeLinecap="round"
                         />
                     </svg>
-                    <span className={cn(isMedianHidden && 'line-through')}>
-                        {isComputed ? tv(variable) : t('median')}
-                    </span>
+                    <span className={cn(isMedianHidden && 'line-through')}>{t('median')}</span>
                 </span>
                 <span className="text-right font-semibold">
                     {isMedianHidden ? '' : medianText}{' '}

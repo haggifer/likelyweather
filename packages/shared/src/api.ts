@@ -18,8 +18,6 @@ export const DEFAULT_LOCALE = Locale.En
 const NumberList = z.array(z.number().nullable())
 
 export const VariableSchema = z.enum(Variable)
-// What `/latest` serves: a computed view such as the chance of rain is drawn from its source's run instead.
-export const StoredVariableSchema = VariableSchema.exclude(['Chance'])
 export const ModelIdSchema = z.enum(ModelId)
 export const LocaleSchema = z.enum(Locale)
 
@@ -82,7 +80,7 @@ export const NearestResponseSchema = z.object({ city: CitySchema, distanceKm: z.
 export type NearestResponse = z.infer<typeof NearestResponseSchema>
 
 export const LatestQuerySchema = z.strictObject({
-    variable: StoredVariableSchema.default(Variable.Temp),
+    variable: VariableSchema.default(Variable.Temp),
 })
 
 export const QuotaResponseSchema = z.object({ limit: z.number(), used: z.number(), resetsAt: z.string() })

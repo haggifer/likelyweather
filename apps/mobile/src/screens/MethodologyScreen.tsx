@@ -1,6 +1,6 @@
 import { METHODOLOGY_SECTIONS, METHODOLOGY_VALUES, toParagraphs } from '@fa/shared/methodology'
 import { MODELS } from '@fa/shared/models'
-import { DISAGREEMENT_VARIABLES } from '@fa/shared/variables'
+import { VARIABLES } from '@fa/shared/variables'
 import { View } from 'react-native'
 import { useTranslations } from 'use-intl'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
@@ -56,7 +56,7 @@ export function MethodologyScreen() {
                         )}
                         {section === 'disagreement' && (
                             <View role="list" className="mt-1 gap-1">
-                                {DISAGREEMENT_VARIABLES.map((v) => (
+                                {VARIABLES.map((v) => (
                                     <Text key={v.id} role="listitem" className={BODY}>
                                         {t('thresholds', {
                                             variable: tv(v.id),

@@ -118,35 +118,6 @@ test('the dashboard switches variables and draws precipitation as bars', async (
     await expect(page.locator('main svg rect[rx="2"]').first()).toBeAttached()
 })
 
-test('the chance of rain is a precipitation view without a disagreement card', async ({ page, isMobile }) => {
-    await page.goto(`/city/${KYIV}?v=chance`)
-
-    const title = page.locator('main [data-slot=card-title]').first()
-
-    if (isMobile) {
-        await expect(title).toHaveText('Precipitation')
-        await expect(page.getByRole('radio', { name: 'Chance', exact: true })).toBeChecked()
-    } else {
-        await expect(title).toHaveText('Chance of rain')
-    }
-
-    await expect(page.locator('main svg rect[rx="2"]').first()).toBeAttached()
-    await expect(page.getByText('Disagreement by day')).toHaveCount(0)
-})
-
-// German needs about 1,180 px for the nine names, so at 1,100 px the switch merges the pairs as on a phone.
-test('the variable switch takes the phone design where its names do not fit', async ({ page, isMobile }) => {
-    test.skip(isMobile, 'phones always show the phone design')
-
-    await page.setViewportSize({ width: 1100, height: 900 })
-    await page.context().addCookies([{ name: 'NEXT_LOCALE', value: 'de', url: test.info().project.use.baseURL! }])
-    await page.goto(`/city/${KYIV}?v=chance`)
-
-    await expect(page.getByRole('radiogroup', { name: 'Größe' }).getByRole('radio')).toHaveCount(6)
-    await expect(page.getByRole('radio', { name: 'Niederschlag' })).toBeChecked()
-    await expect(page.getByRole('radio', { name: 'Wahrscheinlichkeit', exact: true })).toBeChecked()
-})
-
 // The charts scroll inside their cards, which would clip a ring drawn on the chart itself; the ring sits on the frame
 // around the scroller instead, so keyboard focus stays visible.
 test('a focused chart shows its focus ring around the scrolling plot', async ({ page }) => {

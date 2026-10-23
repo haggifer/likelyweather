@@ -8,7 +8,6 @@ import {
     LucideIcon,
     Thermometer,
     ThermometerSun,
-    Umbrella,
     Wind,
     WindArrowDown,
 } from 'lucide-react-native'
@@ -24,7 +23,6 @@ const ICONS: Record<Variable, LucideIcon> = {
     [Variable.Gusts]: WindArrowDown,
     [Variable.Pressure]: Gauge,
     [Variable.Precip]: CloudRain,
-    [Variable.Chance]: Umbrella,
     [Variable.Humidity]: Droplets,
     [Variable.Cloud]: Cloud,
 }

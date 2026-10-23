@@ -1,10 +1,9 @@
 import { Series } from '@fa/shared/api'
-import { isComputedView } from '@fa/shared/dashboard'
 import { formatNumber, formatWindDirection } from '@fa/shared/format'
 import { getLegendRows } from '@fa/shared/legend-rows'
 import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { formatPairedMedian, formatPairedModel, PairedRuns } from '@fa/shared/paired-values'
-import { getDataVariable, Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
+import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Eye, EyeOff } from 'lucide-react-native'
 import { memo } from 'react'
 import { View } from 'react-native'
@@ -107,12 +106,9 @@ export function ModelLegend({
 }: IProps) {
     const t = useTranslations('legend')
     const tc = useTranslations('chart')
-    const tv = useTranslations('variables')
     const { chart } = useTheme()
 
     const { decimals, unit } = VARIABLE_BY_ID[variable]
-    const modelInfo = VARIABLE_BY_ID[getDataVariable(variable)]
-    const isComputed = isComputedView(variable)
     const rows = getLegendRows(series, readoutIndex, hidden)
     const isChanged = hidden.length > 0 || isMedianHidden
     const medianText = pairedRuns
@@ -120,11 +116,7 @@ export function ModelLegend({
         : formatNumber(median, decimals)
 
     const formatRow = (modelId: ModelId, value: number | null) =>
-        pairedRuns
-            ? formatPairedModel(pairedRuns, modelId, readoutIndex, decimals)
-            : isComputed
-              ? `${formatNumber(value, modelInfo.decimals)} ${modelInfo.unit}`
-              : formatNumber(value, decimals)
+        pairedRuns ? formatPairedModel(pairedRuns, modelId, readoutIndex, decimals) : formatNumber(value, decimals)
 
     return (
         <View className="gap-2">
@@ -152,9 +144,7 @@ export function ModelLegend({
             >
                 <View className="min-h-10 flex-1 flex-row items-center gap-2">
                     <MedianSwatch color={chart.median} />
-                    <Text className={cn('text-sm font-semibold', isMedianHidden && 'line-through')}>
-                        {isComputed ? tv(variable) : t('median')}
-                    </Text>
+                    <Text className={cn('text-sm font-semibold', isMedianHidden && 'line-through')}>{t('median')}</Text>
                 </View>
                 {!isMedianHidden && (
                     <Text className="text-sm font-semibold">

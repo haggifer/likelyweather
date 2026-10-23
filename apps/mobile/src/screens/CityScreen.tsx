@@ -3,13 +3,13 @@ import { useCity } from '@fa/api-client/hooks/useCity'
 import { getReadoutIndex } from '@fa/chart-core/dashboard-stats'
 import { useDashboardData } from '@fa/hooks/useDashboardData'
 import { City, Series } from '@fa/shared/api'
-import { getReadoutLabel, getSummaryKey, isComputedView } from '@fa/shared/dashboard'
+import { getReadoutLabel } from '@fa/shared/dashboard'
 import { EnsembleStats } from '@fa/shared/ensemble'
 import { getCityName } from '@fa/shared/format'
 import { ModelId } from '@fa/shared/models'
 import { PairedRuns } from '@fa/shared/paired-values'
 import { toggleItem } from '@fa/shared/toggle-item'
-import { getDataVariable, getVariablePair, getVariableTab, Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
+import { getVariablePair, getVariableTab, Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ReactNode, useDeferredValue, useEffect, useState } from 'react'
 import { View } from 'react-native'
@@ -41,7 +41,6 @@ import { setSelectedCity } from '../lib/selected-city-store'
 const CONTENT_STYLE = { padding: 16, paddingTop: 8, paddingBottom: 0, gap: 12 }
 // The header is the scroll's first child and the variable bar its second, the one that sticks.
 const STICKY_INDICES = [1]
-const NO_SERIES: Series[] = []
 
 interface Selection {
     variable: Variable
@@ -214,8 +213,6 @@ const Dashboard = ({ city }: DashboardProps) => {
     } = useDashboardData(city.slug, variable, { now, locale, hiddenModels: hidden })
 
     const info = VARIABLE_BY_ID[variable]
-    const modelInfo = VARIABLE_BY_ID[getDataVariable(variable)]
-    const isComputed = isComputedView(variable)
     const timeZone = city.timezone
     // A pair is named once ("Temperature"); the sub-tabs show which member is open.
     const title = getVariablePair(variable) ? tTabs(getVariableTab(variable)) : tv(variable)
@@ -251,7 +248,7 @@ const Dashboard = ({ city }: DashboardProps) => {
         )
     }
 
-    const summary = t(getSummaryKey(variable), { variable: tInline(variable), ...summaryValues })
+    const summary = t('summary', { variable: tInline(variable), ...summaryValues })
 
     return (
         <ScreenScroll
@@ -275,9 +272,6 @@ const Dashboard = ({ city }: DashboardProps) => {
                             series={shown.series}
                             stats={derived.stats}
                             decimals={info.decimals}
-                            modelDecimals={modelInfo.decimals}
-                            modelUnit={isComputed ? modelInfo.unit : null}
-                            medianLabel={isComputed ? `${tv(variable)}, ${info.unit}` : t('median')}
                             timeZone={timeZone}
                             locale={locale}
                             pairedRuns={pairedRuns}
@@ -286,7 +280,7 @@ const Dashboard = ({ city }: DashboardProps) => {
                     }
                     steps={latest.steps}
                     series={latest.series}
-                    visibleSeries={isComputed ? NO_SERIES : shown.series}
+                    visibleSeries={shown.series}
                     stats={derived.stats}
                     directions={derived.directions}
                     variable={variable}
@@ -301,17 +295,13 @@ const Dashboard = ({ city }: DashboardProps) => {
                     onToggleMedian={handleToggleMedian}
                     onReset={handleReset}
                 />
-                {info.disagreement && (
-                    <>
-                        <Separator />
-                        <DisagreementTiles
-                            days={derived.disagreement}
-                            variable={variable}
-                            emptyMessage={emptyMessage}
-                            className={FLAT_CARD}
-                        />
-                    </>
-                )}
+                <Separator />
+                <DisagreementTiles
+                    days={derived.disagreement}
+                    variable={variable}
+                    emptyMessage={emptyMessage}
+                    className={FLAT_CARD}
+                />
             </EdgeSheet>
         </ScreenScroll>
     )

@@ -460,7 +460,7 @@ export function SpaghettiChart({
 
     const height = getSpaghettiHeight(width, DEFAULT_SPAGHETTI_HEIGHT)
     const info = VARIABLE_BY_ID[variable]
-    const isBars = info.aggregation === 'sum'
+    const isBars = variable === Variable.Precip
     const hasArrows = Boolean(directions)
     const margin = useMemo(() => getSpaghettiMargin(false, hasArrows), [hasArrows])
     const contentWidth = getScrollWidth(width, steps.length - 1, MIN_SLOT_WIDTH, margin.left + margin.right)
@@ -477,10 +477,7 @@ export function SpaghettiChart({
     const plotBottom = height - margin.bottom
     const plotRight = contentWidth - margin.right
     const nowX = getNowX(x, now, margin.left, plotRight)
-    const yTicks = useMemo(
-        () => getSpaghettiTicks(series, stats.median, domain, variable, Y_TICK_COUNT),
-        [series, stats.median, domain, variable],
-    )
+    const yTicks = useMemo(() => getSpaghettiTicks(series, domain, variable, Y_TICK_COUNT), [series, domain, variable])
     const stepMs = getStepMs(times)
     const barWidth = getBarWidth(x, times[0], stepMs)
     const tickWidth = getTickWidth(barWidth)
