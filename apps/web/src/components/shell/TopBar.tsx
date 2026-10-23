@@ -13,7 +13,7 @@ export function TopBar() {
             <div className="mx-auto flex h-(--topbar-h) max-w-[87.5rem] items-center gap-4 px-4 sm:gap-12 sm:px-(--pane-padding)">
                 <Link href="/" className="flex shrink-0 items-center gap-2 touch:h-9" aria-label="Likely Weather">
                     <CloudSun className="size-8 text-primary" strokeWidth={1.75} aria-hidden="true" />
-                    <span className="flex flex-col font-logo text-[0.9375rem] leading-[1.02] font-semibold tracking-tight">
+                    <span className="flex flex-col font-logo text-[1rem] leading-[1.02] font-semibold tracking-tight">
                         <span>likely</span>
                         <span>weather</span>
                     </span>

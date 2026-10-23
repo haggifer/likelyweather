@@ -5,7 +5,7 @@ import { Icon } from '../ui/icon'
 import { Text } from '../ui/text'
 
 const BRAND = 'Likely Weather'
-const WORD = 'text-[0.9375rem] leading-4 tracking-tight'
+const WORD = 'text-[1rem] leading-[1.02rem] tracking-tight'
 const WORD_STYLE = { fontFamily: LOGO_FONT_FAMILY }
 
 // The web top bar's brand: the cloud-sun logo and the name on two lines.
