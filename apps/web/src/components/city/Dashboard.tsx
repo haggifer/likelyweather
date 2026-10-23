@@ -45,11 +45,13 @@ interface SeriesTableProps {
     isMedianHidden: boolean
 }
 
-// On phones the switch stays under the top bar, so another variable is one tap away wherever the page is scrolled.
+// On phones the switch stays under the top bar, so another variable is one tap away wherever the page is scrolled. Its
+// padding is the stuck bar's own background; the negative margins tuck it into the page's gaps, so the buttons keep the
+// desktop's 16 px from their neighbours.
 const VARIABLE_BAR = (
     <div
         data-pinned-bar
-        className="self-start max-sm:sticky max-sm:top-(--topbar-h) max-sm:z-20 max-sm:-mx-4 max-sm:self-stretch max-sm:bg-background/95 max-sm:px-4 max-sm:py-2 max-sm:backdrop-blur"
+        className="self-start max-sm:sticky max-sm:top-(--topbar-h) max-sm:z-20 max-sm:-mx-4 max-sm:-my-2 max-sm:self-stretch max-sm:bg-background/95 max-sm:px-4 max-sm:py-2 max-sm:backdrop-blur"
     >
         <VariableSwitch className="max-sm:w-full" />
     </div>

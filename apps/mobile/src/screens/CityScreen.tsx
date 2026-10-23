@@ -61,9 +61,10 @@ const SlugHeading = ({ slug, children }: { slug: string; children?: ReactNode })
 }
 
 // The switch sticks under the native header; its bar keeps the web's `py-2` of page colour around it while content
-// scrolls under.
+// scrolls under, and its negative margins tuck that into the screen's gaps, so the buttons sit 16 px from their
+// neighbours, as on the web.
 const VariableBar = ({ value, onChange }: { value: Variable; onChange: (variable: Variable) => void }) => (
-    <View className="-mx-4 bg-background px-4 py-2">
+    <View className="-mx-4 -my-1 bg-background px-4 py-2">
         <VariableSwitch value={value} onChange={onChange} />
     </View>
 )
