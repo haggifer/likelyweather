@@ -20,7 +20,7 @@ import { Construct } from 'constructs'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 
-export interface SiteDomain {
+interface SiteDomain {
     // The bare domain; its www name redirects to it.
     name: string
     // An ACM certificate for the name and its www name, in us-east-1, the only region CloudFront takes them from.
