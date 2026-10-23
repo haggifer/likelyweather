@@ -2,6 +2,7 @@ import { Coordinates, roundCoordinates } from '@fa/shared/geo'
 import {
     Accuracy,
     getCurrentPositionAsync,
+    getLastKnownPositionAsync,
     requestForegroundPermissionsAsync,
     reverseGeocodeAsync,
 } from 'expo-location'
@@ -11,6 +12,8 @@ export class PositionError extends Error {}
 
 // The web's limit: a fix that takes longer is treated like no fix, so the button never spins on.
 const POSITION_TIMEOUT_MS = 10_000
+// The web's `maximumAge`: a position up to five minutes old answers at once.
+const LAST_KNOWN_MAX_AGE_MS = 5 * 60_000
 
 const withTimeout = <T>(promise: Promise<T>, ms: number) =>
     new Promise<T>((resolve, reject) => {
@@ -28,6 +31,22 @@ const withTimeout = <T>(promise: Promise<T>, ms: number) =>
         )
     })
 
+const requestPosition = () => withTimeout(getCurrentPositionAsync({ accuracy: Accuracy.Low }), POSITION_TIMEOUT_MS)
+
+// Right after the permission prompt the location service may still be starting, so the first request can find no fix
+// while a second one gets it, as on the web.
+const getPosition = async () => {
+    const lastKnown = await getLastKnownPositionAsync({ maxAge: LAST_KNOWN_MAX_AGE_MS })
+
+    if (lastKnown) return lastKnown
+
+    try {
+        return await requestPosition()
+    } catch {
+        return requestPosition()
+    }
+}
+
 // Foreground only and at low accuracy, which a city needs and the network gives quickly; the position is rounded to
 // about a kilometre before anything uses it.
 export const getRoundedPosition = async (): Promise<Coordinates> => {
@@ -36,7 +55,7 @@ export const getRoundedPosition = async (): Promise<Coordinates> => {
     if (status !== 'granted') throw new PositionError('Location permission was not granted')
 
     try {
-        const { coords } = await withTimeout(getCurrentPositionAsync({ accuracy: Accuracy.Low }), POSITION_TIMEOUT_MS)
+        const { coords } = await getPosition()
 
         return roundCoordinates({ lat: coords.latitude, lon: coords.longitude })
     } catch (error) {
