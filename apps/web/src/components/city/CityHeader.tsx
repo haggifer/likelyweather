@@ -43,7 +43,9 @@ export function CityHeader({ city }: IProps) {
     // it failed before any run arrived there is no date, but Refresh must stay available: it is the only way to ask
     // again. A failed refetch with a run on screen keeps the 3-hour rule.
     const { data: latest, isError } = useLatest(city.slug, Variable.Precip)
-    const isFetching = useIsFetching({ queryKey: ['latest', city.slug] }) > 0
+    // Only the queries on screen: the dashboard's background prefetch of the other variables would spin it after every
+    // load.
+    const isFetching = useIsFetching({ queryKey: ['latest', city.slug], type: 'active' }) > 0
 
     const name = getCityName(city, locale)
     const region = getCityRegion(city, locale)
