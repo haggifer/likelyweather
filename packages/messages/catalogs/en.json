@@ -51,7 +51,8 @@
         "now": "now",
         "median": "Median",
         "compass": "N,NE,E,SE,S,SW,W,NW",
-        "windFrom": "Wind from: {direction}"
+        "windFrom": "Wind from: {direction}",
+        "noData": "No data from the selected models."
     },
     "variables": {
         "label": "Variable",
@@ -184,7 +185,8 @@
         "perSlotNow": "{unit} / these {hours} h",
         "unavailable": "No hourly forecast is available for this city yet. Try again in a minute.",
         "secondary": "{name}: {value} {unit}",
-        "perHourPast": "{unit} / h"
+        "perHourPast": "{unit} / h",
+        "noData": "No forecast data is available for this city."
     },
     "legal": {
         "privacy": "Privacy Policy",

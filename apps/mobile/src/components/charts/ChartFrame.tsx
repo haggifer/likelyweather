@@ -8,6 +8,7 @@ import { Button } from '../ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Icon } from '../ui/icon'
 import { Text } from '../ui/text'
+import { NoDataOverlay } from './NoDataOverlay'
 
 interface IProps {
     title: string
@@ -17,12 +18,14 @@ interface IProps {
     tabs?: ReactNode
     // The card fades while newer data replaces what it shows.
     isFetching?: boolean
+    // Shown over the chart and the table when they have no value to draw.
+    emptyMessage?: string | null
     className?: string
     children: ReactNode
 }
 
 // The web's ChartFrame: a card with the chart and an optional table view.
-export function ChartFrame({ title, table, tabs, isFetching = false, className, children }: IProps) {
+export function ChartFrame({ title, table, tabs, isFetching = false, emptyMessage, className, children }: IProps) {
     const t = useTranslations('chart')
 
     const { isTable, toggleTable } = useViewMode()
@@ -46,8 +49,9 @@ export function ChartFrame({ title, table, tabs, isFetching = false, className, 
             </CardHeader>
             {tabs && !isTable && <View className="px-4">{tabs}</View>}
             {/* The chart runs close to the card's left edge, while the table keeps the card's padding. */}
-            <CardContent className={cn(isTable ? 'px-4' : 'pr-4 pl-1', isFetching && 'opacity-60')}>
+            <CardContent className={cn('relative', isTable ? 'px-4' : 'pr-4 pl-1', isFetching && 'opacity-60')}>
                 {isTable && table ? table : children}
+                {emptyMessage && <NoDataOverlay message={emptyMessage} />}
             </CardContent>
         </Card>
     )

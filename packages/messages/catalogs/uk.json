@@ -51,7 +51,8 @@
         "now": "зараз",
         "median": "Медіана",
         "compass": "Пн,ПнСх,Сх,ПдСх,Пд,ПдЗх,Зх,ПнЗх",
-        "windFrom": "Звідки дме: {direction}"
+        "windFrom": "Звідки дме: {direction}",
+        "noData": "Немає даних від вибраних моделей."
     },
     "variables": {
         "label": "Величина",
@@ -184,7 +185,8 @@
         "perSlotNow": "{unit} / ці {hours} год",
         "unavailable": "Погодинного прогнозу для цього міста ще немає. Спробуйте за хвилину.",
         "secondary": "{name}: {value} {unit}",
-        "perHourPast": "{unit} / год"
+        "perHourPast": "{unit} / год",
+        "noData": "Для цього міста немає даних прогнозу."
     },
     "legal": {
         "privacy": "Політика конфіденційності",

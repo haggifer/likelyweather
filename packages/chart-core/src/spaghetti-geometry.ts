@@ -1,13 +1,14 @@
 import { Series } from '@fa/shared/api'
 import { HOUR_MS } from '@fa/shared/constants'
 import { EnsembleStats } from '@fa/shared/ensemble'
+import { hasSeriesValues } from '@fa/shared/has-values'
 import { ModelId } from '@fa/shared/models'
 import { Variable } from '@fa/shared/variables'
 import { bisector } from 'd3-array'
 import { ScaleLinear, ScaleTime } from 'd3-scale'
 import { area, curveMonotoneX, line } from 'd3-shape'
 import { clamp, getTimeScale, getValueScale } from './plot-geometry'
-import { getYDomain } from './scales'
+import { getYDomain, getYTicks } from './scales'
 
 export interface Margin {
     top: number
@@ -148,6 +149,11 @@ export const getSeriesYDomain = (series: Series[], variable: Variable) =>
         series.flatMap((s) => s.values),
         variable,
     )
+
+// A chart without values (every model hidden, or none delivered) keeps its gridless frame: ticks on the fallback domain
+// would label an empty axis with numbers, such as 0, 0, 0, 1, 1, 1 for whole hectopascals.
+export const getSpaghettiTicks = (series: Series[], domain: [number, number], variable: Variable, count: number) =>
+    hasSeriesValues(series) ? getYTicks(domain, variable, count) : []
 
 export const getStepMs = (times: Date[]) =>
     times.length > 1 ? times[1].getTime() - times[0].getTime() : DEFAULT_STEP_MS

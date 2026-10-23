@@ -1,7 +1,7 @@
 import { ChartTheme } from '@fa/chart-core/chart-theme'
 import { useAnimatedDomain } from '@fa/chart-core/hooks/useAnimatedDomain'
 import { getBarWidth, getNowX } from '@fa/chart-core/plot-geometry'
-import { formatYTick, getYTicks } from '@fa/chart-core/scales'
+import { formatYTick } from '@fa/chart-core/scales'
 import { getInitialScrollLeft, getScrollWidth, getVisibleRange, MIN_SLOT_WIDTH } from '@fa/chart-core/scroll-geometry'
 import {
     BAR_OPACITY,
@@ -17,6 +17,7 @@ import {
     getSeriesYDomain,
     getSpaghettiHeight,
     getSpaghettiMargin,
+    getSpaghettiTicks,
     getStepMs,
     getTickWidth,
     Margin,
@@ -476,7 +477,7 @@ export function SpaghettiChart({
     const plotBottom = height - margin.bottom
     const plotRight = contentWidth - margin.right
     const nowX = getNowX(x, now, margin.left, plotRight)
-    const yTicks = useMemo(() => getYTicks(domain, variable, Y_TICK_COUNT), [domain, variable])
+    const yTicks = useMemo(() => getSpaghettiTicks(series, domain, variable, Y_TICK_COUNT), [series, domain, variable])
     const stepMs = getStepMs(times)
     const barWidth = getBarWidth(x, times[0], stepMs)
     const tickWidth = getTickWidth(barWidth)

@@ -15,6 +15,7 @@ import {
     getSeriesYDomain,
     getSpaghettiHeight,
     getSpaghettiMargin,
+    getSpaghettiTicks,
     getSpanIndex,
     getStepMs,
     getSumBarCenter,
@@ -110,6 +111,17 @@ describe('spaghetti layout', () => {
 
     it('fits the y domain to every model', () => {
         expect(getSeriesYDomain(series, Variable.Temp)).toEqual([5, 25])
+    })
+
+    it('labels the axis only when a model has values', () => {
+        const pressure = [{ modelId: series[0].modelId, values: [1012, 1014] }]
+        const domain = getSeriesYDomain([], Variable.Pressure)
+
+        expect(getSpaghettiTicks(pressure, [1010, 1016], Variable.Pressure, 5)).toEqual(
+            getYTicks([1010, 1016], Variable.Pressure, 5),
+        )
+        expect(getSpaghettiTicks([], domain, Variable.Pressure, 5)).toEqual([])
+        expect(getSpaghettiTicks([{ ...pressure[0], values: [null, null] }], domain, Variable.Pressure, 5)).toEqual([])
     })
 
     it('reads the step from the data, and a 3-hour slot for a single step', () => {

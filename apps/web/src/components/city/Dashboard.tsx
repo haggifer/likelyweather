@@ -181,6 +181,7 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
     const tv = useTranslations('variables')
     const tInline = useTranslations('variablesInline')
     const tTabs = useTranslations('variableTabs')
+    const tc = useTranslations('chart')
     const locale = useLocale()
     const now = useNow()
     // The legend follows every hover, so only the copy for this width is rendered, not a second one hidden by CSS.
@@ -195,6 +196,7 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
         precipQuery,
         latest,
         shown,
+        hasData,
         derived,
         summary: summaryValues,
         pairedRuns: allPairedRuns,
@@ -209,6 +211,7 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
     const info = VARIABLE_BY_ID[variable]
     const timeZone = city?.timezone ?? 'UTC'
     const pairedRuns = isPhone ? allPairedRuns : null
+    const emptyMessage = hasData ? null : tc('noData')
     // Phones name a pair once ("Temperature") and show which member is open in the sub-tabs.
     const title = isPhone && getVariablePair(variable) ? tTabs(getVariableTab(variable)) : tv(variable)
     // A stable list, so the chart's memoized drawing survives renders that did not change the highlighted model.
@@ -267,6 +270,7 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
                         title={title}
                         tabs={isPhone ? <VariablePairTabs /> : undefined}
                         isFetching={latestQuery.isFetching && latestQuery.isPlaceholderData}
+                        emptyMessage={emptyMessage}
                         table={
                             <SeriesTable
                                 steps={latest.steps}
@@ -310,7 +314,7 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
                     )}
                 </div>
                 <Separator className="sm:hidden" />
-                <DisagreementTiles days={derived.disagreement} variable={variable} />
+                <DisagreementTiles days={derived.disagreement} variable={variable} emptyMessage={emptyMessage} />
             </div>
         </div>
     )

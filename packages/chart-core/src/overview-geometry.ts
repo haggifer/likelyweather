@@ -1,4 +1,5 @@
 import { HOUR_MS } from '@fa/shared/constants'
+import { hasValues } from '@fa/shared/has-values'
 import { PanelVariable } from '@fa/shared/overview-panels'
 import { SLOT_HOURS } from '@fa/shared/slots'
 import { Variable } from '@fa/shared/variables'
@@ -207,18 +208,20 @@ export const getOverviewFrame = (
 
 // Gusts outrun the mean wind, so a wind panel showing them takes the gusts' axis steps.
 const getPanelDomain = (variable: PanelVariable, s: MedianSeries, secondary: MedianSeries | null) => {
-    const hasSecondary = secondary !== null && secondary.values.some((v) => v !== null)
+    const hasSecondary = secondary !== null && hasValues(secondary.values)
     const scaleVariable = hasSecondary && variable === Variable.Wind ? Variable.Gusts : variable
     const values = hasSecondary ? [...s.values, ...secondary.values] : s.values
 
     return { domain: getYDomain(values, scaleVariable), scaleVariable }
 }
 
+// A panel without values keeps its gridless frame: ticks on the fallback domain would label an empty axis with numbers.
 export const getPanelScale = (row: PanelRow, series: OverviewMedians): PanelScale => {
     const s = getPanelSeries(series, row.variable)
     const { domain, scaleVariable } = getPanelDomain(row.variable, s, getSecondarySeries(series, row.variable))
+    const ticks = hasValues(s.values) ? getPanelTicks(domain, scaleVariable) : []
 
-    return { y: getValueScale(domain, [row.bottom, row.top + ROW_PAD]), ticks: getPanelTicks(domain, scaleVariable) }
+    return { y: getValueScale(domain, [row.bottom, row.top + ROW_PAD]), ticks }
 }
 
 const toPoints = (s: MedianSeries): Point[] => s.steps.map((step, i) => [new Date(step), s.values[i]])

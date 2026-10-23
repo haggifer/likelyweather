@@ -21,6 +21,7 @@ import { useNow } from '../../hooks/useNow'
 import { useViewMode } from '../../hooks/useViewMode'
 import { cn } from '../../lib/cn'
 import { MedianOverview, MedianOverviewSkeleton } from '../charts/MedianOverview'
+import { NoDataOverlay } from '../charts/NoDataOverlay'
 import { OverviewTable } from '../charts/OverviewTable'
 import { FavoriteToggle } from '../city/FavoriteToggle'
 import { OverviewPanelsMenu } from '../home/OverviewPanelsMenu'
@@ -71,14 +72,6 @@ export function ArchiveCard({ slug }: IProps) {
             return <ErrorNotice error={archive.error} onRetry={() => void archive.refetch()} />
         }
 
-        if (shown && isEmptyArchive(shown)) {
-            return (
-                <Text className="py-10 text-center text-sm text-muted-foreground" accessibilityLiveRegion="polite">
-                    {t('unavailable')}
-                </Text>
-            )
-        }
-
         if (!shown || !series || !city) {
             return (
                 <View accessible accessibilityLiveRegion="polite" accessibilityLabel={t('fetching', { name })}>
@@ -87,35 +80,36 @@ export function ArchiveCard({ slug }: IProps) {
             )
         }
 
-        if (isTable) {
-            return (
-                <OverviewTable
-                    panels={visible}
-                    series={series}
-                    chance={null}
-                    timeZone={city.timezone}
-                    locale={locale}
-                />
-            )
-        }
-
         return (
-            <MedianOverview
-                key={getArchiveRangeKey(shown)}
-                panels={visible}
-                series={series}
-                directions={directions}
-                chance={null}
-                timeZone={city.timezone}
-                locale={locale}
-                now={null}
-                isArchive
-                accessibilityLabel={t('aria', {
-                    name,
-                    from: formatDateKey(shown.from, locale, ARCHIVE_LABEL_DATE_FORMAT),
-                    to: formatDateKey(shown.to, locale, ARCHIVE_LABEL_DATE_FORMAT),
-                })}
-            />
+            <View className="relative">
+                {isTable ? (
+                    <OverviewTable
+                        panels={visible}
+                        series={series}
+                        chance={null}
+                        timeZone={city.timezone}
+                        locale={locale}
+                    />
+                ) : (
+                    <MedianOverview
+                        key={getArchiveRangeKey(shown)}
+                        panels={visible}
+                        series={series}
+                        directions={directions}
+                        chance={null}
+                        timeZone={city.timezone}
+                        locale={locale}
+                        now={null}
+                        isArchive
+                        accessibilityLabel={t('aria', {
+                            name,
+                            from: formatDateKey(shown.from, locale, ARCHIVE_LABEL_DATE_FORMAT),
+                            to: formatDateKey(shown.to, locale, ARCHIVE_LABEL_DATE_FORMAT),
+                        })}
+                    />
+                )}
+                {isEmptyArchive(shown) && <NoDataOverlay message={t('unavailable')} />}
+            </View>
         )
     }
 

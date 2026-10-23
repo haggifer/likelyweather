@@ -17,12 +17,14 @@ const TILE_GAP = 8
 interface IProps {
     days: DayDisagreement[]
     variable: Variable
+    // Replaces the note on a run without future steps when the shown models have no values at all.
+    emptyMessage?: string | null
     className?: string
 }
 
 // One tile per local day with the spread between the highest and the lowest model; the row scrolls sideways and
 // snaps to a tile's start, like the web's phone row, and is named for TalkBack like the web's region.
-export function DisagreementTiles({ days, variable, className }: IProps) {
+export function DisagreementTiles({ days, variable, emptyMessage, className }: IProps) {
     const t = useTranslations('disagreement')
     const tInline = useTranslations('variablesInline')
     const locale = useLocale()
@@ -82,7 +84,7 @@ export function DisagreementTiles({ days, variable, className }: IProps) {
                         ))}
                     </ScrollView>
                 ) : (
-                    <Text className="text-sm text-muted-foreground">{t('empty')}</Text>
+                    <Text className="text-sm text-muted-foreground">{emptyMessage ?? t('empty')}</Text>
                 )}
             </CardContent>
         </Card>

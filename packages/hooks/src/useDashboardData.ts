@@ -10,6 +10,7 @@ import {
     getEnsembleStats,
     getShownLatest,
 } from '@fa/shared/dashboard'
+import { hasSeriesValues } from '@fa/shared/has-values'
 import { ModelId } from '@fa/shared/models'
 import { PairedRuns, toPairedRuns } from '@fa/shared/paired-values'
 import { buildSlots, DASHBOARD_HOURS, getChartStart, toSlotLatest } from '@fa/shared/slots'
@@ -37,6 +38,8 @@ export interface UseDashboardDataResult {
     latest: LatestResponse | null
     // The same run without the hidden models: the chart's lines, the table's columns and every statistic.
     shown: LatestResponse | null
+    // Whether the shown models have a value to draw; false when every model is hidden or none delivered the variable.
+    hasData: boolean
     derived: DashboardStats | null
     // The summary sentence's values, apart from the variable's translated name.
     summary: DashboardSummaryValues | null
@@ -79,6 +82,7 @@ export function useDashboardData(
         [latestQuery.data, slots, aggregation],
     )
     const shown = useMemo(() => (latest ? getShownLatest(latest, hiddenModels) : null), [latest, hiddenModels])
+    const hasData = useMemo(() => (shown ? hasSeriesValues(shown.series) : false), [shown])
     const derived = useMemo(
         () => (shown && timeZone && now ? getDashboardStats(shown, variable, timeZone, now) : null),
         [shown, variable, timeZone, now],
@@ -123,5 +127,5 @@ export function useDashboardData(
         )
     }, [isRunShown, slug, queryClient])
 
-    return { city, latestQuery, precipQuery, anchor, latest, shown, derived, summary, pairedRuns, retry }
+    return { city, latestQuery, precipQuery, anchor, latest, shown, hasData, derived, summary, pairedRuns, retry }
 }

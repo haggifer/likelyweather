@@ -98,6 +98,13 @@ describe('panel drawing', () => {
     const frame = getOverviewFrame(TIMES, LEFT, 344, false)
     const scales = layout.rows.map((row) => getPanelScale(row, SERIES))
 
+    it('leaves a panel without values unlabelled', () => {
+        const empty = { ...SERIES, [Variable.Temp]: { steps: SLOTS, values: [null, null, null] } }
+
+        expect(scales[0].ticks.length).toBeGreaterThan(0)
+        expect(getPanelScale(layout.rows[0], empty).ticks).toEqual([])
+    })
+
     it('fits the wind panel to the gusts it also draws', () => {
         expect(scales[1].y.domain()[1]).toBe(10)
         expect(scales[1].y.range()).toEqual([layout.rows[1].bottom, layout.rows[1].top + 6])

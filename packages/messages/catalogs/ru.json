@@ -51,7 +51,8 @@
         "now": "сейчас",
         "median": "Медиана",
         "compass": "С,СВ,В,ЮВ,Ю,ЮЗ,З,СЗ",
-        "windFrom": "Откуда дует: {direction}"
+        "windFrom": "Откуда дует: {direction}",
+        "noData": "Нет данных от выбранных моделей."
     },
     "variables": {
         "label": "Величина",
@@ -184,7 +185,8 @@
         "perSlotNow": "{unit} / эти {hours} ч",
         "unavailable": "Почасового прогноза для этого города пока нет. Попробуйте через минуту.",
         "secondary": "{name}: {value} {unit}",
-        "perHourPast": "{unit} / ч"
+        "perHourPast": "{unit} / ч",
+        "noData": "Для этого города нет данных прогноза."
     },
     "legal": {
         "privacy": "Политика конфиденциальности",

@@ -74,6 +74,7 @@ interface SelectableChartProps {
     table: ReactNode
     tabs: ReactNode
     isFetching: boolean
+    emptyMessage: string | null
     steps: string[]
     series: Series[]
     visibleSeries: Series[]
@@ -100,6 +101,7 @@ const SelectableChart = ({
     table,
     tabs,
     isFetching,
+    emptyMessage,
     steps,
     series,
     visibleSeries,
@@ -130,7 +132,14 @@ const SelectableChart = ({
 
     return (
         <>
-            <ChartFrame title={title} table={table} tabs={tabs} isFetching={isFetching} className={FLAT_CARD}>
+            <ChartFrame
+                title={title}
+                table={table}
+                tabs={tabs}
+                isFetching={isFetching}
+                emptyMessage={emptyMessage}
+                className={FLAT_CARD}
+            >
                 <SpaghettiChart
                     steps={steps}
                     series={visibleSeries}
@@ -178,6 +187,7 @@ const Dashboard = ({ city }: DashboardProps) => {
     const tv = useTranslations('variables')
     const tInline = useTranslations('variablesInline')
     const tTabs = useTranslations('variableTabs')
+    const tc = useTranslations('chart')
     const locale = useLocale()
     const now = useNow()
     const router = useRouter()
@@ -195,6 +205,7 @@ const Dashboard = ({ city }: DashboardProps) => {
         precipQuery,
         latest,
         shown,
+        hasData,
         derived,
         summary: summaryValues,
         pairedRuns,
@@ -205,6 +216,7 @@ const Dashboard = ({ city }: DashboardProps) => {
     const timeZone = city.timezone
     // A pair is named once ("Temperature"); the sub-tabs show which member is open.
     const title = getVariablePair(variable) ? tTabs(getVariableTab(variable)) : tv(variable)
+    const emptyMessage = hasData ? null : tc('noData')
 
     const handleSwitchCity = (slug: string) => {
         setSelectedCity(slug)
@@ -253,6 +265,7 @@ const Dashboard = ({ city }: DashboardProps) => {
                     isFetching={
                         (latestQuery.isFetching && latestQuery.isPlaceholderData) || variable !== selectedVariable
                     }
+                    emptyMessage={emptyMessage}
                     table={
                         <SeriesTable
                             steps={latest.steps}
@@ -283,7 +296,12 @@ const Dashboard = ({ city }: DashboardProps) => {
                     onReset={handleReset}
                 />
                 <Separator />
-                <DisagreementTiles days={derived.disagreement} variable={variable} className={FLAT_CARD} />
+                <DisagreementTiles
+                    days={derived.disagreement}
+                    variable={variable}
+                    emptyMessage={emptyMessage}
+                    className={FLAT_CARD}
+                />
             </EdgeSheet>
         </ScreenScroll>
     )

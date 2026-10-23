@@ -1,5 +1,6 @@
 import { LatestResponse } from '@fa/shared/api'
 import { computeChanceOfRain, computeEnsemble, computeMedianDirection } from '@fa/shared/ensemble'
+import { hasValues } from '@fa/shared/has-values'
 import { getPanelDataVariables, PanelVariable } from '@fa/shared/overview-panels'
 import { buildSlots, toSlotSeries } from '@fa/shared/slots'
 import { OVERVIEW_VARIABLES, OverviewVariable, Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
@@ -86,3 +87,6 @@ export const getOverviewSeries = (hourly: OverviewHourly, anchor: Date): Overvie
         chance: getOverviewChance(hourly[Variable.Precip], slots),
     }
 }
+
+export const hasOverviewValues = (medians: OverviewMedians) =>
+    Object.values(medians).some((s) => s !== undefined && hasValues(s.values))

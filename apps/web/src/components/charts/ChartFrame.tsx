@@ -1,5 +1,6 @@
 'use client'
 
+import { NoDataOverlay } from '@/components/charts/NoDataOverlay'
 import { TABLE_SCROLL } from '@/components/charts/table-cells'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,11 +18,23 @@ interface IProps {
     actions?: ReactNode
     footer?: ReactNode
     isFetching?: boolean
+    // Shown over the chart and the table when they have no value to draw.
+    emptyMessage?: string | null
     className?: string
     children: ReactNode
 }
 
-export function ChartFrame({ title, table, tabs, actions, footer, isFetching, className, children }: IProps) {
+export function ChartFrame({
+    title,
+    table,
+    tabs,
+    actions,
+    footer,
+    isFetching,
+    emptyMessage,
+    className,
+    children,
+}: IProps) {
     const t = useTranslations('chart')
     const { isTable, toggleTable } = useViewMode()
 
@@ -57,6 +70,7 @@ export function ChartFrame({ title, table, tabs, actions, footer, isFetching, cl
             >
                 {isTable && table ? <div className={cn(TABLE_SCROLL, 'max-h-[26.25rem]')}>{table}</div> : children}
                 {footer}
+                {emptyMessage && <NoDataOverlay message={emptyMessage} />}
                 {/* Only a switch slower than 300 ms shows it; the spin is a transform, which keeps turning while the chart is
                     computed. */}
                 <Loader2

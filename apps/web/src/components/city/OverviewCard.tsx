@@ -1,6 +1,7 @@
 'use client'
 
 import { MedianOverview, MedianOverviewSkeleton } from '@/components/charts/MedianOverview'
+import { NoDataOverlay } from '@/components/charts/NoDataOverlay'
 import { OverviewTable } from '@/components/charts/OverviewTable'
 import { FavoriteToggle } from '@/components/city/FavoriteToggle'
 import { PHONE_ICON } from '@/components/city/overview-controls'
@@ -17,7 +18,7 @@ import { useViewMode } from '@/hooks/useViewMode'
 import { cn } from '@/lib/cn'
 import { FILL_HEIGHT_PARENT } from '@/lib/fill-height'
 import { isRefreshOffered } from '@fa/api-client/refresh-due'
-import { getOverviewRun, getOverviewSeries, OverviewHourly } from '@fa/chart-core/overview-stats'
+import { getOverviewRun, getOverviewSeries, hasOverviewValues, OverviewHourly } from '@fa/chart-core/overview-stats'
 import { City } from '@fa/shared/api'
 import { getCityRegion } from '@fa/shared/city-region'
 import { getCityName } from '@fa/shared/format'
@@ -34,7 +35,7 @@ interface SkeletonProps {
 // On phones the card runs edge to edge (`data-bleed`, globals.css), so its charts get the screen's whole width.
 const CARD = 'gap-0 max-sm:pt-3'
 const ACTIONS = 'flex items-center gap-2 max-sm:mt-2 max-sm:mb-3 max-sm:w-full'
-const CONTENT = 'sm:mt-2'
+const CONTENT = 'relative sm:mt-2'
 // On phones the age, Refresh, Variables and the table toggle are icons, and Open details takes the rest of the row
 // with 14 px text.
 const PHONE_BUTTON = 'max-sm:h-9 max-sm:flex-1 max-sm:text-sm max-sm:[&_svg]:size-4'
@@ -87,6 +88,7 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, on
     const isOutdated = isRefreshOffered(run.fetchedAt, now)
     const modelCount = run.series.length
     const { medians, directions, chance } = useMemo(() => getOverviewSeries(hourly, anchor), [hourly, anchor])
+    const hasData = useMemo(() => hasOverviewValues(medians), [medians])
 
     return (
         <Card data-bleed className={cn(CARD, 'transition-opacity', FILL_HEIGHT_PARENT, isFetching && 'opacity-70')}>
@@ -151,6 +153,7 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, on
                         ariaLabel={t('aria', { name, count: modelCount })}
                     />
                 )}
+                {!hasData && <NoDataOverlay message={t('noData')} />}
             </CardContent>
         </Card>
     )

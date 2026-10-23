@@ -13,9 +13,11 @@ import { useLocale, useTranslations } from 'next-intl'
 interface IProps {
     days: DayDisagreement[]
     variable: Variable
+    // Replaces the note on a run without future steps when the shown models have no values at all.
+    emptyMessage?: string | null
 }
 
-export function DisagreementTiles({ days, variable }: IProps) {
+export function DisagreementTiles({ days, variable, emptyMessage }: IProps) {
     const t = useTranslations('disagreement')
     const tInline = useTranslations('variablesInline')
     const locale = useLocale()
@@ -71,7 +73,7 @@ export function DisagreementTiles({ days, variable }: IProps) {
                         </Badge>
                     </div>
                 ))}
-                {!days.length && <p className="text-sm text-muted-foreground">{t('empty')}</p>}
+                {!days.length && <p className="text-sm text-muted-foreground">{emptyMessage ?? t('empty')}</p>}
             </CardContent>
         </Card>
     )

@@ -1,5 +1,5 @@
 import { isRefreshOffered } from '@fa/api-client/refresh-due'
-import { getOverviewRun, getOverviewSeries, OverviewHourly } from '@fa/chart-core/overview-stats'
+import { getOverviewRun, getOverviewSeries, hasOverviewValues, OverviewHourly } from '@fa/chart-core/overview-stats'
 import { City } from '@fa/shared/api'
 import { getCityRegion } from '@fa/shared/city-region'
 import { getCityName } from '@fa/shared/format'
@@ -13,6 +13,7 @@ import { useOverviewPanels } from '../../hooks/useOverviewPanels'
 import { useViewMode } from '../../hooks/useViewMode'
 import { cn } from '../../lib/cn'
 import { MedianOverview, MedianOverviewSkeleton } from '../charts/MedianOverview'
+import { NoDataOverlay } from '../charts/NoDataOverlay'
 import { OverviewTable } from '../charts/OverviewTable'
 import { FavoriteToggle } from '../city/FavoriteToggle'
 import { RefreshButton } from '../city/RefreshButton'
@@ -95,6 +96,7 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching = f
     // The card is drawn once the first shown panel's run has arrived.
     const run = getOverviewRun(hourly, panels)!
     const { medians, directions, chance } = useMemo(() => getOverviewSeries(hourly, anchor), [hourly, anchor])
+    const hasData = useMemo(() => hasOverviewValues(medians), [medians])
 
     return (
         <Card className={cn(CARD, isFetching && 'opacity-70')}>
@@ -130,7 +132,7 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching = f
                     </Button>
                 </View>
             </CardHeader>
-            <CardContent>
+            <CardContent className="relative">
                 {isTable ? (
                     <OverviewTable
                         panels={panels}
@@ -152,6 +154,7 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching = f
                         accessibilityLabel={t('aria', { name, count: run.series.length })}
                     />
                 )}
+                {!hasData && <NoDataOverlay message={t('noData')} />}
             </CardContent>
         </Card>
     )

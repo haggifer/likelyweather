@@ -2,6 +2,7 @@
 
 import { ArchivePeriodPicker } from '@/components/archive/ArchivePeriodPicker'
 import { MedianOverview, MedianOverviewSkeleton } from '@/components/charts/MedianOverview'
+import { NoDataOverlay } from '@/components/charts/NoDataOverlay'
 import { OverviewTable } from '@/components/charts/OverviewTable'
 import { FavoriteToggle } from '@/components/city/FavoriteToggle'
 import { PHONE_ICON } from '@/components/city/overview-controls'
@@ -70,10 +71,6 @@ export function ArchiveCard({ slug }: IProps) {
             return <ErrorNotice error={archive.error} onRetry={() => void archive.refetch()} />
         }
 
-        if (shown && isEmptyArchive(shown)) {
-            return <p className="py-10 text-center text-sm text-muted-foreground">{t('unavailable')}</p>
-        }
-
         if (!shown || !series || !city) {
             return (
                 <div role="status" aria-label={t('fetching', { name: name ?? '' })}>
@@ -82,35 +79,36 @@ export function ArchiveCard({ slug }: IProps) {
             )
         }
 
-        if (isTable) {
-            return (
-                <OverviewTable
-                    panels={visible}
-                    series={series}
-                    chance={null}
-                    timeZone={city.timezone}
-                    locale={locale}
-                />
-            )
-        }
-
         return (
-            <MedianOverview
-                key={getArchiveRangeKey(shown)}
-                panels={visible}
-                series={series}
-                directions={directions}
-                chance={null}
-                timeZone={city.timezone}
-                locale={locale}
-                now={null}
-                isArchive
-                ariaLabel={t('aria', {
-                    name: name ?? '',
-                    from: formatDateKey(shown.from, locale, ARCHIVE_LABEL_DATE_FORMAT),
-                    to: formatDateKey(shown.to, locale, ARCHIVE_LABEL_DATE_FORMAT),
-                })}
-            />
+            <div className={cn('relative', FILL_HEIGHT_PARENT)}>
+                {isTable ? (
+                    <OverviewTable
+                        panels={visible}
+                        series={series}
+                        chance={null}
+                        timeZone={city.timezone}
+                        locale={locale}
+                    />
+                ) : (
+                    <MedianOverview
+                        key={getArchiveRangeKey(shown)}
+                        panels={visible}
+                        series={series}
+                        directions={directions}
+                        chance={null}
+                        timeZone={city.timezone}
+                        locale={locale}
+                        now={null}
+                        isArchive
+                        ariaLabel={t('aria', {
+                            name: name ?? '',
+                            from: formatDateKey(shown.from, locale, ARCHIVE_LABEL_DATE_FORMAT),
+                            to: formatDateKey(shown.to, locale, ARCHIVE_LABEL_DATE_FORMAT),
+                        })}
+                    />
+                )}
+                {isEmptyArchive(shown) && <NoDataOverlay message={t('unavailable')} />}
+            </div>
         )
     }
 

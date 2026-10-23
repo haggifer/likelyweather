@@ -8,6 +8,7 @@ import {
     getOverviewRun,
     getOverviewSeries,
     getReadyPanels,
+    hasOverviewValues,
     OverviewHourly,
 } from './overview-stats'
 
@@ -96,5 +97,16 @@ describe('getOverviewSeries', () => {
         expect(series.medians[Variable.Temp]?.steps).toHaveLength(81)
         expect(series.directions).toBeNull()
         expect(series.chance).toEqual([])
+    })
+})
+
+describe('hasOverviewValues', () => {
+    it('is true while any variable has a median value', () => {
+        expect(hasOverviewValues({ [Variable.Temp]: { steps: SLOTS, values: [null, 12] } })).toBe(true)
+    })
+
+    it('is false for gaps only or no variables', () => {
+        expect(hasOverviewValues({ [Variable.Temp]: { steps: SLOTS, values: [null, null] } })).toBe(false)
+        expect(hasOverviewValues({})).toBe(false)
     })
 })

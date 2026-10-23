@@ -1,6 +1,7 @@
 import type { ArchiveResponse } from './api'
 import { DAY_MS, HOUR_MS } from './constants'
 import { getLocalMidnight } from './format'
+import { hasValues } from './has-values'
 import { getLocalDateKey } from './time'
 
 // A period of a city's past weather: whole local days, both ends included (`YYYY-MM-DD`).
@@ -85,7 +86,7 @@ export const formatArchiveRange = ({ from, to }: ArchiveRange) =>
     `${formatArchiveDate(from)} – ${formatArchiveDate(to)}`
 
 // A period the archive has no hours for: the hours come back, all empty.
-export const isEmptyArchive = ({ values }: Pick<ArchiveResponse, 'values'>) => values.temp.every((v) => v === null)
+export const isEmptyArchive = ({ values }: Pick<ArchiveResponse, 'values'>) => !hasValues(values.temp)
 
 // The UTC hours the API answers with: the local days, widened to whole hours for zones that are a half hour off UTC
 // since the archive is hourly in UTC, and one hour more, because Open-Meteo stamps an hour's precipitation at its end
