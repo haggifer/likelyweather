@@ -125,7 +125,7 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching = f
                         onPress={() => router.push(`/city/${city.slug}`)}
                         className="h-9 flex-1"
                     >
-                        <Text className="text-[1rem]">{t('details')}</Text>
+                        <Text className="text-sm">{t('details')}</Text>
                         <Icon as={ArrowRight} className="size-4" />
                     </Button>
                 </View>
