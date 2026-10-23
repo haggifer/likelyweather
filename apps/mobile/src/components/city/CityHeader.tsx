@@ -38,7 +38,9 @@ export function CityHeader({ city, onSelectCity }: IProps) {
     // The dashboard anchors its chart to the precipitation query, so that query also dates the run shown here. When it
     // failed before any run arrived there is no date, but Refresh must stay available: it is the only way to ask again.
     const { data: latest, isError } = useLatest(city.slug, Variable.Precip)
-    const isFetching = useIsFetching({ queryKey: ['latest', city.slug] }) > 0
+    // Only the queries on screen: the dashboard's background prefetch of the other variables would spin it after every
+    // load.
+    const isFetching = useIsFetching({ queryKey: ['latest', city.slug], type: 'active' }) > 0
 
     const name = getCityName(city, locale)
     const isOutdated = (isError && !latest) || isRefreshOffered(latest?.fetchedAt, now)
