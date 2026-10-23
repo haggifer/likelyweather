@@ -81,6 +81,8 @@ iOS builds run only in the cloud (`eas build --profile simulator --platform ios`
 
 ## Features
 
+![The landing overview: the median of all models for London over the next days, with temperature, wind, pressure and precipitation](.github/readme/landing.png)
+
 | Screen         | Route                | What it shows                                                                                                                                                                                                                                                                                                                                |
 | -------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Landing        | `/?city=`            | Search and four place chips (favorites first, then recent searches; a first visit starts from the largest places of the visitor's country), and the median of all models for the next ten days in local 3-hour slots: temperature, wind with direction arrows, pressure and precipitation with the chance of rain, or every panel as a table |
