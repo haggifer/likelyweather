@@ -22,7 +22,7 @@ Open any city and its forecast is fetched within a few seconds; search for any o
 
 ### Mobile app
 
-`apps/mobile` is the same product as an Expo app for Android (SDK 57, Expo Router, New Architecture), drawn with React Native, React Native Skia (every chart) and `react-native-svg` (icons, flags and legend swatches) from the same packages as the web: the API client and its hooks, the chart geometry and dashboard maths, the places rules and the five catalogs.
+`apps/mobile` is the same product as an Expo app for Android (SDK 57, Expo Router, New Architecture), drawn with React Native, React Native Skia (every chart) and `react-native-svg` (icons, flags and legend swatches) from the same packages as the web: the API client and its hooks, the chart geometry and dashboard maths, the places rules and the six catalogs.
 
 - **Home:** search any place (or "Use my location", which beyond the nearest stored city's 50 km asks Android's geocoder for the town's name and searches it), the four place chips with their stars, the ten-day overview that scrolls sideways (a tap picks a slot), the age chip and Refresh, and "Open details".
 - **City:** the city's header (the star and the pencil, which switches city; the age chip and Refresh once the run is outdated), the variable switch pinned under it while the screen scrolls (temperature and wind each with sub-tabs for feels-like and gusts), the multi-model chart with its bands and median and a table view, the model list (the eye hides a model, the median too), and the disagreement tiles in one row.
@@ -35,7 +35,7 @@ Development builds call the live API unless `apps/mobile/.env.local` sets `EXPO_
 ```bash
 pnpm --filter @fa/mobile android   # build, install and start the development build
 pnpm mobile                        # Metro for an installed development build
-pnpm --filter @fa/mobile tokens    # regenerate src/theme/tokens.ts after editing apps/web/src/app/globals.css
+pnpm --filter @fa/mobile tokens    # regenerate src/theme/tokens.ts and src/global.css after editing apps/web/src/app/globals.css
 pnpm --filter @fa/mobile icons     # regenerate the app icons and splash from the web's cloud-sun logo
 ```
 
@@ -102,7 +102,7 @@ apps/
 packages/
   shared/         zod API contract, model palette, variables, ensemble maths, resampling, 3-hour slots, formatting, places rules
   api-client/     fetch wrapper (configurable origin and POST digest), TanStack Query hooks, the query client
-  messages/       the five message catalogs and their loader
+  messages/       the six message catalogs and their loader
   db/             Prisma schema, migrations (weekly Forecast partitions), seed, partition maintenance
   chart-core/     DOM-free chart geometry: scales, ticks, day labels, spaghetti paths
   hooks/          React hooks both apps share, with no DOM or React Native code (view logic above the kits)
@@ -153,7 +153,7 @@ The ones a newcomer is most likely to undo by accident:
 
 ## Data and attribution
 
-Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0) and [MET Norway](https://api.met.no/) (CC BY 4.0). Geocoding by Open-Meteo (GeoNames). Open-Meteo's free API is for non-commercial use, like the code itself. Flags from `country-flag-icons` (MIT).
+Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0) and [MET Norway](https://api.met.no/) (CC BY 4.0). Past weather from Open-Meteo's historical weather service (ERA5 and the ECMWF IFS analysis, with Copernicus Climate Change Service information). The Android widget's current temperature uses airport reports from the US [Aviation Weather Center](https://aviationweather.gov/) (public US government data). Geocoding by Open-Meteo (GeoNames). Open-Meteo's free API is for non-commercial use, like the code itself. Flags from `country-flag-icons` (MIT).
 
 ## License
 
