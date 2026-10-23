@@ -40,7 +40,7 @@ import {
     getValueAt,
 } from '@fa/chart-core/overview-readouts'
 import { OverviewMedians } from '@fa/chart-core/overview-stats'
-import { CHART_FONT_SIZE, clamp, getNowX } from '@fa/chart-core/plot-geometry'
+import { CHART_FONT_SIZE, clamp, getNowX, PANEL_NAME_FONT_SIZE } from '@fa/chart-core/plot-geometry'
 import { formatYTick } from '@fa/chart-core/scales'
 import { getInitialScrollLeft, getLabelX, getVisibleRange } from '@fa/chart-core/scroll-geometry'
 import { getNearestIndex } from '@fa/chart-core/spaghetti-geometry'
@@ -612,8 +612,8 @@ export function MedianOverview({
                             <text
                                 key={variable}
                                 x={geometry.marginLeft + 6}
-                                y={top + CHART_FONT_SIZE + 2}
-                                fontSize={CHART_FONT_SIZE}
+                                y={top + PANEL_NAME_FONT_SIZE + 2}
+                                fontSize={PANEL_NAME_FONT_SIZE}
                                 fontWeight={600}
                                 fill={theme.muted}
                                 stroke={theme.card}

@@ -13,6 +13,7 @@ import {
     SECONDARY_DASH,
 } from '@fa/chart-core/overview-geometry'
 import { OverviewMedians } from '@fa/chart-core/overview-stats'
+import { PANEL_NAME_FONT_SIZE } from '@fa/chart-core/plot-geometry'
 import { formatYTick } from '@fa/chart-core/scales'
 import { Variable } from '@fa/shared/variables'
 import {
@@ -343,7 +344,7 @@ const AxisDrawing = ({
                     font={nameFont}
                     text={panelNames[i]}
                     x={marginLeft + 6}
-                    y={top + 12}
+                    y={top + PANEL_NAME_FONT_SIZE + 1}
                     color={chart.muted}
                     halo={{ color: chart.card, width: NAME_HALO_WIDTH }}
                 />
@@ -397,7 +398,7 @@ export function OverviewCanvas({
     locale,
     chart,
 }: IProps) {
-    const { regular, semiBold } = useChartFonts()
+    const { regular, semiBold, panelName } = useChartFonts()
 
     const plotTransform = useDerivedValue(() => [{ translateX: -scrollX.get() }])
 
@@ -444,7 +445,7 @@ export function OverviewCanvas({
                 hasChance={chance !== null}
                 chart={chart}
                 font={regular}
-                nameFont={semiBold}
+                nameFont={panelName}
             />
         </Canvas>
     )
