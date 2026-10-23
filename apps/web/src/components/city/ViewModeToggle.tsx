@@ -9,7 +9,7 @@ interface IProps {
     className?: string
 }
 
-// The overview's and the archive's chart or table switch: an icon on phones, labelled from `sm` up.
+// The overview's and the archive's charts or table switch: an icon on phones, labelled from `sm` up.
 export function ViewModeToggle({ className }: IProps) {
     const t = useTranslations('chart')
     const { isTable, toggleTable } = useViewMode()
@@ -20,11 +20,11 @@ export function ViewModeToggle({ className }: IProps) {
             size="sm"
             onClick={toggleTable}
             aria-pressed={isTable}
-            aria-label={isTable ? t('showChart') : t('showTable')}
+            aria-label={isTable ? t('showCharts') : t('showTable')}
             className={className}
         >
             {isTable ? <BarChart3 /> : <Table2 />}
-            <span className="max-sm:sr-only">{isTable ? t('chart') : t('table')}</span>
+            <span className="max-sm:sr-only">{isTable ? t('charts') : t('table')}</span>
         </Button>
     )
 }

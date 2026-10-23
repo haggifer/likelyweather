@@ -46,8 +46,10 @@
     "chart": {
         "table": "Table",
         "chart": "Chart",
+        "charts": "Charts",
         "showTable": "Show the data as a table",
         "showChart": "Show the chart",
+        "showCharts": "Show the charts",
         "now": "now",
         "median": "Median",
         "compass": "N,NE,E,SE,S,SW,W,NW",

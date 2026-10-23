@@ -4,7 +4,7 @@ import { useViewMode } from '../../hooks/useViewMode'
 import { Button } from '../ui/button'
 import { Icon } from '../ui/icon'
 
-// The web's ViewModeToggle on phones: the overview's and the archive's chart or table switch as a 36 px icon.
+// The web's ViewModeToggle on phones: the overview's and the archive's charts or table switch as a 36 px icon.
 export function ViewModeToggle() {
     const t = useTranslations('chart')
     const { isTable, toggleTable } = useViewMode()
@@ -14,7 +14,7 @@ export function ViewModeToggle() {
             variant="outline"
             size="sm"
             onPress={toggleTable}
-            accessibilityLabel={isTable ? t('showChart') : t('showTable')}
+            accessibilityLabel={isTable ? t('showCharts') : t('showTable')}
             accessibilityState={{ selected: isTable }}
             className="size-9 px-0"
         >
