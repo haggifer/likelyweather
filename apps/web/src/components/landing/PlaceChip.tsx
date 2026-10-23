@@ -26,7 +26,8 @@ interface IProps {
     onSelect: (slug: string) => void
 }
 
-// The city and its star are sibling buttons inside one pill: a button can't hold another.
+// The city and its star are sibling buttons inside one pill: a button can't hold another. On phones the star is only
+// shown, inside the city's button, so a tap meant for the city never pins it; the overview card's star pins.
 export function PlaceChip({ place, isSelected, isPinned, onSelect }: IProps) {
     const t = useTranslations('city')
     const locale = useLocale()
@@ -49,10 +50,11 @@ export function PlaceChip({ place, isSelected, isPinned, onSelect }: IProps) {
                 variant="ghost"
                 onClick={() => onSelect(place.slug)}
                 aria-pressed={isSelected}
-                className={cn(CHIP_PART, 'gap-1.5 rounded-l-full pr-1 pl-3', hoverText)}
+                className={cn(CHIP_PART, 'gap-1.5 rounded-l-full pr-1 pl-3 max-sm:pr-3', hoverText)}
             >
                 <FlagIcon countryCode={place.countryCode} />
                 {name}
+                <Star className={cn('size-4 sm:hidden', getStarTone(isPinned, isSelected))} aria-hidden="true" />
             </Button>
             <Button
                 type="button"
@@ -61,7 +63,7 @@ export function PlaceChip({ place, isSelected, isPinned, onSelect }: IProps) {
                 aria-pressed={isPinned}
                 aria-label={starLabel}
                 title={starLabel}
-                className={cn(CHIP_PART, 'rounded-r-full pr-2.5 pl-1 touch:min-w-9', hoverText)}
+                className={cn(CHIP_PART, 'rounded-r-full pr-2.5 pl-1 touch:min-w-9 max-sm:hidden', hoverText)}
             >
                 <Star className={cn('size-4', getStarTone(isPinned, isSelected))} aria-hidden="true" />
             </Button>

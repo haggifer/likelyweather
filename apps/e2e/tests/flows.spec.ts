@@ -364,7 +364,9 @@ test('the empty search box offers your places', async ({ page }) => {
     ])
 })
 
-test('the star on a chip pins the city to the front and unpins it again', async ({ page }) => {
+test('the star on a chip pins the city to the front and unpins it again', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'phones only show a chip star')
+
     await page.goto('/')
     await expect.poll(() => getChipNames(page)).toEqual(['New York', 'London', 'Paris', 'Kyiv'])
 
@@ -382,6 +384,21 @@ test('the star on a chip pins the city to the front and unpins it again', async 
     await chips.getByRole('button', { name: 'Remove Paris from favorites' }).click()
 
     await expect(chips.getByRole('button', { name: 'Add Paris to favorites' })).toHaveAttribute('aria-pressed', 'false')
+})
+
+// On phones a tap meant for a city never pins it: the chip shows the star, and the overview card's star pins.
+test('a phone chip only shows its star, and a tap on it opens the city', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'phone layout only')
+
+    await page.goto('/')
+
+    const chips = page.getByRole('group', { name: 'Start with' })
+
+    await expect(chips.getByRole('button', { name: /to favorites$/ })).toHaveCount(0)
+    await chips.getByRole('button', { name: 'Paris', exact: true }).click()
+
+    await expect(getOverviewTitle(page)).toContainText('Paris')
+    await expect.poll(() => getChipNames(page)).toEqual(['New York', 'London', 'Paris', 'Kyiv'])
 })
 
 test('the empty search box lists more searched places than the chips show', async ({ page }) => {
