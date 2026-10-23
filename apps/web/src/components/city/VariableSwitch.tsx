@@ -36,10 +36,10 @@ interface IProps {
     className?: string
 }
 
-// From `sm` up every variable is named (German, the longest, fits a 992 px window with 3 px to spare). On phones only
-// the selected one is named, the others keep their icon and their accessible name; the named segment takes the room its
-// label needs and the others share the rest, as in the app. Phones name a pair once (Temperature, Wind) and pick its member with the
-// sub-tabs above the chart (`VariablePairTabs`).
+// From `sm` up every variable is named, in 12 px text up to a 1047 px window and 13 px from 1048 px: German and Spanish,
+// the longest, need that width at 13 px. On phones only the selected one is named, the others keep their icon and their
+// accessible name; the named segment takes the room its label needs and the others share the rest, as in the app.
+// Phones name a pair once (Temperature, Wind) and pick its member with the sub-tabs above the chart (`VariablePairTabs`).
 export function VariableSwitch({ className }: IProps) {
     const t = useTranslations('variables')
     const tTabs = useTranslations('variableTabs')
@@ -74,7 +74,7 @@ export function VariableSwitch({ className }: IProps) {
                         aria-label={label}
                         title={label}
                         className={cn(
-                            'min-w-0 gap-1.5 px-2.5 text-xs touch:h-9 data-[state=on]:bg-accent max-sm:text-sm',
+                            'h-9 min-w-0 shrink gap-1 px-2 text-xs data-[state=on]:bg-accent max-sm:text-sm min-[65.5rem]:text-[0.8125rem]',
                             id === selected ? 'max-sm:flex-[3.4] max-sm:px-2' : 'max-sm:flex-1 max-sm:px-0',
                         )}
                     >

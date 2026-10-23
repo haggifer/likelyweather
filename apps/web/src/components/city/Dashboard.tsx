@@ -51,9 +51,9 @@ interface SeriesTableProps {
 const VARIABLE_BAR = (
     <div
         data-pinned-bar
-        className="self-start max-sm:sticky max-sm:top-(--topbar-h) max-sm:z-20 max-sm:-mx-4 max-sm:-my-2 max-sm:self-stretch max-sm:bg-background/95 max-sm:px-4 max-sm:py-2 max-sm:backdrop-blur"
+        className="self-start max-sm:sticky max-sm:top-(--topbar-h) max-sm:z-20 max-sm:-mx-4 max-sm:-my-2 max-sm:self-stretch max-sm:bg-background/95 max-sm:px-4 max-sm:py-2 max-sm:backdrop-blur sm:max-w-full"
     >
-        <VariableSwitch className="max-sm:w-full" />
+        <VariableSwitch className="max-w-full max-sm:w-full" />
     </div>
 )
 
