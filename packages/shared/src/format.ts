@@ -5,12 +5,12 @@ import { getOrCreate } from './memo'
 export type DayLabelStyle = 'long' | 'short' | 'narrow'
 
 const INTL_LOCALES: Record<Locale, string> = {
-    [Locale.Uk]: 'uk-UA',
     [Locale.En]: 'en-GB',
     [Locale.Es]: 'es-ES',
     [Locale.De]: 'de-DE',
     [Locale.Fr]: 'fr-FR',
     [Locale.Ru]: 'ru-RU',
+    [Locale.Uk]: 'uk-UA',
 }
 
 const CLOCK: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }

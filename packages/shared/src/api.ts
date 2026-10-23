@@ -2,13 +2,14 @@ import { z } from 'zod'
 import { ModelId } from './models'
 import { Variable } from './variables'
 
+// In the language menus' order: English first, Ukrainian last.
 export enum Locale {
-    Uk = 'uk',
     En = 'en',
     Es = 'es',
     De = 'de',
     Fr = 'fr',
     Ru = 'ru',
+    Uk = 'uk',
 }
 
 export const LOCALES: Locale[] = Object.values(Locale)
