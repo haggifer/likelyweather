@@ -1,5 +1,5 @@
 diff --git a/android/src/main/java/com/reactnativeandroidwidget/RNWidget.java b/android/src/main/java/com/reactnativeandroidwidget/RNWidget.java
-index 1c12d1fd5ef3d2580474893b49a1d27e18ae0923..491263b7f8a7dd79af121b113d09a2a45a784006 100644
+index 1c12d1fd5ef3d2580474893b49a1d27e18ae0923..7e6ebf1160f04a7058257e589ca1fd623e03dc4e 100644
 --- a/android/src/main/java/com/reactnativeandroidwidget/RNWidget.java
 +++ b/android/src/main/java/com/reactnativeandroidwidget/RNWidget.java
 @@ -2,6 +2,7 @@ package com.reactnativeandroidwidget;
@@ -10,7 +10,15 @@ index 1c12d1fd5ef3d2580474893b49a1d27e18ae0923..491263b7f8a7dd79af121b113d09a2a4
  import android.content.ComponentName;
  import android.content.Intent;
  import android.graphics.Bitmap;
-@@ -32,6 +33,7 @@ import com.reactnativeandroidwidget.builder.WidgetWithViews;
+@@ -10,6 +11,7 @@ import android.graphics.Rect;
+ import android.net.Uri;
+ import android.os.Build;
+ import android.os.Bundle;
++import android.provider.AlarmClock;
+ import android.util.Base64;
+ import android.util.TypedValue;
+ import android.view.View;
+@@ -32,6 +34,7 @@ import com.reactnativeandroidwidget.builder.WidgetWithViews;
  import java.io.ByteArrayOutputStream;
  import java.util.ArrayList;
  import java.util.List;
@@ -18,7 +26,7 @@ index 1c12d1fd5ef3d2580474893b49a1d27e18ae0923..491263b7f8a7dd79af121b113d09a2a4
  
  public class RNWidget {
      private final ReactApplicationContext appContext;
-@@ -59,12 +61,28 @@ public class RNWidget {
+@@ -59,12 +62,28 @@ public class RNWidget {
          }
      }
  
@@ -48,3 +56,60 @@ index 1c12d1fd5ef3d2580474893b49a1d27e18ae0923..491263b7f8a7dd79af121b113d09a2a4
  
          WidgetWithViews widgetWithViews = WidgetFactory.buildWidgetFromRoot(
              appContext,
+@@ -115,6 +134,7 @@ public class RNWidget {
+             addClickableAreas(widgetId, remoteWidgetView, widgetWithViews);
+         }
+         addCollectionViews(widgetId, remoteWidgetView, widgetWithViews);
++        addShowAlarmsClick(widgetId, remoteWidgetView);
+ 
+         AppWidgetManager.getInstance(appContext)
+             .updateAppWidget(widgetId, remoteWidgetView);
+@@ -199,7 +219,48 @@ public class RNWidget {
+         widgetView.addView(R.id.rn_widget_clickable_container, clickableRemoteView);
+     }
+ 
++    // A link opens its screen straight from the launcher. Through the widget's broadcast it would first wait for the
++    // app's process and the broadcast queue, which can hold a cold or cached app up for seconds.
++    private PendingIntent getOpenUriIntent(int id, String uri) {
++        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
++        intent.setPackage(appContext.getPackageName());
++        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
++
++        return PendingIntent.getActivity(
++            appContext,
++            id,
++            intent,
++            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
++        );
++    }
++
++    // A widget's own layout can hold a native clock: a view with the id `rn_widget_show_alarms` opens the phone's clock
++    // app, as a launcher's stock clock widget does.
++    private void addShowAlarmsClick(int widgetId, RemoteViews remoteWidgetView) {
++        int viewId = appContext.getResources().getIdentifier("rn_widget_show_alarms", "id", appContext.getPackageName());
++
++        if (viewId == 0) {
++            return;
++        }
++
++        Intent intent = new Intent(AlarmClock.ACTION_SHOW_ALARMS);
++        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
++
++        remoteWidgetView.setOnClickPendingIntent(
++            viewId,
++            PendingIntent.getActivity(appContext, widgetId, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE)
++        );
++    }
++
+     private void registerClickTask(int id, ClickableView clickableView, RemoteViews widgetView, Integer button) {
++        Bundle clickActionData = Arguments.toBundle(clickableView.getClickActionData());
++        String uri = clickActionData == null ? null : clickActionData.getString("uri");
++
++        if ("OPEN_URI".equals(clickableView.getClickAction()) && uri != null) {
++            widgetView.setOnClickPendingIntent(button, getOpenUriIntent(id, uri));
++            return;
++        }
++
+         Intent intent = new Intent(appContext.getPackageName() + ".WIDGET_CLICK");
+         intent.setComponent(new ComponentName(appContext, RNWidgetUtil.getWidgetProviderClassName(appContext, widgetName)));
+         intent.putExtra("widgetId", id);

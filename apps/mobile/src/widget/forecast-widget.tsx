@@ -37,7 +37,8 @@ interface IProps {
 
 // The drawn half of the clock widget (4 × 2): its left stays empty for the native time and date
 // (`plugins/widget-layouts`), and the weather sits on the right: the sky's icon and condition, then the current
-// temperature with its trend. A tap there opens the widget's city picker.
+// temperature with its trend. A tap anywhere on that side, down to the widget's bottom, opens the widget's city picker;
+// the time and date open the Clock app natively.
 const ClockView = ({ widgetId, model, city, t, now }: IProps) => {
     const temp = model
         ? `${formatNumber(model.current?.temp ?? model.temp, 0)}${VARIABLE_BY_ID[Variable.Temp].unit}`
@@ -54,13 +55,18 @@ const ClockView = ({ widgetId, model, city, t, now }: IProps) => {
                 flexDirection: 'row',
                 justifyContent: 'flex-end',
                 alignItems: 'flex-start',
-                paddingVertical: 8,
             }}
         >
             <FlexWidget
                 clickAction="OPEN_URI"
                 clickActionData={{ uri: getPickerLink(widgetId) }}
-                style={{ width: WEATHER_WIDTH, flexDirection: 'column', alignItems: 'flex-end' }}
+                style={{
+                    height: 'match_parent',
+                    width: WEATHER_WIDTH,
+                    flexDirection: 'column',
+                    alignItems: 'flex-end',
+                    paddingVertical: 8,
+                }}
             >
                 {condition && (
                     <SvgWidget

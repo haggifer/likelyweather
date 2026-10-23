@@ -21,9 +21,11 @@
         android:scaleType="matrix"
         android:visibility="visible" />
 
+    <!-- The time and date down to the widget's bottom: a tap there opens the clock app (rn_widget_show_alarms). -->
     <LinearLayout
+        android:id="@+id/rn_widget_show_alarms"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_gravity="top|start"
         android:orientation="vertical"
         android:paddingStart="3dp"
