@@ -8,6 +8,8 @@ import {
     getReadoutLabel,
     getShownLatest,
     getSlotEnd,
+    getSummaryKey,
+    isComputedView,
 } from './dashboard'
 import { ModelId } from './models'
 import { Variable } from './variables'
@@ -84,6 +86,42 @@ describe('getReadoutLabel', () => {
 
         expect(period).not.toBe(instant)
         expect(period.startsWith(instant.split(' ')[0])).toBe(true)
+        expect(getReadoutLabel(STEPS[1], Variable.Chance, 'UTC', 'en')).toBe(period)
+    })
+})
+
+describe('the chance of rain', () => {
+    // 0.1 mm stays under the 0.2 mm threshold; a step without a value leaves that model out.
+    const RAIN: LatestResponse = {
+        ...LATEST,
+        series: [
+            { modelId: ModelId.Gfs, values: [0, 0.6, 0.1] },
+            { modelId: ModelId.EcmwfIfs, values: [0, 1.2, null] },
+        ],
+    }
+
+    it("stands in the median's place as the percentage of models above 0.2 mm, without bands or disagreement", () => {
+        const { stats, disagreement, directions } = getDashboardStats(RAIN, Variable.Chance, 'UTC', NOW)
+
+        expect(stats.median).toEqual([0, 100, 0])
+        expect(stats.min).toEqual([null, null, null])
+        expect(stats.max).toEqual([null, null, null])
+        expect(stats.count).toEqual([2, 2, 1])
+        expect(disagreement).toEqual([])
+        expect(directions).toBeNull()
+    })
+
+    it('counts only the shown models', () => {
+        const shown = getShownLatest(RAIN, [ModelId.EcmwfIfs])
+
+        expect(getDashboardStats(shown, Variable.Chance, 'UTC', NOW).stats.median).toEqual([0, 100, 0])
+    })
+
+    it('is a computed view with its own summary sentence', () => {
+        expect(isComputedView(Variable.Chance)).toBe(true)
+        expect(isComputedView(Variable.Precip)).toBe(false)
+        expect(getSummaryKey(Variable.Chance)).toBe('summaryChance')
+        expect(getSummaryKey(Variable.Precip)).toBe('summary')
     })
 })
 

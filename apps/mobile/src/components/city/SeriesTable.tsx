@@ -16,6 +16,10 @@ interface IProps {
     series: Series[]
     stats: EnsembleStats
     decimals: number
+    // The models' own values, in another unit than the view's for the chance of rain (amounts in mm).
+    modelDecimals: number
+    modelUnit: string | null
+    medianLabel: string
     timeZone: string
     locale: string
     // A pair reads "actual (companion)" whichever sub-tab is open (author, 2026-10-14).
@@ -25,12 +29,27 @@ interface IProps {
 }
 
 // The dashboard chart's numbers: the median, then every model, slot by slot.
-export function SeriesTable({ steps, series, stats, decimals, timeZone, locale, pairedRuns, isMedianHidden }: IProps) {
+export function SeriesTable({
+    steps,
+    series,
+    stats,
+    decimals,
+    modelDecimals,
+    modelUnit,
+    medianLabel,
+    timeZone,
+    locale,
+    pairedRuns,
+    isMedianHidden,
+}: IProps) {
     const t = useTranslations('dashboard')
 
     const columns: TableColumn[] = [
-        ...(isMedianHidden ? [] : [{ key: MEDIAN_KEY, label: t('median'), isBold: true }]),
-        ...series.map((s) => ({ key: s.modelId, label: MODEL_BY_ID[s.modelId].name })),
+        ...(isMedianHidden ? [] : [{ key: MEDIAN_KEY, label: medianLabel, isBold: true }]),
+        ...series.map((s) => ({
+            key: s.modelId,
+            label: modelUnit ? `${MODEL_BY_ID[s.modelId].name}, ${modelUnit}` : MODEL_BY_ID[s.modelId].name,
+        })),
     ]
     const rowLabels = steps.map((step) => formatTableStepLabel(step, timeZone, locale))
 
@@ -43,7 +62,7 @@ export function SeriesTable({ steps, series, stats, decimals, timeZone, locale, 
 
         return pairedRuns
             ? formatPairedModel(pairedRuns, model.modelId, i, decimals)
-            : formatNumber(model.values[i], decimals)
+            : formatNumber(model.values[i], modelDecimals)
     }
 
     return (

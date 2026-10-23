@@ -64,6 +64,7 @@
         "gusts": "Rafales",
         "pressure": "Pression",
         "precip": "Précipitations",
+        "chance": "Probabilité de pluie",
         "humidity": "Humidité",
         "cloud": "Nébulosité"
     },
@@ -74,19 +75,23 @@
         "gusts": "rafales",
         "pressure": "pression",
         "precip": "précipitations",
+        "chance": "probabilité de pluie",
         "humidity": "humidité",
         "cloud": "nébulosité"
     },
     "variableTabs": {
         "temp": "Température",
-        "wind": "Vent"
+        "wind": "Vent",
+        "precip": "Précipitations"
     },
     "subVariables": {
         "label": "{variable} : ce que montre le graphique",
         "temp": "Réelle",
         "feels": "Ressenti",
         "wind": "Vitesse",
-        "gusts": "Rafales"
+        "gusts": "Rafales",
+        "precip": "Quantité",
+        "chance": "Probabilité"
     },
     "city": {
         "forecastAge": "{hours, plural, one {Il y a # heure} other {Il y a # heures}}",
@@ -109,6 +114,7 @@
     "dashboard": {
         "fetching": "Récupération de dix modèles pour {name}…",
         "summary": "La médiane ({variable}) des dix prochains jours va de {min} à {max} {unit} sur {count} modèles. Ils divergent le plus le {day} (écart {spread} {unit}).",
+        "summaryChance": "La probabilité de pluie des dix prochains jours va de {min} à {max} {unit} sur {count} modèles.",
         "median": "Médiane",
         "time": "Heure (locale)",
         "windArrows": "Les flèches indiquent où souffle le vent médian ; choisissez une heure pour voir d’où il vient."

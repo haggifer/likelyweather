@@ -155,6 +155,9 @@ export const computeDisagreement = (
     now: Date,
 ): DayDisagreement[] => {
     const thresholds = VARIABLE_BY_ID[variable].disagreement
+
+    if (!thresholds) return []
+
     const byDay = groupFutureStepsByDay(steps, variable, timeZone, now)
 
     // A day where fewer than two models have data is left out: one model always "agrees" with itself.

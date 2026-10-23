@@ -117,11 +117,17 @@ describe('spaghetti layout', () => {
         const pressure = [{ modelId: series[0].modelId, values: [1012, 1014] }]
         const domain = getSeriesYDomain([], Variable.Pressure)
 
-        expect(getSpaghettiTicks(pressure, [1010, 1016], Variable.Pressure, 5)).toEqual(
+        expect(getSpaghettiTicks(pressure, [], [1010, 1016], Variable.Pressure, 5)).toEqual(
             getYTicks([1010, 1016], Variable.Pressure, 5),
         )
-        expect(getSpaghettiTicks([], domain, Variable.Pressure, 5)).toEqual([])
-        expect(getSpaghettiTicks([{ ...pressure[0], values: [null, null] }], domain, Variable.Pressure, 5)).toEqual([])
+        expect(getSpaghettiTicks([], [null, null], domain, Variable.Pressure, 5)).toEqual([])
+        expect(
+            getSpaghettiTicks([{ ...pressure[0], values: [null, null] }], [null, null], domain, Variable.Pressure, 5),
+        ).toEqual([])
+    })
+
+    it('labels the chance of rain, which draws its median without model lines', () => {
+        expect(getSpaghettiTicks([], [0, 33], [0, 100], Variable.Chance, 5)).toEqual([0, 25, 50, 75, 100])
     })
 
     it('reads the step from the data, and a 3-hour slot for a single step', () => {

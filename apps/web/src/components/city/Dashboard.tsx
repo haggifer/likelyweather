@@ -20,12 +20,12 @@ import { setHoverStep } from '@/store/dashboard-slice'
 import { getReadoutIndex } from '@fa/chart-core/dashboard-stats'
 import { useDashboardData } from '@fa/hooks/useDashboardData'
 import { Series } from '@fa/shared/api'
-import { getReadoutLabel } from '@fa/shared/dashboard'
+import { getReadoutLabel, getSummaryKey, isComputedView } from '@fa/shared/dashboard'
 import { EnsembleStats } from '@fa/shared/ensemble'
 import { formatNumber, formatTableStepLabel, getCityName } from '@fa/shared/format'
 import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { formatPairedMedian, formatPairedModel, PairedRuns } from '@fa/shared/paired-values'
-import { getVariablePair, getVariableTab, Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
+import { getDataVariable, getVariablePair, getVariableTab, Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { Loader2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { ComponentProps, memo, useDeferredValue, useMemo } from 'react'
@@ -35,6 +35,9 @@ interface SeriesTableProps {
     series: Series[]
     stats: EnsembleStats
     decimals: number
+    // The models' own values, in another unit than the view's for the chance of rain (amounts in mm).
+    modelDecimals: number
+    modelUnit: string | null
     timeZone: string
     locale: string
     medianLabel: string
@@ -51,11 +54,13 @@ interface SeriesTableProps {
 const VARIABLE_BAR = (
     <div
         data-pinned-bar
-        className="self-start max-sm:sticky max-sm:top-(--topbar-h) max-sm:z-20 max-sm:-mx-4 max-sm:-my-2 max-sm:self-stretch max-sm:bg-background/95 max-sm:px-4 max-sm:py-2 max-sm:backdrop-blur sm:max-w-full"
+        className="max-sm:sticky max-sm:top-(--topbar-h) max-sm:z-20 max-sm:-mx-4 max-sm:-my-2 max-sm:self-stretch max-sm:bg-background/95 max-sm:px-4 max-sm:py-2 max-sm:backdrop-blur sm:max-w-full"
     >
         <VariableSwitch className="max-w-full max-sm:w-full" />
     </div>
 )
+
+const NO_SERIES: Series[] = []
 
 const toHoverIndex = (steps: string[], hoverStep: string | null) => (hoverStep ? steps.indexOf(hoverStep) : -1)
 
@@ -124,6 +129,8 @@ const SeriesTable = ({
     series,
     stats,
     decimals,
+    modelDecimals,
+    modelUnit,
     timeZone,
     locale,
     medianLabel,
@@ -138,7 +145,7 @@ const SeriesTable = ({
                 {!isMedianHidden && <TableHead className={cn(STICKY_HEAD_CELL, 'text-right')}>{medianLabel}</TableHead>}
                 {series.map((s) => (
                     <TableHead key={s.modelId} className={cn(STICKY_HEAD_CELL, 'text-right')}>
-                        {MODEL_BY_ID[s.modelId].name}
+                        {modelUnit ? `${MODEL_BY_ID[s.modelId].name}, ${modelUnit}` : MODEL_BY_ID[s.modelId].name}
                     </TableHead>
                 ))}
             </TableRow>
@@ -160,7 +167,7 @@ const SeriesTable = ({
                         <TableCell key={s.modelId} className="text-right">
                             {pairedRuns
                                 ? formatPairedModel(pairedRuns, s.modelId, i, decimals)
-                                : formatNumber(s.values[i], decimals)}
+                                : formatNumber(s.values[i], modelDecimals)}
                         </TableCell>
                     ))}
                 </TableRow>
@@ -189,6 +196,7 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
     const highlighted = useAppSelector((s) => s.dashboard.highlightedModel)
     const hidden = useAppSelector((s) => s.dashboard.hiddenModels)
     const isMedianHidden = useAppSelector((s) => s.dashboard.isMedianHidden)
+    const isSwitchCompact = useAppSelector((s) => s.dashboard.isSwitchCompact)
 
     const {
         city,
@@ -209,11 +217,13 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
     })
 
     const info = VARIABLE_BY_ID[variable]
+    const modelInfo = VARIABLE_BY_ID[getDataVariable(variable)]
+    const isComputed = isComputedView(variable)
     const timeZone = city?.timezone ?? 'UTC'
     const pairedRuns = isPhone ? allPairedRuns : null
     const emptyMessage = hasData ? null : tc('noData')
-    // Phones name a pair once ("Temperature") and show which member is open in the sub-tabs.
-    const title = isPhone && getVariablePair(variable) ? tTabs(getVariableTab(variable)) : tv(variable)
+    // The phone switch names a pair once ("Temperature") and shows which member is open in the sub-tabs.
+    const title = isSwitchCompact && getVariablePair(variable) ? tTabs(getVariableTab(variable)) : tv(variable)
     // A stable list, so the chart's memoized drawing survives renders that did not change the highlighted model.
     const emphasized = useMemo<ModelId[]>(() => (highlighted ? [highlighted] : []), [highlighted])
 
@@ -243,7 +253,7 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
         )
     }
 
-    const summary = t('summary', { variable: tInline(variable), ...summaryValues })
+    const summary = t(getSummaryKey(variable), { variable: tInline(variable), ...summaryValues })
     const legend = (
         <HoveredLegend
             steps={latest.steps}
@@ -268,7 +278,7 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
                     <ChartFrame
                         className="lg:min-w-0 lg:flex-1"
                         title={title}
-                        tabs={isPhone ? <VariablePairTabs /> : undefined}
+                        tabs={isSwitchCompact ? <VariablePairTabs /> : undefined}
                         isFetching={latestQuery.isFetching && latestQuery.isPlaceholderData}
                         emptyMessage={emptyMessage}
                         table={
@@ -277,9 +287,11 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
                                 series={shown.series}
                                 stats={derived.stats}
                                 decimals={info.decimals}
+                                modelDecimals={modelInfo.decimals}
+                                modelUnit={isComputed ? modelInfo.unit : null}
                                 timeZone={timeZone}
                                 locale={locale}
-                                medianLabel={t('median')}
+                                medianLabel={isComputed ? `${tv(variable)}, ${info.unit}` : t('median')}
                                 timeLabel={t('time')}
                                 pairedRuns={pairedRuns}
                                 isMedianHidden={isMedianHidden}
@@ -288,7 +300,7 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
                     >
                         <HoveredChart
                             steps={latest.steps}
-                            series={shown.series}
+                            series={isComputed ? NO_SERIES : shown.series}
                             stats={derived.stats}
                             variable={variable}
                             timeZone={timeZone}
@@ -313,8 +325,16 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
                         <div className="rounded-(--radius) border bg-card p-3 lg:w-80 lg:shrink-0">{legend}</div>
                     )}
                 </div>
-                <Separator className="sm:hidden" />
-                <DisagreementTiles days={derived.disagreement} variable={variable} emptyMessage={emptyMessage} />
+                {info.disagreement && (
+                    <>
+                        <Separator className="sm:hidden" />
+                        <DisagreementTiles
+                            days={derived.disagreement}
+                            variable={variable}
+                            emptyMessage={emptyMessage}
+                        />
+                    </>
+                )}
             </div>
         </div>
     )

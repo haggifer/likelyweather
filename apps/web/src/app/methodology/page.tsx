@@ -2,7 +2,7 @@ import { LineSwatch } from '@/components/shell/LineSwatch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { METHODOLOGY_SECTIONS, METHODOLOGY_VALUES, toParagraphs } from '@fa/shared/methodology'
 import { MODELS } from '@fa/shared/models'
-import { VARIABLES } from '@fa/shared/variables'
+import { DISAGREEMENT_VARIABLES } from '@fa/shared/variables'
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 
@@ -51,7 +51,7 @@ export default async function MethodologyPage() {
                         )}
                         {section === 'disagreement' && (
                             <ul className="mt-1 flex flex-col gap-1">
-                                {VARIABLES.map((v) => (
+                                {DISAGREEMENT_VARIABLES.map((v) => (
                                     <li key={v.id}>
                                         {t('thresholds', {
                                             variable: tv(v.id),

@@ -25,6 +25,8 @@ export function DisagreementTiles({ days, variable, emptyMessage }: IProps) {
 
     const { unit, decimals, disagreement } = VARIABLE_BY_ID[variable]
 
+    if (!disagreement) return null
+
     return (
         <Card className="gap-3">
             <CardHeader>

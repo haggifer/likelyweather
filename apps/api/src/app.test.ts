@@ -53,6 +53,13 @@ describe('API without the database', () => {
         expect(missing.status).toBe(400)
     })
 
+    it('refuses the chance of rain, which clients compute from the precipitation run', async () => {
+        const res = await request(app).get('/api/cities/kyiv-ua-703448/latest').query({ variable: 'chance' })
+
+        expect(res.status).toBe(400)
+        expect(res.body.error.code).toBe('invalid_request')
+    })
+
     it('answers unknown routes with 404', async () => {
         const res = await request(app).get('/api/nope')
 

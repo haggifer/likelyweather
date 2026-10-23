@@ -1,5 +1,6 @@
 import { LatestResponse } from './api'
 import {
+    computeChanceOfRain,
     computeDisagreement,
     computeEnsemble,
     computeMedianDirection,
@@ -54,6 +55,25 @@ export const getEnsembleStats = (latest: Pick<LatestResponse, 'series' | 'steps'
         latest.steps.length,
     )
 
+// The chance of rain stands where the median does, in percent, so the chart, the readout and the table read it like a
+// median; it has no band, since the models' own values are amounts in millimetres.
+const getChanceStats = (latest: Pick<LatestResponse, 'series' | 'steps'>): EnsembleStats => {
+    const { count } = getEnsembleStats(latest)
+    const chance = computeChanceOfRain(
+        latest.series.map((s) => s.values),
+        latest.steps.length,
+    )
+    const none = count.map(() => null)
+
+    return { median: chance.map((v) => (v === null ? null : v * 100)), min: none, max: none, count }
+}
+
+// A computed view (the chance of rain) draws only its own value: its models' values are in another unit, so they are
+// listed beside the chart but never drawn on its axis.
+export const isComputedView = (variable: Variable) => VARIABLE_BY_ID[variable].source !== undefined
+
+export const getSummaryKey = (variable: Variable) => (variable === Variable.Chance ? 'summaryChance' : 'summary')
+
 export const getDashboardStats = (
     latest: LatestResponse,
     variable: Variable,
@@ -65,7 +85,7 @@ export const getDashboardStats = (
     const disagreementSteps = variable === Variable.Precip ? latest.steps.map(getSlotEnd) : latest.steps
 
     return {
-        stats: getEnsembleStats(latest),
+        stats: variable === Variable.Chance ? getChanceStats(latest) : getEnsembleStats(latest),
         disagreement: computeDisagreement(disagreementSteps, values, variable, timeZone, now),
         directions: latest.directions
             ? computeMedianDirection(
@@ -89,9 +109,10 @@ export const formatSpread = (spread: number | undefined, decimals: number) =>
 export const getMostSplitDay = (days: DayDisagreement[]): DayDisagreement | undefined =>
     days.reduce<DayDisagreement | undefined>((top, day) => (!top || day.spread > top.spread ? day : top), undefined)
 
-// A sum covers the 3 hours after its slot, so its readout names the period; an instant names its time.
+// A sum, or the chance of rain drawn from one, covers the 3 hours after its slot, so its readout names the period; an
+// instant names its time.
 export const getReadoutLabel = (step: string, variable: Variable, timeZone: string, locale: string) =>
-    variable === Variable.Precip
+    VARIABLE_BY_ID[variable].aggregation === 'sum'
         ? formatPeriodLabel(step, getSlotEnd(step), timeZone, locale)
         : formatStepLabel(step, timeZone, locale)
 

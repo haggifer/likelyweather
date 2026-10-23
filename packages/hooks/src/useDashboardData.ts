@@ -14,7 +14,7 @@ import { hasSeriesValues } from '@fa/shared/has-values'
 import { ModelId } from '@fa/shared/models'
 import { PairedRuns, toPairedRuns } from '@fa/shared/paired-values'
 import { buildSlots, DASHBOARD_HOURS, getChartStart, toSlotLatest } from '@fa/shared/slots'
-import { getVariablePair, Variable, VARIABLE_BY_ID, VARIABLES } from '@fa/shared/variables'
+import { getCompanion, getDataVariable, STORED_VARIABLES, Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { useQueryClient, UseQueryResult } from '@tanstack/react-query'
 import { useEffect, useMemo } from 'react'
 
@@ -63,13 +63,14 @@ export function useDashboardData(
     const queryClient = useQueryClient()
 
     const { data: city } = useCity(slug)
-    const latestQuery = useLatest(slug, variable, isEnabled)
+    const dataVariable = getDataVariable(variable)
+    const latestQuery = useLatest(slug, dataVariable, isEnabled)
     const precipQuery = useLatest(slug, Variable.Precip, isEnabled)
-    const companion = getVariablePair(variable)?.find((v) => v !== variable) ?? null
+    const companion = getCompanion(variable)
     const companionQuery = useLatest(slug, companion ?? variable, isEnabled && companion !== null)
 
     const timeZone = city?.timezone
-    const aggregation = VARIABLE_BY_ID[variable].aggregation
+    const aggregation = VARIABLE_BY_ID[dataVariable].aggregation
     const anchorRun = precipQuery.data ?? latestQuery.data
     const isRunShown = latestQuery.isSuccess && precipQuery.isSuccess
     const anchor = useMemo(
@@ -122,8 +123,8 @@ export function useDashboardData(
         if (!isRunShown) return
 
         // Only a variable missing from the cache is fetched; one already there waits for Refresh like the rest.
-        VARIABLES.forEach(
-            ({ id }) => void queryClient.prefetchQuery({ ...getLatestQuery(slug, id), staleTime: Infinity }),
+        STORED_VARIABLES.forEach(
+            (id) => void queryClient.prefetchQuery({ ...getLatestQuery(slug, id), staleTime: Infinity }),
         )
     }, [isRunShown, slug, queryClient])
 

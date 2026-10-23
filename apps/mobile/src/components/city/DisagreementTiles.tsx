@@ -30,6 +30,9 @@ export function DisagreementTiles({ days, variable, emptyMessage, className }: I
     const locale = useLocale()
 
     const { unit, decimals, disagreement } = VARIABLE_BY_ID[variable]
+
+    if (!disagreement) return null
+
     const description = t(variable === Variable.Precip ? 'descriptionPrecip' : 'description', {
         variable: tInline(variable),
         agree: formatNumber(disagreement.agree, 1),

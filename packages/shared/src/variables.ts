@@ -1,4 +1,4 @@
-// The order is the order of the dashboard's variable switch.
+// The order is the order of the details page's variable switch.
 export enum Variable {
     Temp = 'temp',
     Feels = 'feels',
@@ -6,6 +6,7 @@ export enum Variable {
     Gusts = 'gusts',
     Pressure = 'pressure',
     Precip = 'precip',
+    Chance = 'chance',
     Humidity = 'humidity',
     Cloud = 'cloud',
 }
@@ -33,11 +34,15 @@ export interface DisagreementThresholds {
 
 export interface VariableInfo {
     id: Variable
+    // A view the client computes from another variable's run rather than a stored series: the chance of rain from
+    // precipitation. The API is never asked for it (`StoredVariableSchema`).
+    source?: Variable
     field: SeriesField
     unit: string
     decimals: number
     aggregation: Aggregation
-    disagreement: DisagreementThresholds
+    // Null for a view whose models do not differ by an amount (the chance of rain): it has no disagreement card.
+    disagreement: DisagreementThresholds | null
     tickStep?: number
     tickSteps?: number[]
     // A bounded quantity (a percentage) keeps its whole range on the axis, so the charts of two places read alike.
@@ -105,6 +110,19 @@ export const VARIABLES: VariableInfo[] = [
         isNonNegative: true,
     },
     {
+        // The share of the shown models above 0.2 mm in a slot (`computeChanceOfRain`), the overview's strip; like the
+        // precipitation it comes from, it covers the 3 hours after its slot.
+        id: Variable.Chance,
+        source: Variable.Precip,
+        field: 'precip',
+        unit: '%',
+        decimals: 0,
+        aggregation: 'sum',
+        disagreement: null,
+        tickStep: 25,
+        fixedDomain: [0, 100],
+    },
+    {
         id: Variable.Humidity,
         field: 'humidity',
         unit: '%',
@@ -150,6 +168,7 @@ export const VARIABLE_BY_ID: Record<Variable, VariableInfo> = Object.fromEntries
 const VARIABLE_PAIRS: [Variable, Variable][] = [
     [Variable.Temp, Variable.Feels],
     [Variable.Wind, Variable.Gusts],
+    [Variable.Precip, Variable.Chance],
 ]
 
 export const getVariablePair = (variable: Variable) => VARIABLE_PAIRS.find((pair) => pair.includes(variable)) ?? null
@@ -158,6 +177,25 @@ export const getVariablePair = (variable: Variable) => VARIABLE_PAIRS.find((pair
 export const getVariableTab = (variable: Variable) => getVariablePair(variable)?.[0] ?? variable
 
 export const PHONE_VARIABLES = VARIABLES.map((v) => v.id).filter((id) => getVariableTab(id) === id)
+
+// The run a variable's chart is drawn from: its own, or its source's for a computed view.
+export const getDataVariable = (variable: Variable) => VARIABLE_BY_ID[variable].source ?? variable
+
+// The variable read beside this one on phones, "17.2 (15.0)": the other member of a pair of the same kind of value.
+// Precipitation and its chance share a tab but not a unit, so neither is read with the other.
+export const getCompanion = (variable: Variable) => {
+    const other = getVariablePair(variable)?.find((v) => v !== variable) ?? null
+
+    return other && getDataVariable(other) === other && getDataVariable(variable) === variable ? other : null
+}
+
+// The variables whose models differ by an amount, with their thresholds: the disagreement cards and the methodology.
+export const DISAGREEMENT_VARIABLES = VARIABLES.flatMap(({ disagreement, ...info }) =>
+    disagreement ? [{ ...info, disagreement }] : [],
+)
+
+// The variables the API stores and serves, one `/latest` request each.
+export const STORED_VARIABLES = VARIABLES.filter((v) => !v.source).map((v) => v.id)
 
 // The series Open-Meteo returns as they are. Feels-like is not among them: it is computed from temperature, humidity,
 // wind and shortwave radiation when a run is stored (`getApparentTemperature`), so every model, met.no included,

@@ -64,6 +64,7 @@
         "gusts": "Wind gusts",
         "pressure": "Pressure",
         "precip": "Precipitation",
+        "chance": "Chance of rain",
         "humidity": "Humidity",
         "cloud": "Cloud cover"
     },
@@ -74,19 +75,23 @@
         "gusts": "wind gusts",
         "pressure": "pressure",
         "precip": "precipitation",
+        "chance": "chance of rain",
         "humidity": "humidity",
         "cloud": "cloud cover"
     },
     "variableTabs": {
         "temp": "Temperature",
-        "wind": "Wind"
+        "wind": "Wind",
+        "precip": "Precipitation"
     },
     "subVariables": {
         "label": "{variable}: what the chart shows",
         "temp": "Actual",
         "feels": "Feels like",
         "wind": "Speed",
-        "gusts": "Gusts"
+        "gusts": "Gusts",
+        "precip": "Amount",
+        "chance": "Chance"
     },
     "city": {
         "forecastAge": "{hours, plural, one {# hour old} other {# hours old}}",
@@ -109,6 +114,7 @@
     "dashboard": {
         "fetching": "Fetching ten models for {name}…",
         "summary": "Median {variable} over the next ten days ranges from {min} to {max} {unit} across {count} models. They disagree most on {day} (spread {spread} {unit}).",
+        "summaryChance": "The chance of rain over the next ten days ranges from {min} to {max} {unit} across {count} models.",
         "median": "Median",
         "time": "Time (city)",
         "windArrows": "Arrows show where the median wind blows to; select a time to read the direction it comes from."
