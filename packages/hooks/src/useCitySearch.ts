@@ -55,7 +55,8 @@ export function useCitySearch({
     const [isOpen, setIsOpen] = useState(isInitiallyOpen)
     const [lastAnswer, setLastAnswer] = useState<GeocodeResponse | undefined>()
 
-    const term = useDebouncedValue(getSearchTerm(query, initialQuery), SEARCH_DEBOUNCE_MS)
+    const typedTerm = getSearchTerm(query, initialQuery)
+    const term = useDebouncedValue(typedTerm, SEARCH_DEBOUNCE_MS)
     const { data, isFetching, isError, error, fetchStatus } = useGeocode(term, locale)
     const track = useTrackCity()
 
@@ -68,7 +69,8 @@ export function useCitySearch({
     const status = getSearchStatus({
         query,
         resultCount: results.length,
-        isFetching,
+        // Text still waiting out the debounce is as good as searching: no answer has been asked for yet.
+        isFetching: isFetching || typedTerm !== term,
         isError,
         isOffline: fetchStatus === 'paused',
     })
