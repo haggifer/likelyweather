@@ -11,6 +11,8 @@ Android app with a home-screen widget shows the same.
 
 ![The London dashboard: ten models' temperature forecasts with their band and median, and the disagreement by day](.github/readme/dashboard.png)
 
+![The landing overview: the median of all models for London over the next days, with temperature, wind, pressure and precipitation](.github/readme/landing.png)
+
 A pnpm and Turborepo monorepo: a Next.js web app, an Expo (React Native) Android app and an Express REST API on
 Postgres (Prisma) and Redis, deployed to AWS Lambda and CloudFront with CDK. Live data comes from Open-Meteo and MET
 Norway.
@@ -80,8 +82,6 @@ iOS builds run only in the cloud (`eas build --profile simulator --platform ios`
   OIDC with no stored keys, with an error alarm and a budget alarm.
 
 ## Features
-
-![The landing overview: the median of all models for London over the next days, with temperature, wind, pressure and precipitation](.github/readme/landing.png)
 
 | Screen         | Route                | What it shows                                                                                                                                                                                                                                                                                                                                |
 | -------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
