@@ -174,7 +174,7 @@ export function ModelLegend({
                     />
                 ))}
             </ul>
-            <p className="text-xs leading-snug text-muted-foreground pointer-coarse:hidden">{t('hint')}</p>
+            <p className="text-xs leading-snug text-muted-foreground touch:hidden">{t('hint')}</p>
         </div>
     )
 }
