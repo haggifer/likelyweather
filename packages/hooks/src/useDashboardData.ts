@@ -15,7 +15,7 @@ import { ModelId } from '@fa/shared/models'
 import { PairedRuns, toPairedRuns } from '@fa/shared/paired-values'
 import { buildSlots, DASHBOARD_HOURS, getChartStart, toSlotLatest } from '@fa/shared/slots'
 import { getVariablePair, Variable, VARIABLE_BY_ID, VARIABLES } from '@fa/shared/variables'
-import { useQueryClient, UseQueryResult } from '@tanstack/react-query'
+import { Query, useQueryClient, UseQueryResult } from '@tanstack/react-query'
 import { useEffect, useMemo } from 'react'
 
 interface DashboardOptions {
@@ -50,6 +50,15 @@ export interface UseDashboardDataResult {
 
 const NO_MODELS: ModelId[] = []
 
+// Placeholder data (the previous city's run during a switch) and a run still refreshing are not the city's run yet.
+const isSettled = (query: UseQueryResult<LatestResponse, Error>) =>
+    query.isSuccess && !query.isPlaceholderData && !query.isFetching
+
+// A variable cached from an older run than the one on screen is fetched again, so the landing overview, which reads the
+// same cache and never refetches on its own, draws every panel from one run.
+const getPrefetchStaleTime = (runId: string) => (query: Query<LatestResponse, Error>) =>
+    query.state.data?.runId === runId ? Infinity : 0
+
 // A city dashboard's data in both apps: the chosen variable's run and the precipitation run, which anchors the chart
 // because every variable shares it (a newer run re-anchors it), re-gridded onto the chart's slots, with its ensemble
 // statistics and the summary's values. Once that run is on screen the city's other variables load in the background,
@@ -71,7 +80,7 @@ export function useDashboardData(
     const timeZone = city?.timezone
     const aggregation = VARIABLE_BY_ID[variable].aggregation
     const anchorRun = precipQuery.data ?? latestQuery.data
-    const isRunShown = latestQuery.isSuccess && precipQuery.isSuccess
+    const shownRunId = isSettled(latestQuery) && isSettled(precipQuery) ? (anchorRun?.runId ?? null) : null
     const anchor = useMemo(
         () => (timeZone && anchorRun ? getChartStart(anchorRun, timeZone) : null),
         [anchorRun, timeZone],
@@ -119,13 +128,16 @@ export function useDashboardData(
     }
 
     useEffect(() => {
-        if (!isRunShown) return
+        if (!shownRunId) return
 
-        // Only a variable missing from the cache is fetched; one already there waits for Refresh like the rest.
         VARIABLES.forEach(
-            ({ id }) => void queryClient.prefetchQuery({ ...getLatestQuery(slug, id), staleTime: Infinity }),
+            ({ id }) =>
+                void queryClient.prefetchQuery({
+                    ...getLatestQuery(slug, id),
+                    staleTime: getPrefetchStaleTime(shownRunId),
+                }),
         )
-    }, [isRunShown, slug, queryClient])
+    }, [shownRunId, slug, queryClient])
 
     return { city, latestQuery, precipQuery, anchor, latest, shown, hasData, derived, summary, pairedRuns, retry }
 }
