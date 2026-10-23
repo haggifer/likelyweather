@@ -100,7 +100,7 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('ensureFreshSnapshot (database
     it('waits for the snapshot of the instance that holds the refresh, without fetching itself', async () => {
         const fetch = respond()
         vi.stubGlobal('fetch', fetch)
-        await claim(`refresh:${OTHER_CITY.id}:${new Date('2026-09-24T12:00:00Z').getTime()}`, 30)
+        await claim(`refresh:${OTHER_CITY.id}`, 30)
 
         const waiting = ensureFreshSnapshot(OTHER_CITY)
         const { run } = await collect({ city: OTHER_CITY })

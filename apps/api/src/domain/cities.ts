@@ -2,7 +2,6 @@ import { City, GeocodeResult, Locale, LOCALES, NearestResponse } from '@fa/share
 import { HOUR_MS, REFRESH_AFTER_HOURS } from '@fa/shared/constants'
 import { Coordinates, getDistanceKm } from '@fa/shared/geo'
 import { slugify } from '@fa/shared/seeds'
-import { floorToStep } from '@fa/shared/time'
 import { delay } from 'es-toolkit'
 import { claim, dedupe, isMarked, mark, releaseClaim, unmark } from './cache'
 import { collect } from './collector'
@@ -177,7 +176,8 @@ export const ensureFreshSnapshot = (city: City, client?: string): Promise<Stored
 
         if (await isMarked(getCooldownName(city))) return serveStored(city, stored)
 
-        const claimName = `refresh:${city.id}:${floorToStep(now).getTime()}`
+        // Keyed by city alone, so two instances on either side of a step boundary still meet in one fetch.
+        const claimName = `refresh:${city.id}`
         const isClaimed = await claim(claimName, REFRESH_CLAIM_SECONDS)
 
         if (!isClaimed) return waitForRefresh(city, stored)
