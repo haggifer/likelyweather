@@ -51,6 +51,13 @@ export const buildSteps = (start: Date, end: Date, stepHours = STEP_HOURS) => {
 
 export const compactIso = (iso: string) => iso.replace(/[-:]/g, '')
 
-export const getLocalDateKey = (iso: string, timeZone: string) => getDateKeyFormatter(timeZone).format(new Date(iso))
+// Built from the parts, not the formatted text: a locale's numeric date pattern is ICU data, which has changed between
+// versions (en-CA's included), and Hermes formats with the phone's own.
+export const getLocalDateKey = (iso: string, timeZone: string) => {
+    const parts = getDateKeyFormatter(timeZone).formatToParts(new Date(iso))
+    const get = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value
+
+    return `${get('year')}-${get('month')}-${get('day')}`
+}
 
 export const getLocalHour = (date: Date, timeZone: string) => Number(getHourFormatter(timeZone).format(date))
