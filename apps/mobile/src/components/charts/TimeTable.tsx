@@ -18,8 +18,8 @@ const HEAD_TEXT_CLASS = 'text-sm font-semibold'
 const PINNED_CLASS = 'z-1 w-32 self-stretch justify-center border-r border-border bg-muted px-2'
 // A line on every column but the last, the web table's `border-r`.
 const COLUMN_LINE_CLASS = 'border-r border-border'
-// At the cell's start with the web's head padding; `getStickyLabelOffset` slides it as the web's `sticky` does.
-const DAY_LABEL_CLASS = 'absolute top-0 bottom-0 left-0 justify-center px-2'
+// At the cell's start with the web's day-cell padding; `getStickyLabelOffset` slides it as the web's `sticky` does.
+const DAY_LABEL_CLASS = 'absolute top-0 bottom-0 left-0 justify-center pr-2 pl-3'
 
 interface DayCellProps {
     day: TimeTableDay
@@ -70,7 +70,7 @@ interface CellProps {
 // A cell takes the row's full height, so its column line runs from edge to edge whatever the text's height.
 const Cell = ({ text, className, textClassName, onLayout }: CellProps) => (
     <View className={cn('self-stretch justify-center px-2', className)} onLayout={onLayout}>
-        <Text className={cn('text-right text-sm', textClassName)}>{text}</Text>
+        <Text className={cn('text-center text-sm', textClassName)}>{text}</Text>
     </View>
 )
 

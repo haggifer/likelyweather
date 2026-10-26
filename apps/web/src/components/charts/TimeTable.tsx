@@ -16,9 +16,9 @@ interface TimeTableRow {
 
 const HEAD_CELL = 'bg-muted font-semibold'
 const COLUMN_LINE = 'border-r last:border-r-0'
-// Sticky past the pinned name column (`w-32`) and the cell's own padding, so a date rides the visible left edge while
-// its day scrolls past, and the day's end pushes it out.
-const DAY_LABEL = 'sticky left-34 inline-block'
+// Sticky past the pinned name column (`w-32`) and the day cell's left padding (`pl-3`), so a date rides the visible
+// left edge while its day scrolls past, and the day's end pushes it out.
+const DAY_LABEL = 'sticky left-35 inline-block'
 
 // The slots scroll under the label column, so its background stays opaque: the hover colour is the row's muted/50 tint
 // mixed into the card colour instead of laid over it. A sticky cell's border stays where the table draws it, so the
@@ -52,7 +52,7 @@ export function TimeTable({ steps, timeZone, locale, rows, columnClassName }: IP
                                 key={day.key}
                                 scope="col"
                                 colSpan={day.count}
-                                className={cn(HEAD_CELL, COLUMN_LINE)}
+                                className={cn(HEAD_CELL, COLUMN_LINE, 'pl-3')}
                             >
                                 <span className={DAY_LABEL}>{day.label}</span>
                             </TableHead>
@@ -63,7 +63,7 @@ export function TimeTable({ steps, timeZone, locale, rows, columnClassName }: IP
                             <TableHead
                                 key={steps[i]}
                                 scope="col"
-                                className={cn(HEAD_CELL, COLUMN_LINE, columnClassName, 'text-right')}
+                                className={cn(HEAD_CELL, COLUMN_LINE, columnClassName, 'text-center')}
                             >
                                 {label}
                             </TableHead>
@@ -80,7 +80,7 @@ export function TimeTable({ steps, timeZone, locale, rows, columnClassName }: IP
                             {row.cells.map((cell, i) => (
                                 <TableCell
                                     key={steps[i]}
-                                    className={cn(COLUMN_LINE, 'text-right', row.isBold && 'font-semibold')}
+                                    className={cn(COLUMN_LINE, 'text-center', row.isBold && 'font-semibold')}
                                 >
                                     {cell}
                                 </TableCell>
