@@ -40,7 +40,13 @@ import {
     getValueAt,
 } from '@fa/chart-core/overview-readouts'
 import { OverviewMedians } from '@fa/chart-core/overview-stats'
-import { CHART_FONT_SIZE, clamp, getNowX, PANEL_NAME_FONT_SIZE } from '@fa/chart-core/plot-geometry'
+import {
+    CHART_FONT_SIZE,
+    clamp,
+    getNowX,
+    NOW_LABEL_FONT_SIZE,
+    PANEL_NAME_FONT_SIZE,
+} from '@fa/chart-core/plot-geometry'
 import { formatYTick } from '@fa/chart-core/scales'
 import { getInitialScrollLeft, getLabelX, getVisibleRange } from '@fa/chart-core/scroll-geometry'
 import { getNearestIndex } from '@fa/chart-core/spaghetti-geometry'
@@ -52,6 +58,7 @@ import { useTranslations } from 'next-intl'
 import { CSSProperties, KeyboardEvent, MouseEvent, PointerEvent, useId, useMemo, useState } from 'react'
 import { getArrowStep } from './arrow-keys'
 import { DayGrid } from './DayGrid'
+import { NowLabel } from './NowLabel'
 import { getPointerTime } from './pointer-time'
 import { WindArrows } from './WindArrows'
 
@@ -190,8 +197,7 @@ export function MedianOverview({
     const { x, plotRight, plotWidth, slotWidth } = frame
     const readoutIndex = getOverviewReadoutIndex(times, hoverIndex, now)
     const nowX = getNowX(x, now, geometry.marginLeft, plotRight)
-    const nowLabelY = geometry.isNowLabelAbove ? geometry.plotTop - 7 : geometry.plotTop + CHART_FONT_SIZE
-    const isNowLabelShown = !geometry.isNowLabelAbove || hoverIndex === null
+    const nowLabelY = geometry.isNowLabelAbove ? geometry.plotTop - 7 : geometry.plotTop + NOW_LABEL_FONT_SIZE
     const scales = useMemo(() => geometry.rows.map((row) => getPanelScale(row, series)), [geometry, series])
     const hoverDots = hoverIndex === null ? [] : getHoverDots(geometry.rows, scales, series, axisSteps[hoverIndex])
     const initialScrollLeft = getInitialScrollLeft(now ? x(now) : null, {
@@ -498,12 +504,21 @@ export function MedianOverview({
                             onPointerDown={() => setHoverIndex(null)}
                             className="relative block overflow-visible outline-none"
                         >
-                            {nowX !== null && isNowLabelShown && (
-                                <text
-                                    x={geometry.isNowLabelAbove ? nowX : nowX + 4}
+                            {nowX !== null && geometry.isNowLabelAbove && hoverIndex === null && (
+                                <NowLabel
+                                    scrollRef={scrollRef}
+                                    nowX={nowX}
+                                    insetLeft={geometry.marginLeft}
                                     y={nowLabelY}
-                                    textAnchor={geometry.isNowLabelAbove ? 'middle' : 'start'}
-                                    fontSize={CHART_FONT_SIZE}
+                                    text={tc('now')}
+                                    color={theme.foreground}
+                                />
+                            )}
+                            {nowX !== null && !geometry.isNowLabelAbove && (
+                                <text
+                                    x={nowX + 4}
+                                    y={nowLabelY}
+                                    fontSize={NOW_LABEL_FONT_SIZE}
                                     fontWeight={600}
                                     fill={theme.foreground}
                                     pointerEvents="none"

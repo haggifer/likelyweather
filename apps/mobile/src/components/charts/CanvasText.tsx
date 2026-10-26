@@ -9,7 +9,7 @@ interface Halo {
 
 // SVG anchors a label by its advance width, the sum of its glyphs' advances; Skia draws every label from its left
 // edge.
-const getAdvanceWidth = (font: SkFont, text: string) =>
+export const getAdvanceWidth = (font: SkFont, text: string) =>
     font.getGlyphWidths(font.getGlyphIDs(text)).reduce((sum, width) => sum + width, 0)
 
 const getStartX = (font: SkFont | null, text: string, x: number, anchor: TextAnchor) => {

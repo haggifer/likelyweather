@@ -13,7 +13,7 @@ import {
     SECONDARY_DASH,
 } from '@fa/chart-core/overview-geometry'
 import { OverviewMedians } from '@fa/chart-core/overview-stats'
-import { PANEL_NAME_FONT_SIZE } from '@fa/chart-core/plot-geometry'
+import { getNowLabelStart, PANEL_NAME_FONT_SIZE } from '@fa/chart-core/plot-geometry'
 import { formatYTick } from '@fa/chart-core/scales'
 import { Variable } from '@fa/shared/variables'
 import {
@@ -28,6 +28,7 @@ import {
     RoundedRect,
     rrect,
     SkFont,
+    Text,
     vec,
 } from '@shopify/react-native-skia'
 import { memo } from 'react'
@@ -35,7 +36,7 @@ import { SharedValue, useDerivedValue } from 'react-native-reanimated'
 import { useChartFonts } from '../../hooks/useChartFonts'
 import { CanvasChanceStrip } from './CanvasChanceStrip'
 import { CanvasDayGrid } from './CanvasDayGrid'
-import { CanvasText } from './CanvasText'
+import { CanvasText, getAdvanceWidth } from './CanvasText'
 import { CanvasWindArrows } from './CanvasWindArrows'
 import { OverviewSelection } from './types'
 
@@ -396,9 +397,14 @@ export function OverviewCanvas({
     locale,
     chart,
 }: IProps) {
-    const { regular, semiBold, panelName } = useChartFonts()
+    const { regular, semiBold, panelName, nowLabel: nowFont } = useChartFonts()
 
+    const nowLabelWidth = nowFont ? getAdvanceWidth(nowFont, nowLabel) : 0
     const plotTransform = useDerivedValue(() => [{ translateX: -scrollX.get() }])
+    // The plot's visible left edge, in the drawing's x, is the scroll offset plus the pinned axis.
+    const nowLabelX = useDerivedValue(() =>
+        nowX === null ? 0 : getNowLabelStart(nowX, nowLabelWidth, scrollX.get() + marginLeft),
+    )
 
     return (
         <Canvas
@@ -424,13 +430,12 @@ export function OverviewCanvas({
                     likelyFont={semiBold}
                 />
                 {nowX !== null && (
-                    <CanvasText
-                        font={semiBold}
+                    <Text
+                        font={nowFont}
                         text={nowLabel}
-                        x={nowX}
+                        x={nowLabelX}
                         y={layout.plotTop - 7}
                         color={chart.foreground}
-                        anchor="middle"
                     />
                 )}
                 {selection && <SelectionDrawing selection={selection} layout={layout} chart={chart} font={semiBold} />}

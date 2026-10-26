@@ -446,7 +446,7 @@ export function SpaghettiChart({
 }: IProps) {
     const t = useTranslations('chart')
     const { chart } = useTheme()
-    const { regular, semiBold } = useChartFonts()
+    const { regular, semiBold, nowLabel } = useChartFonts()
     const isReducedMotion = useReducedMotion()
     const { width, onLayout } = useLayoutWidth()
 
@@ -566,7 +566,7 @@ export function SpaghettiChart({
                             />
                             {nowX !== null && !hover && (
                                 <CanvasText
-                                    font={semiBold}
+                                    font={nowLabel}
                                     text={t('now')}
                                     x={nowX + 4}
                                     y={margin.top + 10}

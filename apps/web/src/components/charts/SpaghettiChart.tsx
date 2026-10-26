@@ -9,7 +9,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useNow } from '@/hooks/useNow'
 import { cn } from '@/lib/cn'
 import { useAnimatedDomain } from '@fa/chart-core/hooks/useAnimatedDomain'
-import { CHART_FONT_SIZE, clamp, getBarWidth, getNowX } from '@fa/chart-core/plot-geometry'
+import { CHART_FONT_SIZE, clamp, getBarWidth, getNowX, NOW_LABEL_FONT_SIZE } from '@fa/chart-core/plot-geometry'
 import { formatYTick } from '@fa/chart-core/scales'
 import { getInitialScrollLeft, getScrollWidth, getVisibleRange, MIN_SLOT_WIDTH } from '@fa/chart-core/scroll-geometry'
 import {
@@ -271,7 +271,7 @@ export function SpaghettiChart({
                         <text
                             x={nowX + 4}
                             y={margin.top + 10}
-                            fontSize={CHART_FONT_SIZE}
+                            fontSize={NOW_LABEL_FONT_SIZE}
                             fontWeight={600}
                             fill={theme.foreground}
                         >
