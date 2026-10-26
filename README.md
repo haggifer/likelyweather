@@ -4,7 +4,7 @@ Compare what ten weather models forecast for any city, and see where they disagr
 model, switch between eight variables, turn any chart into a table, and look up a city's past weather back to 1940. An
 Android app with a home-screen widget shows the same.
 
-**[Try it live](https://dom3g5nxr3yi9.cloudfront.net)** (no sign-up)
+**[Try it live](https://likelyweather.com)** (no sign-up)
 
 [![CI](https://github.com/haggifer/likelyweather/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/haggifer/likelyweather/actions/workflows/ci.yml)
 [![License: PolyForm Noncommercial](https://img.shields.io/badge/license-PolyForm%20Noncommercial-blue)](LICENSE)
