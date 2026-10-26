@@ -27,7 +27,7 @@ interface SiteDomain {
     certificateArn: string
 }
 
-export interface ForecastArenaStackProps extends StackProps {
+export interface LikelyWeatherStackProps extends StackProps {
     alertEmail: string
     // "owner/name"; deploys from GitHub Actions may assume the deploy role only from this repository's branch.
     githubRepo: string
@@ -213,7 +213,7 @@ const createDistribution = (
 }
 
 // GitHub Actions deploys through OIDC, so no keys are stored.
-const createDeployRole = (stack: Stack, { githubRepo, githubBranch }: ForecastArenaStackProps) => {
+const createDeployRole = (stack: Stack, { githubRepo, githubBranch }: LikelyWeatherStackProps) => {
     const github = new iam.OpenIdConnectProvider(stack, 'GitHubOidc', {
         url: 'https://token.actions.githubusercontent.com',
         clientIds: ['sts.amazonaws.com'],
@@ -240,7 +240,7 @@ const createDeployRole = (stack: Stack, { githubRepo, githubBranch }: ForecastAr
     return deployRole
 }
 
-const createMonthlyBudget = (scope: Construct, { monthlyBudgetUsd, alertEmail }: ForecastArenaStackProps) =>
+const createMonthlyBudget = (scope: Construct, { monthlyBudgetUsd, alertEmail }: LikelyWeatherStackProps) =>
     new budgets.CfnBudget(scope, 'MonthlyBudget', {
         budget: {
             budgetType: 'COST',
@@ -261,8 +261,8 @@ const createMonthlyBudget = (scope: Construct, { monthlyBudgetUsd, alertEmail }:
         })),
     })
 
-export class ForecastArenaStack extends Stack {
-    constructor(scope: Construct, id: string, props: ForecastArenaStackProps) {
+export class LikelyWeatherStack extends Stack {
+    constructor(scope: Construct, id: string, props: LikelyWeatherStackProps) {
         super(scope, id, props)
 
         const readSecrets = createReadSecretsStatement(this)
