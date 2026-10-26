@@ -28,6 +28,7 @@ model City {
   name           String // English name from the geocoder
   nameLocal      Json? // {uk: "Харків", es: "Járkov", ...}
   admin1         String?
+  admin1Local    Json? // {uk: "Харківська область", ...}; null until the API fills it in
   country        String
   countryCode    String // ISO 3166-1 alpha-2
   lat            Float

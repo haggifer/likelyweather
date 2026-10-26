@@ -77,6 +77,7 @@ const toCity = (row: CityRow): City => ({
     name: row.name,
     nameLocal: (row.nameLocal ?? undefined) as City['nameLocal'],
     admin1: row.admin1 ?? undefined,
+    admin1Local: (row.admin1Local ?? undefined) as City['admin1Local'],
     country: row.country,
     countryCode: row.countryCode,
     lat: row.lat,
@@ -92,6 +93,7 @@ const fromCity = (city: City) => ({
     name: city.name,
     nameLocal: city.nameLocal ?? Prisma.JsonNull,
     admin1: city.admin1 ?? null,
+    admin1Local: city.admin1Local ?? Prisma.JsonNull,
     country: city.country,
     countryCode: city.countryCode,
     lat: city.lat,
@@ -245,6 +247,18 @@ export const getNearestCity = async ({ lat, lon }: Coordinates) => {
 }
 
 // Keeps the stored city when two requests add the same one.
+export const updateCityNames = async (
+    id: number,
+    { nameLocal, admin1Local }: Pick<City, 'nameLocal' | 'admin1Local'>,
+) => {
+    const row = await getPrisma().city.update({
+        where: { id },
+        data: { nameLocal: nameLocal ?? Prisma.JsonNull, admin1Local: admin1Local ?? Prisma.JsonNull },
+    })
+
+    return toCity(row)
+}
+
 export const addCity = async (city: City) => {
     const row = await getPrisma().city.upsert({ where: { id: city.id }, create: fromCity(city), update: {} })
 

@@ -10,7 +10,15 @@ import { getErrorMessage, HttpError } from './errors'
 import { quotaExceeded, trySpendQuota } from './quota'
 import { pruneExpiredForecasts } from './retention'
 import { getPlace } from './sources/geocoding'
-import { addCity, getCityById, getCityBySlug, getLatestSnapshotMeta, getNearestCity, StoredSnapshotMeta } from './store'
+import {
+    addCity,
+    getCityById,
+    getCityBySlug,
+    getLatestSnapshotMeta,
+    getNearestCity,
+    StoredSnapshotMeta,
+    updateCityNames,
+} from './store'
 
 const PARTIAL_RETRY_MS = 15 * 60_000
 // A refresh that falls short (a source failed, or nothing came back) is retried once after a short cooldown; when the
@@ -25,16 +33,27 @@ const WAIT_POLL_MS = 500
 // With the 16.5-second worst case of a fetch, a waiting request still answers inside the 30-second limit.
 const WAIT_LIMIT_MS = 12_000
 
-const getLocalNames = (places: (GeocodeResult | null)[]) =>
+// The geocoder answers in one language per request, so a city is looked up once per UI language.
+const lookUpEveryLocale = (geocodeId: number) => Promise.all(LOCALES.map((locale) => getPlace(geocodeId, locale)))
+
+// English is the city's own `name` and `admin1`, so the per-language records leave it out.
+const getLocalValues = (places: (GeocodeResult | null)[], pick: (place: GeocodeResult) => string | undefined) =>
     Object.fromEntries(
-        LOCALES.map((locale, i) => [locale, places[i]?.name]).filter(([locale, name]) => locale !== Locale.En && name),
+        LOCALES.map((locale, i) => [locale, places[i] && pick(places[i])]).filter(
+            ([locale, value]) => locale !== Locale.En && value,
+        ),
     ) as Partial<Record<Locale, string>>
 
-const toCity = (place: GeocodeResult, nameLocal: Partial<Record<Locale, string>>): City => ({
+const getLocalNames = (places: (GeocodeResult | null)[]) => ({
+    nameLocal: getLocalValues(places, (place) => place.name),
+    admin1Local: getLocalValues(places, (place) => place.admin1),
+})
+
+const toCity = (place: GeocodeResult, places: (GeocodeResult | null)[]): City => ({
     id: place.id,
     slug: slugify(place.name, place.countryCode, place.id),
     name: place.name,
-    nameLocal,
+    ...getLocalNames(places),
     admin1: place.admin1,
     country: place.country,
     countryCode: place.countryCode,
@@ -127,6 +146,25 @@ export const getRefreshDueAt = (snapshot: StoredSnapshotMeta) => {
 
 export const isFreshSnapshot = (snapshot: StoredSnapshotMeta, now: Date) => now < getRefreshDueAt(snapshot)
 
+// A city stored before regions were kept per language (and some before Russian names) gets them from the geocoder
+// once, the first time its record is read; an empty `admin1Local` marks one the geocoder had nothing more for. A failed
+// lookup keeps the stored names until the next read.
+export const withLocalNames = (city: City): Promise<City> => {
+    if (city.admin1Local) return Promise.resolve(city)
+
+    return dedupe(`names:${city.id}`, async () => {
+        try {
+            const { nameLocal, admin1Local } = getLocalNames(await lookUpEveryLocale(city.id))
+
+            return await updateCityNames(city.id, { nameLocal: { ...city.nameLocal, ...nameLocal }, admin1Local })
+        } catch (error) {
+            console.warn(`The names of ${city.name} could not be completed: ${getErrorMessage(error)}`)
+
+            return city
+        }
+    })
+}
+
 export const requireCity = async (slug: string) => {
     const city = await getCityBySlug(slug)
 
@@ -149,15 +187,15 @@ export const findNearestCity = async (coordinates: Coordinates): Promise<Nearest
 export const trackCity = async (geocodeId: number, onCreate: () => Promise<void> = async () => {}) => {
     const existing = await getCityById(geocodeId)
 
-    if (existing) return existing
+    if (existing) return withLocalNames(existing)
 
     await onCreate()
-    const places = await Promise.all(LOCALES.map((locale) => getPlace(geocodeId, locale)))
+    const places = await lookUpEveryLocale(geocodeId)
     const place = places[LOCALES.indexOf(Locale.En)]
 
     if (!place) throw new HttpError(404, 'place_not_found', `Geocoding id ${geocodeId} not found`)
 
-    return addCity(toCity(place, getLocalNames(places)))
+    return addCity(toCity(place, places))
 }
 
 // Each Lambda instance serves one request at a time, so the parallel requests of one page meet in a shared claim: the

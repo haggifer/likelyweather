@@ -5,6 +5,7 @@ import { TopBar } from '@/components/shell/TopBar'
 import { cn } from '@/lib/cn'
 import { MODE_RESTORE } from '@/lib/color-mode'
 import { FILL_HEIGHT_PARENT } from '@/lib/fill-height'
+import { getPageTitle } from '@/lib/page-title'
 import type { Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getTranslations } from 'next-intl/server'
@@ -20,7 +21,7 @@ const FONT_VARIABLES = `${inter.variable} ${jetbrainsMono.variable} ${lexend.var
 export const generateMetadata = async (): Promise<Metadata> => {
     const t = await getTranslations('app')
 
-    return { title: { default: 'Likely Weather', template: '%s · Likely Weather' }, description: t('tagline') }
+    return { title: { default: 'Likely Weather', template: getPageTitle('%s') }, description: t('tagline') }
 }
 
 export default async function RootLayout({ children }: LayoutProps<'/'>) {

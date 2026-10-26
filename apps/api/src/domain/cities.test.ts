@@ -3,9 +3,9 @@ import { City } from '@fa/shared/api'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { claim } from './cache'
-import { ensureFreshSnapshot, isFreshSnapshot } from './cities'
+import { ensureFreshSnapshot, isFreshSnapshot, withLocalNames } from './cities'
 import { collect } from './collector'
-import { addCity, StoredSnapshotMeta } from './store'
+import { addCity, getCityById, StoredSnapshotMeta } from './store'
 
 loadLocalEnv()
 
@@ -126,5 +126,67 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('ensureFreshSnapshot (database
         expect(first.runStatus).toBe('PARTIAL')
         expect(callsWhileHeld).toBe(4)
         expect(fetch).toHaveBeenCalledTimes(6)
+    })
+})
+
+describe.runIf(Boolean(process.env.DATABASE_URL))('withLocalNames (database, stubbed geocoder)', () => {
+    const prisma = getPrisma()
+    const OLD_CITY: City = { ...CITY, id: 999_000_006, slug: 'fixture-names-xx-999000006', nameLocal: { uk: 'Стара' } }
+    const FAILING_CITY: City = { ...CITY, id: 999_000_007, slug: 'fixture-names-xx-999000007' }
+
+    const respondInLanguage = () =>
+        vi.fn(async (url: string | URL) => {
+            const language = new URL(url).searchParams.get('language')
+
+            return Response.json({
+                id: OLD_CITY.id,
+                name: `Name ${language}`,
+                admin1: `Region ${language}`,
+                country_code: 'XX',
+                timezone: 'America/New_York',
+                latitude: OLD_CITY.lat,
+                longitude: OLD_CITY.lon,
+            })
+        })
+
+    beforeAll(async () => {
+        await Promise.all([OLD_CITY, FAILING_CITY].map((city) => addCity(city)))
+    })
+
+    afterEach(() => {
+        vi.unstubAllGlobals()
+        vi.restoreAllMocks()
+    })
+
+    afterAll(async () => {
+        await prisma.city.deleteMany({ where: { id: { in: [OLD_CITY.id, FAILING_CITY.id] } } })
+    })
+
+    it('fills in the names and regions of every UI language once, keeping English as the record itself', async () => {
+        const fetch = respondInLanguage()
+        vi.stubGlobal('fetch', fetch)
+
+        const completed = await withLocalNames(OLD_CITY)
+        const again = await withLocalNames(completed)
+
+        expect(completed.nameLocal).toMatchObject({ uk: 'Name uk', ru: 'Name ru', de: 'Name de' })
+        expect(completed.nameLocal).not.toHaveProperty('en')
+        expect(completed.admin1Local).toMatchObject({ uk: 'Region uk', ru: 'Region ru', fr: 'Region fr' })
+        expect(again).toBe(completed)
+        expect(await getCityById(OLD_CITY.id)).toEqual(completed)
+        expect(fetch).toHaveBeenCalledTimes(6)
+    })
+
+    it('keeps the stored names when the geocoder fails, to try again on the next read', async () => {
+        vi.spyOn(console, 'warn').mockImplementation(() => {})
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(async () => new Response('unavailable', { status: 400 })),
+        )
+
+        const served = await withLocalNames(FAILING_CITY)
+
+        expect(served).toBe(FAILING_CITY)
+        expect((await getCityById(FAILING_CITY.id))?.admin1Local).toBeUndefined()
     })
 })

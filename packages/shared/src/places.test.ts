@@ -155,3 +155,15 @@ describe('getStarterPlaces', () => {
         ])
     })
 })
+
+describe('addRecent on a favorite', () => {
+    it('keeps its position and takes the names the visit brings', () => {
+        const pinned = pinPlace(START, BERLIN)
+        const renamed = { ...BERLIN, nameLocal: { ru: 'Берлин' }, admin1Local: { ru: 'Берлин' } }
+
+        const visited = addRecent(pinned, renamed)
+
+        expect(visited.favorites).toEqual([renamed])
+        expect(visited.recents).toEqual(pinned.recents)
+    })
+})

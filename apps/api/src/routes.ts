@@ -17,7 +17,14 @@ import {
 import { MODELS } from '@fa/shared/models'
 import { Router } from 'express'
 import { getArchivePayload, isCompleteArchive } from './domain/archive'
-import { ensureFreshSnapshot, findNearestCity, getStarterCities, requireCity, trackCity } from './domain/cities'
+import {
+    ensureFreshSnapshot,
+    findNearestCity,
+    getStarterCities,
+    requireCity,
+    trackCity,
+    withLocalNames,
+} from './domain/cities'
 import { sendContactMessage } from './domain/contact'
 import { getCurrentMaxAge, getCurrentTemperature } from './domain/current'
 import { getErrorMessage, HttpError } from './domain/errors'
@@ -102,7 +109,7 @@ apiRouter.get('/cities/nearest', rateLimit('read'), async (req, res) => {
 })
 
 apiRouter.get('/cities/:slug', rateLimit('read'), async (req, res) => {
-    const city = await requireCity(getParam(req, 'slug'))
+    const city = await withLocalNames(await requireCity(getParam(req, 'slug')))
 
     sendJson(res, city)
 })

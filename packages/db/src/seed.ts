@@ -1,12 +1,16 @@
 import { getPrisma } from './client'
 import { SEED_CITIES } from './seed-data'
 
-// Idempotent: seed cities are created once, but pick up names added for newer locales.
+// Idempotent: seed cities are created once, but pick up names and regions added for newer locales.
 const main = async () => {
     const prisma = getPrisma()
 
     for (const city of SEED_CITIES) {
-        await prisma.city.upsert({ where: { id: city.id }, create: city, update: { nameLocal: city.nameLocal } })
+        await prisma.city.upsert({
+            where: { id: city.id },
+            create: city,
+            update: { nameLocal: city.nameLocal, admin1Local: city.admin1Local },
+        })
     }
 
     console.log(`Seeded ${SEED_CITIES.length} cities`)

@@ -89,6 +89,9 @@ export const formatNumber = (value: number | null | undefined, decimals = 1) => 
 export const getCityName = (city: Pick<City, 'name' | 'nameLocal'>, locale: string) =>
     city.nameLocal?.[locale as Locale] ?? city.name
 
+export const getCityAdmin1 = (city: Pick<City, 'admin1' | 'admin1Local'>, locale: string) =>
+    city.admin1Local?.[locale as Locale] ?? city.admin1
+
 export const getCountryName = (countryCode: string, fallback: string, locale: string) => {
     const names = getRegionNames(locale)
 
@@ -100,10 +103,10 @@ export const getCountryName = (countryCode: string, fallback: string, locale: st
 }
 
 export const getCityLabel = (
-    city: Pick<City, 'name' | 'nameLocal' | 'admin1' | 'country' | 'countryCode'>,
+    city: Pick<City, 'name' | 'nameLocal' | 'admin1' | 'admin1Local' | 'country' | 'countryCode'>,
     locale: string,
 ) =>
-    [getCityName(city, locale), city.admin1, getCountryName(city.countryCode, city.country, locale)]
+    [getCityName(city, locale), getCityAdmin1(city, locale), getCountryName(city.countryCode, city.country, locale)]
         .filter(Boolean)
         .join(', ')
 

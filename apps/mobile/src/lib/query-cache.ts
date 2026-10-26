@@ -8,7 +8,7 @@ import { storage } from './storage'
 
 const DAY_MS = 86_400_000
 // Bump when the API contract or the shape of a persisted query changes: the app version alone is rarely bumped.
-const CACHE_SCHEMA = 4
+const CACHE_SCHEMA = 5
 
 // Forecasts stay readable offline for a day: the cache is kept on the device and restored at start, and queries
 // pause while the network is down instead of failing.

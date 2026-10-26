@@ -1,7 +1,10 @@
 import { City } from './api'
 import { SEEDS, slugify, START_WITH_IDS } from './seeds'
 
-export type Place = Pick<City, 'id' | 'slug' | 'name' | 'nameLocal' | 'admin1' | 'country' | 'countryCode'>
+export type Place = Pick<
+    City,
+    'id' | 'slug' | 'name' | 'nameLocal' | 'admin1' | 'admin1Local' | 'country' | 'countryCode'
+>
 
 // The viewer's places: favorites in the order they were pinned, then recent searches, newest first.
 export interface Places {
@@ -14,12 +17,13 @@ export const MAX_PLACES = 4
 const MAX_RECENTS = 50
 
 // Keeps only what a chip shows: a city or a search result carries much more than storage needs.
-export const toPlace = ({ id, slug, name, nameLocal, admin1, country, countryCode }: Place): Place => ({
+export const toPlace = ({ id, slug, name, nameLocal, admin1, admin1Local, country, countryCode }: Place): Place => ({
     id,
     slug,
     name,
     nameLocal,
     admin1,
+    admin1Local,
     country,
     countryCode,
 })
@@ -34,6 +38,8 @@ export const DEFAULT_PLACES: Places = {
 const hasPlace = (list: Place[], id: number) => list.some((p) => p.id === id)
 
 const withoutPlace = (list: Place[], id: number) => list.filter((p) => p.id !== id)
+
+const withUpdatedPlace = (list: Place[], place: Place) => list.map((p) => (p.id === place.id ? toPlace(place) : p))
 
 const withNewestRecent = (recents: Place[], place: Place) =>
     [toPlace(place), ...withoutPlace(recents, place.id)].slice(0, MAX_RECENTS)
@@ -83,9 +89,12 @@ export const isFavorite = (places: Places, id: number) => hasPlace(places.favori
 
 export const isPinnable = (places: Places, id: number) => isFavorite(places, id) || places.favorites.length < MAX_PLACES
 
-// A favorite keeps its position, so only the chips after the favorites change.
+// A favorite keeps its position, so only the chips after the favorites change; it still takes the visit's names,
+// which may cover languages its stored copy lacked.
 export const addRecent = (places: Places, place: Place): Places =>
-    isFavorite(places, place.id) ? places : { ...places, recents: withNewestRecent(places.recents, place) }
+    isFavorite(places, place.id)
+        ? { ...places, favorites: withUpdatedPlace(places.favorites, place) }
+        : { ...places, recents: withNewestRecent(places.recents, place) }
 
 // A new favorite goes after the last one, so favorites never move once pinned.
 export const pinPlace = (places: Places, place: Place): Places =>

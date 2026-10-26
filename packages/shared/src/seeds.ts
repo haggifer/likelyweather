@@ -5,6 +5,7 @@ export interface SeedCity {
     name: string
     nameLocal: Partial<Record<Locale, string>>
     admin1: string
+    admin1Local: Partial<Record<Locale, string>>
     country: string
     countryCode: string
     lat: number
@@ -24,13 +25,21 @@ export const slugify = (name: string, countryCode: string, id: number) =>
             .replace(/^-+|-+$/g, '') || 'city'
     }-${countryCode.toLowerCase()}-${id}`
 
-// Starter cities. Their localized names come from the Open-Meteo geocoder (fetched 2026-09-23).
+// Starter cities. Their localized names and regions come from the Open-Meteo geocoder (fetched 2026-09-23 and
+// 2026-10-26), with the regions it leaves in English or capitalises written by hand.
 export const SEEDS: SeedCity[] = [
     {
         id: 706483,
         name: 'Kharkiv',
-        nameLocal: { uk: 'Харків', es: 'Jarkov', de: 'Charkiw', fr: 'Kharkiv' },
+        nameLocal: { uk: 'Харків', es: 'Jarkov', de: 'Charkiw', fr: 'Kharkiv', ru: 'Харьков' },
         admin1: 'Kharkiv Oblast',
+        admin1Local: {
+            uk: 'Харківська область',
+            ru: 'Харьковская область',
+            es: 'Óblast de Járkov',
+            de: 'Oblast Charkiw',
+            fr: 'Oblast de Kharkiv',
+        },
         country: 'Ukraine',
         countryCode: 'UA',
         lat: 49.98177,
@@ -42,8 +51,15 @@ export const SEEDS: SeedCity[] = [
     {
         id: 703448,
         name: 'Kyiv',
-        nameLocal: { uk: 'Київ', es: 'Kyiv', de: 'Kyjiw', fr: 'Kiev' },
+        nameLocal: { uk: 'Київ', es: 'Kyiv', de: 'Kyjiw', fr: 'Kiev', ru: 'Киев' },
         admin1: 'Kyiv City',
+        admin1Local: {
+            uk: 'Місто Київ',
+            ru: 'Киев',
+            es: 'Ciudad de Kyiv',
+            de: 'Stadt Kiew',
+            fr: 'Municipalité de Kiev',
+        },
         country: 'Ukraine',
         countryCode: 'UA',
         lat: 50.45466,
@@ -55,8 +71,15 @@ export const SEEDS: SeedCity[] = [
     {
         id: 702550,
         name: 'Lviv',
-        nameLocal: { uk: 'Львів', es: 'Leópolis', de: 'Lwiw', fr: 'Lviv' },
+        nameLocal: { uk: 'Львів', es: 'Leópolis', de: 'Lwiw', fr: 'Lviv', ru: 'Львов' },
         admin1: 'Lviv Oblast',
+        admin1Local: {
+            uk: 'Львівська область',
+            ru: 'Львовская область',
+            es: 'Óblast de Leópolis',
+            de: 'Oblast Lwiw',
+            fr: 'Oblast de Lviv',
+        },
         country: 'Ukraine',
         countryCode: 'UA',
         lat: 49.83826,
@@ -68,8 +91,15 @@ export const SEEDS: SeedCity[] = [
     {
         id: 698740,
         name: 'Odesa',
-        nameLocal: { uk: 'Одеса', es: 'Odesa', de: 'Odessa', fr: 'Odessa' },
+        nameLocal: { uk: 'Одеса', es: 'Odesa', de: 'Odessa', fr: 'Odessa', ru: 'Одесса' },
         admin1: 'Odesa Oblast',
+        admin1Local: {
+            uk: 'Одеська область',
+            ru: 'Одесская область',
+            es: 'Óblast de Odesa',
+            de: 'Odessa',
+            fr: "Oblast d'Odessa",
+        },
         country: 'Ukraine',
         countryCode: 'UA',
         lat: 46.48572,
@@ -81,8 +111,9 @@ export const SEEDS: SeedCity[] = [
     {
         id: 2643743,
         name: 'London',
-        nameLocal: { uk: 'Лондон', es: 'Londres', de: 'London', fr: 'Londres' },
+        nameLocal: { uk: 'Лондон', es: 'Londres', de: 'London', fr: 'Londres', ru: 'Лондон' },
         admin1: 'England',
+        admin1Local: { uk: 'Англія', ru: 'Англия', es: 'Inglaterra', de: 'England', fr: 'Angleterre' },
         country: 'United Kingdom',
         countryCode: 'GB',
         lat: 51.50853,
@@ -94,8 +125,9 @@ export const SEEDS: SeedCity[] = [
     {
         id: 2950159,
         name: 'Berlin',
-        nameLocal: { uk: 'Берлін', es: 'Berlín', de: 'Berlin', fr: 'Berlin' },
+        nameLocal: { uk: 'Берлін', es: 'Berlín', de: 'Berlin', fr: 'Berlin', ru: 'Берлин' },
         admin1: 'State of Berlin',
+        admin1Local: { uk: 'Берлін', ru: 'Берлин', es: 'Estado de Berlín', de: 'Land Berlin', fr: 'État de Berlin' },
         country: 'Germany',
         countryCode: 'DE',
         lat: 52.52437,
@@ -107,8 +139,15 @@ export const SEEDS: SeedCity[] = [
     {
         id: 756135,
         name: 'Warsaw',
-        nameLocal: { uk: 'Варшава', es: 'Varsovia', de: 'Warschau', fr: 'Varsovie' },
+        nameLocal: { uk: 'Варшава', es: 'Varsovia', de: 'Warschau', fr: 'Varsovie', ru: 'Варшава' },
         admin1: 'Mazovia',
+        admin1Local: {
+            uk: 'Мазовецьке воєводство',
+            ru: 'Мазовецкое воеводство',
+            es: 'Voivodato de Mazovia',
+            de: 'Woiwodschaft Masowien',
+            fr: 'Voïvodie de Mazovie',
+        },
         country: 'Poland',
         countryCode: 'PL',
         lat: 52.22977,
@@ -120,8 +159,9 @@ export const SEEDS: SeedCity[] = [
     {
         id: 5128581,
         name: 'New York',
-        nameLocal: { uk: 'Нью-Йорк', es: 'Nueva York', de: 'New York City', fr: 'New York' },
+        nameLocal: { uk: 'Нью-Йорк', es: 'Nueva York', de: 'New York City', fr: 'New York', ru: 'Нью-Йорк' },
         admin1: 'New York',
+        admin1Local: { uk: 'Нью-Йорк', ru: 'Нью-Йорк', es: 'Nueva York', de: 'New York', fr: 'New York' },
         country: 'United States',
         countryCode: 'US',
         lat: 40.71427,
@@ -133,8 +173,9 @@ export const SEEDS: SeedCity[] = [
     {
         id: 1850147,
         name: 'Tokyo',
-        nameLocal: { uk: 'Токіо', es: 'Tokio', de: 'Tokio', fr: 'Tokyo' },
+        nameLocal: { uk: 'Токіо', es: 'Tokio', de: 'Tokio', fr: 'Tokyo', ru: 'Токио' },
         admin1: 'Tokyo',
+        admin1Local: { uk: 'Токіо', ru: 'Токио', es: 'Tokio', de: 'Tokio', fr: 'Préfecture de Tokyo' },
         country: 'Japan',
         countryCode: 'JP',
         lat: 35.6895,
@@ -146,8 +187,15 @@ export const SEEDS: SeedCity[] = [
     {
         id: 2147714,
         name: 'Sydney',
-        nameLocal: { uk: 'Сідней', es: 'Sídney', de: 'Sydney', fr: 'Sydney' },
+        nameLocal: { uk: 'Сідней', es: 'Sídney', de: 'Sydney', fr: 'Sydney', ru: 'Сидней' },
         admin1: 'New South Wales',
+        admin1Local: {
+            uk: 'Новий Південний Вельс',
+            ru: 'Новый Южный Уэльс',
+            es: 'Nueva Gales del Sur',
+            de: 'New South Wales',
+            fr: 'Nouvelle-Galles du Sud',
+        },
         country: 'Australia',
         countryCode: 'AU',
         lat: -33.86785,
@@ -159,8 +207,15 @@ export const SEEDS: SeedCity[] = [
     {
         id: 2988507,
         name: 'Paris',
-        nameLocal: { uk: 'Париж', es: 'París', de: 'Paris', fr: 'Paris' },
+        nameLocal: { uk: 'Париж', es: 'París', de: 'Paris', fr: 'Paris', ru: 'Париж' },
         admin1: 'Île-de-France Region',
+        admin1Local: {
+            uk: 'Іль-де-Франс',
+            ru: 'Иль-де-Франс',
+            es: 'Isla de Francia',
+            de: 'Île-de-France',
+            fr: 'Île-de-France',
+        },
         country: 'France',
         countryCode: 'FR',
         lat: 48.85341,

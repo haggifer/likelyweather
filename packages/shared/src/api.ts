@@ -58,6 +58,8 @@ export const CitySchema = z.object({
     name: z.string(),
     nameLocal: z.partialRecord(LocaleSchema, z.string()).optional(),
     admin1: z.string().optional(),
+    // Absent on a city stored before regions were kept per language, until the API fills it in.
+    admin1Local: z.partialRecord(LocaleSchema, z.string()).optional(),
     country: z.string(),
     countryCode: z.string(),
     lat: z.number(),

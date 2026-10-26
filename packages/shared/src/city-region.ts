@@ -1,5 +1,5 @@
 import { City } from './api'
-import { getCountryName } from './format'
+import { getCityAdmin1, getCountryName } from './format'
 
-export const getCityRegion = (city: Pick<City, 'admin1' | 'country' | 'countryCode'>, locale: string) =>
-    [city.admin1, getCountryName(city.countryCode, city.country, locale)].filter(Boolean).join(', ')
+export const getCityRegion = (city: Pick<City, 'admin1' | 'admin1Local' | 'country' | 'countryCode'>, locale: string) =>
+    [getCityAdmin1(city, locale), getCountryName(city.countryCode, city.country, locale)].filter(Boolean).join(', ')

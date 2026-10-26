@@ -6,13 +6,15 @@ import { UpdatedChip } from '@/components/city/UpdatedChip'
 import { FlagIcon } from '@/components/shell/FlagIcon'
 import { SearchBox } from '@/components/shell/SearchBox'
 import { Button } from '@/components/ui/button'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useNow } from '@/hooks/useNow'
 import { cn } from '@/lib/cn'
+import { getPageTitle } from '@/lib/page-title'
 import { useLatest } from '@fa/api-client/hooks/useLatest'
 import { isRefreshOffered } from '@fa/api-client/refresh-due'
 import { City } from '@fa/shared/api'
 import { getCityRegion } from '@fa/shared/city-region'
-import { getCityName } from '@fa/shared/format'
+import { getCityName, getCountryName } from '@fa/shared/format'
 import { Variable } from '@fa/shared/variables'
 import { useIsFetching, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Pencil } from 'lucide-react'
@@ -47,6 +49,7 @@ export function CityHeader({ city }: IProps) {
     const name = getCityName(city, locale)
     const region = getCityRegion(city, locale)
     const isOutdated = (isError && !latest) || isRefreshOffered(latest?.fetchedAt, now)
+    const title = getPageTitle(`${name}, ${getCountryName(city.countryCode, city.country, locale)}`)
 
     // Refetching moves the dashboard chart only when a newer run arrives.
     const handleRefresh = () => void queryClient.refetchQueries({ queryKey: ['latest', city.slug], type: 'active' })
@@ -57,6 +60,8 @@ export function CityHeader({ city }: IProps) {
 
         if (document.activeElement === document.body) pencilRef.current?.focus()
     }
+
+    useDocumentTitle(title)
 
     return (
         <div className="mb-2 flex flex-col gap-2 sm:gap-3">
