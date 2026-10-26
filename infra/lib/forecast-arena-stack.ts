@@ -33,6 +33,8 @@ export interface ForecastArenaStackProps extends StackProps {
     githubRepo: string
     githubBranch: string
     monthlyBudgetUsd: number
+    // The contact form's From address, at a domain verified in SES in the stack's region.
+    contactSender: string
     // Without it the site answers only on its CloudFront address.
     domain?: SiteDomain
 }
@@ -76,6 +78,14 @@ const createDecryptSecretsStatement = (stack: Stack) =>
         actions: ['kms:Decrypt'],
         resources: ['*'],
         conditions: { StringEquals: { 'kms:ViaService': `ssm.${stack.region}.amazonaws.com` } },
+    })
+
+// In the SES sandbox the recipient's verified address is checked as an identity too, so the grant covers the account's
+// identities in the stack's region rather than the sending domain alone.
+const createSendEmailStatement = (stack: Stack) =>
+    new iam.PolicyStatement({
+        actions: ['ses:SendEmail'],
+        resources: [`arn:aws:ses:${stack.region}:${stack.account}:identity/*`],
     })
 
 // The web app and the API are HTTP servers that the Lambda Web Adapter starts through run.sh.
@@ -273,11 +283,14 @@ export class ForecastArenaStack extends Stack {
             NODE_OPTIONS: '--enable-source-maps',
             // One small pool per instance; Neon's pooler multiplexes the instances.
             PG_POOL_MAX: '2',
+            // The recipient is CONTACT_EMAIL under SSM_PREFIX, which keeps the operator's address out of the template.
+            CONTACT_FROM: props.contactSender,
             ...ADAPTER_ENVIRONMENT,
             AWS_LWA_READINESS_CHECK_PATH: '/api/models',
         })
         api.addToRolePolicy(readSecrets)
         api.addToRolePolicy(decryptSecrets)
+        api.addToRolePolicy(createSendEmailStatement(this))
         const apiUrl = api.addFunctionUrl({ authType: lambda.FunctionUrlAuthType.AWS_IAM })
 
         const alerts = new sns.Topic(this, 'Alerts')

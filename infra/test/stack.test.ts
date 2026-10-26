@@ -10,6 +10,7 @@ const PROPS: ForecastArenaStackProps = {
     githubRepo: 'owner/likelyweather',
     githubBranch: 'main',
     monthlyBudgetUsd: 5,
+    contactSender: 'Likely Weather <noreply@likelyweather.com>',
 }
 
 // Needs the Lambda bundles: run `pnpm build` first (Turbo builds them before this package's tests).
@@ -79,6 +80,24 @@ describe('ForecastArenaStack', () => {
             },
         })
         template.hasResourceProperties('AWS::Lambda::Url', { AuthType: 'AWS_IAM' })
+    })
+
+    it('lets the API send the contact form through SES from the configured sender', () => {
+        template.hasResourceProperties('AWS::Lambda::Function', {
+            Environment: {
+                Variables: Match.objectLike({ CONTACT_FROM: 'Likely Weather <noreply@likelyweather.com>' }),
+            },
+        })
+        template.hasResourceProperties('AWS::IAM::Policy', {
+            PolicyDocument: {
+                Statement: Match.arrayWith([
+                    Match.objectLike({
+                        Action: 'ses:SendEmail',
+                        Resource: 'arn:aws:ses:eu-central-1:111111111111:identity/*',
+                    }),
+                ]),
+            },
+        })
     })
 
     it('lets only the repository default branch assume the deploy role', () => {

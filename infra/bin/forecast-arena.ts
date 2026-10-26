@@ -20,5 +20,6 @@ new ForecastArenaStack(app, 'ForecastArenaStack', {
     githubRepo: setting('githubRepo', 'GITHUB_REPO', 'owner/likelyweather'),
     githubBranch: setting('githubBranch', 'GITHUB_BRANCH', 'main'),
     monthlyBudgetUsd: Number(setting('monthlyBudgetUsd', 'MONTHLY_BUDGET_USD', '5')),
+    contactSender: setting('contactSender', 'CONTACT_FROM', `Likely Weather <noreply@${domainName}>`),
     domain: certificateArn ? { name: domainName, certificateArn } : undefined,
 })
