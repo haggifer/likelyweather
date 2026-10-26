@@ -82,6 +82,19 @@ describe('LikelyWeatherStack', () => {
         template.hasResourceProperties('AWS::Lambda::Url', { AuthType: 'AWS_IAM' })
     })
 
+    it('gives the API a full vCPU and a bundle that starts without loading source maps, and leaves the web at 1024 MB', () => {
+        template.hasResourceProperties('AWS::Lambda::Function', {
+            MemorySize: 1769,
+            Environment: {
+                Variables: Match.objectLike({ SSM_PREFIX: '/forecast-arena', NODE_OPTIONS: Match.absent() }),
+            },
+        })
+        template.hasResourceProperties('AWS::Lambda::Function', {
+            MemorySize: 1024,
+            Environment: { Variables: Match.objectLike({ HOSTNAME: '127.0.0.1' }) },
+        })
+    })
+
     it('lets the API send the contact form through SES from the configured sender', () => {
         template.hasResourceProperties('AWS::Lambda::Function', {
             Environment: {

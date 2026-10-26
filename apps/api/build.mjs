@@ -14,6 +14,10 @@ await build({
     platform: 'node',
     target: 'node22',
     format: 'esm',
+    // A smaller bundle starts faster on a cold Lambda; kept names leave stack traces readable, and the map stays in
+    // dist, out of the zip, for decoding one by hand.
+    minify: true,
+    keepNames: true,
     sourcemap: true,
     // CommonJS dependencies (express, pg) need `require` inside an ES module bundle.
     banner: { js: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);" },
@@ -26,6 +30,5 @@ const zip = new yazl.ZipFile()
 
 zip.addBuffer(Buffer.from(RUN_SH), 'run.sh', { mode: 0o100755, mtime: MTIME })
 zip.addFile('dist/server.mjs', 'server.mjs', { mode: 0o100644, mtime: MTIME })
-zip.addFile('dist/server.mjs.map', 'server.mjs.map', { mode: 0o100644, mtime: MTIME })
 zip.outputStream.pipe(createWriteStream('dist/lambda.zip'))
 zip.end()

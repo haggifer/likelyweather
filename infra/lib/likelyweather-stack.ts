@@ -40,6 +40,7 @@ export interface LikelyWeatherStackProps extends StackProps {
 }
 
 const SSM_PREFIX = '/forecast-arena'
+const API_MEMORY_MB = 1769
 const LOG_RETENTION = logs.RetentionDays.TWO_WEEKS
 const WEB_ADAPTER_LAYER_VERSION = 30
 const REPO_ROOT = path.resolve(import.meta.dirname, '../..')
@@ -99,13 +100,14 @@ const createAdapterFunction = (
     code: lambda.Code,
     adapter: lambda.ILayerVersion,
     environment: Record<string, string>,
+    memorySize = 1024,
 ) =>
     new lambda.Function(scope, id, {
         runtime: lambda.Runtime.NODEJS_22_X,
         architecture: lambda.Architecture.ARM_64,
         code,
         handler: 'run.sh',
-        memorySize: 1024,
+        memorySize,
         timeout: Duration.seconds(30),
         layers: [adapter],
         environment,
@@ -282,16 +284,24 @@ export class LikelyWeatherStack extends Stack {
         })
         const webUrl = web.addFunctionUrl({ authType: lambda.FunctionUrlAuthType.AWS_IAM })
 
-        const api = createAdapterFunction(this, 'Api', bundle('apps/api/dist/lambda.zip'), webAdapter, {
-            SSM_PREFIX,
-            NODE_OPTIONS: '--enable-source-maps',
-            // One small pool per instance; Neon's pooler multiplexes the instances.
-            PG_POOL_MAX: '2',
-            // The recipient is CONTACT_EMAIL under SSM_PREFIX, which keeps the operator's address out of the template.
-            CONTACT_FROM: props.contactSender,
-            ...ADAPTER_ENVIRONMENT,
-            AWS_LWA_READINESS_CHECK_PATH: '/api/models',
-        })
+        // A refresh parses and stores a few thousand rows; 1769 MB is the size at which Lambda gives a function one full
+        // vCPU, so the refresh stops queueing for a share of one.
+        const api = createAdapterFunction(
+            this,
+            'Api',
+            bundle('apps/api/dist/lambda.zip'),
+            webAdapter,
+            {
+                SSM_PREFIX,
+                // One small pool per instance; Neon's pooler multiplexes the instances.
+                PG_POOL_MAX: '2',
+                // The recipient is CONTACT_EMAIL under SSM_PREFIX, which keeps the operator's address out of the template.
+                CONTACT_FROM: props.contactSender,
+                ...ADAPTER_ENVIRONMENT,
+                AWS_LWA_READINESS_CHECK_PATH: '/api/models',
+            },
+            API_MEMORY_MB,
+        )
         api.addToRolePolicy(readSecrets)
         api.addToRolePolicy(decryptSecrets)
         api.addToRolePolicy(createSendEmailStatement(this, props.contactSender))
