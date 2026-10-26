@@ -25,7 +25,7 @@ const CONTENT =
     'flex w-[37.5rem] flex-col gap-3 p-4 max-sm:inset-4 max-sm:w-auto max-sm:max-w-none max-sm:max-h-none max-sm:translate-none'
 
 // The form lives inside the dialog's content, which unmounts on close, so every opening starts empty.
-const ContactForm = ({ onSent }: { onSent: () => void }) => {
+const ContactForm = ({ onClose }: { onClose: () => void }) => {
     const t = useTranslations('contact')
     const te = useTranslations('errors')
 
@@ -35,7 +35,10 @@ const ContactForm = ({ onSent }: { onSent: () => void }) => {
     const [isEmailTouched, setIsEmailTouched] = useState(false)
     const emailErrorId = useId()
 
-    const send = useSendContact({ onSuccess: onSent })
+    const send = useSendContact({
+        onSuccess: () => toast.success(t('sent')),
+        onErrorAfterUnmount: (error) => toast.error(t('notSent', { reason: te(getErrorKind(error)) })),
+    })
 
     const isReady = isContactReady({ email, message })
     // Judged once the reader leaves the field, so the message doesn't flash while the address is being typed.
@@ -46,7 +49,7 @@ const ContactForm = ({ onSent }: { onSent: () => void }) => {
 
         if (!isReady || send.isPending) return
 
-        send.mutate({ email: email.trim(), message, website })
+        send.mutate({ email: email.trim(), message, website }, { onSuccess: onClose })
     }
 
     return (
@@ -123,17 +126,12 @@ export function ContactDialog({ triggerClassName }: IProps) {
 
     const [isOpen, setIsOpen] = useState(false)
 
-    const handleSent = () => {
-        setIsOpen(false)
-        toast.success(t('sent'))
-    }
-
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger className={triggerClassName}>{t('title')}</DialogTrigger>
             <DialogContent className={CONTENT}>
                 <DialogTitle className="text-lg">{t('title')}</DialogTitle>
-                <ContactForm onSent={handleSent} />
+                <ContactForm onClose={() => setIsOpen(false)} />
             </DialogContent>
         </Dialog>
     )

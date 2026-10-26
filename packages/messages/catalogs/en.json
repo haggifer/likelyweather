@@ -206,6 +206,7 @@
         "send": "Send",
         "sending": "Sending…",
         "sent": "Thank you! Your message is sent, and we will reply to your email.",
+        "notSent": "Your message was not sent. {reason}",
         "cancel": "Cancel"
     },
     "errors": {

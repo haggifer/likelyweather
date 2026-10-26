@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright'
-import { expect, Page, test } from '@playwright/test'
+import { expect, Page, Route, test } from '@playwright/test'
 
 const KYIV = 'kyiv-ua-703448'
 const LONDON = 'london-gb-2643743'
@@ -351,6 +351,63 @@ test('Contact us in the footer sends a message once both fields are filled', asy
         page
             .getByRole('region', { name: /^Notifications/ })
             .getByText('Thank you! Your message is sent, and we will reply to your email.'),
+    ).toBeVisible()
+})
+
+// Holds the contact form's request until the test releases it, so the reader can close the dialog mid-send. The test
+// answers it itself: the API allows three messages per client a day, and the other contact tests use them up.
+const holdContact = async (page: Page, answer: (route: Route) => Promise<void>) => {
+    const release = Promise.withResolvers<void>()
+
+    await page.route('**/api/contact', async (route) => {
+        await release.promise
+        await answer(route)
+    })
+
+    return release.resolve
+}
+
+const sendContactAndClose = async (page: Page) => {
+    await page.goto('/methodology')
+    await page.getByRole('contentinfo').getByRole('button', { name: 'Contact us' }).click()
+
+    const dialog = page.getByRole('dialog', { name: 'Contact us' })
+
+    await dialog.getByPlaceholder('Your email').fill('reader@example.com')
+    await dialog.getByPlaceholder('Your question or comment').fill('Hello from the end-to-end suite')
+    await dialog.getByRole('button', { name: 'Send' }).click()
+    await expect(dialog.getByRole('button', { name: 'Sending…' })).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(dialog).toBeHidden()
+
+    return dialog
+}
+
+const getToast = (page: Page, text: string) => page.getByRole('region', { name: /^Notifications/ }).getByText(text)
+
+test('a message sent from a dialog closed mid-send leaves the reopened dialog and its text alone', async ({ page }) => {
+    const release = await holdContact(page, (route) => route.fulfill({ json: { ok: true } }))
+    const dialog = await sendContactAndClose(page)
+
+    await page.getByRole('contentinfo').getByRole('button', { name: 'Contact us' }).click()
+    await dialog.getByPlaceholder('Your question or comment').fill('A second thought')
+    release()
+
+    await expect(getToast(page, 'Thank you! Your message is sent, and we will reply to your email.')).toBeVisible()
+    await expect(dialog).toBeVisible()
+    await expect(dialog.getByPlaceholder('Your question or comment')).toHaveValue('A second thought')
+})
+
+test('a message that fails after its dialog was closed says so in a toast', async ({ page }) => {
+    const release = await holdContact(page, (route) =>
+        route.fulfill({ status: 429, json: { error: { code: 'contact_limit', message: 'Daily limit reached' } } }),
+    )
+
+    await sendContactAndClose(page)
+    release()
+
+    await expect(
+        getToast(page, 'Your message was not sent. No more messages can be sent today. Try again tomorrow.'),
     ).toBeVisible()
 })
 
