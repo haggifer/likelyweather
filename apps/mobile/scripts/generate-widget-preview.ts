@@ -47,6 +47,8 @@ const SHADOW_OFFSET = 3
 // measured on a screenshot of it.
 const WIDTH = 1044
 const HEIGHT = 522
+// The launcher keeps the widget this far from the screen's edges; the preview leaves the same sky around it.
+const PADDING = 88
 const RADIUS = 48
 const TEXT_LEFT = 12
 const COLUMN_RIGHT = 1042
@@ -63,11 +65,11 @@ const TREND_GAP = 12
 const SAMPLE_TEMP = `18${VARIABLE_BY_ID[Variable.Temp].unit}`
 
 // The widget draws over the wallpaper and the picker's sheet is plain, so the preview brings its own sky.
-const BACKDROP = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}">
+const BACKDROP = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH + 2 * PADDING}" height="${HEIGHT + 2 * PADDING}">
     <defs><linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0" stop-color="${DARK.background}"/><stop offset="1" stop-color="${LIGHT.primary}"/>
     </linearGradient></defs>
-    <rect width="${WIDTH}" height="${HEIGHT}" rx="${RADIUS}" fill="url(#sky)"/>
+    <rect width="${WIDTH + 2 * PADDING}" height="${HEIGHT + 2 * PADDING}" rx="${RADIUS}" fill="url(#sky)"/>
 </svg>`
 
 const escapeMarkup = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;')
@@ -127,6 +129,12 @@ const placeText = async ({ text, fontFile, size, baseline, left, right }: TextSp
     ]
 }
 
+const inset = (layer: OverlayOptions): OverlayOptions => ({
+    ...layer,
+    left: (layer.left ?? 0) + PADDING,
+    top: (layer.top ?? 0) + PADDING,
+})
+
 const renderIcon = (svg: string, size: number) =>
     sharp(Buffer.from(svg), { density: 600 }).resize(size, size).png().toBuffer()
 
@@ -163,14 +171,13 @@ const main = async () => {
     const sky = await renderIcon(getWeatherIcon(WeatherCondition.PartlyCloudy, true), ICON_SIZE)
     const trend = await renderIcon(getTrendIcon(TemperatureTrend.Rising), TREND_SIZE)
 
-    await sharp(Buffer.from(BACKDROP))
-        .composite([
-            ...texts.flat(),
-            { input: sky, left: WIDTH - ICON_SIZE, top: ICON_TOP },
-            { input: trend, left: trendLeft, top: trendTop },
-        ])
-        .png()
-        .toFile(PREVIEW)
+    const layers: OverlayOptions[] = [
+        ...texts.flat(),
+        { input: sky, left: WIDTH - ICON_SIZE, top: ICON_TOP },
+        { input: trend, left: trendLeft, top: trendTop },
+    ]
+
+    await sharp(Buffer.from(BACKDROP)).composite(layers.map(inset)).png().toFile(PREVIEW)
 }
 
 void main()
