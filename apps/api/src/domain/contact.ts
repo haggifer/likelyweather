@@ -1,5 +1,5 @@
 import { SendEmailCommand, SESv2Client } from '@aws-sdk/client-sesv2'
-import { ContactRequest, DEFAULT_LOCALE } from '@fa/shared/api'
+import { ContactRequest } from '@fa/shared/api'
 import { tryIncrementWithinLimits } from './cache'
 import { env } from './env'
 import { getErrorMessage, HttpError } from './errors'
@@ -51,8 +51,8 @@ const toMail = (request: ContactRequest, from: string, to: string): ContactMail 
     from,
     to,
     replyTo: request.email,
-    subject: `Likely Weather: a message from the ${request.source ?? 'web'} (${request.locale ?? DEFAULT_LOCALE})`,
-    body: `${request.message}\n\n${request.email}`,
+    subject: `Likely Weather support: ${request.email}`,
+    body: request.message,
 })
 
 const toSendEmailCommand = ({ from, to, replyTo, subject, body }: ContactMail) =>

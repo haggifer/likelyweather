@@ -13,9 +13,9 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { getErrorKind } from '@fa/api-client/error-kind'
 import { useSendContact } from '@fa/api-client/hooks/useSendContact'
-import { CONTACT_EMAIL_MAX, CONTACT_MESSAGE_MAX, Locale } from '@fa/shared/api'
+import { CONTACT_EMAIL_MAX, CONTACT_MESSAGE_MAX } from '@fa/shared/api'
 import { isContactEmailValid, isContactReady } from '@fa/shared/contact'
-import { useLocale, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { FormEvent, useId, useState } from 'react'
 
 const BUTTON = 'touch:hit-area'
@@ -27,7 +27,6 @@ const CONTENT =
 const ContactForm = () => {
     const t = useTranslations('contact')
     const te = useTranslations('errors')
-    const locale = useLocale() as Locale
 
     const [email, setEmail] = useState('')
     const [message, setMessage] = useState('')
@@ -46,7 +45,7 @@ const ContactForm = () => {
 
         if (!isReady || send.isPending) return
 
-        send.mutate({ email: email.trim(), message, website, locale, source: 'web' })
+        send.mutate({ email: email.trim(), message, website })
     }
 
     if (send.isSuccess) {

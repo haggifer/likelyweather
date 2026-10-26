@@ -144,8 +144,6 @@ export const ContactRequestSchema = z.strictObject({
     message: z.string().trim().min(1).max(CONTACT_MESSAGE_MAX),
     // A field no person sees or fills in (the web form hides it); a bot that fills every field is refused.
     website: z.string().max(0).optional(),
-    locale: LocaleSchema.optional(),
-    source: z.enum(['web', 'app']).optional(),
 })
 export type ContactRequest = z.infer<typeof ContactRequestSchema>
 

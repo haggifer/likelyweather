@@ -70,7 +70,7 @@ describe('API without the database', () => {
 
     it('takes a contact message without caching the answer, and refuses the fourth of the day', async () => {
         vi.spyOn(console, 'info').mockImplementation(() => {})
-        const body = { email: 'reader@example.com', message: 'Hello', website: '', locale: 'en', source: 'web' }
+        const body = { email: 'reader@example.com', message: 'Hello', website: '' }
         const post = () =>
             request(app).post('/api/contact').set('CloudFront-Viewer-Address', '198.51.100.20:4321').send(body)
 

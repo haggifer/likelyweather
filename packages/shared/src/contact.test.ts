@@ -4,10 +4,10 @@ import { isContactEmailValid, isContactReady } from './contact'
 const VALID = { email: 'reader@example.com', message: 'The chart is great.' }
 
 describe('ContactRequestSchema', () => {
-    it('accepts an address and a message, with the optional locale and source', () => {
-        const parsed = ContactRequestSchema.parse({ ...VALID, website: '', locale: 'uk', source: 'app' })
+    it('accepts an address and a message, with the optional honeypot', () => {
+        const parsed = ContactRequestSchema.parse({ ...VALID, website: '' })
 
-        expect(parsed).toEqual({ ...VALID, website: '', locale: 'uk', source: 'app' })
+        expect(parsed).toEqual({ ...VALID, website: '' })
     })
 
     it('trims the message and refuses one that is only spaces', () => {

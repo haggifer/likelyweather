@@ -55,7 +55,7 @@ describe('ContactDialog', () => {
         expect(getSend()).toBeEnabled()
     })
 
-    it('sends the message with the app as its source and thanks the reader', async () => {
+    it('sends the trimmed address and the message, and thanks the reader', async () => {
         jest.mocked(apiPost).mockResolvedValue({ ok: true })
         await renderDialog()
 
@@ -66,8 +66,6 @@ describe('ContactDialog', () => {
         expect(apiPost).toHaveBeenCalledWith('/contact', {
             email: 'reader@example.com',
             message: 'Hello',
-            locale: 'en',
-            source: 'app',
         })
     })
 

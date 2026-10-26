@@ -1,10 +1,10 @@
 import { getErrorKind } from '@fa/api-client/error-kind'
 import { useSendContact } from '@fa/api-client/hooks/useSendContact'
-import { CONTACT_EMAIL_MAX, CONTACT_MESSAGE_MAX, Locale } from '@fa/shared/api'
+import { CONTACT_EMAIL_MAX, CONTACT_MESSAGE_MAX } from '@fa/shared/api'
 import { isContactEmailValid, isContactReady } from '@fa/shared/contact'
 import { useState } from 'react'
 import { KeyboardAvoidingView, View } from 'react-native'
-import { useLocale, useTranslations } from 'use-intl'
+import { useTranslations } from 'use-intl'
 import { Button } from '../ui/button'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '../ui/dialog'
 import { Input } from '../ui/input'
@@ -16,7 +16,6 @@ import { Textarea } from '../ui/textarea'
 const ContactForm = () => {
     const t = useTranslations('contact')
     const te = useTranslations('errors')
-    const locale = useLocale() as Locale
 
     const [email, setEmail] = useState('')
     const [message, setMessage] = useState('')
@@ -28,7 +27,7 @@ const ContactForm = () => {
     // Judged once the reader leaves the field, so the message doesn't flash while the address is being typed.
     const isEmailInvalid = isEmailTouched && email.trim() !== '' && !isContactEmailValid(email)
 
-    const handleSend = () => send.mutate({ email: email.trim(), message, locale, source: 'app' })
+    const handleSend = () => send.mutate({ email: email.trim(), message })
 
     if (send.isSuccess) {
         return (

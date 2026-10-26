@@ -1,5 +1,5 @@
 import { SendEmailCommand } from '@aws-sdk/client-sesv2'
-import { ContactRequest, Locale } from '@fa/shared/api'
+import { ContactRequest } from '@fa/shared/api'
 
 const { send } = vi.hoisted(() => ({ send: vi.fn() }))
 
@@ -17,8 +17,6 @@ vi.mock('@aws-sdk/client-sesv2', async (importOriginal) => {
 const REQUEST: ContactRequest = {
     email: 'reader@example.com',
     message: 'The chart is great.',
-    locale: Locale.Uk,
-    source: 'app',
 }
 const NOON = new Date('2031-03-01T12:00:00Z')
 
@@ -54,8 +52,8 @@ describe('contact messages', () => {
             ReplyToAddresses: ['reader@example.com'],
             Content: {
                 Simple: {
-                    Subject: { Data: 'Likely Weather: a message from the app (uk)' },
-                    Body: { Text: { Data: 'The chart is great.\n\nreader@example.com' } },
+                    Subject: { Data: 'Likely Weather support: reader@example.com' },
+                    Body: { Text: { Data: 'The chart is great.' } },
                 },
             },
         })
