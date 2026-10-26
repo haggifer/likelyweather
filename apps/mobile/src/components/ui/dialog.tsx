@@ -5,11 +5,13 @@ import { FadeIn, FadeOut, ReduceMotion } from 'react-native-reanimated'
 import { FullWindowOverlay as RNFullWindowOverlay } from 'react-native-screens'
 import { cn } from '../../lib/cn'
 import { NativeOnlyAnimatedView } from './native-only-animated-view'
-import { TextClassContext } from './text'
+import { Text, TextClassContext } from './text'
 
 const Dialog = DialogPrimitive.Root
 
 const DialogTrigger = DialogPrimitive.Trigger
+
+const DialogClose = DialogPrimitive.Close
 
 const FullWindowOverlay = Platform.OS === 'ios' ? RNFullWindowOverlay : React.Fragment
 
@@ -50,4 +52,13 @@ function DialogContent({
     )
 }
 
-export { Dialog, DialogContent, DialogTrigger }
+// The kit's Text rather than the primitive's, so the title and description take the app's font as every text does.
+function DialogTitle({ className, ...props }: React.ComponentProps<typeof Text>) {
+    return <Text role="heading" className={cn('text-base font-semibold', className)} {...props} />
+}
+
+function DialogDescription({ className, ...props }: React.ComponentProps<typeof Text>) {
+    return <Text className={cn('text-sm text-muted-foreground', className)} {...props} />
+}
+
+export { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger }

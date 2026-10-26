@@ -7,9 +7,10 @@ import { getQuotaStatus } from '@fa/shared/quota'
 import Constants from 'expo-constants'
 import { useRouter } from 'expo-router'
 import { ChevronRight, ExternalLink } from 'lucide-react-native'
-import { ReactNode, useSyncExternalStore } from 'react'
+import { ReactNode, useState, useSyncExternalStore } from 'react'
 import { Linking, View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
+import { ContactDialog } from '../components/shell/ContactDialog'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Icon } from '../components/ui/icon'
@@ -90,10 +91,11 @@ interface LinkRowProps {
     label: string
     onPress: () => void
     isExternal?: boolean
+    role?: 'link' | 'button'
 }
 
-const LinkRow = ({ label, onPress, isExternal = false }: LinkRowProps) => (
-    <Button variant="ghost" role="link" onPress={onPress} className="h-auto min-h-11 justify-between rounded-none px-0">
+const LinkRow = ({ label, onPress, isExternal = false, role = 'link' }: LinkRowProps) => (
+    <Button variant="ghost" role={role} onPress={onPress} className="h-auto min-h-11 justify-between rounded-none px-0">
         <Text className="text-sm font-normal">{label}</Text>
         <Icon as={isExternal ? ExternalLink : ChevronRight} className="size-[1.125rem] text-muted-foreground" />
     </Button>
@@ -105,11 +107,14 @@ export function SettingsScreen() {
     const tl = useTranslations('legal')
     const tn = useTranslations('nav')
     const tf = useTranslations('footer')
+    const tc = useTranslations('contact')
     const locale = useLocale()
     const router = useRouter()
     const settings = useSettings()
     const bindings = useSyncExternalStore(widgetBindings.subscribe, widgetBindings.get)
     const placedWidgetIds = usePlacedWidgetIds()
+
+    const [isContactOpen, setIsContactOpen] = useState(false)
 
     const { data: quota } = useQuota()
 
@@ -199,6 +204,7 @@ export function SettingsScreen() {
                 <LinkRow label={tn('methodology')} onPress={() => router.push('/methodology')} />
                 <LinkRow label={tl('privacy')} onPress={() => openUrl(getLegalUrl('privacy', locale))} isExternal />
                 <LinkRow label={tl('terms')} onPress={() => openUrl(getLegalUrl('terms', locale))} isExternal />
+                <LinkRow label={tc('title')} onPress={() => setIsContactOpen(true)} role="button" />
                 {repoUrl && <LinkRow label={tf('repo')} onPress={() => openUrl(repoUrl)} isExternal />}
                 <Text className={SMALL}>
                     {tf.rich('attribution', {
@@ -208,6 +214,7 @@ export function SettingsScreen() {
                 </Text>
                 <Text className={SMALL}>{t('version', { version })}</Text>
             </Section>
+            <ContactDialog isOpen={isContactOpen} onOpenChange={setIsContactOpen} />
         </ScreenScroll>
     )
 }

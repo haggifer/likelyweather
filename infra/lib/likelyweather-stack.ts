@@ -27,12 +27,14 @@ interface SiteDomain {
     certificateArn: string
 }
 
-export interface ForecastArenaStackProps extends StackProps {
+export interface LikelyWeatherStackProps extends StackProps {
     alertEmail: string
     // "owner/name"; deploys from GitHub Actions may assume the deploy role only from this repository's branch.
     githubRepo: string
     githubBranch: string
     monthlyBudgetUsd: number
+    // The contact form's From address, at a domain verified in SES in the stack's region.
+    contactSender: string
     // Without it the site answers only on its CloudFront address.
     domain?: SiteDomain
 }
@@ -76,6 +78,18 @@ const createDecryptSecretsStatement = (stack: Stack) =>
         actions: ['kms:Decrypt'],
         resources: ['*'],
         conditions: { StringEquals: { 'kms:ViaService': `ssm.${stack.region}.amazonaws.com` } },
+    })
+
+const getEmailAddress = (sender: string) => sender.match(/<([^>]+)>/)?.[1] ?? sender
+
+// In the SES sandbox the recipient's verified address is checked as an identity too, and the recipient lives in SSM,
+// out of the template, so the resource covers the account's identities and the From condition holds the grant to the
+// contact form's sender.
+const createSendEmailStatement = (stack: Stack, sender: string) =>
+    new iam.PolicyStatement({
+        actions: ['ses:SendEmail'],
+        resources: [`arn:aws:ses:${stack.region}:${stack.account}:identity/*`],
+        conditions: { StringEquals: { 'ses:FromAddress': getEmailAddress(sender) } },
     })
 
 // The web app and the API are HTTP servers that the Lambda Web Adapter starts through run.sh.
@@ -199,7 +213,7 @@ const createDistribution = (
 }
 
 // GitHub Actions deploys through OIDC, so no keys are stored.
-const createDeployRole = (stack: Stack, { githubRepo, githubBranch }: ForecastArenaStackProps) => {
+const createDeployRole = (stack: Stack, { githubRepo, githubBranch }: LikelyWeatherStackProps) => {
     const github = new iam.OpenIdConnectProvider(stack, 'GitHubOidc', {
         url: 'https://token.actions.githubusercontent.com',
         clientIds: ['sts.amazonaws.com'],
@@ -226,7 +240,7 @@ const createDeployRole = (stack: Stack, { githubRepo, githubBranch }: ForecastAr
     return deployRole
 }
 
-const createMonthlyBudget = (scope: Construct, { monthlyBudgetUsd, alertEmail }: ForecastArenaStackProps) =>
+const createMonthlyBudget = (scope: Construct, { monthlyBudgetUsd, alertEmail }: LikelyWeatherStackProps) =>
     new budgets.CfnBudget(scope, 'MonthlyBudget', {
         budget: {
             budgetType: 'COST',
@@ -247,8 +261,8 @@ const createMonthlyBudget = (scope: Construct, { monthlyBudgetUsd, alertEmail }:
         })),
     })
 
-export class ForecastArenaStack extends Stack {
-    constructor(scope: Construct, id: string, props: ForecastArenaStackProps) {
+export class LikelyWeatherStack extends Stack {
+    constructor(scope: Construct, id: string, props: LikelyWeatherStackProps) {
         super(scope, id, props)
 
         const readSecrets = createReadSecretsStatement(this)
@@ -273,11 +287,14 @@ export class ForecastArenaStack extends Stack {
             NODE_OPTIONS: '--enable-source-maps',
             // One small pool per instance; Neon's pooler multiplexes the instances.
             PG_POOL_MAX: '2',
+            // The recipient is CONTACT_EMAIL under SSM_PREFIX, which keeps the operator's address out of the template.
+            CONTACT_FROM: props.contactSender,
             ...ADAPTER_ENVIRONMENT,
             AWS_LWA_READINESS_CHECK_PATH: '/api/models',
         })
         api.addToRolePolicy(readSecrets)
         api.addToRolePolicy(decryptSecrets)
+        api.addToRolePolicy(createSendEmailStatement(this, props.contactSender))
         const apiUrl = api.addFunctionUrl({ authType: lambda.FunctionUrlAuthType.AWS_IAM })
 
         const alerts = new sns.Topic(this, 'Alerts')

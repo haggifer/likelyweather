@@ -10,7 +10,7 @@
         "typecheck": "tsc --noEmit",
         "test": "jest",
         "tokens": "tsx scripts/generate-tokens.ts && prettier --write src/theme/tokens.ts",
-        "icons": "tsx scripts/generate-icons.ts"
+        "icons": "tsx scripts/generate-icons.ts && tsx scripts/generate-widget-preview.ts"
     },
     "jest": {
         "preset": "jest-expo",

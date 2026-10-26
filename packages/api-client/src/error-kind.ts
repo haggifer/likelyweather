@@ -2,6 +2,7 @@ import { ApiRequestError } from './api'
 
 enum ErrorKind {
     QuotaExceeded = 'quotaExceeded',
+    ContactLimit = 'contactLimit',
     RateLimited = 'rateLimited',
     NotFound = 'notFound',
     Pending = 'pending',
@@ -11,6 +12,7 @@ enum ErrorKind {
 
 const KIND_BY_CODE: Record<string, ErrorKind> = {
     quota_exceeded: ErrorKind.QuotaExceeded,
+    contact_limit: ErrorKind.ContactLimit,
     rate_limited: ErrorKind.RateLimited,
     city_not_found: ErrorKind.NotFound,
     place_not_found: ErrorKind.NotFound,

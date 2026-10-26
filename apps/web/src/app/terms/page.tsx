@@ -13,7 +13,7 @@ export default async function TermsPage() {
     const t = await getTranslations('legal')
 
     return (
-        <LegalPage title={t('terms')} lastUpdated="2026-10-23">
+        <LegalPage title={t('terms')} lastUpdated="2026-10-26">
             <Terms />
         </LegalPage>
     )

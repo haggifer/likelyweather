@@ -8,7 +8,7 @@
             "port": 4000
         },
         {
-            "name": "forecast-arena",
+            "name": "web",
             "runtimeExecutable": "pnpm",
             "runtimeArgs": ["--filter", "@fa/web", "dev", "--port", "3222"],
             "port": 3222

@@ -195,6 +195,20 @@
         "lastUpdated": "Última actualización: {date}",
         "englishOnly": "Este documento solo está disponible en inglés."
     },
+    "contact": {
+        "title": "Contacto",
+        "intro": "¿Preguntas, ideas o un error? Escríbenos y te responderemos por correo.",
+        "email": "Correo electrónico",
+        "emailPlaceholder": "Tu correo electrónico",
+        "emailInvalid": "Escribe un correo válido, como name@example.com.",
+        "message": "Mensaje",
+        "messagePlaceholder": "Tu pregunta o comentario",
+        "send": "Enviar",
+        "sending": "Enviando…",
+        "sent": "¡Gracias! Tu mensaje se ha enviado y te responderemos por correo.",
+        "cancel": "Cancelar",
+        "close": "Cerrar"
+    },
     "errors": {
         "quotaExceeded": "Has agotado las solicitudes de hoy. Los pronósticos guardados siguen disponibles y los nuevos vuelven tras el reinicio diario.",
         "rateLimited": "Demasiadas solicitudes. Espera un minuto y vuelve a intentarlo.",
@@ -203,7 +217,8 @@
         "unavailable": "Los servicios meteorológicos no responden. Inténtalo más tarde.",
         "generic": "Algo salió mal. Inténtalo de nuevo en un momento.",
         "retry": "Reintentar",
-        "offline": "Estás sin conexión. Los pronósticos guardados siguen visibles; conéctate para cargar otros nuevos."
+        "offline": "Estás sin conexión. Los pronósticos guardados siguen visibles; conéctate para cargar otros nuevos.",
+        "contactLimit": "Hoy ya no se pueden enviar más mensajes. Inténtalo mañana."
     },
     "promo": {
         "label": "Obtener la app para Android",

@@ -202,8 +202,15 @@ export const getCounter = async (key: string) => {
     return Number(text ?? 0)
 }
 
-export const incrementWithinLimits = (keys: string[], limits: number[], expiresAt: Date) =>
-    safely(() => getStore().incrementWithinLimits(keys, limits, Math.floor(expiresAt.getTime() / 1000)), true)
+// Null when Redis fails, for a caller that must refuse rather than let every request through.
+export const tryIncrementWithinLimits = (keys: string[], limits: number[], expiresAt: Date) =>
+    safely(() => getStore().incrementWithinLimits(keys, limits, Math.floor(expiresAt.getTime() / 1000)), null)
+
+export const incrementWithinLimits = async (keys: string[], limits: number[], expiresAt: Date) => {
+    const isAllowed = await tryIncrementWithinLimits(keys, limits, expiresAt)
+
+    return isAllowed ?? true
+}
 
 // When Redis fails every caller gets the claim, so the work it guards must be safe to repeat.
 export const claim = (name: string, ttlSeconds: number) =>

@@ -26,8 +26,8 @@
         },
         "apps/web": {},
         "infra": {
-            // cdk.json runs the app as `npx tsx bin/forecast-arena.ts`.
-            "entry": ["bin/forecast-arena.ts"],
+            // cdk.json runs the app as `npx tsx bin/likelyweather.ts`.
+            "entry": ["bin/likelyweather.ts"],
             // tsx runs the CDK app; the workspace links make Turbo build the API and web bundles before the stack tests
             // read them.
             "ignoreDependencies": ["tsx", "@fa/api", "@fa/web"],

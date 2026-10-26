@@ -54,6 +54,7 @@
                     "isIosBackgroundLocationEnabled": false
                 }
             ],
+            "./plugins/with-widget-preview-density",
             [
                 "react-native-android-widget",
                 {
@@ -62,6 +63,7 @@
                             "name": "ForecastClock",
                             "label": "Likely Weather clock",
                             "description": "The time, the date and the weather for one city",
+                            "previewImage": "./assets/widgets/forecast-clock-preview.png",
                             "minWidth": "250dp",
                             "minHeight": "110dp",
                             "targetCellWidth": 4,

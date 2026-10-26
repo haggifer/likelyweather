@@ -1,21 +1,22 @@
 import { App } from 'aws-cdk-lib'
 import { Match, Template } from 'aws-cdk-lib/assertions'
-import { ForecastArenaStack, ForecastArenaStackProps } from '../lib/forecast-arena-stack'
+import { LikelyWeatherStack, LikelyWeatherStackProps } from '../lib/likelyweather-stack'
 
 const CERTIFICATE_ARN = 'arn:aws:acm:us-east-1:111111111111:certificate/00000000-0000-0000-0000-000000000000'
 
-const PROPS: ForecastArenaStackProps = {
+const PROPS: LikelyWeatherStackProps = {
     env: { account: '111111111111', region: 'eu-central-1' },
     alertEmail: 'alerts@example.com',
     githubRepo: 'owner/likelyweather',
     githubBranch: 'main',
     monthlyBudgetUsd: 5,
+    contactSender: 'Likely Weather <noreply@likelyweather.com>',
 }
 
 // Needs the Lambda bundles: run `pnpm build` first (Turbo builds them before this package's tests).
-const template = Template.fromStack(new ForecastArenaStack(new App(), 'Test', PROPS))
+const template = Template.fromStack(new LikelyWeatherStack(new App(), 'Test', PROPS))
 const domainTemplate = Template.fromStack(
-    new ForecastArenaStack(new App(), 'Domain', {
+    new LikelyWeatherStack(new App(), 'Domain', {
         ...PROPS,
         domain: { name: 'likelyweather.com', certificateArn: CERTIFICATE_ARN },
     }),
@@ -35,7 +36,7 @@ const runWwwRedirect = (request: ViewerRequest) => {
     return handler({ request })
 }
 
-describe('ForecastArenaStack', () => {
+describe('LikelyWeatherStack', () => {
     it('creates nothing with an always-on cost: no VPC, NAT gateway, ElastiCache or RDS', () => {
         for (const type of [
             'AWS::EC2::VPC',
@@ -81,6 +82,25 @@ describe('ForecastArenaStack', () => {
         template.hasResourceProperties('AWS::Lambda::Url', { AuthType: 'AWS_IAM' })
     })
 
+    it('lets the API send the contact form through SES from the configured sender', () => {
+        template.hasResourceProperties('AWS::Lambda::Function', {
+            Environment: {
+                Variables: Match.objectLike({ CONTACT_FROM: 'Likely Weather <noreply@likelyweather.com>' }),
+            },
+        })
+        template.hasResourceProperties('AWS::IAM::Policy', {
+            PolicyDocument: {
+                Statement: Match.arrayWith([
+                    Match.objectLike({
+                        Action: 'ses:SendEmail',
+                        Resource: 'arn:aws:ses:eu-central-1:111111111111:identity/*',
+                        Condition: { StringEquals: { 'ses:FromAddress': 'noreply@likelyweather.com' } },
+                    }),
+                ]),
+            },
+        })
+    })
+
     it('lets only the repository default branch assume the deploy role', () => {
         template.hasResourceProperties('AWS::IAM::Role', {
             AssumeRolePolicyDocument: {
@@ -105,7 +125,7 @@ describe('ForecastArenaStack', () => {
     })
 })
 
-describe('ForecastArenaStack web', () => {
+describe('LikelyWeatherStack web', () => {
     it('serves pages from a web function behind the Web Adapter, with only static assets cached at the edge', () => {
         template.resourcePropertiesCountIs('AWS::Lambda::Function', { Handler: 'run.sh' }, 2)
         template.resourcePropertiesCountIs('AWS::Lambda::Url', { AuthType: 'AWS_IAM' }, 2)
@@ -169,7 +189,7 @@ describe('ForecastArenaStack web', () => {
     })
 })
 
-describe('ForecastArenaStack domain', () => {
+describe('LikelyWeatherStack domain', () => {
     it('serves the domain and its www name with the given certificate over SNI', () => {
         domainTemplate.hasResourceProperties('AWS::CloudFront::Distribution', {
             DistributionConfig: Match.objectLike({

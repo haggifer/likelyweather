@@ -60,7 +60,7 @@ Windows. Development builds call the live API unless `apps/mobile/.env.local` se
 pnpm --filter @fa/mobile android   # build, install and start the development build
 pnpm mobile                        # Metro for an installed development build
 pnpm --filter @fa/mobile tokens    # regenerate src/theme/tokens.ts and src/global.css after editing apps/web/src/app/globals.css
-pnpm --filter @fa/mobile icons     # regenerate the app icons and splash from the web's cloud-sun logo
+pnpm --filter @fa/mobile icons     # regenerate the app icons and splash from the web's cloud-sun logo, and the widget picker's preview
 ```
 
 iOS builds run only in the cloud (`eas build --profile simulator --platform ios`) and are checked in a simulator.
@@ -96,7 +96,8 @@ location" through Android's geocoder. Forecasts, places and settings live on the
 Its **home-screen widget** (4 × 2) shows a clock and the weather over the wallpaper, with the current temperature from
 the nearest airport report or Open-Meteo's current value and its 3-hour trend; it refreshes every 30 minutes.
 
-A daily quota per client (60 upstream fetches, 600 for the whole app) shows as a meter in the top bar. The UI comes in
+A daily quota per client (60 upstream fetches, 600 for the whole app) shows as a meter in the top bar. "Contact us" in
+the footer (in the app, in Settings) sends a message to the operator through Amazon SES and stores nothing. The UI comes in
 Ukrainian, English, Spanish, German, French and Russian (the non-English catalogs are machine-drafted and need a native
 review), in light and dark mode, with phone and tablet layouts below 992 px. Android phones get a dismissible "Get the
 app" bar when `NEXT_PUBLIC_APP_PROMO_URL` names an APK release at build time.
@@ -109,6 +110,7 @@ Browser ── TanStack Query ──▶ /api/* ──▶ Express REST (zod-valid
                                             ├─ geocode ───────────▶ Open-Meteo Geocoding (Redis cache 24 h)
                                             ├─ latest ────────────▶ Postgres snapshot; stale → fetch ─▶ Open-Meteo + met.no
                                             │                        └─▶ Postgres (weekly partitions), pruned once a day
+                                            ├─ contact ─────────▶ Amazon SES ─▶ the operator's mailbox
                                             └─ cities / health ─▶ Postgres
 ```
 
@@ -117,7 +119,7 @@ Browser ── TanStack Query ──▶ /api/* ──▶ Express REST (zod-valid
 - **Mobile:** Expo with Expo Router, React Native Reusables on Uniwind, React Native Skia for the charts, MMKV storage.
 - **API:** Express 5 REST on Lambda (Web Adapter) behind CloudFront, with the zod contract from `@fa/shared`.
 - **Data:** Prisma on Postgres (Neon), forecasts partitioned by issue week; Redis (Upstash) for the geocode and payload
-  caches, rate limits, the quota and the daily retention claim.
+  caches, rate limits, the quota, the contact form's daily limit and the daily retention claim.
 - **CI:** lint, knip, typecheck, tests, the catalog check, end-to-end tests, the build and `cdk synth`.
 
 ## Structure
@@ -150,14 +152,18 @@ role and a monthly budget alarm. Postgres (Neon) and Redis (Upstash) are externa
 
 1. Create three SecureString parameters the functions read at cold start: `/forecast-arena/DATABASE_URL` (the pooled
    connection string), `/forecast-arena/REDIS_URL` (`rediss://…`) and `/forecast-arena/METNO_USER_AGENT`. The API
-   refuses to start on AWS without `METNO_USER_AGENT`, and logs a warning without `REDIS_URL`.
-2. Apply migrations from your machine with the unpooled URL: `DIRECT_URL=<url> DATABASE_URL=<url> pnpm db:deploy`
+   refuses to start on AWS without `METNO_USER_AGENT`, and logs a warning without `REDIS_URL`. A fourth,
+   `/forecast-arena/CONTACT_EMAIL`, is where the contact form delivers; without it the form answers 502.
+2. For the contact form, in SES in the stack's region: create the domain identity with Easy DKIM, add its three CNAME
+   records at the DNS host (not proxied), and, while the account is in the SES sandbox, verify the recipient too. The
+   stack sets `CONTACT_FROM` to `Likely Weather <noreply@<domainName>>` (`-c contactSender=<address>` for another).
+3. Apply migrations from your machine with the unpooled URL: `DIRECT_URL=<url> DATABASE_URL=<url> pnpm db:deploy`
    (deploys never migrate), then `pnpm db:seed` with the same variables. On a live stack, a migration that only adds
    runs before the deploy; one that drops columns the running code reads runs after it.
-3. Once per account and region: `pnpm build && pnpm cdk:bootstrap --profile <profile>`.
-4. Deploy: `pnpm build && pnpm cdk:deploy --profile <profile> -c budgetEmail=<address> -c githubRepo=<owner>/<repo>`.
+4. Once per account and region: `pnpm build && pnpm cdk:bootstrap --profile <profile>`.
+5. Deploy: `pnpm build && pnpm cdk:deploy --profile <profile> -c budgetEmail=<address> -c githubRepo=<owner>/<repo>`.
    The stack output `SiteUrl` is the site. Confirm the SNS subscription e-mail once, or the error alarm reaches nobody.
-5. Optionally, a domain of your own: request an ACM certificate in **us-east-1** (CloudFront takes certificates from no
+6. Optionally, a domain of your own: request an ACM certificate in **us-east-1** (CloudFront takes certificates from no
    other region) for the domain and its `www` name, validate it through DNS, and deploy with `-c certificateArn=<arn>`
    (and `-c domainName=<domain>` for a domain other than `likelyweather.com`). Both names then answer, `www` redirecting
    to the bare domain. Point both at the stack output `DistributionDomainName` with CNAME records, unproxied (no

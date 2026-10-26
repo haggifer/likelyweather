@@ -195,6 +195,20 @@
         "lastUpdated": "Zuletzt aktualisiert: {date}",
         "englishOnly": "Dieses Dokument ist nur auf Englisch verfügbar."
     },
+    "contact": {
+        "title": "Kontakt",
+        "intro": "Fragen, Ideen oder ein Fehler? Schreiben Sie uns, wir antworten per E-Mail.",
+        "email": "E-Mail",
+        "emailPlaceholder": "Ihre E-Mail-Adresse",
+        "emailInvalid": "Geben Sie eine gültige E-Mail-Adresse ein, z. B. name@example.com.",
+        "message": "Nachricht",
+        "messagePlaceholder": "Ihre Frage oder Ihr Kommentar",
+        "send": "Senden",
+        "sending": "Wird gesendet…",
+        "sent": "Danke! Ihre Nachricht ist gesendet, wir antworten per E-Mail.",
+        "cancel": "Abbrechen",
+        "close": "Schließen"
+    },
     "errors": {
         "quotaExceeded": "Die heutigen Anfragen sind aufgebraucht. Gespeicherte Vorhersagen bleiben verfügbar, neue gibt es nach dem täglichen Zurücksetzen.",
         "rateLimited": "Zu viele Anfragen. Bitte eine Minute warten und erneut versuchen.",
@@ -203,7 +217,8 @@
         "unavailable": "Die Wetterdienste antworten nicht. Bitte später erneut versuchen.",
         "generic": "Etwas ist schiefgelaufen. Bitte gleich noch einmal versuchen.",
         "retry": "Erneut versuchen",
-        "offline": "Du bist offline. Gespeicherte Vorhersagen bleiben sichtbar; verbinde dich, um neue zu laden."
+        "offline": "Du bist offline. Gespeicherte Vorhersagen bleiben sichtbar; verbinde dich, um neue zu laden.",
+        "contactLimit": "Heute können keine weiteren Nachrichten gesendet werden. Bitte morgen erneut versuchen."
     },
     "promo": {
         "label": "Android-App holen",

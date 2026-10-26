@@ -68,6 +68,36 @@ describe('API without the database', () => {
         expect(res.body).toMatchObject({ limit: 60, used: 0 })
     })
 
+    it('takes a contact message without caching the answer, and refuses the fourth of the day', async () => {
+        vi.spyOn(console, 'info').mockImplementation(() => {})
+        const body = { email: 'reader@example.com', message: 'Hello', website: '' }
+        const post = () =>
+            request(app).post('/api/contact').set('CloudFront-Viewer-Address', '198.51.100.20:4321').send(body)
+
+        const first = await post()
+        await post()
+        await post()
+        const fourth = await post()
+
+        expect(first.status).toBe(200)
+        expect(first.headers['cache-control']).toBe('no-store')
+        expect(first.body).toEqual({ ok: true })
+        expect(fourth.status).toBe(429)
+        expect(fourth.body.error.code).toBe('contact_limit')
+    })
+
+    it('refuses a contact message with a filled honeypot or an invalid address, spending nothing', async () => {
+        const post = (body: object) =>
+            request(app).post('/api/contact').set('CloudFront-Viewer-Address', '198.51.100.21:4321').send(body)
+
+        const honeypot = await post({ email: 'bot@example.com', message: 'Buy', website: 'https://spam.example' })
+        const badEmail = await post({ email: 'reader@', message: 'Hello' })
+        const empty = await post({ email: 'reader@example.com', message: '  ' })
+
+        expect([honeypot.status, badEmail.status, empty.status]).toEqual([400, 400, 400])
+        expect(honeypot.body.error.code).toBe('invalid_request')
+    })
+
     it('keys clients by the CloudFront viewer address when present', async () => {
         const res = await request(app).get('/api/quota').set('CloudFront-Viewer-Address', '203.0.113.7:51234')
 

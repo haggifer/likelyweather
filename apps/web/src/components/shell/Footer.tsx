@@ -1,3 +1,4 @@
+import { ContactDialog } from '@/components/shell/ContactDialog'
 import { ATTRIBUTION_URLS } from '@fa/shared/attribution'
 import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
@@ -33,6 +34,7 @@ export async function Footer() {
                     <Link href="/terms" className={LINK}>
                         {tl('terms')}
                     </Link>
+                    <ContactDialog triggerClassName={`${LINK} cursor-pointer`} />
                     {REPO_URL && (
                         <a href={REPO_URL} className={LINK} target="_blank" rel="noreferrer">
                             {t('repo')}

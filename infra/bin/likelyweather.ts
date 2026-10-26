@@ -1,5 +1,5 @@
 import { App } from 'aws-cdk-lib'
-import { ForecastArenaStack } from '../lib/forecast-arena-stack'
+import { LikelyWeatherStack } from '../lib/likelyweather-stack'
 
 const app = new App()
 
@@ -13,12 +13,13 @@ const setting = (key: string, envName: string, fallback: string) =>
 const certificateArn = setting('certificateArn', 'CERTIFICATE_ARN', '')
 const domainName = setting('domainName', 'DOMAIN_NAME', 'likelyweather.com')
 
-// The stack keeps its first name: renaming it would create a second stack beside the deployed one.
-new ForecastArenaStack(app, 'ForecastArenaStack', {
+// The stack keeps its first id: renaming it would create a second stack beside the deployed one.
+new LikelyWeatherStack(app, 'ForecastArenaStack', {
     env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION ?? 'eu-central-1' },
     alertEmail: setting('budgetEmail', 'BUDGET_EMAIL', 'alerts@example.com'),
     githubRepo: setting('githubRepo', 'GITHUB_REPO', 'owner/likelyweather'),
     githubBranch: setting('githubBranch', 'GITHUB_BRANCH', 'main'),
     monthlyBudgetUsd: Number(setting('monthlyBudgetUsd', 'MONTHLY_BUDGET_USD', '5')),
+    contactSender: setting('contactSender', 'CONTACT_FROM', `Likely Weather <noreply@${domainName}>`),
     domain: certificateArn ? { name: domainName, certificateArn } : undefined,
 })
