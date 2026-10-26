@@ -36,6 +36,7 @@ describe('contact messages', () => {
     })
 
     afterEach(() => {
+        vi.doUnmock('./cache')
         vi.unstubAllEnvs()
         vi.restoreAllMocks()
     })
@@ -113,6 +114,8 @@ describe('contact messages', () => {
     })
 
     it('answers 502 on AWS without the settings, and logs nothing of the message', async () => {
+        vi.doMock('./cache', () => ({ tryIncrementWithinLimits: async () => true }))
+        vi.stubEnv('REDIS_URL', 'rediss://cache.example.com')
         const info = vi.spyOn(console, 'info').mockImplementation(() => {})
         vi.spyOn(console, 'warn').mockImplementation(() => {})
         vi.stubEnv('CONTACT_EMAIL', '')
@@ -122,6 +125,27 @@ describe('contact messages', () => {
 
         await expect(sendContactMessage(REQUEST, 'sender-f', NOON)).rejects.toMatchObject({ status: 502 })
         expect(info).not.toHaveBeenCalled()
+        expect(send).not.toHaveBeenCalled()
+    })
+
+    it('answers 503 and sends nothing when Redis cannot keep the count', async () => {
+        vi.doMock('./cache', () => ({ tryIncrementWithinLimits: async () => null }))
+        const { sendContactMessage } = await importContact()
+
+        await expect(sendContactMessage(REQUEST, 'sender-g', NOON)).rejects.toMatchObject({
+            status: 503,
+            code: 'contact_unavailable',
+        })
+        expect(send).not.toHaveBeenCalled()
+    })
+
+    it('answers 503 on AWS without Redis, where each instance would count alone', async () => {
+        vi.spyOn(console, 'warn').mockImplementation(() => {})
+        vi.stubEnv('SSM_PREFIX', '/forecast-arena')
+        vi.stubEnv('METNO_USER_AGENT', 'likelyweather/1.0 test@example.com')
+        const { sendContactMessage } = await importContact()
+
+        await expect(sendContactMessage(REQUEST, 'sender-h', NOON)).rejects.toMatchObject({ status: 503 })
         expect(send).not.toHaveBeenCalled()
     })
 })

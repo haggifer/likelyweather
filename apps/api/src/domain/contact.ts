@@ -1,6 +1,6 @@
 import { SendEmailCommand, SESv2Client } from '@aws-sdk/client-sesv2'
 import { ContactRequest, DEFAULT_LOCALE } from '@fa/shared/api'
-import { incrementWithinLimits } from './cache'
+import { tryIncrementWithinLimits } from './cache'
 import { env } from './env'
 import { getErrorMessage, HttpError } from './errors'
 import { getDayStart, getNextDayStart } from './quota'
@@ -26,15 +26,24 @@ const getSes = () => (ses ??= new SESv2Client({}))
 
 const getKey = (client: string, now: Date) => `contact:${client}:${getDayStart(now)}`
 
-const trySpendContact = (client: string, now: Date) =>
-    incrementWithinLimits(
+// Unlike the forecast quota, the limit fails closed: every message lands in the operator's inbox, so without a count
+// that holds across instances (Redis failing, or missing on AWS, where each instance would count alone) the form
+// refuses. Null means the count could not be kept.
+const trySpendContact = (client: string, now: Date) => {
+    if (process.env.SSM_PREFIX && !env.REDIS_URL) return Promise.resolve(null)
+
+    return tryIncrementWithinLimits(
         [getKey(client, now), getKey(GLOBAL_CLIENT, now)],
         [DAILY_CONTACT_LIMIT, DAILY_CONTACT_GLOBAL_LIMIT],
         getNextDayStart(now),
     )
+}
 
 const contactLimitReached = () =>
     new HttpError(429, 'contact_limit', 'The daily limit of contact messages is reached; it resets at 00:00 UTC.')
+
+const contactUnavailable = () =>
+    new HttpError(503, 'contact_unavailable', 'The contact form cannot count messages right now; try again later')
 
 const contactFailed = () => new HttpError(502, 'contact_failed', 'The message could not be sent')
 
@@ -83,6 +92,8 @@ const deliver = async (request: ContactRequest) => {
 // limit; a message SES then refuses still counts, which only matters while SES is failing anyway.
 export const sendContactMessage = async (request: ContactRequest, client: string, now = new Date()) => {
     const isAllowed = await trySpendContact(client, now)
+
+    if (isAllowed === null) throw contactUnavailable()
 
     if (!isAllowed) throw contactLimitReached()
 

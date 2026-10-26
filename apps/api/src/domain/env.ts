@@ -29,7 +29,11 @@ const checkDeployedEnv = (parsed: z.infer<typeof EnvSchema>) => {
         throw new Error('METNO_USER_AGENT is not set under SSM_PREFIX; met.no needs a real contact')
     }
 
-    if (!parsed.REDIS_URL) console.warn('REDIS_URL is not set under SSM_PREFIX: limits and the quota are per instance')
+    if (!parsed.REDIS_URL) {
+        console.warn(
+            'REDIS_URL is not set under SSM_PREFIX: limits and the quota are per instance, and the contact form refuses',
+        )
+    }
 
     if (!parsed.CONTACT_EMAIL || !parsed.CONTACT_FROM) {
         console.warn('CONTACT_EMAIL or CONTACT_FROM is not set under SSM_PREFIX: the contact form answers 502')
