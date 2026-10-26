@@ -200,6 +200,7 @@
         "intro": "Questions, ideas or a bug? Write to us, and we will reply to your email.",
         "email": "Email",
         "emailPlaceholder": "Your email",
+        "emailInvalid": "Enter a valid email address, like name@example.com.",
         "message": "Message",
         "messagePlaceholder": "Your question or comment",
         "send": "Send",

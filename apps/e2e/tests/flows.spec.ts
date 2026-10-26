@@ -337,7 +337,11 @@ test('Contact us in the footer sends a message once both fields are filled', asy
     const send = dialog.getByRole('button', { name: 'Send' })
 
     await expect(send).toBeDisabled()
+    await dialog.getByPlaceholder('Your email').fill('reader@example')
+    await dialog.getByPlaceholder('Your email').blur()
+    await expect(dialog.getByText('Enter a valid email address, like name@example.com.')).toBeVisible()
     await dialog.getByPlaceholder('Your email').fill('reader@example.com')
+    await expect(dialog.getByText('Enter a valid email address, like name@example.com.')).toBeHidden()
     await expect(send).toBeDisabled()
     await dialog.getByPlaceholder('Your question or comment').fill('Hello from the end-to-end suite')
     await send.click()

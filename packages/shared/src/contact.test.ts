@@ -1,5 +1,5 @@
 import { CONTACT_EMAIL_MAX, CONTACT_MESSAGE_MAX, ContactRequestSchema } from './api'
-import { isContactReady } from './contact'
+import { isContactEmailValid, isContactReady } from './contact'
 
 const VALID = { email: 'reader@example.com', message: 'The chart is great.' }
 
@@ -44,5 +44,13 @@ describe('isContactReady', () => {
 
     it('ignores spaces around the address', () => {
         expect(isContactReady({ ...VALID, email: ' reader@example.com ' })).toBe(true)
+    })
+})
+
+describe('isContactEmailValid', () => {
+    it('checks the address alone, as the API does', () => {
+        expect(isContactEmailValid(' reader@example.com ')).toBe(true)
+        expect(isContactEmailValid('reader@example')).toBe(false)
+        expect(isContactEmailValid('reader')).toBe(false)
     })
 })

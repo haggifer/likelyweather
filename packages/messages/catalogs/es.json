@@ -200,6 +200,7 @@
         "intro": "¿Preguntas, ideas o un error? Escríbenos y te responderemos por correo.",
         "email": "Correo electrónico",
         "emailPlaceholder": "Tu correo electrónico",
+        "emailInvalid": "Escribe un correo válido, como name@example.com.",
         "message": "Mensaje",
         "messagePlaceholder": "Tu pregunta o comentario",
         "send": "Enviar",

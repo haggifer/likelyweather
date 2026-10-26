@@ -14,11 +14,14 @@ import { Textarea } from '@/components/ui/textarea'
 import { getErrorKind } from '@fa/api-client/error-kind'
 import { useSendContact } from '@fa/api-client/hooks/useSendContact'
 import { CONTACT_EMAIL_MAX, CONTACT_MESSAGE_MAX, Locale } from '@fa/shared/api'
-import { isContactReady } from '@fa/shared/contact'
+import { isContactEmailValid, isContactReady } from '@fa/shared/contact'
 import { useLocale, useTranslations } from 'next-intl'
-import { FormEvent, useState } from 'react'
+import { FormEvent, useId, useState } from 'react'
 
 const BUTTON = 'touch:hit-area'
+// Phones get the whole screen, 1rem in from every side, and the message field takes the height the rest leaves.
+const CONTENT =
+    'flex w-[37.5rem] flex-col gap-3 p-4 max-sm:inset-4 max-sm:w-auto max-sm:max-w-none max-sm:max-h-none max-sm:translate-none'
 
 // The form lives inside the dialog's content, which unmounts on close, so every opening starts empty.
 const ContactForm = () => {
@@ -29,10 +32,14 @@ const ContactForm = () => {
     const [email, setEmail] = useState('')
     const [message, setMessage] = useState('')
     const [website, setWebsite] = useState('')
+    const [isEmailTouched, setIsEmailTouched] = useState(false)
+    const emailErrorId = useId()
 
     const send = useSendContact()
 
     const isReady = isContactReady({ email, message })
+    // Judged once the reader leaves the field, so the message doesn't flash while the address is being typed.
+    const isEmailInvalid = isEmailTouched && email.trim() !== '' && !isContactEmailValid(email)
 
     const handleSubmit = (event: FormEvent) => {
         event.preventDefault()
@@ -56,26 +63,41 @@ const ContactForm = () => {
     }
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3 max-sm:flex-1">
             <DialogDescription>{t('intro')}</DialogDescription>
-            <Input
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                maxLength={CONTACT_EMAIL_MAX}
-                placeholder={t('emailPlaceholder')}
-                aria-label={t('email')}
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-            />
-            <Textarea
-                maxLength={CONTACT_MESSAGE_MAX}
-                placeholder={t('messagePlaceholder')}
-                aria-label={t('message')}
-                value={message}
-                onChange={(event) => setMessage(event.target.value)}
-                className="max-h-60 min-h-32"
-            />
+            <div className="flex flex-col gap-1">
+                <Input
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    maxLength={CONTACT_EMAIL_MAX}
+                    placeholder={t('emailPlaceholder')}
+                    aria-label={t('email')}
+                    aria-invalid={isEmailInvalid || undefined}
+                    aria-describedby={isEmailInvalid ? emailErrorId : undefined}
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    onBlur={() => setIsEmailTouched(true)}
+                />
+                {isEmailInvalid && (
+                    <p id={emailErrorId} className="text-sm text-destructive">
+                        {t('emailInvalid')}
+                    </p>
+                )}
+            </div>
+            <div className="flex flex-col gap-1 max-sm:flex-1">
+                <Textarea
+                    maxLength={CONTACT_MESSAGE_MAX}
+                    placeholder={t('messagePlaceholder')}
+                    aria-label={t('message')}
+                    value={message}
+                    onChange={(event) => setMessage(event.target.value)}
+                    className="max-h-60 min-h-32 max-sm:max-h-none max-sm:flex-1"
+                />
+                <p className="self-end text-xs text-muted-foreground tabular-nums">
+                    {message.length}/{CONTACT_MESSAGE_MAX}
+                </p>
+            </div>
             {/* Unseen, unread and out of the tab order: only a bot that fills every field fills it in. */}
             <div aria-hidden className="sr-only">
                 <Input
@@ -115,8 +137,8 @@ export function ContactDialog({ triggerClassName }: IProps) {
     return (
         <Dialog>
             <DialogTrigger className={triggerClassName}>{t('title')}</DialogTrigger>
-            <DialogContent className="flex w-[26rem] flex-col gap-3 p-4">
-                <DialogTitle>{t('title')}</DialogTitle>
+            <DialogContent className={CONTENT}>
+                <DialogTitle className="text-lg">{t('title')}</DialogTitle>
                 <ContactForm />
             </DialogContent>
         </Dialog>

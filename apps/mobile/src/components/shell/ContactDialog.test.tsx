@@ -1,5 +1,6 @@
 import { apiPost, ApiRequestError } from '@fa/api-client/api'
 import en from '@fa/messages/catalogs/en.json'
+import { CONTACT_MESSAGE_MAX } from '@fa/shared/api'
 import { PortalHost } from '@rn-primitives/portal'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native'
@@ -79,5 +80,30 @@ describe('ContactDialog', () => {
 
         await waitFor(() => expect(screen.getByText(en.errors.contactLimit)).toBeOnTheScreen())
         expect(getSend()).toBeEnabled()
+    })
+
+    it('says the address is invalid once the reader leaves the field, and stops saying it once it is fixed', async () => {
+        await renderDialog()
+        const email = screen.getByLabelText(en.contact.email)
+
+        await fireEvent.changeText(email, 'reader@example')
+
+        expect(screen.queryByText(en.contact.emailInvalid)).toBeNull()
+
+        await fireEvent(email, 'blur')
+
+        expect(screen.getByText(en.contact.emailInvalid)).toBeOnTheScreen()
+
+        await fireEvent.changeText(email, 'reader@example.com')
+
+        expect(screen.queryByText(en.contact.emailInvalid)).toBeNull()
+    })
+
+    it('counts the message against its limit', async () => {
+        await renderDialog()
+
+        await fillIn('', 'Hello')
+
+        expect(screen.getByText(`5/${CONTACT_MESSAGE_MAX}`)).toBeOnTheScreen()
     })
 })

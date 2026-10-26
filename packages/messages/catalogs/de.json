@@ -200,6 +200,7 @@
         "intro": "Fragen, Ideen oder ein Fehler? Schreiben Sie uns, wir antworten per E-Mail.",
         "email": "E-Mail",
         "emailPlaceholder": "Ihre E-Mail-Adresse",
+        "emailInvalid": "Geben Sie eine gültige E-Mail-Adresse ein, z. B. name@example.com.",
         "message": "Nachricht",
         "messagePlaceholder": "Ihre Frage oder Ihr Kommentar",
         "send": "Senden",

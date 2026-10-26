@@ -137,7 +137,7 @@ export type ArchiveResponse = z.infer<typeof ArchiveResponseSchema>
 
 // The longest address SMTP delivers to.
 export const CONTACT_EMAIL_MAX = 254
-export const CONTACT_MESSAGE_MAX = 2000
+export const CONTACT_MESSAGE_MAX = 1000
 
 export const ContactRequestSchema = z.strictObject({
     email: z.email().max(CONTACT_EMAIL_MAX),
