@@ -29,6 +29,7 @@ const OUTAGE_COOLDOWN_SECONDS = REFRESH_AFTER_HOURS * 3600
 // Outlives either cooldown, so the refresh that follows one knows it is a retry.
 const RETRY_MEMORY_SECONDS = OUTAGE_COOLDOWN_SECONDS + RETRY_COOLDOWN_SECONDS
 const REFRESH_CLAIM_SECONDS = 30
+const NAMES_RETRY_SECONDS = 3600
 const WAIT_POLL_MS = 500
 // With the 16.5-second worst case of a fetch, a waiting request still answers inside the 30-second limit.
 const WAIT_LIMIT_MS = 12_000
@@ -146,19 +147,25 @@ export const getRefreshDueAt = (snapshot: StoredSnapshotMeta) => {
 
 export const isFreshSnapshot = (snapshot: StoredSnapshotMeta, now: Date) => now < getRefreshDueAt(snapshot)
 
+const getNamesRetryName = (city: City) => `names-failed:${city.id}`
+
 // A city stored before regions were kept per language (and some before Russian names) gets them from the geocoder
 // once, the first time its record is read; an empty `admin1Local` marks one the geocoder had nothing more for. A failed
-// lookup keeps the stored names until the next read.
+// lookup keeps the stored names and is not tried again for an hour, so a geocoder outage does not cost six lookups on
+// every read.
 export const withLocalNames = (city: City): Promise<City> => {
     if (city.admin1Local) return Promise.resolve(city)
 
     return dedupe(`names:${city.id}`, async () => {
+        if (await isMarked(getNamesRetryName(city))) return city
+
         try {
             const { nameLocal, admin1Local } = getLocalNames(await lookUpEveryLocale(city.id))
 
             return await updateCityNames(city.id, { nameLocal: { ...city.nameLocal, ...nameLocal }, admin1Local })
         } catch (error) {
             console.warn(`The names of ${city.name} could not be completed: ${getErrorMessage(error)}`)
+            await mark(getNamesRetryName(city), NAMES_RETRY_SECONDS)
 
             return city
         }
