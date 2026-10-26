@@ -20,7 +20,9 @@ const ROW_CLASS = 'min-h-9 flex-row items-center border-b border-border'
 const HEAD_ROW_CLASS = 'h-10 flex-row items-center border-b border-border'
 const HEAD_TEXT_CLASS = 'text-sm font-semibold'
 // The label column rides along the sideways scroll, so it stays put while the slots pass under it.
-const PINNED_CLASS = 'z-1 w-32 self-stretch justify-center bg-muted px-2'
+const PINNED_CLASS = 'z-1 w-32 self-stretch justify-center border-r border-border bg-muted px-2'
+// A line on every column but the last, the web table's `border-r`.
+const COLUMN_LINE_CLASS = 'border-r border-border'
 const DAY_LABEL_CLASS = 'absolute inset-0 items-center justify-center'
 
 interface DayCellProps {
@@ -28,12 +30,13 @@ interface DayCellProps {
     columnClassName: string
     columnWidth: SharedValue<number>
     visibleRange: SharedValue<[number, number]>
+    isLast: boolean
 }
 
 // The cell takes its width from one empty column per slot, so it lines up with the slots under it before any
 // layout is measured. Both forms of the date sit centred in the cell and slide, on the UI thread, to the centre of
 // the cell's visible part.
-const DayCell = ({ day, columnClassName, columnWidth, visibleRange }: DayCellProps) => {
+const DayCell = ({ day, columnClassName, columnWidth, visibleRange, isLast }: DayCellProps) => {
     const { start, count, label, shortLabel } = day
     const fullWidth = getLabelWidth(label, DAY_LABEL_FONT_SIZE)
     const shortWidth = getLabelWidth(shortLabel, DAY_LABEL_FONT_SIZE)
@@ -61,6 +64,8 @@ const DayCell = ({ day, columnClassName, columnWidth, visibleRange }: DayCellPro
             {Array.from({ length: count }, (_, i) => (
                 <View key={i} className={columnClassName} />
             ))}
+            {/* Laid over the cell, so the line adds nothing to its width, which must stay its slots' sum. */}
+            {!isLast && <View className="absolute top-0 right-0 bottom-0 w-px bg-border" />}
             <Animated.View className={DAY_LABEL_CLASS} style={fullStyle}>
                 <Text className={HEAD_TEXT_CLASS} numberOfLines={1}>
                     {label}
@@ -74,6 +79,20 @@ const DayCell = ({ day, columnClassName, columnWidth, visibleRange }: DayCellPro
         </View>
     )
 }
+
+interface CellProps {
+    text: string
+    className: string
+    textClassName?: string
+    onLayout?: (event: LayoutChangeEvent) => void
+}
+
+// A cell takes the row's full height, so its column line runs from edge to edge whatever the text's height.
+const Cell = ({ text, className, textClassName, onLayout }: CellProps) => (
+    <View className={cn('self-stretch justify-center px-2', className)} onLayout={onLayout}>
+        <Text className={cn('text-right text-sm', textClassName)}>{text}</Text>
+    </View>
+)
 
 interface IProps {
     steps: string[]
@@ -92,7 +111,6 @@ export function TimeTable({ steps, timeZone, locale, rows, columnClassName }: IP
 
     const days = getTimeTableDays(steps, timeZone, locale)
     const slotLabels = getTimeTableSlotLabels(steps, timeZone, locale)
-    const cellClass = cn('px-2 text-right text-sm', columnClassName)
     const pinned = useAnimatedStyle(() => ({ transform: [{ translateX: scrollX.get() }] }))
     // The slots on screen, in px from the first slot's left edge.
     const visibleRange = useDerivedValue((): [number, number] => [
@@ -125,25 +143,26 @@ export function TimeTable({ steps, timeZone, locale, rows, columnClassName }: IP
                     />
                     <View>
                         <View className={HEAD_ROW_CLASS}>
-                            {days.map((day) => (
+                            {days.map((day, i) => (
                                 <DayCell
                                     key={day.key}
                                     day={day}
                                     columnClassName={columnClassName}
                                     columnWidth={columnWidth}
                                     visibleRange={visibleRange}
+                                    isLast={i === days.length - 1}
                                 />
                             ))}
                         </View>
                         <View className={HEAD_ROW_CLASS}>
                             {slotLabels.map((slot, i) => (
-                                <Text
+                                <Cell
                                     key={steps[i]}
-                                    className={cn(cellClass, 'font-semibold')}
+                                    text={slot}
+                                    className={cn(columnClassName, i < steps.length - 1 && COLUMN_LINE_CLASS)}
+                                    textClassName="font-semibold"
                                     onLayout={i === 0 ? handleColumnLayout : undefined}
-                                >
-                                    {slot}
-                                </Text>
+                                />
                             ))}
                         </View>
                     </View>
@@ -160,9 +179,12 @@ export function TimeTable({ steps, timeZone, locale, rows, columnClassName }: IP
                             </Text>
                         </Animated.View>
                         {row.cells.map((cell, i) => (
-                            <Text key={steps[i]} className={cn(cellClass, row.isBold && 'font-semibold')}>
-                                {cell}
-                            </Text>
+                            <Cell
+                                key={steps[i]}
+                                text={cell}
+                                className={cn(columnClassName, i < steps.length - 1 && COLUMN_LINE_CLASS)}
+                                textClassName={row.isBold ? 'font-semibold' : undefined}
+                            />
                         ))}
                     </View>
                 ))}

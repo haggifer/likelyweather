@@ -34,13 +34,15 @@ interface DayLabelPosition {
 const DAY_LABEL_FONT_SIZE = 14
 
 const HEAD_CELL = 'bg-muted font-semibold'
+const COLUMN_LINE = 'border-r last:border-r-0'
 
 // The slots scroll under the label column, so its background stays opaque: the hover colour is the row's muted/50 tint
-// mixed into the card colour instead of laid over it.
+// mixed into the card colour instead of laid over it. A sticky cell's border stays where the table draws it, so the
+// pinned cells draw their column line as an inset shadow.
 const STICKY_LABEL_CELL =
-    'sticky left-0 z-1 w-32 bg-card leading-tight whitespace-normal max-sm:bg-muted group-hover:bg-[color-mix(in_srgb,var(--color-muted)_50%,var(--color-card))]'
+    'sticky left-0 z-1 w-32 shadow-[inset_-1px_0_var(--color-border)] bg-card leading-tight whitespace-normal max-sm:bg-muted group-hover:bg-[color-mix(in_srgb,var(--color-muted)_50%,var(--color-card))]'
 
-const STICKY_CORNER_CELL = 'sticky left-0 z-2 w-32 bg-muted'
+const STICKY_CORNER_CELL = 'sticky left-0 z-2 w-32 bg-muted shadow-[inset_-1px_0_var(--color-border)]'
 
 const getDayLabelPositions = (days: TimeTableDay[], layout: DayCellLayout | null, scrollLeft: number) => {
     if (layout?.spans.length !== days.length) return null
@@ -84,7 +86,7 @@ const DayHeaderRow = ({ days, scrollerRef }: DayHeaderRowProps) => {
                         data-day
                         scope="col"
                         colSpan={day.count}
-                        className={cn(HEAD_CELL, 'relative')}
+                        className={cn(HEAD_CELL, COLUMN_LINE, 'relative')}
                     >
                         <span className="sr-only">{day.label}</span>
                         {position && position.form !== 'none' && (
@@ -128,7 +130,7 @@ export function TimeTable({ steps, timeZone, locale, rows, columnClassName }: IP
                             <TableHead
                                 key={steps[i]}
                                 scope="col"
-                                className={cn(HEAD_CELL, columnClassName, 'text-right')}
+                                className={cn(HEAD_CELL, COLUMN_LINE, columnClassName, 'text-right')}
                             >
                                 {label}
                             </TableHead>
@@ -142,7 +144,10 @@ export function TimeTable({ steps, timeZone, locale, rows, columnClassName }: IP
                                 {row.label}
                             </TableHead>
                             {row.cells.map((cell, i) => (
-                                <TableCell key={steps[i]} className={cn('text-right', row.isBold && 'font-semibold')}>
+                                <TableCell
+                                    key={steps[i]}
+                                    className={cn(COLUMN_LINE, 'text-right', row.isBold && 'font-semibold')}
+                                >
                                     {cell}
                                 </TableCell>
                             ))}
