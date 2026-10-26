@@ -135,7 +135,7 @@ export const getSpaghettiMargin = (compact: boolean, hasArrows: boolean): Margin
     top: compact ? 14 : 24,
     right: 12,
     bottom: (compact ? 22 : 30) + (hasArrows ? ARROW_ROW : 0),
-    left: compact ? 34 : 44,
+    left: compact ? 40 : 44,
 })
 
 export const getSpaghettiHeight = (width: number, height: number) =>

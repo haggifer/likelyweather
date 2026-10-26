@@ -41,6 +41,7 @@ import {
 } from '@fa/chart-core/overview-readouts'
 import { OverviewMedians } from '@fa/chart-core/overview-stats'
 import {
+    AXIS_FONT_SIZE,
     CHART_FONT_SIZE,
     clamp,
     getNowX,
@@ -598,7 +599,7 @@ export function MedianOverview({
                                     y={scales[rowIndex].y(tick)}
                                     dy="0.32em"
                                     textAnchor="end"
-                                    fontSize={CHART_FONT_SIZE}
+                                    fontSize={AXIS_FONT_SIZE}
                                     fill={theme.muted}
                                 >
                                     {formatYTick(tick)}
@@ -610,7 +611,7 @@ export function MedianOverview({
                                     y={getChanceY(bottom)}
                                     dy="0.32em"
                                     textAnchor="end"
-                                    fontSize={CHART_FONT_SIZE}
+                                    fontSize={AXIS_FONT_SIZE}
                                     fill={theme.muted}
                                 >
                                     %

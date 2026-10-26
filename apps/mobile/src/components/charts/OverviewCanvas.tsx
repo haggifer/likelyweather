@@ -13,7 +13,7 @@ import {
     SECONDARY_DASH,
 } from '@fa/chart-core/overview-geometry'
 import { OverviewMedians } from '@fa/chart-core/overview-stats'
-import { getNowLabelStart, PANEL_NAME_FONT_SIZE } from '@fa/chart-core/plot-geometry'
+import { AXIS_FONT_SIZE, getNowLabelStart, PANEL_NAME_FONT_SIZE } from '@fa/chart-core/plot-geometry'
 import { formatYTick } from '@fa/chart-core/scales'
 import { Variable } from '@fa/shared/variables'
 import {
@@ -40,8 +40,8 @@ import { CanvasText, getAdvanceWidth } from './CanvasText'
 import { CanvasWindArrows } from './CanvasWindArrows'
 import { OverviewSelection } from './types'
 
-// Half the cap height of the tick font, so a label centres on its gridline.
-const BASELINE_SHIFT = 3.5
+// Half the cap height of the tick font, so a label centres on its gridline: SVG's `dy="0.32em"`.
+const BASELINE_SHIFT = AXIS_FONT_SIZE * 0.32
 const SECONDARY_INTERVALS = SECONDARY_DASH.split(' ').map(Number)
 const NOW_INTERVALS = [4, 3]
 const NAME_HALO_WIDTH = 3
@@ -397,7 +397,7 @@ export function OverviewCanvas({
     locale,
     chart,
 }: IProps) {
-    const { regular, semiBold, panelName, nowLabel: nowFont } = useChartFonts()
+    const { regular, semiBold, panelName, nowLabel: nowFont, axis } = useChartFonts()
 
     const nowLabelWidth = nowFont ? getAdvanceWidth(nowFont, nowLabel) : 0
     const plotTransform = useDerivedValue(() => [{ translateX: -scrollX.get() }])
@@ -447,7 +447,7 @@ export function OverviewCanvas({
                 panelNames={panelNames}
                 hasChance={chance !== null}
                 chart={chart}
-                font={regular}
+                font={axis}
                 nameFont={panelName}
             />
         </Canvas>

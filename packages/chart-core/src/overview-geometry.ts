@@ -109,7 +109,7 @@ export const OVERVIEW_SIZE: OverviewSize = {
         [Variable.Humidity]: 80,
         [Variable.Cloud]: 80,
     },
-    marginLeft: 36,
+    marginLeft: 40,
     hoverLabelHalfWidth: 34,
 }
 
@@ -124,7 +124,7 @@ export const OVERVIEW_PHONE_SIZE: OverviewSize = {
         [Variable.Humidity]: 92,
         [Variable.Cloud]: 92,
     },
-    marginLeft: 40,
+    marginLeft: 42,
     hoverLabelHalfWidth: 36,
 }
 

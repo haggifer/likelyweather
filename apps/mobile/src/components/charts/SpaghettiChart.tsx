@@ -1,6 +1,6 @@
 import { ChartTheme } from '@fa/chart-core/chart-theme'
 import { useAnimatedDomain } from '@fa/chart-core/hooks/useAnimatedDomain'
-import { getBarWidth, getNowX } from '@fa/chart-core/plot-geometry'
+import { AXIS_FONT_SIZE, getBarWidth, getNowX } from '@fa/chart-core/plot-geometry'
 import { formatYTick } from '@fa/chart-core/scales'
 import { getInitialScrollLeft, getScrollWidth, getVisibleRange, MIN_SLOT_WIDTH } from '@fa/chart-core/scroll-geometry'
 import {
@@ -60,8 +60,8 @@ import { TapSurface } from './TapSurface'
 
 // The canvas follows the offset every frame, so the scroll view reports every frame.
 const SCROLL_THROTTLE_MS = 16
-// Half the cap height of the tick font, so a label centres on its gridline.
-const BASELINE_SHIFT = 3.5
+// Half the cap height of the tick font, so a label centres on its gridline: SVG's `dy="0.32em"`.
+const BASELINE_SHIFT = AXIS_FONT_SIZE * 0.32
 const Y_TICK_COUNT = 5
 const DAY_LABEL_OFFSET = 18
 const NOW_INTERVALS = [4, 3]
@@ -389,11 +389,12 @@ interface AxisDrawingProps {
     isWholeNumbers: boolean
     chart: ChartTheme
     font: SkFont | null
+    unitFont: SkFont | null
 }
 
 // The axis stays while the plot scrolls under it: the tick labels on a card-coloured column and the unit above the
 // plot's corner.
-const AxisDrawing = ({ y, yTicks, margin, height, unit, isWholeNumbers, chart, font }: AxisDrawingProps) => (
+const AxisDrawing = ({ y, yTicks, margin, height, unit, isWholeNumbers, chart, font, unitFont }: AxisDrawingProps) => (
     <Group>
         <Rect x={0} y={0} width={margin.left} height={height} color={chart.card} />
         {yTicks.map((tick) => (
@@ -408,7 +409,7 @@ const AxisDrawing = ({ y, yTicks, margin, height, unit, isWholeNumbers, chart, f
             />
         ))}
         <Rect x={margin.left} y={0} width={UNIT_LABEL_WIDTH} height={margin.top - 2} color={chart.card} />
-        <CanvasText font={font} text={unit} x={margin.left} y={margin.top - 8} color={chart.muted} />
+        <CanvasText font={unitFont} text={unit} x={margin.left} y={margin.top - 8} color={chart.muted} />
     </Group>
 )
 
@@ -446,7 +447,7 @@ export function SpaghettiChart({
 }: IProps) {
     const t = useTranslations('chart')
     const { chart } = useTheme()
-    const { regular, semiBold, nowLabel } = useChartFonts()
+    const { regular, semiBold, nowLabel, axis } = useChartFonts()
     const isReducedMotion = useReducedMotion()
     const { width, onLayout } = useLayoutWidth()
 
@@ -599,7 +600,8 @@ export function SpaghettiChart({
                             unit={info.unit}
                             isWholeNumbers={info.decimals === 0}
                             chart={chart}
-                            font={regular}
+                            font={axis}
+                            unitFont={regular}
                         />
                     </Canvas>
                     <AnimatedScrollView

@@ -31,6 +31,8 @@ const SERIES: OverviewMedians = {
     [Variable.Precip]: { steps: SLOTS, values: [0.4, null, 2] },
 }
 const { heights: HEIGHTS, marginLeft: LEFT } = OVERVIEW_SIZE
+// The slot width of a 344 px frame with its 8 px right margin, three slots across.
+const SLOT = (344 - 8 - LEFT) / 2
 const PANELS = [Variable.Temp, Variable.Wind, Variable.Precip] as const
 
 describe('getOverviewLayout', () => {
@@ -88,8 +90,8 @@ describe('overview frame', () => {
 
         expect(frame.x(TIMES[0])).toBe(LEFT)
         expect(frame.x(TIMES[2])).toBe(336)
-        expect(frame).toMatchObject({ stepMs: 3 * HOUR_MS, plotRight: 336, plotWidth: 300, slotWidth: 150 })
-        expect(frame.barWidth).toBeCloseTo(150 * 0.62)
+        expect(frame).toMatchObject({ stepMs: 3 * HOUR_MS, plotRight: 336, plotWidth: SLOT * 2, slotWidth: SLOT })
+        expect(frame.barWidth).toBeCloseTo(SLOT * 0.62)
     })
 })
 
@@ -113,9 +115,9 @@ describe('panel drawing', () => {
     it('draws a line panel as an area, a line and the dashed second line', () => {
         const paths = getPanelPaths(layout.rows[0], SERIES, frame.x, scales[0].y)
 
-        expect(paths.area).toMatch(/^M36,/)
-        expect(paths.line).toMatch(/^M36,/)
-        expect(paths.secondary).toMatch(/^M36,/)
+        expect(paths.area).toMatch(new RegExp(`^M${LEFT},`))
+        expect(paths.line).toMatch(new RegExp(`^M${LEFT},`))
+        expect(paths.secondary).toMatch(new RegExp(`^M${LEFT},`))
         expect(getPanelPaths(layout.rows[2], SERIES, frame.x, scales[2].y).secondary).toBeNull()
     })
 
@@ -125,14 +127,14 @@ describe('panel drawing', () => {
         // The second slot has no amount; the third's bar would cover the 3 hours past the chart's end.
         expect(bars).toHaveLength(1)
         expect(bars[0].key).toBe(SLOTS[0])
-        expect(bars[0].x + bars[0].width / 2).toBe(LEFT + 75)
+        expect(bars[0].x + bars[0].width / 2).toBe(LEFT + SLOT / 2)
         expect(bars[0].y + bars[0].height).toBe(layout.rows[2].bottom)
     })
 
     it('labels the chance of rain under the bars that fit, likely slots standing out', () => {
         expect(getChanceLabels([0.6, 0.2, 0.9], TIMES, frame.x, frame)).toEqual([
-            { key: SLOTS[0], x: LEFT + 75, text: '60', isLikely: true },
-            { key: SLOTS[1], x: LEFT + 225, text: '20', isLikely: false },
+            { key: SLOTS[0], x: LEFT + SLOT / 2, text: '60', isLikely: true },
+            { key: SLOTS[1], x: LEFT + (SLOT * 3) / 2, text: '20', isLikely: false },
         ])
     })
 
