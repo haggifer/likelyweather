@@ -206,8 +206,7 @@
         "send": "Senden",
         "sending": "Wird gesendet…",
         "sent": "Danke! Ihre Nachricht ist gesendet, wir antworten per E-Mail.",
-        "cancel": "Abbrechen",
-        "close": "Schließen"
+        "cancel": "Abbrechen"
     },
     "errors": {
         "quotaExceeded": "Die heutigen Anfragen sind aufgebraucht. Gespeicherte Vorhersagen bleiben verfügbar, neue gibt es nach dem täglichen Zurücksetzen.",

@@ -2,6 +2,8 @@ import { createElement } from 'react'
 import { toast } from 'sonner-native'
 import { SnackbarToast } from '../components/ui/SnackbarToast'
 
+export type SnackbarKind = 'success' | 'error'
+
 export interface SnackbarAction {
     label: string
     onPress: () => void
@@ -14,8 +16,8 @@ interface Snackbar {
 }
 
 interface SnackbarOptions {
-    // The web's `toast.error`: the same message with the error icon.
-    isError?: boolean
+    // The web's `toast.success` and `toast.error`: the same message with that kind's icon.
+    kind?: SnackbarKind
 }
 
 // Long enough to read a sentence; a message that offers a choice stays a little longer.
@@ -46,11 +48,7 @@ const handleAction = (id: number, action: SnackbarAction) => {
 }
 
 // A new message replaces the one on screen, as the web's toast does (sonner there, sonner-native here).
-export const showSnackbar = (
-    message: string,
-    actions: SnackbarAction[] = [],
-    { isError = false }: SnackbarOptions = {},
-) => {
+export const showSnackbar = (message: string, actions: SnackbarAction[] = [], { kind }: SnackbarOptions = {}) => {
     const id = ++lastId
     const shown = actions.slice(0, MAX_ACTIONS)
 
@@ -60,7 +58,7 @@ export const showSnackbar = (
         createElement(SnackbarToast, {
             message,
             actions: shown,
-            isError,
+            kind,
             onAction: (action) => handleAction(id, action),
         }),
         { id, duration: shown.length ? LONG_MS : SHORT_MS, onDismiss: forget, onAutoClose: forget },

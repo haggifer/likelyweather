@@ -30,7 +30,7 @@ export function LocateButton({ onLocated, onSearch }: IProps) {
     const handlePress = () => {
         // Offline the request would wait, spinning, for the network; say so at once instead.
         if (!onlineManager.isOnline()) {
-            showSnackbar(te('offline'), [], { isError: true })
+            showSnackbar(te('offline'), [], { kind: 'error' })
             return
         }
 
@@ -50,7 +50,7 @@ export function LocateButton({ onLocated, onSearch }: IProps) {
             onError: (error) =>
                 error instanceof PositionError
                     ? showSnackbar(t('locateUnavailable'))
-                    : showSnackbar(te(getErrorKind(error)), [], { isError: true }),
+                    : showSnackbar(te(getErrorKind(error)), [], { kind: 'error' }),
         })
     }
 

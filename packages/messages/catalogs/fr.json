@@ -206,8 +206,7 @@
         "send": "Envoyer",
         "sending": "Envoi…",
         "sent": "Merci ! Votre message est envoyé, nous vous répondrons par e-mail.",
-        "cancel": "Annuler",
-        "close": "Fermer"
+        "cancel": "Annuler"
     },
     "errors": {
         "quotaExceeded": "Vous avez utilisé les requêtes du jour. Les prévisions enregistrées restent disponibles ; les nouvelles reviennent après la remise à zéro quotidienne.",

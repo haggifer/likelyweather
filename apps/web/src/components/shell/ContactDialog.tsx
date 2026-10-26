@@ -17,6 +17,7 @@ import { CONTACT_EMAIL_MAX, CONTACT_MESSAGE_MAX } from '@fa/shared/api'
 import { isContactEmailValid, isContactReady } from '@fa/shared/contact'
 import { useTranslations } from 'next-intl'
 import { FormEvent, useId, useState } from 'react'
+import { toast } from 'sonner'
 
 const BUTTON = 'touch:hit-area'
 // Phones get the whole screen, 1rem in from every side, and the message field takes the height the rest leaves.
@@ -24,7 +25,7 @@ const CONTENT =
     'flex w-[37.5rem] flex-col gap-3 p-4 max-sm:inset-4 max-sm:w-auto max-sm:max-w-none max-sm:max-h-none max-sm:translate-none'
 
 // The form lives inside the dialog's content, which unmounts on close, so every opening starts empty.
-const ContactForm = () => {
+const ContactForm = ({ onSent }: { onSent: () => void }) => {
     const t = useTranslations('contact')
     const te = useTranslations('errors')
 
@@ -34,7 +35,7 @@ const ContactForm = () => {
     const [isEmailTouched, setIsEmailTouched] = useState(false)
     const emailErrorId = useId()
 
-    const send = useSendContact()
+    const send = useSendContact({ onSuccess: onSent })
 
     const isReady = isContactReady({ email, message })
     // Judged once the reader leaves the field, so the message doesn't flash while the address is being typed.
@@ -46,19 +47,6 @@ const ContactForm = () => {
         if (!isReady || send.isPending) return
 
         send.mutate({ email: email.trim(), message, website })
-    }
-
-    if (send.isSuccess) {
-        return (
-            <>
-                <DialogDescription role="status">{t('sent')}</DialogDescription>
-                <DialogClose asChild>
-                    <Button size="lg" className={`${BUTTON} self-end`}>
-                        {t('close')}
-                    </Button>
-                </DialogClose>
-            </>
-        )
     }
 
     return (
@@ -133,12 +121,19 @@ interface IProps {
 export function ContactDialog({ triggerClassName }: IProps) {
     const t = useTranslations('contact')
 
+    const [isOpen, setIsOpen] = useState(false)
+
+    const handleSent = () => {
+        setIsOpen(false)
+        toast.success(t('sent'))
+    }
+
     return (
-        <Dialog>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger className={triggerClassName}>{t('title')}</DialogTrigger>
             <DialogContent className={CONTENT}>
                 <DialogTitle className="text-lg">{t('title')}</DialogTitle>
-                <ContactForm />
+                <ContactForm onSent={handleSent} />
             </DialogContent>
         </Dialog>
     )

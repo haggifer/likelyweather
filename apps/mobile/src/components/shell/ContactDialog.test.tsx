@@ -5,20 +5,22 @@ import { PortalHost } from '@rn-primitives/portal'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native'
 import { IntlProvider } from 'use-intl'
+import { showSnackbar } from '../../lib/snackbar-store'
 import { ContactDialog } from './ContactDialog'
 
 jest.mock('@fa/api-client/api', () => ({
     ...jest.requireActual<object>('@fa/api-client/api'),
     apiPost: jest.fn(),
 }))
+jest.mock('../../lib/snackbar-store', () => ({ showSnackbar: jest.fn() }))
 
-const renderDialog = () => {
+const renderDialog = (onOpenChange = jest.fn()) => {
     const client = new QueryClient({ defaultOptions: { mutations: { retry: false, gcTime: Infinity } } })
 
     return render(
         <QueryClientProvider client={client}>
             <IntlProvider locale="en" messages={en}>
-                <ContactDialog isOpen onOpenChange={jest.fn()} />
+                <ContactDialog isOpen onOpenChange={onOpenChange} />
                 <PortalHost />
             </IntlProvider>
         </QueryClientProvider>,
@@ -33,7 +35,7 @@ const fillIn = async (email: string, message: string) => {
 }
 
 describe('ContactDialog', () => {
-    afterEach(() => jest.mocked(apiPost).mockReset())
+    afterEach(() => jest.resetAllMocks())
 
     it('keeps Send disabled until both fields are filled and the address is valid', async () => {
         await renderDialog()
@@ -55,14 +57,16 @@ describe('ContactDialog', () => {
         expect(getSend()).toBeEnabled()
     })
 
-    it('sends the trimmed address and the message, and thanks the reader', async () => {
+    it('sends the trimmed address and the message, closes and thanks the reader in a snackbar', async () => {
+        const onOpenChange = jest.fn()
         jest.mocked(apiPost).mockResolvedValue({ ok: true })
-        await renderDialog()
+        await renderDialog(onOpenChange)
 
         await fillIn(' reader@example.com ', 'Hello')
         await fireEvent.press(getSend())
 
-        await waitFor(() => expect(screen.getByText(en.contact.sent)).toBeOnTheScreen())
+        await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false))
+        expect(showSnackbar).toHaveBeenCalledWith(en.contact.sent, [], { kind: 'success' })
         expect(apiPost).toHaveBeenCalledWith('/contact', {
             email: 'reader@example.com',
             message: 'Hello',

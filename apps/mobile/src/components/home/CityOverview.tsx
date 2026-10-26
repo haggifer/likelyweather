@@ -39,7 +39,7 @@ export function CityOverview({ slug }: IProps) {
     const handleRefresh = async () => {
         const failure = await refresh()
 
-        if (failure) showSnackbar(te(getErrorKind(failure)), [], { isError: true })
+        if (failure) showSnackbar(te(getErrorKind(failure)), [], { kind: 'error' })
     }
 
     // A home-screen widget showing this city fetches its weather again when the app has loaded the city.

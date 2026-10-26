@@ -206,8 +206,7 @@
         "send": "Enviar",
         "sending": "Enviando…",
         "sent": "¡Gracias! Tu mensaje se ha enviado y te responderemos por correo.",
-        "cancel": "Cancelar",
-        "close": "Cerrar"
+        "cancel": "Cancelar"
     },
     "errors": {
         "quotaExceeded": "Has agotado las solicitudes de hoy. Los pronósticos guardados siguen disponibles y los nuevos vuelven tras el reinicio diario.",

@@ -5,6 +5,7 @@ import { isContactEmailValid, isContactReady } from '@fa/shared/contact'
 import { useState } from 'react'
 import { KeyboardAvoidingView, View } from 'react-native'
 import { useTranslations } from 'use-intl'
+import { showSnackbar } from '../../lib/snackbar-store'
 import { Button } from '../ui/button'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '../ui/dialog'
 import { Input } from '../ui/input'
@@ -13,7 +14,7 @@ import { Textarea } from '../ui/textarea'
 
 // The form lives inside the dialog's content, which unmounts on close, so every opening starts empty. No bot fills in
 // the app, so it has no honeypot field.
-const ContactForm = () => {
+const ContactForm = ({ onSent }: { onSent: () => void }) => {
     const t = useTranslations('contact')
     const te = useTranslations('errors')
 
@@ -21,26 +22,13 @@ const ContactForm = () => {
     const [message, setMessage] = useState('')
     const [isEmailTouched, setIsEmailTouched] = useState(false)
 
-    const send = useSendContact()
+    const send = useSendContact({ onSuccess: onSent })
 
     const isReady = isContactReady({ email, message })
     // Judged once the reader leaves the field, so the message doesn't flash while the address is being typed.
     const isEmailInvalid = isEmailTouched && email.trim() !== '' && !isContactEmailValid(email)
 
     const handleSend = () => send.mutate({ email: email.trim(), message })
-
-    if (send.isSuccess) {
-        return (
-            <>
-                <DialogDescription role="status">{t('sent')}</DialogDescription>
-                <DialogClose asChild>
-                    <Button size="lg" className="self-end">
-                        <Text>{t('close')}</Text>
-                    </Button>
-                </DialogClose>
-            </>
-        )
-    }
 
     return (
         <>
@@ -106,6 +94,11 @@ interface IProps {
 export function ContactDialog({ isOpen, onOpenChange }: IProps) {
     const t = useTranslations('contact')
 
+    const handleSent = () => {
+        onOpenChange(false)
+        showSnackbar(t('sent'), [], { kind: 'success' })
+    }
+
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             {/* The web's phone layout: the whole screen, 1rem in from every side (the overlay's 0.5rem and this margin). */}
@@ -113,7 +106,7 @@ export function ContactDialog({ isOpen, onOpenChange }: IProps) {
                 {/* The full-height dialog would otherwise end under the keyboard, Send with it. */}
                 <KeyboardAvoidingView behavior="padding" className="flex-1 gap-3">
                     <DialogTitle className="text-lg">{t('title')}</DialogTitle>
-                    <ContactForm />
+                    <ContactForm onSent={handleSent} />
                 </KeyboardAvoidingView>
             </DialogContent>
         </Dialog>

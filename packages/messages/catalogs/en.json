@@ -206,8 +206,7 @@
         "send": "Send",
         "sending": "Sending…",
         "sent": "Thank you! Your message is sent, and we will reply to your email.",
-        "cancel": "Cancel",
-        "close": "Close"
+        "cancel": "Cancel"
     },
     "errors": {
         "quotaExceeded": "You have used today's requests. Stored forecasts stay available, and new ones resume after the daily reset.",

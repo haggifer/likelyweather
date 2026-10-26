@@ -346,9 +346,12 @@ test('Contact us in the footer sends a message once both fields are filled', asy
     await dialog.getByPlaceholder('Your question or comment').fill('Hello from the end-to-end suite')
     await send.click()
 
-    await expect(dialog.getByRole('status')).toHaveText(
-        'Thank you! Your message is sent, and we will reply to your email.',
-    )
+    await expect(dialog).toBeHidden()
+    await expect(
+        page
+            .getByRole('region', { name: /^Notifications/ })
+            .getByText('Thank you! Your message is sent, and we will reply to your email.'),
+    ).toBeVisible()
 })
 
 test('a searched city becomes the first chip and the oldest one drops', async ({ page }) => {

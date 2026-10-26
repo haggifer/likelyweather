@@ -45,7 +45,7 @@ export function WidgetCityPicker({ current = null, onPick }: IProps) {
             await onPick(place)
         } catch (error) {
             console.warn(`The widget could not take ${place.slug}: ${String(error)}`)
-            showSnackbar(te(getErrorKind(error)), [], { isError: true })
+            showSnackbar(te(getErrorKind(error)), [], { kind: 'error' })
             isPickingRef.current = false
             setPending(null)
         }

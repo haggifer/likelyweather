@@ -12,7 +12,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
     return (
         <Sonner
             theme={theme}
-            className="toaster group"
+            // Sonner spans the screen only below 600 px; the phone layout runs to `sm`, so it does there too, 1rem in from
+            // each side. Its own unlayered styles beat Tailwind's layers, hence the important marks.
+            className="toaster group max-sm:right-4! max-sm:bottom-4! max-sm:left-4! max-sm:w-auto!"
             icons={{
                 success: <CircleCheckIcon className="size-4" />,
                 info: <InfoIcon className="size-4" />,
@@ -31,7 +33,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
             toastOptions={{
                 // Sonner sets its buttons' 24 px height on a more specific selector, so the touch size is marked important.
                 classNames: {
-                    toast: 'cn-toast',
+                    toast: 'cn-toast max-sm:w-full!',
                     actionButton: 'touch:h-9! touch:px-3!',
                     cancelButton: 'touch:h-9! touch:px-3!',
                 },
