@@ -24,7 +24,7 @@ pnpm cdk:synth               # also cdk:diff, cdk:deploy, cdk:bootstrap; needs p
 pnpm mobile                        # Expo dev server (Metro) for the mobile development build (apps/mobile)
 pnpm --filter @fa/mobile android   # build and run the development build on a device or emulator (JDK 17 or 21)
 pnpm --filter @fa/mobile tokens    # regenerate the app's design tokens and Uniwind theme (src/global.css) after editing globals.css (a test fails until you do)
-pnpm --filter @fa/mobile icons     # regenerate the app icons and splash from the cloud-sun logo (scripts/generate-icons.ts)
+pnpm --filter @fa/mobile icons     # regenerate the app icons and splash from the cloud-sun logo, and the widget picker's preview (scripts/generate-icons.ts, scripts/generate-widget-preview.ts)
 pnpm --filter @fa/e2e parity --screen city --slug <slug> --web http://localhost:3000   # web phone layout against the running app: text sizes, report in apps/e2e/parity-results
 ```
 
