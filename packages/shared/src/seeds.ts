@@ -25,8 +25,8 @@ export const slugify = (name: string, countryCode: string, id: number) =>
             .replace(/^-+|-+$/g, '') || 'city'
     }-${countryCode.toLowerCase()}-${id}`
 
-// Starter cities. Their localized names and regions come from the Open-Meteo geocoder (fetched 2026-09-23 and
-// 2026-10-26), with the regions it leaves in English or capitalises written by hand.
+// The localized names and regions come from the Open-Meteo geocoder (fetched 2026-09-23 and 2026-10-26), with the
+// regions it leaves in English or capitalises written by hand.
 export const SEEDS: SeedCity[] = [
     {
         id: 706483,

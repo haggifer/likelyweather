@@ -51,8 +51,8 @@ const toObservation = (raw: RawMetar): Observation | null =>
           }
         : null
 
-// The airport reports (METAR) in a box around the place from the Aviation Weather Center's Data API, public US
-// government data. A box with no station is answered with 204 and no body.
+// The Aviation Weather Center's Data API (airport reports, METAR, public US government data) answers a box with no
+// station with 204 and no body.
 export const fetchObservations = async (position: Coordinates, radiusKm: number): Promise<Observation[]> => {
     const raws = await fetchWithRetry(
         buildMetarUrl(position, radiusKm),

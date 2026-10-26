@@ -22,8 +22,8 @@ const requestPositionWithRetry = async () => {
     }
 }
 
-// The browser's position, rounded before it leaves the page: a denied permission, a timeout and an unavailable
-// position all reject alike, because the page answers them with the same message.
+// Rounded before it leaves the page. A denied permission, a timeout and an unavailable position all reject alike,
+// because the page answers them with the same message.
 export const getRoundedPosition = async (): Promise<Coordinates> => {
     if (!navigator.geolocation) throw new Error('Geolocation is not supported')
 

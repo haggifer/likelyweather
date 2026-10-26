@@ -7,7 +7,7 @@ import { formatClockTime, getViewerTimeZone } from '@fa/shared/format'
 import { getQuotaStatus } from '@fa/shared/quota'
 import { useLocale, useTranslations } from 'next-intl'
 
-// The reset time is shown in the viewer's own time zone.
+// The quota belongs to no city, so its reset time is in the viewer's own time zone.
 export function QuotaMeter() {
     const t = useTranslations('shell.quota')
     const locale = useLocale()

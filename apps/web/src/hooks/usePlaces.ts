@@ -2,7 +2,7 @@ import { getPlacesSnapshot, getServerPlacesSnapshot, subscribePlaces } from '@/l
 import { Places } from '@fa/shared/places'
 import { useSyncExternalStore } from 'react'
 
-// The viewer's favorite and recent places, or null until they are read after hydration.
+// Null until the stored places are read after hydration.
 export function usePlaces(): Places | null {
     return useSyncExternalStore(subscribePlaces, getPlacesSnapshot, getServerPlacesSnapshot)
 }

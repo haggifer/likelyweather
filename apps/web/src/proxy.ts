@@ -7,8 +7,8 @@ const LANG_PARAM = 'lang'
 
 const isLocale = (value: string | null): value is Locale => LOCALES.includes(value as Locale)
 
-// Forwards /api/* to the Express API. API_ORIGIN is read per request (next.config rewrites are fixed at build time),
-// so one build serves any environment. On AWS CloudFront routes /api/* to the API before requests reach Next.js.
+// API_ORIGIN is read per request (next.config rewrites are fixed at build time), so one build serves any environment.
+// On AWS CloudFront routes /api/* to the API before requests reach Next.js.
 const forwardToApi = (request: NextRequest) => {
     const origin = process.env.API_ORIGIN ?? 'http://localhost:4000'
 

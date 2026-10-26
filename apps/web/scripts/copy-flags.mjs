@@ -1,5 +1,5 @@
-// Copies the MIT-licensed country-flag-icons 3x2 SVGs into public/flags. SVG assets rather than emoji, so flags look
-// the same on every platform. Only the SVGs: the package's flags.css and flags.zip would ship unused.
+// Emoji flags look different on every platform, so the app shows country-flag-icons' 3x2 SVGs (MIT). Only the SVGs
+// are copied: the package's flags.css and flags.zip would ship unused.
 import { copyFileSync, mkdirSync, readdirSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'

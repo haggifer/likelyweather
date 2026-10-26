@@ -106,10 +106,8 @@ interface IProps {
     isArchive?: boolean
 }
 
-// Median of all models for every panel's variable on one axis of local 3-hour slots; a precipitation bar is the amount
-// of the 3 hours after its slot, and the strip under the bars the share of models above 0.2 mm in it. The readouts
-// follow the finger, or the slot nearest to now. The archive draws a city's past weather the same way, every hour and
-// narrower, without a now line or a chance of rain, opening at its first hour.
+// A precipitation bar is the amount of the 3 hours after its slot (the hour after it in the archive), and the strip
+// under the bars the share of models above 0.2 mm in that time.
 export function MedianOverview({
     panels,
     series,

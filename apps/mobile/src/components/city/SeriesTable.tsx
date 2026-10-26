@@ -7,7 +7,7 @@ import { useTranslations } from 'use-intl'
 import { TimeTable } from '../charts/TimeTable'
 import { TimeTableRow } from '../charts/types'
 
-// The slot columns are 72 px wide, or 104 for a pair's "actual (companion)".
+// A pair's cells read "actual (companion)", so its columns are wider.
 const COLUMN_CLASS = 'w-[4.5rem]'
 const PAIRED_COLUMN_CLASS = 'w-[6.5rem]'
 

@@ -149,10 +149,9 @@ export const isFreshSnapshot = (snapshot: StoredSnapshotMeta, now: Date) => now 
 
 const getNamesRetryName = (city: City) => `names-failed:${city.id}`
 
-// A city stored before regions were kept per language (and some before Russian names) gets them from the geocoder
-// once, the first time its record is read; an empty `admin1Local` marks one the geocoder had nothing more for. A failed
-// lookup keeps the stored names and is not tried again for an hour, so a geocoder outage does not cost six lookups on
-// every read.
+// A city without per-language regions (or without Russian names) gets them from the geocoder once, the first time its
+// record is read; an empty `admin1Local` marks one the geocoder had nothing more for. A failed lookup keeps the stored
+// names and is not tried again for an hour, so a geocoder outage does not cost six lookups on every read.
 export const withLocalNames = (city: City): Promise<City> => {
     if (city.admin1Local) return Promise.resolve(city)
 

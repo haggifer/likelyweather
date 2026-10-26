@@ -48,7 +48,7 @@ export function UpdatedChip({ issueTime, fetchedAt, timeZone, now, isIconOnPhone
                 )
             }
         >
-            {/* The chip is the hint's trigger: a button with no fill of its own, round like the badge it holds. */}
+            {/* The chip is the hint's trigger, so the badge sits inside a button. */}
             <Button
                 variant="ghost"
                 aria-label={isIconOnPhones ? age : undefined}

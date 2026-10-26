@@ -38,7 +38,7 @@ const NO_DAY = '–'
 export const getSlotEnd = (step: string) => toIsoMinute(addHours(new Date(step), SLOT_HOURS))
 
 // The run without the models the reader turned off, so the median, the range, the wind direction, the disagreement and
-// the summary count only the models on the chart and in the table (author, 2026-10-20).
+// the summary count only the models on the chart and in the table.
 export const getShownLatest = (latest: LatestResponse, hidden: ModelId[]): LatestResponse =>
     hidden.length
         ? {

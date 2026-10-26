@@ -1,6 +1,5 @@
-// Packages the standalone Next.js server for Lambda behind the Web Adapter: static assets copied in (standalone
-// output leaves them out), pnpm's symlinks kept as relative links, and an executable start script. The zip is
-// written here with explicit modes, because an archive made on Windows would lose the script's execute bit.
+// Standalone output leaves the static assets out, so they are copied in. The zip is written here with explicit modes,
+// because an archive made on Windows would lose the start script's execute bit.
 import {
     cpSync,
     createWriteStream,
@@ -34,7 +33,7 @@ const toTracedEntry = (file) => {
     return existsSync(traced) ? path.relative(STANDALONE, traced).split(path.sep).join('/') : null
 }
 
-// Adds `dir` under `prefix`, following symlinks; `seen` stops cycles through linked directories.
+// Follows symlinked directories; `seen` stops a cycle through them.
 const addDir = (dir, prefix, seen) => {
     const real = realpathSync(dir)
 

@@ -1,6 +1,6 @@
-// Stands in for Open-Meteo (forecast, archive and geocoding) and met.no during end-to-end tests. It replays the recorded
-// New York responses for any location, shifted so their hours line up with today, so the app's fetch path runs
-// for real without touching the network.
+// Replays the recorded New York responses of Open-Meteo (forecast, archive and geocoding) and met.no for any
+// location, shifted so their hours line up with today, so the app's fetch path runs for real in end-to-end tests
+// without touching the network.
 import { readFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import path from 'node:path'

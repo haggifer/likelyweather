@@ -8,7 +8,8 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 const withMDX = createMDX()
 
 const nextConfig: NextConfig = {
-    // A self-contained server for Lambda (see build-lambda.mjs); tracing starts at the monorepo root.
+    // Lambda runs this self-contained server (packaged by build-lambda.mjs); tracing starts at the monorepo root so the
+    // workspace packages outside this app are included.
     output: 'standalone',
     outputFileTracingRoot: path.resolve(import.meta.dirname, '../..'),
     // Workspace packages ship TypeScript source.

@@ -246,7 +246,6 @@ export const getNearestCity = async ({ lat, lon }: Coordinates) => {
     return rows[0] ? toCity(rows[0]) : undefined
 }
 
-// Keeps the stored city when two requests add the same one.
 export const updateCityNames = async (
     id: number,
     { nameLocal, admin1Local }: Pick<City, 'nameLocal' | 'admin1Local'>,
@@ -259,6 +258,7 @@ export const updateCityNames = async (
     return toCity(row)
 }
 
+// Keeps the stored city when two requests add the same one.
 export const addCity = async (city: City) => {
     const row = await getPrisma().city.upsert({ where: { id: city.id }, create: fromCity(city), update: {} })
 

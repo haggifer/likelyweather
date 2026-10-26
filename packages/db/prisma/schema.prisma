@@ -1,5 +1,5 @@
-// Likely Weather data model. Forecast is range-partitioned by week on issueTime (see the init migration and
-// src/partitions.ts); Prisma sees it as one table.
+// Forecast is range-partitioned by week on issueTime (see the init migration and src/partitions.ts); Prisma sees it as
+// one table.
 
 generator client {
   provider = "prisma-client"
@@ -73,8 +73,8 @@ model Snapshot {
   @@id([cityId, issueTime])
 }
 
-// One model's value for one city and hour. Partitioned tables need the partition key in the primary key, so the
-// natural key is the primary key.
+// Partitioned tables need the partition key in the primary key, so the natural key of one model's value for one city
+// and hour is the primary key.
 model Forecast {
   cityId      Int
   city        City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
@@ -91,7 +91,7 @@ model Forecast {
   precipMm    Float? // the hour ending at validTime
   humidityPct Float?
   cloudPct    Float?
-  // Not written since 2026-10-12; dropped by a later migration once the code that stopped writing them is live.
+  // Unused: older rows hold values, and a later migration drops the columns.
   pressureSfc Float?
   rainMm      Float?
   snowCm      Float?

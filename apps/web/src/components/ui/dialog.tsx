@@ -16,8 +16,7 @@ function DialogClose({ ...props }: React.ComponentProps<typeof DialogPrimitive.C
     return <DialogPrimitive.Close data-slot="dialog-close" {...props} />
 }
 
-// A panel like PopoverPanel, centred over a dimmed page; it keeps 0.5rem from the window's edges and scrolls inside
-// when the window is shorter than its content.
+// Styled like PopoverPanel.
 function DialogContent({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Content>) {
     return (
         <DialogPrimitive.Portal>

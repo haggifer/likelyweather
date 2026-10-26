@@ -16,8 +16,8 @@ const getPosition = () =>
 
 const fetchNearest = ({ lat, lon }: Coordinates) => apiGet<NearestResponse>('/cities/nearest', { lat, lon })
 
-// User-triggered, so a mutation: asks the browser for the position, then the API for the nearest stored city. A
-// `PositionError` means the browser could not say where the viewer is; anything else came from the API.
+// User-triggered, so a mutation. A `PositionError` means the browser could not say where the viewer is; anything else
+// came from the API.
 export function useNearestCity(): UseMutationResult<LocateResult, Error, void> {
     return useMutation({ mutationFn: () => getPosition().then(fetchNearest).then(toLocateResult) })
 }

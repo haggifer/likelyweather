@@ -23,8 +23,8 @@ export interface ModelInfo {
     dash?: string
 }
 
-// Fixed categorical palette. Never reassigned by a theme preset. IFS/AIFS and the gray met.no fail
-// CVD separation, so AIFS and met.no also carry a dash pattern as secondary encoding.
+// A theme never reassigns these colours. IFS/AIFS and the gray met.no fail CVD separation, so AIFS and met.no also
+// carry a dash pattern as secondary encoding.
 export const MODELS: ModelInfo[] = [
     {
         id: ModelId.EcmwfIfs,

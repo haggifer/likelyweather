@@ -13,8 +13,8 @@ const copyLayouts = (resDir) => {
     }
 }
 
-// Copies the widgets' own native layouts (`widget-layouts/<res folder>/rn_widget_<widget name>.xml`) into the
-// generated Android project, where the patched react-native-android-widget picks one by its widget's name.
+// The patched react-native-android-widget picks a widget's native layout by the widget's name, so each file in
+// `widget-layouts/<res folder>/` is named `rn_widget_<widget name>.xml`.
 const withWidgetLayouts = (config) =>
     withDangerousMod(config, [
         'android',

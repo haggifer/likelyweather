@@ -12,7 +12,6 @@ interface IProps {
     compassLabels: string[]
 }
 
-// Each slot's median wind direction as an arrow, a dot where no model gave one; its title names the direction.
 export function WindArrows({ x, times, directions, y, color, mutedColor, compassLabels }: IProps) {
     return (
         <g aria-hidden="true">

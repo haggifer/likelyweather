@@ -9,8 +9,8 @@ export const SLOT_HOURS = 3
 const OVERVIEW_HOURS = 240
 export const DASHBOARD_HOURS = 240
 
-// Start of the local 3-hour slot containing `date` (local 00, 03, 06…). Slots stay on whole UTC hours, where the
-// hourly data lives, so a half-hour time zone gets slots at :30 local.
+// Slots fall on local 00, 03, 06… but stay on whole UTC hours, where the hourly data lives, so a half-hour time zone
+// gets slots at :30 local.
 export const getSlotStart = (date: Date, timeZone: string) => {
     const hour = floorToHours(date, 1)
 

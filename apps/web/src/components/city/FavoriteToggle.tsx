@@ -15,8 +15,8 @@ interface IProps {
     className?: string
 }
 
-// Pins a place to the front of the viewer's chips. It stays invisible until the stored places are read, so the
-// server HTML and the first render agree and the header doesn't shift.
+// Invisible until the stored places are read, so the server HTML and the first render agree and the header doesn't
+// shift.
 export function FavoriteToggle({ place, className }: IProps) {
     const t = useTranslations('city')
     const locale = useLocale()

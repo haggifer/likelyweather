@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /* The phone layout runs below 992 px, so a tablet gets it too and the place name is never squeezed beside the card's
-   buttons (author, 2026-10-20). Every `sm:` / `max-sm:` utility and the media queries below follow this value. */
+   buttons. Every `sm:` / `max-sm:` utility and the media queries below follow this value. */
 @theme {
     --breakpoint-sm: 62rem;
 }
@@ -78,7 +78,6 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Base tokens (light). */
 :root {
     --background: #f7f9fc;
     --foreground: #0b1b33;
@@ -100,9 +99,8 @@
     --ring: #1e5eff;
     --info: #1e5eff;
     --warning: #b45309;
-    /* A pale fill inside a darker stroke (author's choice, 2026-10-07). The stroke has only about 1.6:1 on white,
-       under the 3:1 WCAG 1.4.11 asks of graphics; the look was preferred, and pinned stars also differ from the
-       grey outline of unpinned ones by their fill. */
+    /* The stroke has only about 1.6:1 on white, under the 3:1 WCAG 1.4.11 asks of graphics; it stays because pinned
+       stars also differ from the grey outline of unpinned ones by their fill. */
     --favorite: #e4d00a;
     --favorite-fill: #fffd78;
     /* The outline of a star that is not pinned: a step lighter than muted text, still 3.4:1 on the page. */
@@ -215,7 +213,6 @@
     }
 }
 
-/* every shadcn Card */
 [data-slot='card'] {
     --card-spacing: var(--card-padding);
     border-radius: var(--radius);

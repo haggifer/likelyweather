@@ -1,6 +1,6 @@
 import { Variable } from '@fa/shared/variables'
 
-// The previous query of a placeholder; forecast keys end with the variable: ['latest', slug, variable].
+// Forecast keys end with the variable: ['latest', slug, variable].
 type PreviousQuery = { queryKey: readonly unknown[] } | undefined
 
 // Only an answer about the same variable may stand in while a new key loads: the series carry no variable, so another

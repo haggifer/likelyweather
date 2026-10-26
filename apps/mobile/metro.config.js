@@ -1,4 +1,4 @@
-// Uniwind compiles src/global.css (generated from the web's tokens) into native styles; it must wrap the config last.
+// Uniwind's wrapper must stay the outermost one if another Metro wrapper is added.
 const { getDefaultConfig } = require('expo/metro-config')
 const { withUniwindConfig } = require('uniwind/metro')
 

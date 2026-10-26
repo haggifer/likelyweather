@@ -38,8 +38,8 @@ const buildArchiveUrl = ({ lat, lon }: LatLon, start: Date, end: Date) => {
     return `${env.OPEN_METEO_ARCHIVE_BASE}/v1/archive?${params}`
 }
 
-// Past hours of one place from Open-Meteo's Historical Weather API (ERA5, and the ECMWF IFS analysis for the last
-// days). Times come back in GMT without an offset.
+// The Historical Weather API (ERA5, and the ECMWF IFS analysis for the last days) returns times in GMT without an
+// offset.
 export const fetchArchiveHours = async (location: LatLon, start: Date, end: Date): Promise<ArchiveHourValues[]> => {
     const body = await fetchJson<ArchiveBody | OpenMeteoError>(buildArchiveUrl(location, start, end))
 
