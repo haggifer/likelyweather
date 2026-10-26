@@ -34,9 +34,7 @@ export function OverviewTable({ panels, series, chance, timeZone, locale }: IPro
     }))
 
     return (
-        // From `sm` up the box takes the window's free height, passed down by its ancestors (`FILL_HEIGHT_PARENT`), so
-        // the card keeps the chart's size when the table is shown.
-        <div data-fill-height className="mt-1 sm:min-h-[27rem] sm:flex-1 sm:basis-0">
+        <div className="mt-1">
             <TimeTable steps={steps} timeZone={timeZone} locale={locale} rows={rows} columnClassName="w-18" />
         </div>
     )

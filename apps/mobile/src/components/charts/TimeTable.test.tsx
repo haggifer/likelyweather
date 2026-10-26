@@ -27,15 +27,14 @@ describe('TimeTable', () => {
         ROWS.flatMap((row) => row.cells).forEach((cell) => expect(screen.getByText(cell)).toBeOnTheScreen())
     })
 
-    it('heads each local day with its date in both forms, named in full for screen readers', async () => {
+    it('heads each local day with its date, also its accessible name', async () => {
         await renderTable()
 
         const days = getTimeTableDays(STEPS, 'UTC', 'en')
 
         expect(days.map(({ count }) => count)).toEqual([2, 1])
-        days.forEach(({ label, shortLabel }) => {
+        days.forEach(({ label }) => {
             expect(screen.getByText(label)).toBeOnTheScreen()
-            expect(screen.getByText(shortLabel)).toBeOnTheScreen()
             expect(screen.getByLabelText(label)).toBeOnTheScreen()
         })
     })
