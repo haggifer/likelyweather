@@ -42,6 +42,14 @@ interface MetnoModel {
 
 const ERROR_MESSAGE_LENGTH = 160
 
+// Resolves to the value and the milliseconds it took.
+const timed = async <T>(run: () => Promise<T>): Promise<[T, number]> => {
+    const start = performance.now()
+    const value = await run()
+
+    return [value, Math.round(performance.now() - start)]
+}
+
 const getShortErrorMessage = (error: unknown) => getErrorMessage(error).slice(0, ERROR_MESSAGE_LENGTH)
 
 const realignSeries = (series: ModelSeries, fromSteps: string[], toSteps: string[]): ModelSeries => {
@@ -117,13 +125,15 @@ export const collect = async ({ city, now = new Date() }: CollectOptions): Promi
     const runId = getRunId(city.id, issueTime)
     const startedAt = new Date().toISOString()
     const steps = getWindowSteps(new Date(issueTime))
+    const start = performance.now()
 
-    const previous = await getLatestSnapshot(city.id, [ModelId.Metno])
-    const [openMeteo, metno] = await Promise.all([
-        fetchOpenMeteoModels(city, steps),
-        fetchMetnoModel(city, steps, previous),
+    const [previous, readMs] = await timed(() => getLatestSnapshot(city.id, [ModelId.Metno]))
+    const [[openMeteo, openMeteoMs], [metno, metnoMs]] = await Promise.all([
+        timed(() => fetchOpenMeteoModels(city, steps)),
+        timed(() => fetchMetnoModel(city, steps, previous)),
     ])
     const fetchedAt = new Date().toISOString()
+    const writeStart = performance.now()
 
     const models: Models = metno.series ? { ...openMeteo.models, [ModelId.Metno]: metno.series } : openMeteo.models
     const warnings = [...openMeteo.warnings, ...metno.warnings]
@@ -161,8 +171,16 @@ export const collect = async ({ city, now = new Date() }: CollectOptions): Promi
     if (snapshot) await upsertRun(run)
     else await recordRunWithoutSnapshot(run)
 
+    const writeMs = Math.round(performance.now() - writeStart)
+    const totalMs = Math.round(performance.now() - start)
+
     // The run rows are not shown anywhere, so the logs are where a failing source shows up.
     if (warnings.length) console.warn(`Run ${runId} ${run.status}: ${warnings.join('; ')}`)
+
+    // Where a refresh spends its time, which a viewer waits for in full; the two sources are fetched in parallel.
+    console.info(
+        `Run ${runId} took ${totalMs} ms: read ${readMs}, Open-Meteo ${openMeteoMs}, met.no ${metnoMs}, write ${writeMs}`,
+    )
 
     return { run, snapshot }
 }
