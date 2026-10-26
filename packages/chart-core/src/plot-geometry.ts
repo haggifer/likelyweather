@@ -4,7 +4,7 @@ const BAR_RATIO = 0.62
 
 export const CHART_FONT_SIZE = 11
 // The overview's panel names on phones ("Temperature, °C").
-export const PANEL_NAME_FONT_SIZE = 13
+export const PANEL_NAME_FONT_SIZE = 14
 
 export const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value))
 
