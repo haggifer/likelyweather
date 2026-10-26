@@ -14,6 +14,10 @@ const EnvSchema = z.object({
     // Without it the caches, limits and claims live in process memory (tests, quick local runs).
     REDIS_URL: z.string().optional(),
     RETENTION_DAYS: z.coerce.number().int().positive().default(14),
+    // Where the contact form's messages go (an SSM SecureString on AWS) and the SES-verified sender they come from.
+    // Without both, a message is logged instead of sent, which only a local run may do.
+    CONTACT_EMAIL: z.string().optional(),
+    CONTACT_FROM: z.string().optional(),
 })
 
 // On AWS (SSM_PREFIX set) the SSM parameters must be there: met.no throttles the anonymous default, and without
@@ -26,6 +30,10 @@ const checkDeployedEnv = (parsed: z.infer<typeof EnvSchema>) => {
     }
 
     if (!parsed.REDIS_URL) console.warn('REDIS_URL is not set under SSM_PREFIX: limits and the quota are per instance')
+
+    if (!parsed.CONTACT_EMAIL || !parsed.CONTACT_FROM) {
+        console.warn('CONTACT_EMAIL or CONTACT_FROM is not set under SSM_PREFIX: the contact form answers 502')
+    }
 }
 
 loadLocalEnv()

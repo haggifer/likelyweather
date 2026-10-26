@@ -11,6 +11,7 @@
         "test": "vitest run"
     },
     "dependencies": {
+        "@aws-sdk/client-sesv2": "^3.1156.0",
         "@aws-sdk/client-ssm": "^3.899.0",
         "@fa/db": "workspace:*",
         "@fa/shared": "workspace:*",

@@ -1,5 +1,7 @@
 import {
     ArchiveQuerySchema,
+    ContactRequestSchema,
+    ContactResponse,
     CurrentResponse,
     DEFAULT_LOCALE,
     GeocodeQuerySchema,
@@ -16,6 +18,7 @@ import { MODELS } from '@fa/shared/models'
 import { Router } from 'express'
 import { getArchivePayload, isCompleteArchive } from './domain/archive'
 import { ensureFreshSnapshot, findNearestCity, getStarterCities, requireCity, trackCity } from './domain/cities'
+import { sendContactMessage } from './domain/contact'
 import { getCurrentMaxAge, getCurrentTemperature } from './domain/current'
 import { getErrorMessage, HttpError } from './domain/errors'
 import { getLatestPayload } from './domain/latest'
@@ -148,6 +151,15 @@ apiRouter.get('/quota', rateLimit('read'), async (req, res) => {
     const quota = await getQuota(getClientKey(req))
 
     sendJson(res, quota, { maxAge: null })
+})
+
+// The body is checked before the daily limit is spent, so a malformed request or a filled honeypot costs nothing.
+apiRouter.post('/contact', rateLimit('read'), async (req, res) => {
+    const request = parseBody(req, ContactRequestSchema)
+
+    await sendContactMessage(request, getClientKey(req))
+
+    sendJson(res, { ok: true } satisfies ContactResponse, { maxAge: null })
 })
 
 apiRouter.get('/models', rateLimit('read'), (_req, res) => {

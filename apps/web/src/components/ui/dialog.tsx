@@ -12,6 +12,10 @@ function DialogTrigger({ ...props }: React.ComponentProps<typeof DialogPrimitive
     return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />
 }
 
+function DialogClose({ ...props }: React.ComponentProps<typeof DialogPrimitive.Close>) {
+    return <DialogPrimitive.Close data-slot="dialog-close" {...props} />
+}
+
 // A panel like PopoverPanel, centred over a dimmed page; it keeps 0.5rem from the window's edges and scrolls inside
 // when the window is shorter than its content.
 function DialogContent({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Content>) {
@@ -43,4 +47,14 @@ function DialogTitle({ className, ...props }: React.ComponentProps<typeof Dialog
     )
 }
 
-export { Dialog, DialogContent, DialogTitle, DialogTrigger }
+function DialogDescription({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Description>) {
+    return (
+        <DialogPrimitive.Description
+            data-slot="dialog-description"
+            className={cn('text-sm text-muted-foreground', className)}
+            {...props}
+        />
+    )
+}
+
+export { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger }

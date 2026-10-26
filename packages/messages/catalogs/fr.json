@@ -195,6 +195,19 @@
         "lastUpdated": "Dernière mise à jour : {date}",
         "englishOnly": "Ce document est disponible uniquement en anglais."
     },
+    "contact": {
+        "title": "Nous contacter",
+        "intro": "Une question, une idée ou un bug ? Écrivez-nous, nous vous répondrons par e-mail.",
+        "email": "E-mail",
+        "emailPlaceholder": "Votre adresse e-mail",
+        "message": "Message",
+        "messagePlaceholder": "Votre question ou commentaire",
+        "send": "Envoyer",
+        "sending": "Envoi…",
+        "sent": "Merci ! Votre message est envoyé, nous vous répondrons par e-mail.",
+        "cancel": "Annuler",
+        "close": "Fermer"
+    },
     "errors": {
         "quotaExceeded": "Vous avez utilisé les requêtes du jour. Les prévisions enregistrées restent disponibles ; les nouvelles reviennent après la remise à zéro quotidienne.",
         "rateLimited": "Trop de requêtes. Attendez une minute et réessayez.",
@@ -203,7 +216,8 @@
         "unavailable": "Les services météo ne répondent pas. Réessayez plus tard.",
         "generic": "Une erreur s’est produite. Réessayez dans un instant.",
         "retry": "Réessayer",
-        "offline": "Vous êtes hors ligne. Les prévisions enregistrées restent visibles ; connectez-vous pour en charger de nouvelles."
+        "offline": "Vous êtes hors ligne. Les prévisions enregistrées restent visibles ; connectez-vous pour en charger de nouvelles.",
+        "contactLimit": "Plus aucun message ne peut être envoyé aujourd’hui. Réessayez demain."
     },
     "promo": {
         "label": "Obtenir l’application Android",

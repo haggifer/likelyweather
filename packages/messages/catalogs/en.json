@@ -195,6 +195,19 @@
         "lastUpdated": "Last updated {date}",
         "englishOnly": "This document is available in English only."
     },
+    "contact": {
+        "title": "Contact us",
+        "intro": "Questions, ideas or a bug? Write to us, and we will reply to your email.",
+        "email": "Email",
+        "emailPlaceholder": "Your email",
+        "message": "Message",
+        "messagePlaceholder": "Your question or comment",
+        "send": "Send",
+        "sending": "Sending…",
+        "sent": "Thank you! Your message is sent, and we will reply to your email.",
+        "cancel": "Cancel",
+        "close": "Close"
+    },
     "errors": {
         "quotaExceeded": "You have used today's requests. Stored forecasts stay available, and new ones resume after the daily reset.",
         "rateLimited": "Too many requests. Wait a minute and try again.",
@@ -203,7 +216,8 @@
         "unavailable": "The weather services are not answering. Try again later.",
         "generic": "Something went wrong. Try again in a moment.",
         "retry": "Try again",
-        "offline": "You are offline. Saved forecasts still show; connect to load new ones."
+        "offline": "You are offline. Saved forecasts still show; connect to load new ones.",
+        "contactLimit": "No more messages can be sent today. Try again tomorrow."
     },
     "promo": {
         "label": "Get the Android app",

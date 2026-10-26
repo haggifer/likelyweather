@@ -13,9 +13,9 @@ export const DAILY_GLOBAL_QUOTA = 600
 
 const GLOBAL_CLIENT = 'all'
 
-const getDayStart = (now: Date) => Math.floor(now.getTime() / DAY_MS) * DAY_MS
+export const getDayStart = (now: Date) => Math.floor(now.getTime() / DAY_MS) * DAY_MS
 
-const getNextDayStart = (now: Date) => new Date(getDayStart(now) + DAY_MS)
+export const getNextDayStart = (now: Date) => new Date(getDayStart(now) + DAY_MS)
 
 const getKey = (client: string, now: Date) => `quota:${client}:${getDayStart(now)}`
 

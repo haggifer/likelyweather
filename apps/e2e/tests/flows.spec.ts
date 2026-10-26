@@ -328,6 +328,25 @@ test('the footer links to the privacy policy and the terms', async ({ page }) =>
     }
 })
 
+// Without SES settings the API logs the message instead of sending it.
+test('Contact us in the footer sends a message once both fields are filled', async ({ page }) => {
+    await page.goto('/methodology')
+    await page.getByRole('contentinfo').getByRole('button', { name: 'Contact us' }).click()
+
+    const dialog = page.getByRole('dialog', { name: 'Contact us' })
+    const send = dialog.getByRole('button', { name: 'Send' })
+
+    await expect(send).toBeDisabled()
+    await dialog.getByPlaceholder('Your email').fill('reader@example.com')
+    await expect(send).toBeDisabled()
+    await dialog.getByPlaceholder('Your question or comment').fill('Hello from the end-to-end suite')
+    await send.click()
+
+    await expect(dialog.getByRole('status')).toHaveText(
+        'Thank you! Your message is sent, and we will reply to your email.',
+    )
+})
+
 test('a searched city becomes the first chip and the oldest one drops', async ({ page }) => {
     await page.goto('/')
     await expect.poll(() => getChipNames(page)).toEqual(['New York', 'London', 'Paris', 'Kyiv'])

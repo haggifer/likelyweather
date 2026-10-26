@@ -1,5 +1,7 @@
 import en from '@fa/messages/catalogs/en.json'
 import { LANGUAGE_NAMES } from '@fa/shared/languages'
+import { PortalHost } from '@rn-primitives/portal'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen } from '@testing-library/react-native'
 import { IntlProvider } from 'use-intl'
 import { settingsStore } from '../lib/settings'
@@ -13,9 +15,12 @@ jest.mock('expo-router', () => ({ useRouter: () => ({ push: jest.fn() }) }))
 
 const renderSettings = () =>
     render(
-        <IntlProvider locale="en" messages={en} timeZone="UTC">
-            <SettingsScreen />
-        </IntlProvider>,
+        <QueryClientProvider client={new QueryClient()}>
+            <IntlProvider locale="en" messages={en} timeZone="UTC">
+                <SettingsScreen />
+                <PortalHost />
+            </IntlProvider>
+        </QueryClientProvider>,
     )
 
 describe('SettingsScreen', () => {
@@ -35,6 +40,14 @@ describe('SettingsScreen', () => {
 
         expect(settingsStore.get()).toMatchObject({ language: 'uk', theme: 'dark' })
         expect(screen.getByRole('radio', { name: LANGUAGE_NAMES.uk })).toBeChecked()
+    })
+
+    it('opens the contact form from the row beside the legal links', async () => {
+        await renderSettings()
+        await fireEvent.press(screen.getByRole('button', { name: en.contact.title }))
+
+        expect(screen.getByRole('heading', { name: en.contact.title })).toBeOnTheScreen()
+        expect(screen.getByLabelText(en.contact.email)).toBeOnTheScreen()
     })
 
     it('shows the requests left today on a bar', async () => {

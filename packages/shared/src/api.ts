@@ -135,6 +135,23 @@ export const ArchiveResponseSchema = z.object({
 })
 export type ArchiveResponse = z.infer<typeof ArchiveResponseSchema>
 
+// The longest address SMTP delivers to.
+export const CONTACT_EMAIL_MAX = 254
+export const CONTACT_MESSAGE_MAX = 2000
+
+export const ContactRequestSchema = z.strictObject({
+    email: z.email().max(CONTACT_EMAIL_MAX),
+    message: z.string().trim().min(1).max(CONTACT_MESSAGE_MAX),
+    // A field no person sees or fills in (the web form hides it); a bot that fills every field is refused.
+    website: z.string().max(0).optional(),
+    locale: LocaleSchema.optional(),
+    source: z.enum(['web', 'app']).optional(),
+})
+export type ContactRequest = z.infer<typeof ContactRequestSchema>
+
+export const ContactResponseSchema = z.object({ ok: z.literal(true) })
+export type ContactResponse = z.infer<typeof ContactResponseSchema>
+
 export const HealthResponseSchema = z.object({ ok: z.boolean(), cities: z.number() })
 export type HealthResponse = z.infer<typeof HealthResponseSchema>
 
