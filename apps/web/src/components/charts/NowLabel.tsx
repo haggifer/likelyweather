@@ -2,7 +2,7 @@
 
 import { useScrollLeft } from '@/hooks/useScrollLeft'
 import { getLabelWidth } from '@fa/chart-core/day-labels'
-import { getNowLabelStart, NOW_LABEL_FONT_SIZE } from '@fa/chart-core/plot-geometry'
+import { getNowLabelStart, LABEL_FONT_SIZE } from '@fa/chart-core/plot-geometry'
 import { RefObject } from 'react'
 
 interface IProps {
@@ -21,7 +21,7 @@ interface IProps {
 export function NowLabel({ scrollRef, nowX, insetLeft, y, text, color }: IProps) {
     const scrollLeft = useScrollLeft(scrollRef)
 
-    const width = getLabelWidth(text, NOW_LABEL_FONT_SIZE)
+    const width = getLabelWidth(text, LABEL_FONT_SIZE)
     const start = getNowLabelStart(nowX, width, scrollLeft + insetLeft)
     const isCentred = start === nowX - width / 2
 
@@ -30,7 +30,7 @@ export function NowLabel({ scrollRef, nowX, insetLeft, y, text, color }: IProps)
             x={isCentred ? nowX : start}
             y={y}
             textAnchor={isCentred ? 'middle' : 'start'}
-            fontSize={NOW_LABEL_FONT_SIZE}
+            fontSize={LABEL_FONT_SIZE}
             fontWeight={600}
             fill={color}
             pointerEvents="none"

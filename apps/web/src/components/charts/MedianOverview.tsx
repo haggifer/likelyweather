@@ -40,14 +40,7 @@ import {
     getValueAt,
 } from '@fa/chart-core/overview-readouts'
 import { OverviewMedians } from '@fa/chart-core/overview-stats'
-import {
-    AXIS_FONT_SIZE,
-    CHART_FONT_SIZE,
-    clamp,
-    getNowX,
-    NOW_LABEL_FONT_SIZE,
-    PANEL_NAME_FONT_SIZE,
-} from '@fa/chart-core/plot-geometry'
+import { CHART_FONT_SIZE, clamp, getNowX, LABEL_FONT_SIZE, PANEL_NAME_FONT_SIZE } from '@fa/chart-core/plot-geometry'
 import { formatYTick } from '@fa/chart-core/scales'
 import { getInitialScrollLeft, getLabelX, getVisibleRange } from '@fa/chart-core/scroll-geometry'
 import { getNearestIndex } from '@fa/chart-core/spaghetti-geometry'
@@ -198,7 +191,7 @@ export function MedianOverview({
     const { x, plotRight, plotWidth, slotWidth } = frame
     const readoutIndex = getOverviewReadoutIndex(times, hoverIndex, now)
     const nowX = getNowX(x, now, geometry.marginLeft, plotRight)
-    const nowLabelY = geometry.isNowLabelAbove ? geometry.plotTop - 7 : geometry.plotTop + NOW_LABEL_FONT_SIZE
+    const nowLabelY = geometry.isNowLabelAbove ? geometry.plotTop - 7 : geometry.plotTop + LABEL_FONT_SIZE
     const scales = useMemo(() => geometry.rows.map((row) => getPanelScale(row, series)), [geometry, series])
     const hoverDots = hoverIndex === null ? [] : getHoverDots(geometry.rows, scales, series, axisSteps[hoverIndex])
     const initialScrollLeft = getInitialScrollLeft(now ? x(now) : null, {
@@ -321,7 +314,7 @@ export function MedianOverview({
                                             y={getChanceY(bottom)}
                                             dy="0.32em"
                                             textAnchor="middle"
-                                            fontSize={CHART_FONT_SIZE}
+                                            fontSize={LABEL_FONT_SIZE}
                                             fontWeight={label.isLikely ? 600 : 400}
                                             fill={label.isLikely ? theme.foreground : theme.muted}
                                         >
@@ -519,7 +512,7 @@ export function MedianOverview({
                                 <text
                                     x={nowX + 4}
                                     y={nowLabelY}
-                                    fontSize={NOW_LABEL_FONT_SIZE}
+                                    fontSize={LABEL_FONT_SIZE}
                                     fontWeight={600}
                                     fill={theme.foreground}
                                     pointerEvents="none"
@@ -545,7 +538,7 @@ export function MedianOverview({
                                     x={hoverX}
                                     y={geometry.plotTop - 7}
                                     textAnchor="middle"
-                                    fontSize={CHART_FONT_SIZE}
+                                    fontSize={LABEL_FONT_SIZE}
                                     fontWeight={600}
                                     fill={theme.foreground}
                                     pointerEvents="none"
@@ -599,7 +592,7 @@ export function MedianOverview({
                                     y={scales[rowIndex].y(tick)}
                                     dy="0.32em"
                                     textAnchor="end"
-                                    fontSize={AXIS_FONT_SIZE}
+                                    fontSize={LABEL_FONT_SIZE}
                                     fill={theme.muted}
                                 >
                                     {formatYTick(tick)}
@@ -611,7 +604,7 @@ export function MedianOverview({
                                     y={getChanceY(bottom)}
                                     dy="0.32em"
                                     textAnchor="end"
-                                    fontSize={AXIS_FONT_SIZE}
+                                    fontSize={LABEL_FONT_SIZE}
                                     fill={theme.muted}
                                 >
                                     %

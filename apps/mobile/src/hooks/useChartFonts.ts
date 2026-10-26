@@ -1,9 +1,4 @@
-import {
-    AXIS_FONT_SIZE,
-    CHART_FONT_SIZE,
-    NOW_LABEL_FONT_SIZE,
-    PANEL_NAME_FONT_SIZE,
-} from '@fa/chart-core/plot-geometry'
+import { CHART_FONT_SIZE, LABEL_FONT_SIZE, PANEL_NAME_FONT_SIZE } from '@fa/chart-core/plot-geometry'
 import { SkFont, useFont } from '@shopify/react-native-skia'
 import { FONT_ASSETS } from '../theme/fonts'
 
@@ -11,16 +6,16 @@ export interface UseChartFontsResult {
     regular: SkFont | null
     semiBold: SkFont | null
     panelName: SkFont | null
-    nowLabel: SkFont | null
-    axis: SkFont | null
+    label: SkFont | null
+    labelBold: SkFont | null
 }
 
 export function useChartFonts(): UseChartFontsResult {
     const regular = useFont(FONT_ASSETS.Inter_400Regular, CHART_FONT_SIZE)
     const semiBold = useFont(FONT_ASSETS.Inter_600SemiBold, CHART_FONT_SIZE)
     const panelName = useFont(FONT_ASSETS.Inter_600SemiBold, PANEL_NAME_FONT_SIZE)
-    const nowLabel = useFont(FONT_ASSETS.Inter_600SemiBold, NOW_LABEL_FONT_SIZE)
-    const axis = useFont(FONT_ASSETS.Inter_400Regular, AXIS_FONT_SIZE)
+    const label = useFont(FONT_ASSETS.Inter_400Regular, LABEL_FONT_SIZE)
+    const labelBold = useFont(FONT_ASSETS.Inter_600SemiBold, LABEL_FONT_SIZE)
 
-    return { regular, semiBold, panelName, nowLabel, axis }
+    return { regular, semiBold, panelName, label, labelBold }
 }

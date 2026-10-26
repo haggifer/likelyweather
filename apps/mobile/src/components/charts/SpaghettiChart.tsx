@@ -1,6 +1,6 @@
 import { ChartTheme } from '@fa/chart-core/chart-theme'
 import { useAnimatedDomain } from '@fa/chart-core/hooks/useAnimatedDomain'
-import { AXIS_FONT_SIZE, getBarWidth, getNowX } from '@fa/chart-core/plot-geometry'
+import { getBarWidth, getNowX, LABEL_FONT_SIZE } from '@fa/chart-core/plot-geometry'
 import { formatYTick } from '@fa/chart-core/scales'
 import { getInitialScrollLeft, getScrollWidth, getVisibleRange, MIN_SLOT_WIDTH } from '@fa/chart-core/scroll-geometry'
 import {
@@ -61,7 +61,7 @@ import { TapSurface } from './TapSurface'
 // The canvas follows the offset every frame, so the scroll view reports every frame.
 const SCROLL_THROTTLE_MS = 16
 // Half the cap height of the tick font, so a label centres on its gridline: SVG's `dy="0.32em"`.
-const BASELINE_SHIFT = AXIS_FONT_SIZE * 0.32
+const BASELINE_SHIFT = LABEL_FONT_SIZE * 0.32
 const Y_TICK_COUNT = 5
 const DAY_LABEL_OFFSET = 18
 const NOW_INTERVALS = [4, 3]
@@ -447,7 +447,7 @@ export function SpaghettiChart({
 }: IProps) {
     const t = useTranslations('chart')
     const { chart } = useTheme()
-    const { regular, semiBold, nowLabel, axis } = useChartFonts()
+    const { regular, label, labelBold } = useChartFonts()
     const isReducedMotion = useReducedMotion()
     const { width, onLayout } = useLayoutWidth()
 
@@ -567,7 +567,7 @@ export function SpaghettiChart({
                             />
                             {nowX !== null && !hover && (
                                 <CanvasText
-                                    font={nowLabel}
+                                    font={labelBold}
                                     text={t('now')}
                                     x={nowX + 4}
                                     y={margin.top + 10}
@@ -588,7 +588,7 @@ export function SpaghettiChart({
                                     isBars={isBars}
                                     isMedianHidden={isMedianHidden}
                                     chart={chart}
-                                    font={semiBold}
+                                    font={labelBold}
                                 />
                             )}
                         </Group>
@@ -600,7 +600,7 @@ export function SpaghettiChart({
                             unit={info.unit}
                             isWholeNumbers={info.decimals === 0}
                             chart={chart}
-                            font={axis}
+                            font={label}
                             unitFont={regular}
                         />
                     </Canvas>

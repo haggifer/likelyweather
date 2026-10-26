@@ -9,14 +9,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useNow } from '@/hooks/useNow'
 import { cn } from '@/lib/cn'
 import { useAnimatedDomain } from '@fa/chart-core/hooks/useAnimatedDomain'
-import {
-    AXIS_FONT_SIZE,
-    CHART_FONT_SIZE,
-    clamp,
-    getBarWidth,
-    getNowX,
-    NOW_LABEL_FONT_SIZE,
-} from '@fa/chart-core/plot-geometry'
+import { CHART_FONT_SIZE, clamp, getBarWidth, getNowX, LABEL_FONT_SIZE } from '@fa/chart-core/plot-geometry'
 import { formatYTick } from '@fa/chart-core/scales'
 import { getInitialScrollLeft, getScrollWidth, getVisibleRange, MIN_SLOT_WIDTH } from '@fa/chart-core/scroll-geometry'
 import {
@@ -278,7 +271,7 @@ export function SpaghettiChart({
                         <text
                             x={nowX + 4}
                             y={margin.top + 10}
-                            fontSize={NOW_LABEL_FONT_SIZE}
+                            fontSize={LABEL_FONT_SIZE}
                             fontWeight={600}
                             fill={theme.foreground}
                         >
@@ -461,7 +454,7 @@ export function SpaghettiChart({
                                         x={hover.labelX}
                                         y={margin.top - 8}
                                         textAnchor="middle"
-                                        fontSize={CHART_FONT_SIZE}
+                                        fontSize={LABEL_FONT_SIZE}
                                         fontWeight={600}
                                         fill={theme.foreground}
                                     >
@@ -566,7 +559,7 @@ export function SpaghettiChart({
                         y={y(tick)}
                         dy="0.32em"
                         textAnchor="end"
-                        fontSize={AXIS_FONT_SIZE}
+                        fontSize={LABEL_FONT_SIZE}
                         fill={theme.muted}
                     >
                         {formatYTick(tick, info.decimals === 0)}

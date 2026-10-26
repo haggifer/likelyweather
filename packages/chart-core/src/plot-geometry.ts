@@ -5,9 +5,9 @@ const BAR_RATIO = 0.62
 export const CHART_FONT_SIZE = 11
 // The overview's panel names on phones ("Temperature, °C").
 export const PANEL_NAME_FONT_SIZE = 14
-export const NOW_LABEL_FONT_SIZE = 12
-// The value axis's numbers, and the chance of rain's "%" beside them.
-export const AXIS_FONT_SIZE = 13
+// The value axis's numbers and the chance of rain's "%" beside them, the chance of rain's values, and the label over
+// the plot: "now", or the picked slot's time that replaces it.
+export const LABEL_FONT_SIZE = 12
 
 export const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value))
 

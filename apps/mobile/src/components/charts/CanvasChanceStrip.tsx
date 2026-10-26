@@ -1,9 +1,10 @@
 import { ChanceLabel } from '@fa/chart-core/overview-geometry'
+import { LABEL_FONT_SIZE } from '@fa/chart-core/plot-geometry'
 import { Group, SkFont } from '@shopify/react-native-skia'
 import { CanvasText } from './CanvasText'
 
 // Half the cap height of the tick font, so a label centres on the strip's middle like the axis ticks on their lines.
-const BASELINE_SHIFT = 3.5
+const BASELINE_SHIFT = LABEL_FONT_SIZE * 0.32
 
 interface IProps {
     labels: ChanceLabel[]
