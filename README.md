@@ -6,7 +6,7 @@ Android app with a home-screen widget shows the same.
 
 **[Try it live](https://dom3g5nxr3yi9.cloudfront.net)** (no sign-up)
 
-[![CI](https://github.com/haggifer/forecast-arena/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/haggifer/forecast-arena/actions/workflows/ci.yml)
+[![CI](https://github.com/haggifer/likelyweather/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/haggifer/likelyweather/actions/workflows/ci.yml)
 [![License: PolyForm Noncommercial](https://img.shields.io/badge/license-PolyForm%20Noncommercial-blue)](LICENSE)
 
 ![The London dashboard: ten models' temperature forecasts with their band and median, and the disagreement by day](.github/readme/dashboard.png)
