@@ -80,12 +80,16 @@ const createDecryptSecretsStatement = (stack: Stack) =>
         conditions: { StringEquals: { 'kms:ViaService': `ssm.${stack.region}.amazonaws.com` } },
     })
 
-// In the SES sandbox the recipient's verified address is checked as an identity too, so the grant covers the account's
-// identities in the stack's region rather than the sending domain alone.
-const createSendEmailStatement = (stack: Stack) =>
+const getEmailAddress = (sender: string) => sender.match(/<([^>]+)>/)?.[1] ?? sender
+
+// In the SES sandbox the recipient's verified address is checked as an identity too, and the recipient lives in SSM,
+// out of the template, so the resource covers the account's identities and the From condition holds the grant to the
+// contact form's sender.
+const createSendEmailStatement = (stack: Stack, sender: string) =>
     new iam.PolicyStatement({
         actions: ['ses:SendEmail'],
         resources: [`arn:aws:ses:${stack.region}:${stack.account}:identity/*`],
+        conditions: { StringEquals: { 'ses:FromAddress': getEmailAddress(sender) } },
     })
 
 // The web app and the API are HTTP servers that the Lambda Web Adapter starts through run.sh.
@@ -290,7 +294,7 @@ export class ForecastArenaStack extends Stack {
         })
         api.addToRolePolicy(readSecrets)
         api.addToRolePolicy(decryptSecrets)
-        api.addToRolePolicy(createSendEmailStatement(this))
+        api.addToRolePolicy(createSendEmailStatement(this, props.contactSender))
         const apiUrl = api.addFunctionUrl({ authType: lambda.FunctionUrlAuthType.AWS_IAM })
 
         const alerts = new sns.Topic(this, 'Alerts')

@@ -94,6 +94,7 @@ describe('ForecastArenaStack', () => {
                     Match.objectLike({
                         Action: 'ses:SendEmail',
                         Resource: 'arn:aws:ses:eu-central-1:111111111111:identity/*',
+                        Condition: { StringEquals: { 'ses:FromAddress': 'noreply@likelyweather.com' } },
                     }),
                 ]),
             },
