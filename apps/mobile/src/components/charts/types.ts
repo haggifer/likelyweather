@@ -7,3 +7,11 @@ export interface OverviewSelection {
     label: string
     dots: HoverDot[]
 }
+
+// A row of a table whose columns are time slots: a label and one cell per slot.
+export interface TimeTableRow {
+    key: string
+    label: string
+    isBold?: boolean
+    cells: string[]
+}

@@ -110,7 +110,6 @@
         "fetching": "Obteniendo diez modelos para {name}…",
         "summary": "La mediana ({variable}) de los próximos diez días va de {min} a {max} {unit} entre {count, plural, one {# modelo} other {# modelos}}. Discrepan más el {day} (dispersión {spread} {unit}).",
         "median": "Mediana",
-        "time": "Hora (ciudad)",
         "windArrows": "Las flechas muestran hacia dónde sopla el viento mediano; elige una hora para ver de dónde viene."
     },
     "legend": {

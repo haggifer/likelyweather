@@ -110,7 +110,6 @@
         "fetching": "Zehn Modelle für {name} werden abgerufen…",
         "summary": "Der Median ({variable}) der nächsten zehn Tage reicht über {count, plural, one {# Modell} other {# Modelle}} von {min} bis {max} {unit}. Am meisten weichen sie am {day} ab (Spanne {spread} {unit}).",
         "median": "Median",
-        "time": "Zeit (Ortszeit)",
         "windArrows": "Die Pfeile zeigen, wohin der mittlere Wind weht; wähle eine Zeit, um zu sehen, woher er kommt."
     },
     "legend": {

@@ -52,9 +52,13 @@ export const formatTime = (iso: string | Date, timeZone: string, locale: string,
 export const formatStepLabel = (iso: string, timeZone: string, locale: string) =>
     formatTime(iso, timeZone, locale, { weekday: 'short', ...CLOCK })
 
-// A table row's time, "Thu 17 Sept, 06:00": a table runs past a week, where the weekday alone repeats.
-export const formatTableStepLabel = (iso: string, timeZone: string, locale: string) =>
-    formatTime(iso, timeZone, locale, { ...DAY_LABEL_OPTIONS.long, ...CLOCK })
+// A table column's slot, "03:00": the 24-hour clock in every language, which keeps the columns narrow.
+export const formatSlotTime = (iso: string, timeZone: string, locale: string) =>
+    formatTime(iso, timeZone, locale, CLOCK)
+
+// A date in digits, "26.10" or "26/10", for a table's date header where the weekday and month name do not fit.
+export const formatNumericDay = (iso: string, timeZone: string, locale: string) =>
+    formatTime(iso, timeZone, locale, { day: '2-digit', month: '2-digit' })
 
 // A total over a span, e.g. "Sat 03:00–06:00": the day is the start's, so a span ending at midnight reads "Sat 21:00–00:00".
 export const formatPeriodLabel = (start: string, end: string, timeZone: string, locale: string) =>

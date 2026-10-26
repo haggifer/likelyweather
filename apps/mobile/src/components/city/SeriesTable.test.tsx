@@ -25,14 +25,16 @@ const renderTable = (isMedianHidden: boolean) =>
     )
 
 describe('SeriesTable', () => {
-    it('heads the median before the models', async () => {
+    it('heads the median row before the models', async () => {
         await renderTable(false)
 
-        expect(screen.getByText('Median')).toBeOnTheScreen()
+        const heads = screen.getAllByRole('header').map((head) => head.props.children)
+
+        expect(heads).toEqual(['Median', 'GFS'])
         expect(screen.getByText('15.5')).toBeOnTheScreen()
     })
 
-    it('drops the median column while the median is hidden', async () => {
+    it('drops the median row while the median is hidden', async () => {
         await renderTable(true)
 
         expect(screen.queryByText('Median')).toBeNull()

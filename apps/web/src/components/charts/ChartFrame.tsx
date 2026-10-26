@@ -1,7 +1,6 @@
 'use client'
 
 import { NoDataOverlay } from '@/components/charts/NoDataOverlay'
-import { TABLE_SCROLL } from '@/components/charts/table-cells'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useViewMode } from '@/hooks/useViewMode'
@@ -67,7 +66,7 @@ export function ChartFrame({
                     isFetching && 'opacity-60',
                 )}
             >
-                {isTable && table ? <div className={cn(TABLE_SCROLL, 'max-h-[26.25rem]')}>{table}</div> : children}
+                {isTable && table ? table : children}
                 {footer}
                 {emptyMessage && <NoDataOverlay message={emptyMessage} />}
                 {/* Only a switch slower than 300 ms shows it; the spin is a transform, which keeps turning while the chart is
