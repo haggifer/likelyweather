@@ -177,16 +177,18 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('withLocalNames (database, stu
         expect(fetch).toHaveBeenCalledTimes(6)
     })
 
-    it('keeps the stored names when the geocoder fails, to try again on the next read', async () => {
+    it('keeps the stored names when the geocoder fails, and does not ask again during the cooldown', async () => {
         vi.spyOn(console, 'warn').mockImplementation(() => {})
-        vi.stubGlobal(
-            'fetch',
-            vi.fn(async () => new Response('unavailable', { status: 400 })),
-        )
+        const fetch = vi.fn(async () => new Response('unavailable', { status: 400 }))
+        vi.stubGlobal('fetch', fetch)
 
         const served = await withLocalNames(FAILING_CITY)
+        const calls = fetch.mock.calls.length
+        const again = await withLocalNames(FAILING_CITY)
 
         expect(served).toBe(FAILING_CITY)
+        expect(again).toBe(FAILING_CITY)
+        expect(fetch).toHaveBeenCalledTimes(calls)
         expect((await getCityById(FAILING_CITY.id))?.admin1Local).toBeUndefined()
     })
 })
