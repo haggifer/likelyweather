@@ -12,14 +12,13 @@ import { getPanelTicks, getYDomain } from './scales'
 import { getScrollWidth, MIN_ARCHIVE_HOUR_WIDTH, MIN_SLOT_WIDTH } from './scroll-geometry'
 import { getSumBarCenter } from './spaghetti-geometry'
 
-// A size of the overview's drawing: the panels' heights, the tick-label column and the hovered time's label.
 export interface OverviewSize {
     heights: Record<PanelVariable, number>
     marginLeft: number
     hoverLabelHalfWidth: number
 }
 
-// A panel's box: `bottom` is its plot's baseline, above the strip of arrows or chances under it.
+// `bottom` is the plot's baseline, above the strip of arrows or chances under it.
 export interface PanelRow {
     variable: PanelVariable
     top: number
@@ -49,7 +48,6 @@ export interface OverviewFrame {
     slotWidth: number
 }
 
-// A panel's value axis: the scale and the ticks its gridlines and its pinned labels share.
 export interface PanelScale {
     y: ScaleLinear<number, number>
     ticks: number[]
@@ -74,7 +72,6 @@ export interface ChanceLabel {
     key: string
     x: number
     text: string
-    // Half the models or more: the label stands out.
     isLikely: boolean
 }
 
@@ -102,7 +99,7 @@ export const SECONDARY_DASH = '5 3'
 const SLOT_MS = SLOT_HOURS * HOUR_MS
 const LIKELY_CHANCE = 0.5
 
-// The overview of the web's desktop column. Text is 11 px everywhere (author, 2026-10-12).
+// The overview of the web's desktop column.
 export const OVERVIEW_SIZE: OverviewSize = {
     heights: {
         [Variable.Temp]: 104,
@@ -112,12 +109,12 @@ export const OVERVIEW_SIZE: OverviewSize = {
         [Variable.Humidity]: 80,
         [Variable.Cloud]: 80,
     },
-    marginLeft: 36,
+    marginLeft: 40,
     hoverLabelHalfWidth: 34,
 }
 
 // The overview on a phone, the web's below `sm` and the app's: the landing page's main content, so its panels are
-// taller than in the desktop column (author, 2026-10-09); the readouts above the chart leave it the full width.
+// taller than in the desktop column; the readouts above the chart leave it the full width.
 export const OVERVIEW_PHONE_SIZE: OverviewSize = {
     heights: {
         [Variable.Temp]: 120,
@@ -174,12 +171,10 @@ export const getOverviewLayout = (
     }
 }
 
-// The middle of the strips under a panel's baseline.
 export const getChanceY = (bottom: number) => bottom + CHANCE_GAP + CHANCE_STRIP / 2
 
 export const getArrowY = (bottom: number) => bottom + ARROW_STRIP / 2 + 2
 
-// The forecast steps every 3-hour slot; the archive's past weather every hour, narrower.
 export const getOverviewStepMs = (isArchive: boolean) => (isArchive ? HOUR_MS : SLOT_MS)
 
 export const getOverviewContentWidth = (width: number, steps: number, marginLeft: number, isArchive: boolean) =>
@@ -190,7 +185,6 @@ export const getOverviewContentWidth = (width: number, steps: number, marginLeft
         marginLeft + OVERVIEW_MARGIN_RIGHT,
     )
 
-// The time axis across the whole scrollable drawing, and the sizes that follow from it.
 export const getOverviewFrame = (
     times: Date[],
     marginLeft: number,
@@ -241,7 +235,6 @@ const getLinePath = (points: Point[], x: ScaleTime<number, number>, y: ScaleLine
         .y((p) => y(p[1] as number))
         .curve(curveMonotoneX)(points) ?? ''
 
-// A line panel's median as a shaded area under its line, and its dashed second line.
 export const getPanelPaths = (
     { variable, bottom }: PanelRow,
     series: OverviewMedians,
@@ -258,7 +251,7 @@ export const getPanelPaths = (
     }
 }
 
-// A precipitation bar is the amount of the step after its slot; bars that would overflow the plot are not drawn.
+// A precipitation bar is the amount of the step after its slot.
 export const getPanelBars = (
     { variable, bottom }: PanelRow,
     series: OverviewMedians,
@@ -303,7 +296,6 @@ export const getChanceLabels = (
 const toDots = (key: string, value: number | null | undefined, y: ScaleLinear<number, number>, isSecondary = false) =>
     value === null || value === undefined ? [] : [{ key, cy: y(value), isSecondary }]
 
-// The selected slot's median on every line panel, and the dashed second line's value where a panel has one.
 export const getHoverDots = (rows: PanelRow[], scales: PanelScale[], series: OverviewMedians, step: string) =>
     rows.flatMap(({ variable }, i): HoverDot[] => {
         if (variable === Variable.Precip) return []

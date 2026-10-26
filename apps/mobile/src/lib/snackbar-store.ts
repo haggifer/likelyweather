@@ -26,7 +26,6 @@ const MAX_ACTIONS = 2
 let current: Snackbar | null = null
 let lastId = 0
 
-// The message on screen, until it closes.
 export const getSnackbar = (): Snackbar | null => current
 
 const forget = (id: string | number) => {
@@ -46,8 +45,7 @@ const handleAction = (id: number, action: SnackbarAction) => {
     action.onPress()
 }
 
-// The app's one feedback surface, the web's toast (sonner there, sonner-native here): a new message replaces the one
-// on screen.
+// A new message replaces the one on screen, as the web's toast does (sonner there, sonner-native here).
 export const showSnackbar = (
     message: string,
     actions: SnackbarAction[] = [],

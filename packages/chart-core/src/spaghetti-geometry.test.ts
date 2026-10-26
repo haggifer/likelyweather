@@ -99,7 +99,7 @@ describe('spaghetti layout', () => {
 
     it('makes room for the wind arrows under the plot, and less around a compact chart', () => {
         expect(getSpaghettiMargin(false, true)).toEqual({ top: 24, right: 12, bottom: 56, left: 44 })
-        expect(getSpaghettiMargin(true, false)).toEqual({ top: 14, right: 12, bottom: 22, left: 34 })
+        expect(getSpaghettiMargin(true, false)).toEqual({ top: 14, right: 12, bottom: 22, left: 40 })
         expect(getArrowRowY(340)).toBe(325)
     })
 

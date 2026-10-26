@@ -1,6 +1,6 @@
 import { getPrisma, loadLocalEnv } from '@fa/db/client'
 import { City } from '@fa/shared/api'
-import { FORECAST_HOURS, PAST_HOURS } from '@fa/shared/constants'
+import { FORECAST_HOURS, HOUR_MS, PAST_HOURS } from '@fa/shared/constants'
 import { ModelId } from '@fa/shared/models'
 import { ModelSeries } from '@fa/shared/variables'
 import { readFileSync } from 'node:fs'
@@ -103,6 +103,18 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('collect (database, recorded u
         expect(snapshot).toBeNull()
         expect(failed).toMatchObject({ id: served.id, status: 'FAILED' })
         expect(stored.status).toBe('OK')
+        expect(await getLatestSnapshotMeta(CITY.id)).toMatchObject({ runId: served.id, runStatus: 'OK' })
+    })
+
+    it('keeps the stored run when Open-Meteo fails at a new issue', async () => {
+        vi.stubGlobal('fetch', respond(200))
+        const { run: served } = await collect({ city: CITY, now: NOW })
+
+        vi.stubGlobal('fetch', respond(200, 400))
+        const { run, snapshot } = await collect({ city: CITY, now: new Date(NOW.getTime() + 6 * HOUR_MS) })
+
+        expect(snapshot).toBeNull()
+        expect(run.status).toBe('FAILED')
         expect(await getLatestSnapshotMeta(CITY.id)).toMatchObject({ runId: served.id, runStatus: 'OK' })
     })
 })

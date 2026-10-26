@@ -1,7 +1,7 @@
 import { loadLocalEnv } from '@fa/db/client'
 import { z } from 'zod'
 
-const DEFAULT_METNO_USER_AGENT = 'forecast-arena/1.0 (no contact configured)'
+const DEFAULT_METNO_USER_AGENT = 'likelyweather/1.0 (no contact configured)'
 
 const EnvSchema = z.object({
     OPEN_METEO_FORECAST_BASE: z.url().default('https://api.open-meteo.com'),

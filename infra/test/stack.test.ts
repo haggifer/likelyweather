@@ -1,17 +1,39 @@
 import { App } from 'aws-cdk-lib'
 import { Match, Template } from 'aws-cdk-lib/assertions'
-import { ForecastArenaStack } from '../lib/forecast-arena-stack'
+import { ForecastArenaStack, ForecastArenaStackProps } from '../lib/forecast-arena-stack'
+
+const CERTIFICATE_ARN = 'arn:aws:acm:us-east-1:111111111111:certificate/00000000-0000-0000-0000-000000000000'
+
+const PROPS: ForecastArenaStackProps = {
+    env: { account: '111111111111', region: 'eu-central-1' },
+    alertEmail: 'alerts@example.com',
+    githubRepo: 'owner/likelyweather',
+    githubBranch: 'main',
+    monthlyBudgetUsd: 5,
+}
 
 // Needs the Lambda bundles: run `pnpm build` first (Turbo builds them before this package's tests).
-const template = Template.fromStack(
-    new ForecastArenaStack(new App(), 'Test', {
-        env: { account: '111111111111', region: 'eu-central-1' },
-        alertEmail: 'alerts@example.com',
-        githubRepo: 'owner/forecast-arena',
-        githubBranch: 'main',
-        monthlyBudgetUsd: 5,
+const template = Template.fromStack(new ForecastArenaStack(new App(), 'Test', PROPS))
+const domainTemplate = Template.fromStack(
+    new ForecastArenaStack(new App(), 'Domain', {
+        ...PROPS,
+        domain: { name: 'likelyweather.com', certificateArn: CERTIFICATE_ARN },
     }),
 )
+
+interface ViewerRequest {
+    uri: string
+    headers: { host: { value: string } }
+    querystring: Record<string, { value: string; multiValue?: { value: string }[] }>
+}
+
+// The redirect function as CloudFront runs it: the synthesized code, called with a viewer request.
+const runWwwRedirect = (request: ViewerRequest) => {
+    const [fn] = Object.values(domainTemplate.findResources('AWS::CloudFront::Function'))
+    const handler = new Function(`${fn.Properties.FunctionCode}; return handler`)()
+
+    return handler({ request })
+}
 
 describe('ForecastArenaStack', () => {
     it('creates nothing with an always-on cost: no VPC, NAT gateway, ElastiCache or RDS', () => {
@@ -68,7 +90,7 @@ describe('ForecastArenaStack', () => {
                             StringEquals: {
                                 'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
                                 'token.actions.githubusercontent.com:sub':
-                                    'repo:owner/forecast-arena:ref:refs/heads/main',
+                                    'repo:owner/likelyweather:ref:refs/heads/main',
                             },
                         },
                     }),
@@ -128,6 +150,13 @@ describe('ForecastArenaStack web', () => {
         })
     })
 
+    it('answers only on the CloudFront address without a domain', () => {
+        template.hasResourceProperties('AWS::CloudFront::Distribution', {
+            DistributionConfig: Match.objectLike({ Aliases: Match.absent(), ViewerCertificate: Match.absent() }),
+        })
+        template.resourceCountIs('AWS::CloudFront::Function', 0)
+    })
+
     it('forwards the viewer address to the API without headers CloudFront reserves for signing', () => {
         template.hasResourceProperties('AWS::CloudFront::OriginRequestPolicy', {
             OriginRequestPolicyConfig: Match.objectLike({
@@ -137,5 +166,60 @@ describe('ForecastArenaStack web', () => {
                 },
             }),
         })
+    })
+})
+
+describe('ForecastArenaStack domain', () => {
+    it('serves the domain and its www name with the given certificate over SNI', () => {
+        domainTemplate.hasResourceProperties('AWS::CloudFront::Distribution', {
+            DistributionConfig: Match.objectLike({
+                Aliases: ['likelyweather.com', 'www.likelyweather.com'],
+                ViewerCertificate: Match.objectLike({
+                    AcmCertificateArn: CERTIFICATE_ARN,
+                    SslSupportMethod: 'sni-only',
+                }),
+            }),
+        })
+    })
+
+    it('runs the www redirect on page requests only', () => {
+        domainTemplate.hasResourceProperties('AWS::CloudFront::Distribution', {
+            DistributionConfig: Match.objectLike({
+                DefaultCacheBehavior: Match.objectLike({
+                    FunctionAssociations: [Match.objectLike({ EventType: 'viewer-request' })],
+                }),
+                CacheBehaviors: Match.arrayWith([
+                    Match.objectLike({ PathPattern: '/api/*', FunctionAssociations: Match.absent() }),
+                ]),
+            }),
+        })
+    })
+
+    it('reports the domain as the site URL and the CloudFront name for DNS', () => {
+        domainTemplate.hasOutput('SiteUrl', { Value: 'https://likelyweather.com' })
+        domainTemplate.hasOutput('DistributionDomainName', Match.anyValue())
+    })
+
+    it('redirects www to the bare domain, keeping the path and query', () => {
+        const response = runWwwRedirect({
+            uri: '/archive',
+            headers: { host: { value: 'www.likelyweather.com' } },
+            querystring: {
+                city: { value: 'kyiv' },
+                v: { value: 'wind', multiValue: [{ value: 'wind' }, { value: 'gusts' }] },
+            },
+        })
+
+        expect(response).toEqual({
+            statusCode: 301,
+            statusDescription: 'Moved Permanently',
+            headers: { location: { value: 'https://likelyweather.com/archive?city=kyiv&v=wind&v=gusts' } },
+        })
+    })
+
+    it('passes requests for the bare domain through unchanged', () => {
+        const request = { uri: '/', headers: { host: { value: 'likelyweather.com' } }, querystring: {} }
+
+        expect(runWwwRedirect(request)).toBe(request)
     })
 })

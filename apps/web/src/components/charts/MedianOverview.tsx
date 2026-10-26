@@ -40,7 +40,7 @@ import {
     getValueAt,
 } from '@fa/chart-core/overview-readouts'
 import { OverviewMedians } from '@fa/chart-core/overview-stats'
-import { CHART_FONT_SIZE, clamp, getNowX } from '@fa/chart-core/plot-geometry'
+import { CHART_FONT_SIZE, clamp, getNowX, LABEL_FONT_SIZE, PANEL_NAME_FONT_SIZE } from '@fa/chart-core/plot-geometry'
 import { formatYTick } from '@fa/chart-core/scales'
 import { getInitialScrollLeft, getLabelX, getVisibleRange } from '@fa/chart-core/scroll-geometry'
 import { getNearestIndex } from '@fa/chart-core/spaghetti-geometry'
@@ -52,6 +52,7 @@ import { useTranslations } from 'next-intl'
 import { CSSProperties, KeyboardEvent, MouseEvent, PointerEvent, useId, useMemo, useState } from 'react'
 import { getArrowStep } from './arrow-keys'
 import { DayGrid } from './DayGrid'
+import { NowLabel } from './NowLabel'
 import { getPointerTime } from './pointer-time'
 import { WindArrows } from './WindArrows'
 
@@ -69,11 +70,11 @@ const DESKTOP_SIZE: ChartSize = { ...OVERVIEW_SIZE, isNowLabelAbove: false }
 const PHONE_SIZE: ChartSize = {
     ...OVERVIEW_PHONE_SIZE,
     // The panel names sit in the panels' top-left corner, where the "now" line always is right after a fetch; above
-    // the panels the label centres on its line like the hovered time (author, 2026-10-13).
+    // the panels the label centres on its line like the hovered time.
     isNowLabelAbove: true,
 }
-// Phones stack the readouts in a two-column grid above a full-width chart (equal columns whose rows line up); from
-// `sm` they form a 12rem column beside it, one per panel. The column's gap and padding match ROW_GAP, HOVER_STRIP and AXIS_HEIGHT.
+// The phone readouts are a grid so their two equal columns line up row by row. From `sm` the column's gap and padding
+// match ROW_GAP, HOVER_STRIP and AXIS_HEIGHT.
 const GRID = 'flex flex-col gap-y-3 sm:flex-row sm:gap-x-4 sm:*:last:min-w-0 sm:*:last:flex-1'
 const READOUTS = 'grid grid-cols-2 gap-2 sm:flex sm:w-48 sm:shrink-0 sm:flex-col sm:gap-3.5 sm:pt-5 sm:pb-5.5'
 const STACKED_QUERY = '(width < 62rem)'
@@ -92,7 +93,6 @@ const getGeometry = (size: ChartSize, panels: PanelVariable[], hasChance: boolea
 export function MedianOverviewSkeleton({ panels, isArchive = false }: SkeletonProps) {
     const { panels: stored } = useOverviewPanels()
 
-    // The overview's own choice unless a page with its own panels (the archive) passes them.
     const visible = panels ?? getVisiblePanels(stored)
 
     return (
@@ -149,12 +149,9 @@ interface IProps {
     isArchive?: boolean
 }
 
-// Median of all models for each of the reader's panels on one time axis of 3-hour slots; a precipitation bar is the
-// amount of the 3 hours after its slot, and the strip under the bars the share of models above 0.2 mm in it. Readouts
-// follow the crosshair, or the slot nearest to `now`; the hovered slot's time sits above the panels. `now` draws the
-// "now" line at the exact current time, which is inside the first slot right after a refresh, and shades the past.
-// The archive draws a city's past weather the same way, every hour and narrower, without a now line or a chance of
-// rain.
+// A precipitation bar is the amount of the 3 hours after its slot, and the strip under the bars the share of models
+// above 0.2 mm in it. `now` draws the "now" line at the exact current time, which is inside the first slot right after
+// a refresh. The archive draws every hour, without a now line or a chance of rain.
 export function MedianOverview({
     panels,
     series,
@@ -194,8 +191,7 @@ export function MedianOverview({
     const { x, plotRight, plotWidth, slotWidth } = frame
     const readoutIndex = getOverviewReadoutIndex(times, hoverIndex, now)
     const nowX = getNowX(x, now, geometry.marginLeft, plotRight)
-    const nowLabelY = geometry.isNowLabelAbove ? geometry.plotTop - 7 : geometry.plotTop + CHART_FONT_SIZE
-    const isNowLabelShown = !geometry.isNowLabelAbove || hoverIndex === null
+    const nowLabelY = geometry.isNowLabelAbove ? geometry.plotTop - 7 : geometry.plotTop + LABEL_FONT_SIZE
     const scales = useMemo(() => geometry.rows.map((row) => getPanelScale(row, series)), [geometry, series])
     const hoverDots = hoverIndex === null ? [] : getHoverDots(geometry.rows, scales, series, axisSteps[hoverIndex])
     const initialScrollLeft = getInitialScrollLeft(now ? x(now) : null, {
@@ -318,7 +314,7 @@ export function MedianOverview({
                                             y={getChanceY(bottom)}
                                             dy="0.32em"
                                             textAnchor="middle"
-                                            fontSize={CHART_FONT_SIZE}
+                                            fontSize={LABEL_FONT_SIZE}
                                             fontWeight={label.isLikely ? 600 : 400}
                                             fill={label.isLikely ? theme.foreground : theme.muted}
                                         >
@@ -502,12 +498,21 @@ export function MedianOverview({
                             onPointerDown={() => setHoverIndex(null)}
                             className="relative block overflow-visible outline-none"
                         >
-                            {nowX !== null && isNowLabelShown && (
-                                <text
-                                    x={geometry.isNowLabelAbove ? nowX : nowX + 4}
+                            {nowX !== null && geometry.isNowLabelAbove && hoverIndex === null && (
+                                <NowLabel
+                                    scrollRef={scrollRef}
+                                    nowX={nowX}
+                                    insetLeft={geometry.marginLeft}
                                     y={nowLabelY}
-                                    textAnchor={geometry.isNowLabelAbove ? 'middle' : 'start'}
-                                    fontSize={CHART_FONT_SIZE}
+                                    text={tc('now')}
+                                    color={theme.foreground}
+                                />
+                            )}
+                            {nowX !== null && !geometry.isNowLabelAbove && (
+                                <text
+                                    x={nowX + 4}
+                                    y={nowLabelY}
+                                    fontSize={LABEL_FONT_SIZE}
                                     fontWeight={600}
                                     fill={theme.foreground}
                                     pointerEvents="none"
@@ -533,7 +538,7 @@ export function MedianOverview({
                                     x={hoverX}
                                     y={geometry.plotTop - 7}
                                     textAnchor="middle"
-                                    fontSize={CHART_FONT_SIZE}
+                                    fontSize={LABEL_FONT_SIZE}
                                     fontWeight={600}
                                     fill={theme.foreground}
                                     pointerEvents="none"
@@ -587,7 +592,7 @@ export function MedianOverview({
                                     y={scales[rowIndex].y(tick)}
                                     dy="0.32em"
                                     textAnchor="end"
-                                    fontSize={CHART_FONT_SIZE}
+                                    fontSize={LABEL_FONT_SIZE}
                                     fill={theme.muted}
                                 >
                                     {formatYTick(tick)}
@@ -599,7 +604,7 @@ export function MedianOverview({
                                     y={getChanceY(bottom)}
                                     dy="0.32em"
                                     textAnchor="end"
-                                    fontSize={CHART_FONT_SIZE}
+                                    fontSize={LABEL_FONT_SIZE}
                                     fill={theme.muted}
                                 >
                                     %
@@ -612,8 +617,8 @@ export function MedianOverview({
                             <text
                                 key={variable}
                                 x={geometry.marginLeft + 6}
-                                y={top + CHART_FONT_SIZE + 2}
-                                fontSize={CHART_FONT_SIZE}
+                                y={top + PANEL_NAME_FONT_SIZE + 2}
+                                fontSize={PANEL_NAME_FONT_SIZE}
                                 fontWeight={600}
                                 fill={theme.muted}
                                 stroke={theme.card}

@@ -1,5 +1,6 @@
 import { OverviewMedians } from '@fa/chart-core/overview-stats'
 import en from '@fa/messages/catalogs/en.json'
+import { formatDayLabel } from '@fa/shared/format'
 import { Variable } from '@fa/shared/variables'
 import { render, screen } from '@testing-library/react-native'
 import { IntlProvider } from 'use-intl'
@@ -26,23 +27,26 @@ const renderTable = (chance: (number | null)[] | null) =>
     )
 
 describe('OverviewTable', () => {
-    it('heads each panel and its second line with their units, in the panels order', async () => {
+    it('heads a row for each panel and its second line with their units, in the panels order', async () => {
         await renderTable([0.4, 0])
 
-        const heads = screen.getAllByText(/, (°C|mm|%)$/).map((head) => head.props.children)
+        const heads = screen.getAllByRole('header').map((head) => head.props.children)
 
         expect(heads).toEqual(['Temperature, °C', 'Feels like, °C', 'Precipitation, mm', 'Chance of rain, %'])
     })
 
-    it('lists every slot with its values', async () => {
+    it('gives every slot a column under its day and time, with the values of each row', async () => {
         await renderTable([0.4, 0])
 
+        expect(screen.getByLabelText(formatDayLabel(SLOTS[0], 'UTC', 'en'))).toBeOnTheScreen()
+        expect(screen.getByText('00:00')).toBeOnTheScreen()
+        expect(screen.getByText('03:00')).toBeOnTheScreen()
         expect(screen.getByText('16.0')).toBeOnTheScreen()
         expect(screen.getByText('14.5')).toBeOnTheScreen()
         expect(screen.getByText('40')).toBeOnTheScreen()
     })
 
-    it('has no chance-of-rain column without a chance of rain', async () => {
+    it('has no chance-of-rain row without a chance of rain', async () => {
         await renderTable(null)
 
         expect(screen.queryByText('Chance of rain, %')).toBeNull()

@@ -4,8 +4,8 @@ import { addHours, floorToHours, getLocalHour, toIsoMinute } from './time'
 import { Aggregation } from './variables'
 
 export const SLOT_HOURS = 3
-// Both views cover ten days (author, 2026-10-12); a run reaches 320 hours past its issue time, so ten days from the
-// slot it was fetched in are always inside it. Two constants, so either view can be shortened on its own.
+// Both views cover ten days; a run reaches 320 hours past its issue time, so ten days from the slot it was fetched in
+// are always inside it. Two constants, so either view can be shortened on its own.
 const OVERVIEW_HOURS = 240
 export const DASHBOARD_HOURS = 240
 
@@ -42,7 +42,6 @@ export const toSlotSeries = (
         SLOT_HOURS,
     )
 
-// A `/latest` payload re-gridded onto slots, so charts take it like any other series.
 export const toSlotLatest = (latest: LatestResponse, slots: string[], aggregation: Aggregation): LatestResponse => {
     const toSlots = (list: Series[], listAggregation: Aggregation) =>
         list.map((s) => ({ modelId: s.modelId, values: toSlotSeries(latest.steps, s.values, slots, listAggregation) }))

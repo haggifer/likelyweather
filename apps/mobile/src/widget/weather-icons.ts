@@ -81,7 +81,6 @@ const ARROW_HEADS: Record<'up' | 'down', (offset: number) => string> = {
     down: (offset) => `M${10 - offset} ${19 - offset}H${19 - offset}V${10 - offset}`,
 }
 
-// One head for a change, two along the shaft for a fast one.
 const getArrow = (direction: 'up' | 'down', isFast: boolean) => {
     const shaft = direction === 'up' ? 'M5 19L19 5' : 'M5 5L19 19'
     const heads = isFast ? [ARROW_HEADS[direction](0), ARROW_HEADS[direction](5)] : [ARROW_HEADS[direction](0)]
@@ -108,7 +107,6 @@ const getTrendColor = (trend: TemperatureTrend) => {
     return trend === TemperatureTrend.Rising || trend === TemperatureTrend.RisingFast ? RISING : FALLING
 }
 
-// Beside the current temperature: where the forecast takes it over the next hours.
 export const getTrendIcon = (trend: TemperatureTrend) => {
     const path = getTrendPath(trend)
     const stroke = 'fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"'

@@ -149,7 +149,6 @@ export const buildTallImage = (pages: PNG[], offsets: number[], fixedTop: number
     return image
 }
 
-// The web's page and the app's screen side by side, at their device pixels.
 export const buildSideBySide = (web: PNG, app: PNG) => {
     const sheet = new PNG({ width: web.width + GAP + app.width, height: Math.max(web.height, app.height) })
     sheet.data.fill(255)

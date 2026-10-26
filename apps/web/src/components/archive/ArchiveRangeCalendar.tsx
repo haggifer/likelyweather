@@ -18,7 +18,7 @@ interface DayProps {
     day: ArchiveDayState
 }
 
-// The selected days join into one bar: the ends filled with the primary colour, the days between them muted.
+// The selected days join into one bar, rounded only at its ends.
 const getDayClassName = ({ isSelected, isRangeStart, isRangeEnd, isDisabled, isToday }: ArchiveDayState) =>
     cn(
         'size-9 font-normal tabular-nums touch:size-10',
@@ -80,9 +80,7 @@ interface IProps {
     onChange: (range: ArchiveRange) => void
 }
 
-// The archive period's month grid (`useArchiveRangeState`), with react-aria's grid semantics and keyboard: arrows move
-// between days, Enter or a click starts the period and a second one ends it. Wrapped in react-aria's `I18nProvider`
-// by its parent, so the days' spoken names follow the page's language.
+// Wrapped in react-aria's `I18nProvider` by its parent, so the days' spoken names follow the page's language.
 export function ArchiveRangeCalendar({ range, latest, onChange }: IProps) {
     const t = useTranslations('archive')
     const locale = useLocale()

@@ -21,9 +21,12 @@ const CHAR_WIDTH_EM = 0.6
 const LABEL_GAP = 8
 const STYLES: DayLabelStyle[] = ['long', 'short', 'narrow']
 
+// Estimated, not measured, so both apps place labels the same way without a layout pass.
+export const getLabelWidth = (text: string, fontSize: number) => text.length * fontSize * CHAR_WIDTH_EM
+
 export const getDayLabel = (iso: string, width: number, timeZone: string, locale: string, fontSize: number) =>
     STYLES.map((style) => formatDayLabel(iso, timeZone, locale, style)).find(
-        (label) => label.length * fontSize * CHAR_WIDTH_EM + LABEL_GAP <= width,
+        (label) => getLabelWidth(label, fontSize) + LABEL_GAP <= width,
     ) ?? null
 
 // Each local day's label, centred in its span of time between `start`, the local midnights and `end`, in the longest

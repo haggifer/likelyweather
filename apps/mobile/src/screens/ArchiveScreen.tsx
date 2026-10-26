@@ -11,8 +11,7 @@ import { ScreenScroll } from '../components/ui/ScreenScroll'
 import { usePlaces } from '../hooks/usePlaces'
 import { cn } from '../lib/cn'
 
-// The web's archive page: the same search and chips as Home, then the chosen city's past weather. The city is the
-// screen's `city` param, as the web keeps it in `?city=`, and the first chip until one is picked.
+// The city is the screen's `city` param, as the web keeps it in `?city=`, and the first chip until one is picked.
 export function ArchiveScreen() {
     const t = useTranslations('overview')
     const router = useRouter()

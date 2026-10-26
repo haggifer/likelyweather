@@ -6,5 +6,5 @@ export const MINUTE = 60_000
 
 export const getLatestQuery = (slug: string, variable: Variable) => ({
     queryKey: ['latest', slug, variable],
-    queryFn: () => apiGet<LatestResponse>(`/cities/${slug}/latest`, { variable }),
+    queryFn: () => apiGet<LatestResponse>(`/cities/${encodeURIComponent(slug)}/latest`, { variable }),
 })

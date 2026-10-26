@@ -18,7 +18,6 @@ interface IProps {
     mutedColor: string
 }
 
-// Each slot's median wind direction as an arrow, a dot where no model gave one.
 export function CanvasWindArrows({ x, times, directions, y, color, mutedColor }: IProps) {
     return (
         <Group>

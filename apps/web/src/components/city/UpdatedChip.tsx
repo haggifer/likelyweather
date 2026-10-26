@@ -13,7 +13,7 @@ interface IProps {
     fetchedAt: string
     timeZone: string
     now: Date | null
-    // The overview card's phone row has room for icons only (author, 2026-10-13): a warning clock, its age in the hint.
+    // The overview card's phone row has room for icons only: a warning clock, its age in the hint.
     isIconOnPhones?: boolean
     className?: string
 }
@@ -37,8 +37,8 @@ export function UpdatedChip({ issueTime, fetchedAt, timeZone, now, isIconOnPhone
         <Hint
             content={
                 isIconOnPhones ? (
-                    // The phone's warning clock tells only its age (author, 2026-10-14); the badge beside it on wider
-                    // screens keeps the run's times.
+                    // The phone's warning clock tells only its age; the badge beside it on wider screens keeps the
+                    // run's times.
                     <>
                         <span className="sm:hidden">{age}</span>
                         <span className="max-sm:hidden">{details}</span>

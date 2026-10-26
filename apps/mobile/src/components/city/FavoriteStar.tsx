@@ -9,7 +9,6 @@ interface IProps {
     tone: 'default' | 'inverse'
 }
 
-// A place's star, filled once it is pinned: the favorite toggle's face, and on its own the chips' read-only mark.
 export function FavoriteStar({ isPinned, size, tone }: IProps) {
     const { colors } = useTheme()
 

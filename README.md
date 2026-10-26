@@ -1,4 +1,4 @@
-# Forecast Arena
+# Likely Weather
 
 Compare what ten weather models forecast for any city, and see where they disagree. Viewers can hide or highlight any
 model, switch between eight variables, turn any chart into a table, and look up a city's past weather back to 1940. An
@@ -59,7 +59,7 @@ Windows. Development builds call the live API unless `apps/mobile/.env.local` se
 ```bash
 pnpm --filter @fa/mobile android   # build, install and start the development build
 pnpm mobile                        # Metro for an installed development build
-pnpm --filter @fa/mobile tokens    # regenerate src/theme/tokens.ts after editing apps/web/src/app/globals.css
+pnpm --filter @fa/mobile tokens    # regenerate src/theme/tokens.ts and src/global.css after editing apps/web/src/app/globals.css
 pnpm --filter @fa/mobile icons     # regenerate the app icons and splash from the web's cloud-sun logo
 ```
 
@@ -157,10 +157,15 @@ role and a monthly budget alarm. Postgres (Neon) and Redis (Upstash) are externa
 3. Once per account and region: `pnpm build && pnpm cdk:bootstrap --profile <profile>`.
 4. Deploy: `pnpm build && pnpm cdk:deploy --profile <profile> -c budgetEmail=<address> -c githubRepo=<owner>/<repo>`.
    The stack output `SiteUrl` is the site. Confirm the SNS subscription e-mail once, or the error alarm reaches nobody.
+5. Optionally, a domain of your own: request an ACM certificate in **us-east-1** (CloudFront takes certificates from no
+   other region) for the domain and its `www` name, validate it through DNS, and deploy with `-c certificateArn=<arn>`
+   (and `-c domainName=<domain>` for a domain other than `likelyweather.com`). Both names then answer, `www` redirecting
+   to the bare domain. Point both at the stack output `DistributionDomainName` with CNAME records, unproxied (no
+   Cloudflare orange cloud), because the API reads the viewer's own address and country from CloudFront.
 
 After that, pushes to `main` deploy through GitHub OIDC once CI has passed on them (`.github/workflows/deploy.yml`), as
-soon as the repository has the variables `AWS_DEPLOY_ROLE_ARN` (stack output `DeployRoleArn`) and `AWS_REGION`, and
-the secret `BUDGET_EMAIL`.
+soon as the repository has the variables `AWS_DEPLOY_ROLE_ARN` (stack output `DeployRoleArn`) and `AWS_REGION`, the
+secret `BUDGET_EMAIL`, and, with a domain, the variable `CERTIFICATE_ARN`.
 
 ## Design decisions
 
@@ -183,8 +188,9 @@ The ones a newcomer is most likely to undo by accident:
   each day.
 - **The model palette is fixed,** with dash patterns where two colors are too close for color-vision deficiencies.
 - **Forecasts are fetched on demand, with one scheduled reader.** Opening a city fetches it when its stored run is 3
-  hours old (`isRefreshDue`, shared with Refresh). The Android widget reads every 30 minutes on its owner's quota. A
-  scheduled collector refreshed cities nobody opened and was removed; weigh that cost before adding one back.
+  hours old, the age at which the UI offers Refresh; a partial or empty fetch is retried once after 15 minutes, then
+  held for 3 hours. The Android widget reads every 30 minutes on its owner's quota. A scheduled collector refreshed
+  cities nobody opened and was removed; weigh that cost before adding one back.
 - **Limits and the quota count per client: an IPv4 address or an IPv6 /64.** Keying IPv6 by the full address would let
   one /64 rotate through endless fresh quotas; a global daily cap protects the free upstream tiers.
 - **The mobile app and the web's phone layout stay in sync.** Every change to what a phone shows or does lands in both
@@ -199,7 +205,9 @@ The ones a newcomer is most likely to undo by accident:
 ## Data and attribution
 
 Weather data by [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0) and [MET Norway](https://api.met.no/) (CC BY 4.0).
-Geocoding by Open-Meteo (GeoNames). Open-Meteo's free API is for non-commercial use, like the code itself. Flags from
+Past weather from Open-Meteo's historical weather service (ERA5 and the ECMWF IFS analysis, with Copernicus Climate
+Change Service information). The Android widget's current temperature uses airport reports from the US
+[Aviation Weather Center](https://aviationweather.gov/) (public US government data). Geocoding by Open-Meteo (GeoNames). Open-Meteo's free API is for non-commercial use, like the code itself. Flags from
 `country-flag-icons` (MIT).
 
 ## License

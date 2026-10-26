@@ -60,7 +60,6 @@ export function PlaceChip({ place, isSelected, isPinned, onSelect }: IProps) {
                 type="button"
                 variant="ghost"
                 onClick={handleToggle}
-                aria-pressed={isPinned}
                 aria-label={starLabel}
                 title={starLabel}
                 className={cn(CHIP_PART, 'rounded-r-full pr-2.5 pl-1 touch:min-w-9 max-sm:hidden', hoverText)}

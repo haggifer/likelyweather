@@ -6,7 +6,6 @@ import { cn } from '../../lib/cn'
 import { placesStore } from '../../lib/places-store'
 import { Hint } from '../shell/Hint'
 import { Button } from '../ui/button'
-import { Toggle } from '../ui/toggle'
 import { FavoriteStar } from './FavoriteStar'
 
 const STAR_SIZE = 20
@@ -17,8 +16,8 @@ interface IProps {
     className?: string
 }
 
-// Pins a place to the front of the chips. With four favorites already the star looks disabled and a tap explains the
-// limit in a hint bubble, as on the web.
+// With four favorites already the star only looks disabled, so a tap can still explain the limit in a hint bubble, as
+// on the web.
 export function FavoriteToggle({ place, className }: IProps) {
     const t = useTranslations('city')
     const locale = useLocale()
@@ -47,14 +46,14 @@ export function FavoriteToggle({ place, className }: IProps) {
     }
 
     return (
-        <Toggle
-            pressed={isPinned}
-            onPressedChange={handleToggle}
+        <Button
+            variant="ghost"
+            onPress={handleToggle}
             hitSlop={8}
             accessibilityLabel={label}
-            className={cn('h-auto min-w-0 bg-transparent px-0', className)}
+            className={cn('h-auto min-w-0 px-0', className)}
         >
             {star}
-        </Toggle>
+        </Button>
     )
 }

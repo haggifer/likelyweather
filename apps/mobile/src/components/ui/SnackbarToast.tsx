@@ -16,9 +16,8 @@ interface IProps {
 // sonner's toast shadow on the web; set as a style, which takes the comma-separated colour as it is.
 const TOAST_STYLE = { boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }
 
-// The web's toast (sonner there, sonner-native here, drawn over every screen): 16 px padding, a 13 px title and, for an
-// error, the octagon icon. As in sonner, the last action is the filled one and an earlier one the quieter cancel. Its
-// wrapper announces a new message to TalkBack without moving focus.
+// The web's toast (sonner there, sonner-native here). As in sonner, the last action is the filled one and an earlier
+// one the quieter cancel. Its wrapper announces a new message to TalkBack without moving focus.
 export function SnackbarToast({ message, actions, isError = false, onAction }: IProps) {
     return (
         <View

@@ -26,6 +26,10 @@ const KM_PER_DEGREE = 111.32
 // Two hours back covers the 75-minute limit with a report to spare where stations report only hourly.
 const HOURS_BACK = 2
 
+// The model lookup that stands in for a failed station lookup runs after it, with its own worst case of 16.5 s: one
+// short attempt here keeps the two inside the API function's 30-second limit.
+const STATION_FETCH = { attempts: 1, timeoutMs: 5_000 }
+
 const buildMetarUrl = ({ lat, lon }: Coordinates, radiusKm: number) => {
     const dLat = radiusKm / KM_PER_DEGREE
     const dLon = radiusKm / (KM_PER_DEGREE * Math.max(Math.cos((lat * Math.PI) / 180), 0.01))
@@ -54,6 +58,7 @@ export const fetchObservations = async (position: Coordinates, radiusKm: number)
         buildMetarUrl(position, radiusKm),
         async (res): Promise<RawMetar[]> => (res.status === 204 ? [] : res.json()),
         { headers: { 'User-Agent': env.METNO_USER_AGENT } },
+        STATION_FETCH,
     )
 
     return raws.flatMap((raw) => toObservation(raw) ?? [])

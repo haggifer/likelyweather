@@ -1,4 +1,4 @@
-const DEFAULT_USER_AGENT = 'forecast-arena/1.0 (no contact configured)'
+const DEFAULT_USER_AGENT = 'likelyweather/1.0 (no contact configured)'
 
 describe('env', () => {
     beforeEach(() => {
@@ -19,7 +19,7 @@ describe('env', () => {
 
     it('warns on AWS when Redis is not configured', async () => {
         const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-        vi.stubEnv('METNO_USER_AGENT', 'forecast-arena/1.0 test@example.com')
+        vi.stubEnv('METNO_USER_AGENT', 'likelyweather/1.0 test@example.com')
 
         await import('./env')
 

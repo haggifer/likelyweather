@@ -30,7 +30,6 @@ export const roundCoordinates = ({ lat, lon }: Coordinates): Coordinates => ({
     lon: roundCoordinate(lon),
 })
 
-// "Use my location" opens the nearest stored city only this close; farther away it names the city and the distance.
 export const isNearEnough = (distanceKm: number) => distanceKm <= NEAREST_MAX_KM
 
 export const formatDistanceKm = (distanceKm: number, locale: string) =>

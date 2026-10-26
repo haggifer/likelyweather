@@ -163,9 +163,6 @@ interface IProps {
     className?: string
 }
 
-// Which panels show and in which order, the web's OverviewPanelsMenu: each row drags from anywhere on it and shows or
-// hides with its eye; TalkBack moves a panel with the handle's actions instead. The last shown panel stays. Every change
-// applies to the chart at once and is kept on the device.
 export function OverviewPanelsMenu({ panels, onChange: setPanels, isLabelHiddenOnPhones = false, className }: IProps) {
     const t = useTranslations('overview')
 

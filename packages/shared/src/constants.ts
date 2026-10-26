@@ -13,7 +13,6 @@ export const STALE_AFTER_HOURS = 9
 export const REFRESH_AFTER_HOURS = 3
 
 export const RAIN_THRESHOLD_MM = 0.2
-// A place search waits this long after the last keystroke, in both apps, before it asks the geocoder.
 export const SEARCH_DEBOUNCE_MS = 200
 // "Use my location" opens the nearest stored city only this close; farther away it offers the city instead.
 export const NEAREST_MAX_KM = 50

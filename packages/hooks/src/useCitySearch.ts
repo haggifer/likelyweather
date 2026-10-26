@@ -43,8 +43,6 @@ export interface UseCitySearchResult {
     pickResult: (result: GeocodeResult, handlers: PickHandlers) => void
 }
 
-// The search box of both apps without its drawing: the text, the debounced geocoder query, the ranked results, which
-// list shows, and the pick that tracks a result.
 export function useCitySearch({
     initialQuery,
     locale,
@@ -55,7 +53,8 @@ export function useCitySearch({
     const [isOpen, setIsOpen] = useState(isInitiallyOpen)
     const [lastAnswer, setLastAnswer] = useState<GeocodeResponse | undefined>()
 
-    const term = useDebouncedValue(getSearchTerm(query, initialQuery), SEARCH_DEBOUNCE_MS)
+    const typedTerm = getSearchTerm(query, initialQuery)
+    const term = useDebouncedValue(typedTerm, SEARCH_DEBOUNCE_MS)
     const { data, isFetching, isError, error, fetchStatus } = useGeocode(term, locale)
     const track = useTrackCity()
 
@@ -68,7 +67,8 @@ export function useCitySearch({
     const status = getSearchStatus({
         query,
         resultCount: results.length,
-        isFetching,
+        // Text still waiting out the debounce is as good as searching: no answer has been asked for yet.
+        isFetching: isFetching || typedTerm !== term,
         isError,
         isOffline: fetchStatus === 'paused',
     })

@@ -3,11 +3,8 @@ import { Place } from '@fa/shared/places'
 import { Platform } from 'react-native'
 import { getWidgetInfo, requestWidgetUpdate, requestWidgetUpdateById } from 'react-native-android-widget'
 import { WIDGET_NAME } from './widget-names'
-import { bindWidgetCity, drawWidget, refreshWidget } from './widget-render'
-import { widgetBindings, widgetModels } from './widget-store'
-
-const drawSaved = (widgetId: number) =>
-    drawWidget(widgetId, widgetBindings.get()[widgetId] ?? null, widgetModels.get()[widgetId] ?? null)
+import { bindWidgetCity, drawSaved, refreshWidget } from './widget-render'
+import { widgetBindings } from './widget-store'
 
 // When the app loads a city, every widget bound to it fetches its current temperature and sky again; the others
 // redraw from their saved numbers.

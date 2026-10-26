@@ -19,7 +19,6 @@ const SLOT_MS = SLOT_HOURS * HOUR_MS
 // The caller fetches every series its panels draw; a missing one draws as an empty panel rather than failing.
 export const getPanelSeries = (series: OverviewMedians, variable: OverviewVariable) => series[variable] ?? NO_SERIES
 
-// Feels-like and gusts are drawn as a second, dashed line in the panel of the variable they belong to.
 export const getSecondarySeries = (series: OverviewMedians, variable: PanelVariable) => {
     const secondary = SECONDARY_VARIABLE[variable]
 
@@ -33,12 +32,12 @@ export const getValueAt = (s: MedianSeries, step: string) => {
 }
 
 // One crosshair for every panel: each reads the slot nearest the pointer (or now), so a precipitation readout is the 3
-// hours from that slot, which can be the bar after the one under the line (author, 2026-10-09).
+// hours from that slot, which can be the bar after the one under the line.
 export const getOverviewReadoutIndex = (times: Date[], hoverIndex: number | null, now: Date | null) =>
     hoverIndex ?? (now ? getNearestIndex(times, now) : 0)
 
-// Before a pick, the precipitation readout is the bar the now line is in, labelled "these 3 h" (author, 2026-10-16),
-// rather than the slot nearest now, which can be the next bar.
+// Before a pick, the precipitation readout is the bar the now line is in, labelled "these 3 h", rather than the slot
+// nearest now, which can be the next bar.
 export const getPanelReadoutIndex = (
     variable: PanelVariable,
     times: Date[],
@@ -53,7 +52,6 @@ export const getPanelReadoutIndex = (
 export const getPrecipUnitKey = (isArchive: boolean, isNow: boolean) =>
     isArchive ? 'perHourPast' : isNow ? 'perSlotNow' : 'perSlot'
 
-// The dashed line's value at the slot, or the chance of rain of the precipitation slot.
 export const getExtraReadout = (
     variable: PanelVariable,
     series: OverviewMedians,

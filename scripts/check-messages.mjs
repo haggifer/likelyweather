@@ -1,4 +1,4 @@
-// Fails when the five message catalogs disagree on their keys or on the ICU arguments and tags a message needs, or
+// Fails when the six message catalogs disagree on their keys or on the ICU arguments and tags a message needs, or
 // when code uses a literal key that the English catalog lacks. Keys built at runtime (template literals) are not
 // checked.
 import { parse, TYPE } from '@formatjs/icu-messageformat-parser'
@@ -10,6 +10,8 @@ const CATALOG_DIR = path.join(ROOT, 'packages/messages/catalogs')
 const LOCALES = ['en', 'uk', 'es', 'de', 'fr', 'ru']
 const SOURCE_DIRS = ['apps/web/src', 'apps/mobile/src'].map((d) => path.join(ROOT, d))
 const BINDING = /(?:const|let)\s+(\w+)\s*=\s*(?:await\s+)?(?:useTranslations|getTranslations)\(\s*(?:'([\w.]+)')?\s*\)/g
+// The Android widget renders outside React, with a translator for the whole catalog passed in as a typed prop.
+const TRANSLATOR_PROP = /\b(\w+)\s*:\s*Translator\b/g
 
 // Every argument and tag a message needs: `{name}`, `{count, plural, …}` (and the arguments inside its options),
 // `<link>…</link>`. A translation that drops or renames one passes a key check and fails at runtime. A regex could not
@@ -78,7 +80,7 @@ const findParityProblems = (catalogs) =>
 const findLiteralKeys = (file) => {
     const text = readFileSync(file, 'utf8')
 
-    return [...text.matchAll(BINDING)].flatMap(([, name, namespace]) => {
+    return [...text.matchAll(BINDING), ...text.matchAll(TRANSLATOR_PROP)].flatMap(([, name, namespace]) => {
         const call = new RegExp(`\\b${name}(?:\\.(?:rich|markup|raw|has))?\\(\\s*'([\\w.]+)'`, 'g')
 
         return [...text.matchAll(call)].map(([, key]) => (namespace ? `${namespace}.${key}` : key))

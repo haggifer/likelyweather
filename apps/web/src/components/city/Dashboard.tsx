@@ -2,7 +2,7 @@
 
 import { ChartFrame } from '@/components/charts/ChartFrame'
 import { SpaghettiChart } from '@/components/charts/SpaghettiChart'
-import { STICKY_CORNER_CELL, STICKY_HEAD_CELL, STICKY_TIME_CELL } from '@/components/charts/table-cells'
+import { TimeTable } from '@/components/charts/TimeTable'
 import { DisagreementTiles } from '@/components/city/DisagreementTiles'
 import { ModelLegend } from '@/components/city/ModelLegend'
 import { VariablePairTabs } from '@/components/city/VariablePairTabs'
@@ -10,11 +10,9 @@ import { VariableSwitch } from '@/components/city/VariableSwitch'
 import { ErrorNotice } from '@/components/shell/ErrorNotice'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useIsPhone } from '@/hooks/useIsPhone'
 import { useNow } from '@/hooks/useNow'
 import { useUrlSync } from '@/hooks/useUrlSync'
-import { cn } from '@/lib/cn'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { setHoverStep } from '@/store/dashboard-slice'
 import { getReadoutIndex } from '@fa/chart-core/dashboard-stats'
@@ -22,7 +20,7 @@ import { useDashboardData } from '@fa/hooks/useDashboardData'
 import { Series } from '@fa/shared/api'
 import { getReadoutLabel } from '@fa/shared/dashboard'
 import { EnsembleStats } from '@fa/shared/ensemble'
-import { formatNumber, formatTableStepLabel, getCityName } from '@fa/shared/format'
+import { formatNumber, getCityName } from '@fa/shared/format'
 import { MODEL_BY_ID, ModelId } from '@fa/shared/models'
 import { formatPairedMedian, formatPairedModel, PairedRuns } from '@fa/shared/paired-values'
 import { getVariablePair, getVariableTab, Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
@@ -38,10 +36,9 @@ interface SeriesTableProps {
     timeZone: string
     locale: string
     medianLabel: string
-    timeLabel: string
-    // Phones read a pair together, "actual (companion)", whichever sub-tab is open (author, 2026-10-14).
+    // Phones read a pair together, "actual (companion)", whichever sub-tab is open.
     pairedRuns: PairedRuns | null
-    // The median's eye in the legend hides its column too (author, 2026-10-20).
+    // The median's eye in the legend hides its row too.
     isMedianHidden: boolean
 }
 
@@ -62,7 +59,7 @@ const toHoverIndex = (steps: string[], hoverStep: string | null) => (hoverStep ?
 type HoveredChartProps = Omit<ComponentProps<typeof SpaghettiChart>, 'hoverIndex' | 'onHoverIndex'>
 
 // Only the chart and the legend read the hovered step, so a pointer move re-renders them and not the whole dashboard
-// (the tiles, the frame, the other legend), which made a hover cost 50–100 ms on a slow CPU.
+// (the tiles, the frame, the other legend), which costs 50–100 ms a hover on a slow CPU.
 const HoveredChart = (props: HoveredChartProps) => {
     const dispatch = useAppDispatch()
     const hoverStep = useAppSelector((s) => s.dashboard.hoverStep)
@@ -119,6 +116,34 @@ const HoveredLegend = ({
     )
 }
 
+const getMedianRow = (
+    steps: string[],
+    median: (number | null)[],
+    decimals: number,
+    pairedRuns: PairedRuns | null,
+    label: string,
+) => ({
+    key: 'median',
+    label,
+    isBold: true,
+    cells: steps.map((_, i) =>
+        pairedRuns ? formatPairedMedian(pairedRuns, i, decimals) : formatNumber(median[i], decimals),
+    ),
+})
+
+const getModelRow = (
+    steps: string[],
+    { modelId, values }: Series,
+    decimals: number,
+    pairedRuns: PairedRuns | null,
+) => ({
+    key: modelId,
+    label: MODEL_BY_ID[modelId].name,
+    cells: steps.map((_, i) =>
+        pairedRuns ? formatPairedModel(pairedRuns, modelId, i, decimals) : formatNumber(values[i], decimals),
+    ),
+})
+
 const SeriesTable = ({
     steps,
     series,
@@ -127,47 +152,23 @@ const SeriesTable = ({
     timeZone,
     locale,
     medianLabel,
-    timeLabel,
     pairedRuns,
     isMedianHidden,
-}: SeriesTableProps) => (
-    <Table className="text-xs max-sm:text-sm">
-        <TableHeader>
-            <TableRow className="group">
-                <TableHead className={STICKY_CORNER_CELL}>{timeLabel}</TableHead>
-                {!isMedianHidden && <TableHead className={cn(STICKY_HEAD_CELL, 'text-right')}>{medianLabel}</TableHead>}
-                {series.map((s) => (
-                    <TableHead key={s.modelId} className={cn(STICKY_HEAD_CELL, 'text-right')}>
-                        {MODEL_BY_ID[s.modelId].name}
-                    </TableHead>
-                ))}
-            </TableRow>
-        </TableHeader>
-        <TableBody>
-            {steps.map((step, i) => (
-                <TableRow key={step} className="group">
-                    <TableCell className={`${STICKY_TIME_CELL} whitespace-nowrap`}>
-                        {formatTableStepLabel(step, timeZone, locale)}
-                    </TableCell>
-                    {!isMedianHidden && (
-                        <TableCell className="text-right font-semibold">
-                            {pairedRuns
-                                ? formatPairedMedian(pairedRuns, i, decimals)
-                                : formatNumber(stats.median[i], decimals)}
-                        </TableCell>
-                    )}
-                    {series.map((s) => (
-                        <TableCell key={s.modelId} className="text-right">
-                            {pairedRuns
-                                ? formatPairedModel(pairedRuns, s.modelId, i, decimals)
-                                : formatNumber(s.values[i], decimals)}
-                        </TableCell>
-                    ))}
-                </TableRow>
-            ))}
-        </TableBody>
-    </Table>
-)
+}: SeriesTableProps) => {
+    const modelRows = series.map((s) => getModelRow(steps, s, decimals, pairedRuns))
+    const medianRow = getMedianRow(steps, stats.median, decimals, pairedRuns, medianLabel)
+    const rows = isMedianHidden ? modelRows : [medianRow, ...modelRows]
+
+    return (
+        <TimeTable
+            steps={steps}
+            timeZone={timeZone}
+            locale={locale}
+            rows={rows}
+            columnClassName={pairedRuns ? 'w-26' : 'w-18'}
+        />
+    )
+}
 
 interface ViewProps {
     slug: string
@@ -280,7 +281,6 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
                                 timeZone={timeZone}
                                 locale={locale}
                                 medianLabel={t('median')}
-                                timeLabel={t('time')}
                                 pairedRuns={pairedRuns}
                                 isMedianHidden={isMedianHidden}
                             />
@@ -299,7 +299,7 @@ const DashboardView = memo(function DashboardView({ slug, variable, isHydrated }
                             now={now}
                             isMedianHidden={isMedianHidden}
                         />
-                        {/* Phones go without the note (author, 2026-10-14): the legend names the direction. */}
+                        {/* Phones go without the note: the legend names the direction. */}
                         {variable === Variable.Wind && (
                             <p className="mt-1 text-xs text-muted-foreground max-sm:hidden">{t('windArrows')}</p>
                         )}
@@ -325,7 +325,7 @@ interface IProps {
 }
 
 // The switch shows a tap at once; the dashboard redraws for it in the background and its chart fades until it has
-// (`data-switching`, the author's lag report of 2026-10-14).
+// (`data-switching`).
 export function Dashboard({ slug }: IProps) {
     const { isHydrated } = useUrlSync()
     const selectedVariable = useAppSelector((s) => s.dashboard.variable)

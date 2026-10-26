@@ -40,8 +40,6 @@ import { OverviewCanvas } from './OverviewCanvas'
 import { TapSurface } from './TapSurface'
 import { OverviewSelection } from './types'
 
-// The web's phone layout: readouts in a two-column grid above, the reader's panels stacked below in the same order,
-// each named inside its panel.
 const {
     heights: PANEL_HEIGHTS,
     marginLeft: MARGIN_LEFT,
@@ -69,7 +67,6 @@ interface SkeletonProps {
     isArchive?: boolean
 }
 
-// The web's phone skeleton: a block per readout, then a block per panel at its height in the chart's frame.
 export function MedianOverviewSkeleton({ panels, isArchive = false }: SkeletonProps) {
     return (
         <View className="gap-3" importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>

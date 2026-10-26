@@ -16,7 +16,6 @@ export interface AppPromoInput {
 const PROMO_PLATFORMS: PromoPlatform[] = ['android']
 const DISMISS_DAYS = 30
 export const DISMISSED_AT_KEY = 'fa.appPromo.dismissedAt'
-// The landing page and the city dashboard; not the text pages.
 const PROMO_PATHS = [/^\/$/, /^\/city\//]
 
 // Client hints name the platform directly; older browsers only have the user agent string.

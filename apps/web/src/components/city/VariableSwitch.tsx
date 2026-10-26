@@ -38,9 +38,7 @@ interface IProps {
     className?: string
 }
 
-// From `sm` up every variable is named, in 12 px text up to a 1047 px window and 13 px from 1048 px: German and Spanish,
-// the longest, need that width at 13 px. On phones only the selected one is named, the others keep their icon and their
-// accessible name; the named segment takes the room its label needs and the others share the rest, as in the app.
+// On phones only the selected variable is named, as in the app; the others keep their icon and their accessible name.
 // Phones name a pair once (Temperature, Wind) and pick its member with the sub-tabs above the chart (`VariablePairTabs`).
 export function VariableSwitch({ className }: IProps) {
     const t = useTranslations('variables')

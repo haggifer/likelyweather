@@ -11,7 +11,6 @@ import { Text } from '../components/ui/text'
 const BODY = 'text-sm leading-relaxed'
 const SMALL_MUTED = 'text-xs text-muted-foreground'
 
-// The web's methodology page, from the same catalog entries and shared sections.
 export function MethodologyScreen() {
     const t = useTranslations('methodology')
     const tv = useTranslations('variables')

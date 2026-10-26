@@ -1,3 +1,4 @@
+import { getErrorKind } from '@fa/api-client/error-kind'
 import { getCityLabel } from '@fa/shared/format'
 import { getPlaceList, Place } from '@fa/shared/places'
 import { useRef, useState } from 'react'
@@ -10,9 +11,10 @@ import { Text } from '../components/ui/text'
 import { usePlaces } from '../hooks/usePlaces'
 import { cn } from '../lib/cn'
 import { placesStore } from '../lib/places-store'
+import { showSnackbar } from '../lib/snackbar-store'
 
 interface IProps {
-    // The widget's city now, marked and first in the list.
+    // Marked and first in the list.
     current?: Place | null
     onPick: (place: Place) => Promise<void>
 }
@@ -22,6 +24,7 @@ const getPickList = (places: Place[], current: Place | null) =>
 
 export function WidgetCityPicker({ current = null, onPick }: IProps) {
     const t = useTranslations('search')
+    const te = useTranslations('errors')
     const locale = useLocale()
     const places = usePlaces()
 
@@ -36,7 +39,16 @@ export function WidgetCityPicker({ current = null, onPick }: IProps) {
 
         isPickingRef.current = true
         setPending(place.id)
-        await onPick(place)
+
+        // A pick that succeeds leaves the screen, so only a failure unlocks the rows for another try.
+        try {
+            await onPick(place)
+        } catch (error) {
+            console.warn(`The widget could not take ${place.slug}: ${String(error)}`)
+            showSnackbar(te(getErrorKind(error)), [], { isError: true })
+            isPickingRef.current = false
+            setPending(null)
+        }
     }
 
     // The search box stores a new pick as the newest recent place before it reports the slug.

@@ -10,8 +10,8 @@ export interface ArchiveRange {
     to: string
 }
 
-// Open-Meteo counts a request of up to 14 days and 10 variables as one call; 12 days keep a margin (author,
-// 2026-10-12), so an archive request never costs more than one call and one unit of the viewer's quota.
+// Open-Meteo counts a request of up to 14 days and 10 variables as one call; 12 days keep a margin, so an archive
+// request never costs more than one call and one unit of the viewer's quota.
 export const ARCHIVE_MAX_DAYS = 12
 // ERA5 starts in 1940.
 export const ARCHIVE_FIRST_DATE = '1940-01-01'
@@ -65,17 +65,15 @@ export const isValidArchiveRange = (range: ArchiveRange, latest: string) =>
     range.to <= latest &&
     countArchiveDays(range) <= ARCHIVE_MAX_DAYS
 
-// The stored period, or the week up to yesterday when there is none or it is no longer one the API accepts.
 export const resolveArchiveRange = (stored: ArchiveRange | null, now: Date, timeZone: string): ArchiveRange =>
     stored && isValidArchiveRange(stored, getLatestArchiveDate(now, timeZone))
         ? stored
         : getDefaultArchiveRange(now, timeZone)
 
-// One string per period, for keying what is drawn from it.
 export const getArchiveRangeKey = ({ from, to }: ArchiveRange) => `${from}${RANGE_SEPARATOR}${to}`
 
-// DD.MM.YYYY in every language (author, 2026-10-13), built from the key itself rather than `Intl`, whose order and
-// separators change with the locale.
+// DD.MM.YYYY in every language, built from the key itself rather than `Intl`, whose order and separators change with
+// the locale.
 export const formatArchiveDate = (dateKey: string) => {
     const [year, month, day] = dateKey.split('-')
 

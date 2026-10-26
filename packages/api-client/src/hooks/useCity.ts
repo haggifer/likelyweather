@@ -6,7 +6,7 @@ import { apiGet, isNotFound } from '../api'
 export function useCity(slug: string): UseQueryResult<City, Error> {
     return useQuery({
         queryKey: ['city', slug],
-        queryFn: () => apiGet<City>(`/cities/${slug}`),
+        queryFn: () => apiGet<City>(`/cities/${encodeURIComponent(slug)}`),
         staleTime: Infinity,
         retry: (count, error) => count < 2 && !isNotFound(error),
     })

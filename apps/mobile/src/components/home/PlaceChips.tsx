@@ -13,12 +13,11 @@ interface IProps {
     onSelect: (slug: string) => void
 }
 
-// The viewer's places under the search, on Home and on the Archive screen, as the web's PlaceChips.
 export function PlaceChips({ chips, slug, onSelect }: IProps) {
     const t = useTranslations('landing')
 
     return (
-        // The web's role="group" named "Start with" for screen readers only (author, 2026-10-14).
+        // The web's role="group" named "Start with" for screen readers only.
         <View
             role="group"
             accessibilityLabel={t('seeds')}

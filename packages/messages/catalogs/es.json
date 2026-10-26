@@ -46,8 +46,10 @@
     "chart": {
         "table": "Tabla",
         "chart": "Gráfico",
+        "charts": "Gráficos",
         "showTable": "Mostrar los datos como tabla",
         "showChart": "Mostrar el gráfico",
+        "showCharts": "Mostrar los gráficos",
         "now": "ahora",
         "median": "Mediana",
         "compass": "N,NE,E,SE,S,SO,O,NO",
@@ -93,7 +95,7 @@
         "refresh": "Actualizar",
         "refreshTitle": "Buscar una ejecución más reciente y empezar el gráfico en la hora actual",
         "upToDate": "Al día: obtenido hace menos de {hours} horas.",
-        "notFound": "Esta ciudad no está en Forecast Arena",
+        "notFound": "Esta ciudad no está en Likely Weather",
         "notFoundBody": "Búscala para abrir su pronóstico en segundos.",
         "chanceOfRain": "Probabilidad de lluvia",
         "back": "Volver al resumen",
@@ -106,9 +108,8 @@
     },
     "dashboard": {
         "fetching": "Obteniendo diez modelos para {name}…",
-        "summary": "La mediana ({variable}) de los próximos diez días va de {min} a {max} {unit} entre {count} modelos. Discrepan más el {day} (dispersión {spread} {unit}).",
+        "summary": "La mediana ({variable}) de los próximos diez días va de {min} a {max} {unit} entre {count, plural, one {# modelo} other {# modelos}}. Discrepan más el {day} (dispersión {spread} {unit}).",
         "median": "Mediana",
-        "time": "Hora (ciudad)",
         "windArrows": "Las flechas muestran hacia dónde sopla el viento mediano; elige una hora para ver de dónde viene."
     },
     "legend": {
@@ -131,16 +132,16 @@
         "empty": "Esta ejecución no tiene pasos futuros."
     },
     "landing": {
-        "heading": "Forecast Arena: compara pronósticos del tiempo",
+        "heading": "Likely Weather: compara pronósticos del tiempo",
         "seeds": "Empieza con"
     },
     "methodology": {
         "title": "Metodología",
-        "intro": "De dónde salen los números de Forecast Arena, cómo se combinan y dónde dejan de ser fiables.",
+        "intro": "De dónde salen los números de Likely Weather, cómo se combinan y dónde dejan de ser fiables.",
         "europeOnly": "solo Europa",
         "sources": {
             "title": "Fuentes",
-            "body": "Forecast Arena compara diez modelos meteorológicos: nueve llegan a través de Open-Meteo y uno de MET Norway (lista más abajo). Cada modelo publica un pronóstico nuevo cuatro veces al día, y una ciudad muestra el más reciente disponible en su última actualización, para los próximos diez días.\nLos pronósticos se agrupan en periodos de 3 horas según la hora local de la ciudad. La temperatura, el viento, la presión, la humedad y la nubosidad son los valores al inicio de cada periodo; la precipitación es la cantidad que cae durante él.\nLos modelos regionales solo cubren Europa, así que una ciudad de otro lugar se compara con menos modelos. MET Norway pronostica hora a hora solo durante unos dos días y medio; después siguen los demás modelos.\nLa sensación térmica se calcula para cada modelo a partir de su temperatura, humedad, viento e insolación (temperatura aparente de Steadman). MET Norway no da insolación, así que su sensación térmica es el valor a la sombra. Las rachas de viento vienen solo de los modelos de Open-Meteo.\nEl tiempo pasado viene de los datos históricos de Open-Meteo: el reanálisis ERA5 desde 1940 y, para los últimos días, el análisis del ECMWF. Es un valor por hora, no una mediana de modelos.\nLa temperatura actual del widget de Android es el último parte del aeropuerto más cercano en un radio de 25 km, si tiene como mucho 75 minutos, del Aviation Weather Center de EE. UU. Se corrige por la diferencia de altura entre el aeropuerto y la ciudad (6,5 °C por kilómetro) y por cuánto esperan los modelos que haya cambiado la temperatura desde el parte. Sin un aeropuerto así, el widget muestra la estimación de la temperatura actual de Open-Meteo."
+            "body": "Likely Weather compara diez modelos meteorológicos: nueve llegan a través de Open-Meteo y uno de MET Norway (lista más abajo). Cada modelo publica un pronóstico nuevo cuatro veces al día, y una ciudad muestra el más reciente disponible en su última actualización, para los próximos diez días.\nLos pronósticos se agrupan en periodos de 3 horas según la hora local de la ciudad. La temperatura, el viento, la presión, la humedad y la nubosidad son los valores al inicio de cada periodo; la precipitación es la cantidad que cae durante él.\nLos modelos regionales solo cubren Europa, así que una ciudad de otro lugar se compara con menos modelos. MET Norway pronostica hora a hora solo durante unos dos días y medio; después siguen los demás modelos.\nLa sensación térmica se calcula para cada modelo a partir de su temperatura, humedad, viento e insolación (temperatura aparente de Steadman). MET Norway no da insolación, así que su sensación térmica es el valor a la sombra. Las rachas de viento vienen solo de los modelos de Open-Meteo.\nEl tiempo pasado viene de los datos históricos de Open-Meteo: el reanálisis ERA5 desde 1940 y, para los últimos días, el análisis del ECMWF. Es un valor por hora, no una mediana de modelos.\nLa temperatura actual del widget de Android es el último parte del aeropuerto más cercano en un radio de 25 km, si tiene como mucho 75 minutos, del Aviation Weather Center de EE. UU. Se corrige por la diferencia de altura entre el aeropuerto y la ciudad (6,5 °C por kilómetro) y por cuánto esperan los modelos que haya cambiado la temperatura desde el parte. Sin un aeropuerto así, el widget muestra la estimación de la temperatura actual de Open-Meteo."
         },
         "median": {
             "title": "Mediana y dispersión",
@@ -152,7 +153,7 @@
         },
         "limits": {
             "title": "Límites",
-            "body": "El valor de un modelo describe una celda de la malla, no una esquina, y la altura de la malla puede diferir de la de la ciudad, lo que importa para la temperatura. Acuerdo no es precisión: modelos que comparten datos o física pueden coincidir y equivocarse juntos. Forecast Arena compara los modelos entre sí, no con el tiempo que realmente hizo."
+            "body": "El valor de un modelo describe una celda de la malla, no una esquina, y la altura de la malla puede diferir de la de la ciudad, lo que importa para la temperatura. Acuerdo no es precisión: modelos que comparten datos o física pueden coincidir y equivocarse juntos. Likely Weather compara los modelos entre sí, no con el tiempo que realmente hizo."
         },
         "thresholds": "{variable}: acuerdo por debajo de {agree} {unit}, división desde {split} {unit}",
         "attribution": "Datos meteorológicos de Open-Meteo.com (CC BY 4.0) y MET Norway (CC BY 4.0). Geocodificación de Open-Meteo, basada en GeoNames."
@@ -178,7 +179,7 @@
         "dropped": "{name} soltado en la posición {position} de {count}.",
         "dragCancelled": "{name} vuelve a su sitio.",
         "details": "Ver detalles",
-        "aria": "Pronóstico mediano para {name} con {count} modelos",
+        "aria": "Pronóstico mediano para {name} con {count, plural, one {# modelo} other {# modelos}}",
         "fetching": "Obteniendo diez modelos para {name}…",
         "loading": "Cargando…",
         "perSlot": "{unit} / próx. {hours} h",
@@ -197,7 +198,7 @@
     "errors": {
         "quotaExceeded": "Has agotado las solicitudes de hoy. Los pronósticos guardados siguen disponibles y los nuevos vuelven tras el reinicio diario.",
         "rateLimited": "Demasiadas solicitudes. Espera un minuto y vuelve a intentarlo.",
-        "notFound": "Esta ciudad no está en Forecast Arena.",
+        "notFound": "Esta ciudad no está en Likely Weather.",
         "pending": "El pronóstico aún se está obteniendo. Inténtalo de nuevo en un momento.",
         "unavailable": "Los servicios meteorológicos no responden. Inténtalo más tarde.",
         "generic": "Algo salió mal. Inténtalo de nuevo en un momento.",
@@ -206,7 +207,7 @@
     },
     "promo": {
         "label": "Obtener la app para Android",
-        "title": "Forecast Arena para Android",
+        "title": "Likely Weather para Android",
         "body": "Tu ubicación, widget en la pantalla de inicio, funciona sin conexión",
         "cta": "Obtener la app",
         "dismiss": "Cerrar",
@@ -224,7 +225,7 @@
         "about": "Acerca de",
         "version": "Versión {version}",
         "widgets": "Widgets de la pantalla de inicio",
-        "widgetsHint": "Mantén pulsado un espacio vacío de tu pantalla de inicio, pulsa en «Widgets» y elige «Forecast Arena».",
+        "widgetsHint": "Mantén pulsado un espacio vacío de tu pantalla de inicio, pulsa en «Widgets» y elige «Likely Weather».",
         "widgetsNone": "Aún no hay ningún widget en tu pantalla de inicio.",
         "widgetClock": "Widget con reloj",
         "widgetNoCity": "Sin ciudad elegida",
@@ -244,7 +245,7 @@
     },
     "archive": {
         "title": "Tiempo pasado",
-        "heading": "Forecast Arena: tiempo pasado",
+        "heading": "Likely Weather: tiempo pasado",
         "period": "Periodo",
         "periodValue": "Periodo: {range}",
         "previousMonth": "Mes anterior",

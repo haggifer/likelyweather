@@ -82,8 +82,7 @@ const toVariables = (values: Record<string, string>, indent: string) =>
         .map(([name, value]) => `${indent}--${name}: ${value};`)
         .join('\n')
 
-// The app's Uniwind theme: the same colours as utilities (`bg-primary`, `text-muted-foreground`), switched by
-// `Uniwind.setTheme`, which reads the light and dark variants rather than the web's `.dark` class.
+// `Uniwind.setTheme` switches the light and dark variants written here; it does not read the web's `.dark` class.
 export const toUniwindCss = ({ light, dark, radius, text, shadows }: CssTokens) => {
     // The web sets `--text-base` in `:root`, so its `text-base` (and the body text) is 14 px; without the same value
     // here the app's `text-base`, the kit's default text size, would be Tailwind's 16 px.

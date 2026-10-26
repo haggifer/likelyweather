@@ -28,9 +28,18 @@ const CITY: City = {
 }
 
 const OTHER_CITY: City = { ...CITY, id: 999_000_004, slug: 'fixture-other-xx-999000004', name: 'Fixture Other' }
+const PARTIAL_CITY: City = { ...CITY, id: 999_000_005, slug: 'fixture-partial-xx-999000005', name: 'Fixture Partial' }
+const CITY_IDS = [CITY.id, OTHER_CITY.id, PARTIAL_CITY.id]
+
+const MINUTE_MS = 60_000
 
 const respond = () =>
     vi.fn(async (url: string | URL) => new Response(String(url).includes('api.met.no') ? METNO : OPEN_METEO))
+
+const respondWithoutMetno = () =>
+    vi.fn(async (url: string | URL) =>
+        String(url).includes('api.met.no') ? new Response('unavailable', { status: 404 }) : new Response(OPEN_METEO),
+    )
 
 describe('isFreshSnapshot', () => {
     const now = new Date('2026-10-05T11:00:00Z')
@@ -57,8 +66,7 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('ensureFreshSnapshot (database
     const prisma = getPrisma()
 
     beforeAll(async () => {
-        await addCity(CITY)
-        await addCity(OTHER_CITY)
+        await Promise.all([CITY, OTHER_CITY, PARTIAL_CITY].map((city) => addCity(city)))
     })
 
     beforeEach(() => {
@@ -72,9 +80,9 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('ensureFreshSnapshot (database
     })
 
     afterAll(async () => {
-        await prisma.city.deleteMany({ where: { id: { in: [CITY.id, OTHER_CITY.id] } } })
+        await prisma.city.deleteMany({ where: { id: { in: CITY_IDS } } })
         await prisma.collectionRun.deleteMany({
-            where: { id: { startsWith: 'preview-99900000' }, cityId: { in: [CITY.id, OTHER_CITY.id] } },
+            where: { id: { startsWith: 'preview-99900000' }, cityId: { in: CITY_IDS } },
         })
     })
 
@@ -92,7 +100,7 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('ensureFreshSnapshot (database
     it('waits for the snapshot of the instance that holds the refresh, without fetching itself', async () => {
         const fetch = respond()
         vi.stubGlobal('fetch', fetch)
-        await claim(`refresh:${OTHER_CITY.id}:${new Date('2026-09-24T12:00:00Z').getTime()}`, 30)
+        await claim(`refresh:${OTHER_CITY.id}`, 30)
 
         const waiting = ensureFreshSnapshot(OTHER_CITY)
         const { run } = await collect({ city: OTHER_CITY })
@@ -100,5 +108,23 @@ describe.runIf(Boolean(process.env.DATABASE_URL))('ensureFreshSnapshot (database
 
         expect(served.runId).toBe(run.id)
         expect(fetch).toHaveBeenCalledTimes(2)
+    })
+
+    it('retries a partial run once, then serves it for 3 hours', async () => {
+        const fetch = respondWithoutMetno()
+        vi.stubGlobal('fetch', fetch)
+
+        const first = await ensureFreshSnapshot(PARTIAL_CITY)
+        vi.setSystemTime(NOW.getTime() + 16 * MINUTE_MS)
+        await ensureFreshSnapshot(PARTIAL_CITY)
+        vi.setSystemTime(NOW.getTime() + 32 * MINUTE_MS)
+        await ensureFreshSnapshot(PARTIAL_CITY)
+        const callsWhileHeld = fetch.mock.calls.length
+        vi.setSystemTime(NOW.getTime() + (16 + 3 * 60 + 1) * MINUTE_MS)
+        await ensureFreshSnapshot(PARTIAL_CITY)
+
+        expect(first.runStatus).toBe('PARTIAL')
+        expect(callsWhileHeld).toBe(4)
+        expect(fetch).toHaveBeenCalledTimes(6)
     })
 })

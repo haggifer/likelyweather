@@ -4,7 +4,6 @@ import {
     formatDayLabel,
     formatNumber,
     formatPeriodLabel,
-    formatTableStepLabel,
     formatWindDirection,
     getLocalMidnights,
     getTimeZoneOffsetMinutes,
@@ -66,14 +65,6 @@ describe('day labels', () => {
         expect(formatDayLabel('2026-09-26T12:00Z', 'UTC', 'en')).toBe('Sat 26 Sept')
         expect(formatDayLabel('2026-09-26T12:00Z', 'UTC', 'en', 'short')).toBe('Sat 26')
         expect(formatDayLabel('2026-09-26T12:00Z', 'UTC', 'en', 'narrow')).toBe('Sat')
-    })
-})
-
-describe('table step labels', () => {
-    it('tells the same weekday and hour a week apart by their dates, in the city zone', () => {
-        expect(formatTableStepLabel('2026-09-17T03:00Z', 'Europe/Kyiv', 'en')).toBe('Thu 17 Sept, 06:00')
-        expect(formatTableStepLabel('2026-09-24T03:00Z', 'Europe/Kyiv', 'en')).toBe('Thu 24 Sept, 06:00')
-        expect(formatTableStepLabel('2026-09-17T03:00Z', 'Europe/Kyiv', 'uk')).toBe('чт, 17 вер., 06:00')
     })
 })
 

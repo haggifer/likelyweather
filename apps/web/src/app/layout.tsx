@@ -8,17 +8,19 @@ import { FILL_HEIGHT_PARENT } from '@/lib/fill-height'
 import type { Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getTranslations } from 'next-intl/server'
-import { Inter, JetBrains_Mono } from 'next/font/google'
+import { Inter, JetBrains_Mono, Lexend } from 'next/font/google'
 import './globals.css'
 
 const inter = Inter({ variable: '--font-inter', subsets: ['latin', 'cyrillic'] })
 const jetbrainsMono = JetBrains_Mono({ variable: '--font-jetbrains-mono', subsets: ['latin', 'cyrillic'] })
-const FONT_VARIABLES = `${inter.variable} ${jetbrainsMono.variable}`
+// The logo's face: one weight, Latin only, since the logo's words are never translated.
+const lexend = Lexend({ variable: '--font-lexend', subsets: ['latin'], weight: '600' })
+const FONT_VARIABLES = `${inter.variable} ${jetbrainsMono.variable} ${lexend.variable}`
 
 export const generateMetadata = async (): Promise<Metadata> => {
     const t = await getTranslations('app')
 
-    return { title: { default: 'Forecast Arena', template: '%s · Forecast Arena' }, description: t('tagline') }
+    return { title: { default: 'Likely Weather', template: '%s · Likely Weather' }, description: t('tagline') }
 }
 
 export default async function RootLayout({ children }: LayoutProps<'/'>) {

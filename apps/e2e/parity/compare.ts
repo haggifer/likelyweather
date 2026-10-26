@@ -75,13 +75,13 @@ const getPaths = (screen: Screen, slug: string | undefined) => {
         case 'home':
             // A path after the scheme's `///`: without the third slash Android may take the first part for a host,
             // and the app stays on the screen it last showed.
-            return { web: '/', app: 'forecastarena:///' }
+            return { web: '/', app: 'likelyweather:///' }
         case 'city':
-            return { web: `/city/${slug}`, app: `forecastarena:///city/${slug}` }
+            return { web: `/city/${slug}`, app: `likelyweather:///city/${slug}` }
         case 'archive':
-            return { web: `/archive?city=${slug}`, app: `forecastarena:///archive?city=${slug}` }
+            return { web: `/archive?city=${slug}`, app: `likelyweather:///archive?city=${slug}` }
         case 'methodology':
-            return { web: '/methodology', app: 'forecastarena:///methodology' }
+            return { web: '/methodology', app: 'likelyweather:///methodology' }
     }
 }
 

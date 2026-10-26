@@ -1,6 +1,6 @@
 import { ChartTheme } from '@fa/chart-core/chart-theme'
 import { useAnimatedDomain } from '@fa/chart-core/hooks/useAnimatedDomain'
-import { getBarWidth, getNowX } from '@fa/chart-core/plot-geometry'
+import { getBarWidth, getNowX, LABEL_FONT_SIZE } from '@fa/chart-core/plot-geometry'
 import { formatYTick } from '@fa/chart-core/scales'
 import { getInitialScrollLeft, getScrollWidth, getVisibleRange, MIN_SLOT_WIDTH } from '@fa/chart-core/scroll-geometry'
 import {
@@ -60,8 +60,8 @@ import { TapSurface } from './TapSurface'
 
 // The canvas follows the offset every frame, so the scroll view reports every frame.
 const SCROLL_THROTTLE_MS = 16
-// Half the cap height of the tick font, so a label centres on its gridline.
-const BASELINE_SHIFT = 3.5
+// Half the cap height of the tick font, so a label centres on its gridline: SVG's `dy="0.32em"`.
+const BASELINE_SHIFT = LABEL_FONT_SIZE * 0.32
 const Y_TICK_COUNT = 5
 const DAY_LABEL_OFFSET = 18
 const NOW_INTERVALS = [4, 3]
@@ -105,7 +105,6 @@ interface BarTicksProps {
     y: ScaleLinear<number, number>
 }
 
-// Each model's amount as a tick across its bar.
 const BarTicks = ({ series, i, center, tickWidth, y }: BarTicksProps) =>
     series.map((s) => {
         const v = s.values[i]
@@ -305,8 +304,6 @@ interface SelectionDrawingProps {
     font: SkFont | null
 }
 
-// The picked slot over the static drawing: its bar raised (precipitation) or a line with every model's dot, and its
-// time above the plot.
 const SelectionDrawing = ({
     hover,
     series,
@@ -392,11 +389,12 @@ interface AxisDrawingProps {
     isWholeNumbers: boolean
     chart: ChartTheme
     font: SkFont | null
+    unitFont: SkFont | null
 }
 
 // The axis stays while the plot scrolls under it: the tick labels on a card-coloured column and the unit above the
 // plot's corner.
-const AxisDrawing = ({ y, yTicks, margin, height, unit, isWholeNumbers, chart, font }: AxisDrawingProps) => (
+const AxisDrawing = ({ y, yTicks, margin, height, unit, isWholeNumbers, chart, font, unitFont }: AxisDrawingProps) => (
     <Group>
         <Rect x={0} y={0} width={margin.left} height={height} color={chart.card} />
         {yTicks.map((tick) => (
@@ -411,7 +409,7 @@ const AxisDrawing = ({ y, yTicks, margin, height, unit, isWholeNumbers, chart, f
             />
         ))}
         <Rect x={margin.left} y={0} width={UNIT_LABEL_WIDTH} height={margin.top - 2} color={chart.card} />
-        <CanvasText font={font} text={unit} x={margin.left} y={margin.top - 8} color={chart.muted} />
+        <CanvasText font={unitFont} text={unit} x={margin.left} y={margin.top - 8} color={chart.muted} />
     </Group>
 )
 
@@ -430,11 +428,9 @@ interface IProps {
     isMedianHidden?: boolean
 }
 
-// Every model as a line (precipitation: a tick per model over the median bar), the min–max band, the median, local
-// day boundaries and the now line, as on the web, on one screen-wide GPU canvas. On Android react-native-svg
-// rasterises a whole <Svg> on the CPU after any change; here the plot is recorded once and replayed shifted by the
-// scroll offset on the UI thread, so a scroll renders nothing in React and a change redraws no bitmap. A tap picks a
-// 3-hour slot; a drag scrolls.
+// Drawn on one screen-wide GPU canvas: on Android react-native-svg rasterises a whole <Svg> on the CPU after any
+// change; here the plot is recorded once and replayed shifted by the scroll offset on the UI thread, so a scroll
+// renders nothing in React and a change redraws no bitmap. A tap picks a 3-hour slot; a drag scrolls.
 export function SpaghettiChart({
     steps,
     series,
@@ -451,7 +447,7 @@ export function SpaghettiChart({
 }: IProps) {
     const t = useTranslations('chart')
     const { chart } = useTheme()
-    const { regular, semiBold } = useChartFonts()
+    const { regular, label, labelBold } = useChartFonts()
     const isReducedMotion = useReducedMotion()
     const { width, onLayout } = useLayoutWidth()
 
@@ -571,7 +567,7 @@ export function SpaghettiChart({
                             />
                             {nowX !== null && !hover && (
                                 <CanvasText
-                                    font={semiBold}
+                                    font={labelBold}
                                     text={t('now')}
                                     x={nowX + 4}
                                     y={margin.top + 10}
@@ -592,7 +588,7 @@ export function SpaghettiChart({
                                     isBars={isBars}
                                     isMedianHidden={isMedianHidden}
                                     chart={chart}
-                                    font={semiBold}
+                                    font={labelBold}
                                 />
                             )}
                         </Group>
@@ -604,7 +600,8 @@ export function SpaghettiChart({
                             unit={info.unit}
                             isWholeNumbers={info.decimals === 0}
                             chart={chart}
-                            font={regular}
+                            font={label}
+                            unitFont={regular}
                         />
                     </Canvas>
                     <AnimatedScrollView

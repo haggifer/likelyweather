@@ -22,8 +22,6 @@ interface IProps {
     className?: string
 }
 
-// One tile per local day with the spread between the highest and the lowest model; the row scrolls sideways and
-// snaps to a tile's start, like the web's phone row, and is named for TalkBack like the web's region.
 export function DisagreementTiles({ days, variable, emptyMessage, className }: IProps) {
     const t = useTranslations('disagreement')
     const tInline = useTranslations('variablesInline')

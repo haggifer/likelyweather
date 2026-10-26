@@ -29,10 +29,8 @@ const toArchiveResponse = (range: ArchiveRange, start: Date, end: Date, hours: A
 // Every hour has a temperature, so the answer will not change and may be cached.
 export const isCompleteArchive = (archive: ArchiveResponse) => archive.values.temp.every((v) => v !== null)
 
-// A city's past weather for whole local days. A place and period is fetched from Open-Meteo once and stored for good;
-// a later request for hours already stored reads them and spends nothing. A fetch spends one unit of the viewer's
-// quota first (`spendQuota` throws when it is used up): a range is at most 12 days, which Open-Meteo counts as one
-// call. Hours without a temperature yet are not stored, so they are asked for again next time.
+// `spendQuota` throws when the quota is used up. One unit covers a fetch: a range is at most 12 days, which Open-Meteo
+// counts as one call. Hours without a temperature yet are not stored, so they are asked for again next time.
 export const getArchivePayload = async (
     city: City,
     range: ArchiveRange,

@@ -8,11 +8,12 @@ import { buildWidgetModel, getShownModel, WidgetCity, WidgetData, WidgetModel } 
 import { widgetBindings, widgetModels } from './widget-store'
 import { getAppLocale, getTranslator } from './widget-translator'
 
-const getLatest = (slug: string, variable: Variable) => apiGet<LatestResponse>(`/cities/${slug}/latest`, { variable })
+const getLatest = (slug: string, variable: Variable) =>
+    apiGet<LatestResponse>(`/cities/${encodeURIComponent(slug)}/latest`, { variable })
 
 // Without a current temperature the widget shows the medians' value for now instead.
 const getCurrent = (slug: string) =>
-    apiGet<CurrentResponse>(`/cities/${slug}/current`).catch((error) => {
+    apiGet<CurrentResponse>(`/cities/${encodeURIComponent(slug)}/current`).catch((error) => {
         console.warn(`The current temperature for ${slug} is unavailable: ${String(error)}`)
 
         return null
@@ -38,33 +39,36 @@ const toWidgetCity = (city: City): WidgetCity => ({
 const saveWidgetModel = (widgetId: number, model: WidgetModel) =>
     widgetModels.set((models) => ({ ...models, [widgetId]: model }))
 
-export const drawWidget = (
-    widgetId: number,
-    city: WidgetCity | null,
-    model: WidgetModel | null,
-): WidgetRepresentation =>
-    renderForecastWidget({
+const drawWidget = (widgetId: number, city: WidgetCity | null, model: WidgetModel | null): WidgetRepresentation => {
+    const locale = getAppLocale()
+
+    return renderForecastWidget({
         widgetId,
         city,
         model: getShownModel(city, model),
-        t: getTranslator(getAppLocale()),
+        t: getTranslator(locale),
+        locale,
         now: new Date(),
     })
+}
+
+export const drawSaved = (widgetId: number) =>
+    drawWidget(widgetId, widgetBindings.get()[widgetId] ?? null, widgetModels.get()[widgetId] ?? null)
 
 // A widget placed offline is bound to a place without a time zone or coordinates; the first refresh that reaches the
 // server fills them in and keeps them.
 const resolveWidgetCity = async (widgetId: number, bound: WidgetCity): Promise<WidgetCity> => {
     if (bound.timezone !== null && bound.coordinates) return bound
 
-    const city = toWidgetCity(await apiGet<City>(`/cities/${bound.slug}`))
+    const city = toWidgetCity(await apiGet<City>(`/cities/${encodeURIComponent(bound.slug)}`))
 
     widgetBindings.set((bindings) => ({ ...bindings, [widgetId]: city }))
 
     return city
 }
 
-// Fetches the bound city's latest run (the API serves it from the CDN unless a newer run is due) and its current
-// temperature, and draws them; on any failure the widget keeps its last numbers.
+// The API serves the latest run from the CDN unless a newer run is due; on any failure the widget keeps its last
+// numbers.
 export const refreshWidget = async (widgetId: number): Promise<WidgetRepresentation> => {
     const bound = widgetBindings.get()[widgetId] ?? null
 
@@ -80,7 +84,7 @@ export const refreshWidget = async (widgetId: number): Promise<WidgetRepresentat
     } catch (error) {
         console.warn(`Widget ${widgetId} could not refresh ${bound.slug}: ${String(error)}`)
 
-        return drawWidget(widgetId, bound, widgetModels.get()[widgetId] ?? null)
+        return drawSaved(widgetId)
     }
 }
 
@@ -88,7 +92,7 @@ export const refreshWidget = async (widgetId: number): Promise<WidgetRepresentat
 // network the zone stays unknown until the widget's first refresh that reaches the server.
 const getWidgetCity = async (place: Place): Promise<WidgetCity> => {
     try {
-        return toWidgetCity(await apiGet<City>(`/cities/${place.slug}`))
+        return toWidgetCity(await apiGet<City>(`/cities/${encodeURIComponent(place.slug)}`))
     } catch {
         return { ...place, timezone: null }
     }

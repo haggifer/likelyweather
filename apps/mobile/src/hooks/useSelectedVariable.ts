@@ -14,10 +14,10 @@ export interface UseSelectedVariableResult {
     setVariable: (variable: Variable) => void
 }
 
-// The variable shared by the City screens in the stack. The `v` param read when the screen opened wins on the first render, before
-// the shared store has taken it, so a deep link never queries the previous variable first. A screen left under another
-// in the stack keeps its variable until it is shown again: its queries would otherwise fetch a variable nobody looks
-// at, and a city due for a refresh would spend the viewer's quota for it.
+// The `v` param read when the screen opened wins on the first render, before the shared store has taken it, so a deep
+// link never queries the previous variable first. A screen left under another in the stack keeps its variable until it
+// is shown again: its queries would otherwise fetch a variable nobody looks at, and a city due for a refresh would
+// spend the viewer's quota for it.
 export function useSelectedVariable(): UseSelectedVariableResult {
     const router = useRouter()
     const isFocused = useIsFocused()
@@ -32,7 +32,7 @@ export function useSelectedVariable(): UseSelectedVariableResult {
     if (isFocused && shown !== variable) setShown(variable)
 
     // The store answers the tap at once; the param only mirrors it for links, so it updates the navigation state
-    // in the background rather than in the tap's own render (author's lag report, 2026-10-14).
+    // in the background rather than in the tap's own render.
     const setVariable = (next: Variable) => {
         setSelectedVariable(next)
         startTransition(() => router.setParams({ v: next }))

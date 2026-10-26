@@ -12,8 +12,6 @@ import { getPlaceChips } from '@fa/shared/places'
 import { useTranslations } from 'next-intl'
 import { parseAsString, useQueryState } from 'nuqs'
 
-// The archive page: the same search and shortcuts as the landing page (the city in `?city=` too), then the city's past
-// weather for the chosen period.
 export function ArchiveView() {
     const t = useTranslations('archive')
     const places = usePlaces()

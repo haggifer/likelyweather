@@ -9,8 +9,7 @@ import { Button } from '../ui/button'
 import { Icon } from '../ui/icon'
 import { Text } from '../ui/text'
 
-// The web's day cells (ArchiveRangeCalendar there): the selected days join into one bar, the ends filled with the
-// primary colour and the days between them muted.
+// The web's day cells (ArchiveRangeCalendar there).
 const getDayClassName = ({ isSelected, isRangeStart, isRangeEnd, isDisabled }: ArchiveDayState) =>
     cn(
         'size-10',
@@ -54,8 +53,6 @@ interface IProps {
     onChange: (range: ArchiveRange) => void
 }
 
-// The archive period's month grid (`useArchiveRangeState`), drawn like the web's: a tap starts the period and a second
-// one ends it. TalkBack reads each day's full date and whether it is selected or unavailable.
 export function ArchiveRangeCalendar({ range, latest, onChange }: IProps) {
     const t = useTranslations('archive')
     const locale = useLocale()

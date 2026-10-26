@@ -13,6 +13,7 @@ import {
     SECONDARY_DASH,
 } from '@fa/chart-core/overview-geometry'
 import { OverviewMedians } from '@fa/chart-core/overview-stats'
+import { getNowLabelStart, LABEL_FONT_SIZE, PANEL_NAME_FONT_SIZE } from '@fa/chart-core/plot-geometry'
 import { formatYTick } from '@fa/chart-core/scales'
 import { Variable } from '@fa/shared/variables'
 import {
@@ -27,6 +28,7 @@ import {
     RoundedRect,
     rrect,
     SkFont,
+    Text,
     vec,
 } from '@shopify/react-native-skia'
 import { memo } from 'react'
@@ -34,12 +36,12 @@ import { SharedValue, useDerivedValue } from 'react-native-reanimated'
 import { useChartFonts } from '../../hooks/useChartFonts'
 import { CanvasChanceStrip } from './CanvasChanceStrip'
 import { CanvasDayGrid } from './CanvasDayGrid'
-import { CanvasText } from './CanvasText'
+import { CanvasText, getAdvanceWidth } from './CanvasText'
 import { CanvasWindArrows } from './CanvasWindArrows'
 import { OverviewSelection } from './types'
 
-// Half the cap height of the tick font, so a label centres on its gridline.
-const BASELINE_SHIFT = 3.5
+// Half the cap height of the tick font, so a label centres on its gridline: SVG's `dy="0.32em"`.
+const BASELINE_SHIFT = LABEL_FONT_SIZE * 0.32
 const SECONDARY_INTERVALS = SECONDARY_DASH.split(' ').map(Number)
 const NOW_INTERVALS = [4, 3]
 const NAME_HALO_WIDTH = 3
@@ -54,11 +56,10 @@ interface PanelDrawingProps {
     directions: (number | null)[] | null
     chance: (number | null)[] | null
     chart: ChartTheme
-    font: SkFont | null
+    chanceFont: SkFont | null
     likelyFont: SkFont | null
 }
 
-// One panel's gridlines and median (bars for precipitation), with the strip under it.
 const PanelDrawing = ({
     row,
     series,
@@ -69,7 +70,7 @@ const PanelDrawing = ({
     directions,
     chance,
     chart,
-    font,
+    chanceFont,
     likelyFont,
 }: PanelDrawingProps) => {
     const { x, plotRight } = frame
@@ -124,7 +125,7 @@ const PanelDrawing = ({
                     y={getChanceY(bottom)}
                     color={chart.foreground}
                     mutedColor={chart.muted}
-                    font={font}
+                    font={chanceFont}
                     likelyFont={likelyFont}
                 />
             )}
@@ -156,6 +157,7 @@ interface PlotDrawingProps {
     locale: string
     chart: ChartTheme
     font: SkFont | null
+    chanceFont: SkFont | null
     likelyFont: SkFont | null
 }
 
@@ -175,6 +177,7 @@ const PlotDrawing = memo(function PlotDrawing({
     locale,
     chart,
     font,
+    chanceFont,
     likelyFont,
 }: PlotDrawingProps) {
     const { x, plotWidth } = frame
@@ -221,7 +224,7 @@ const PlotDrawing = memo(function PlotDrawing({
                     directions={directions}
                     chance={chance}
                     chart={chart}
-                    font={font}
+                    chanceFont={chanceFont}
                     likelyFont={likelyFont}
                 />
             ))}
@@ -261,7 +264,6 @@ interface SelectionDrawingProps {
     font: SkFont | null
 }
 
-// The picked slot: its time above the panels, a line through every panel and a dot on each median.
 const SelectionDrawing = ({ selection: { x, labelX, label, dots }, layout, chart, font }: SelectionDrawingProps) => (
     <Group>
         <CanvasText
@@ -343,7 +345,7 @@ const AxisDrawing = ({
                     font={nameFont}
                     text={panelNames[i]}
                     x={marginLeft + 6}
-                    y={top + 12}
+                    y={top + PANEL_NAME_FONT_SIZE + 1}
                     color={chart.muted}
                     halo={{ color: chart.card, width: NAME_HALO_WIDTH }}
                 />
@@ -375,9 +377,9 @@ interface IProps {
     chart: ChartTheme
 }
 
-// The overview's drawing on one screen-wide GPU canvas. On Android react-native-svg rasterises a whole <Svg> on the
-// CPU after any change; here the plot is recorded once and replayed shifted by the scroll offset on the UI thread, so
-// a scroll renders nothing in React and a change redraws no bitmap.
+// Drawn on one screen-wide GPU canvas: on Android react-native-svg rasterises a whole <Svg> on the CPU after any
+// change; here the plot is recorded once and replayed shifted by the scroll offset on the UI thread, so a scroll
+// renders nothing in React and a change redraws no bitmap.
 export function OverviewCanvas({
     width,
     scrollX,
@@ -397,9 +399,14 @@ export function OverviewCanvas({
     locale,
     chart,
 }: IProps) {
-    const { regular, semiBold } = useChartFonts()
+    const { regular, panelName, label, labelBold } = useChartFonts()
 
+    const nowLabelWidth = labelBold ? getAdvanceWidth(labelBold, nowLabel) : 0
     const plotTransform = useDerivedValue(() => [{ translateX: -scrollX.get() }])
+    // The plot's visible left edge, in the drawing's x, is the scroll offset plus the pinned axis.
+    const nowLabelX = useDerivedValue(() =>
+        nowX === null ? 0 : getNowLabelStart(nowX, nowLabelWidth, scrollX.get() + marginLeft),
+    )
 
     return (
         <Canvas
@@ -422,19 +429,19 @@ export function OverviewCanvas({
                     locale={locale}
                     chart={chart}
                     font={regular}
-                    likelyFont={semiBold}
+                    chanceFont={label}
+                    likelyFont={labelBold}
                 />
                 {nowX !== null && (
-                    <CanvasText
-                        font={semiBold}
+                    <Text
+                        font={labelBold}
                         text={nowLabel}
-                        x={nowX}
+                        x={nowLabelX}
                         y={layout.plotTop - 7}
                         color={chart.foreground}
-                        anchor="middle"
                     />
                 )}
-                {selection && <SelectionDrawing selection={selection} layout={layout} chart={chart} font={semiBold} />}
+                {selection && <SelectionDrawing selection={selection} layout={layout} chart={chart} font={labelBold} />}
             </Group>
             <AxisDrawing
                 layout={layout}
@@ -443,8 +450,8 @@ export function OverviewCanvas({
                 panelNames={panelNames}
                 hasChance={chance !== null}
                 chart={chart}
-                font={regular}
-                nameFont={semiBold}
+                font={label}
+                nameFont={panelName}
             />
         </Canvas>
     )

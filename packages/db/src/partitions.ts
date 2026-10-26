@@ -5,6 +5,9 @@ const WEEK_MS = 7 * DAY_MS
 // 1970-01-05 was a Monday, so weeks start on Monday 00:00 UTC.
 const MONDAY_EPOCH_MS = 4 * DAY_MS
 const PARTITION_NAME = /^Forecast_p(\d{4})(\d{2})(\d{2})$/
+// Dropping a partition locks the whole Forecast table, and every read queues behind a drop that waits for an open
+// write: it gives up instead, and a later prune tries again.
+const DROP_LOCK_TIMEOUT = '1s'
 
 const toPartitionName = (weekStart: Date) => `Forecast_p${weekStart.toISOString().slice(0, 10).replaceAll('-', '')}`
 
@@ -47,7 +50,7 @@ const createPartition = async (prisma: PrismaClient, start: Date) => {
     }
 }
 
-// Creates the weekly partitions covering `issueTime` and the following week, so writes never hit a missing range.
+// The following week is created ahead too, so writes never hit a missing range.
 export const ensureForecastPartitions = async (prisma: PrismaClient, issueTime: Date) => {
     const first = getWeekStart(issueTime)
 
@@ -65,7 +68,10 @@ export const dropExpiredForecastPartitions = async (prisma: PrismaClient, now: D
 
         if (weekEnd === null || weekEnd > cutoff) continue
 
-        await prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS "${name}"`)
+        await prisma.$transaction([
+            prisma.$executeRawUnsafe(`SET LOCAL lock_timeout = '${DROP_LOCK_TIMEOUT}'`),
+            prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS "${name}"`),
+        ])
         dropped.push(name)
     }
 

@@ -9,7 +9,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useNow } from '@/hooks/useNow'
 import { cn } from '@/lib/cn'
 import { useAnimatedDomain } from '@fa/chart-core/hooks/useAnimatedDomain'
-import { CHART_FONT_SIZE, clamp, getBarWidth, getNowX } from '@fa/chart-core/plot-geometry'
+import { CHART_FONT_SIZE, clamp, getBarWidth, getNowX, LABEL_FONT_SIZE } from '@fa/chart-core/plot-geometry'
 import { formatYTick } from '@fa/chart-core/scales'
 import { getInitialScrollLeft, getScrollWidth, getVisibleRange, MIN_SLOT_WIDTH } from '@fa/chart-core/scroll-geometry'
 import {
@@ -158,7 +158,7 @@ export function SpaghettiChart({
     const dragScroll = useDragScroll()
 
     // Everything that does not follow the pointer is built once per data, size or theme change, so a hover redraws
-    // only the crosshair, the dots and the label (a pointer move cost 50–100 ms on a slow CPU before).
+    // only the crosshair, the dots and the label.
     const staticLayer = useMemo(
         () => (
             <g>
@@ -271,7 +271,7 @@ export function SpaghettiChart({
                         <text
                             x={nowX + 4}
                             y={margin.top + 10}
-                            fontSize={CHART_FONT_SIZE}
+                            fontSize={LABEL_FONT_SIZE}
                             fontWeight={600}
                             fill={theme.foreground}
                         >
@@ -454,7 +454,7 @@ export function SpaghettiChart({
                                         x={hover.labelX}
                                         y={margin.top - 8}
                                         textAnchor="middle"
-                                        fontSize={CHART_FONT_SIZE}
+                                        fontSize={LABEL_FONT_SIZE}
                                         fontWeight={600}
                                         fill={theme.foreground}
                                     >
@@ -559,7 +559,7 @@ export function SpaghettiChart({
                         y={y(tick)}
                         dy="0.32em"
                         textAnchor="end"
-                        fontSize={CHART_FONT_SIZE}
+                        fontSize={LABEL_FONT_SIZE}
                         fill={theme.muted}
                     >
                         {formatYTick(tick, info.decimals === 0)}

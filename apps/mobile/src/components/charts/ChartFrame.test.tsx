@@ -14,7 +14,7 @@ const renderFrame = (emptyMessage: string | null = null) =>
     )
 
 describe('ChartFrame', () => {
-    it('swaps the chart for the table and says the table is on', async () => {
+    it('swaps the chart for the table and names the button after its next action', async () => {
         await renderFrame()
 
         expect(screen.getByText('chart')).toBeOnTheScreen()
@@ -23,7 +23,7 @@ describe('ChartFrame', () => {
 
         expect(screen.getByText('numbers')).toBeOnTheScreen()
         expect(screen.queryByText('chart')).toBeNull()
-        expect(screen.getByRole('button', { name: en.chart.showChart })).toBeSelected()
+        expect(screen.getByRole('button', { name: en.chart.showChart })).not.toBeSelected()
     })
 
     // The view mode is shared, so the frame may open on either view.

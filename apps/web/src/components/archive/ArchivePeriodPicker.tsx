@@ -20,10 +20,9 @@ interface IProps {
     onChange: (range: ArchiveRange) => void
 }
 
-// The period as DD.MM.YYYY – DD.MM.YYYY on a button that opens the range calendar. The second tap of a period applies
-// it and closes the calendar, so each period costs at most one request and nothing waits for the reader to settle.
-// Phones open it in a dialog, which has the window's whole height: beside the button it doesn't fit a phone held
-// sideways.
+// The second tap of a period applies it and closes the calendar, so each period costs at most one request and nothing
+// waits for the reader to settle. Phones open it in a dialog, which has the window's whole height: beside the button it
+// doesn't fit a phone held sideways.
 export function ArchivePeriodPicker({ range, latest, onChange }: IProps) {
     const t = useTranslations('archive')
     const locale = useLocale()
@@ -43,7 +42,7 @@ export function ArchivePeriodPicker({ range, latest, onChange }: IProps) {
             variant="outline"
             size="sm"
             aria-label={t('periodValue', { range: period })}
-            className="tabular-nums max-sm:h-9 max-sm:text-sm"
+            className="tabular-nums touch:h-9 max-sm:text-sm"
         >
             <CalendarDays />
             {period}

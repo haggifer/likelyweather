@@ -3,7 +3,6 @@ import { getCityName } from './format'
 import { formatDistanceKm, isNearEnough } from './geo'
 import { Place, toPlace } from './places'
 
-// "Use my location" opens a place, or names the nearest stored city and its distance and lets the viewer choose.
 export type LocateResult = { kind: 'open'; place: Place } | { kind: 'far'; city: City; distanceKm: number }
 
 export const toLocateResult = ({ city, distanceKm }: NearestResponse): LocateResult =>

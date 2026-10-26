@@ -16,4 +16,10 @@ describe('Text', () => {
 
         expect(getStyle('Regular').fontFamily).toBe('Inter_400Regular')
     })
+
+    it('keeps a family its style names, such as the logo font', async () => {
+        await render(<Text style={{ fontFamily: 'Lexend_600SemiBold' }}>Logo</Text>)
+
+        expect(getStyle('Logo').fontFamily).toBe('Lexend_600SemiBold')
+    })
 })

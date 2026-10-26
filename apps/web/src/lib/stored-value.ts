@@ -13,7 +13,6 @@ const LOCAL_STORAGE: KeyValueStorage = {
     setItem: (key, value) => localStorage.setItem(key, value),
 }
 
-// A setting kept in local storage for `useSyncExternalStore` (the shared contract in `@fa/shared/persisted-value`).
 // The server can't read the viewer's storage, so it renders `fallback`, and the stored value applies right after
 // hydration. Another tab's change arrives through the `storage` event.
 export const createStoredValue = <T>(key: string, parse: (raw: string | null) => T, fallback: T): StoredValue<T> => {

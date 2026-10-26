@@ -8,8 +8,7 @@ import { usePendingValue } from '@fa/hooks/usePendingValue'
 import { getVariablePair, getVariableTab, Variable } from '@fa/shared/variables'
 import { useTranslations } from 'next-intl'
 
-// The phone dashboard's sub-tabs for a pair, full width above the chart: the actual value and its companion
-// (author, 2026-10-14). Nothing renders for a variable without one.
+// The phone dashboard's sub-tabs for a pair: the actual value and its companion.
 export function VariablePairTabs() {
     const t = useTranslations('subVariables')
     const tTabs = useTranslations('variableTabs')

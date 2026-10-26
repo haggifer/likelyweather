@@ -1,4 +1,4 @@
-// Forecast Arena data model. Forecast is range-partitioned by week on issueTime (see the init migration and
+// Likely Weather data model. Forecast is range-partitioned by week on issueTime (see the init migration and
 // src/partitions.ts); Prisma sees it as one table.
 
 generator client {

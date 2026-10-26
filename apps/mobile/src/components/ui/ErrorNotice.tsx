@@ -12,7 +12,6 @@ interface IProps {
     onRetry?: () => void
 }
 
-// The web's ErrorNotice: the kit's alert with the error's copy, and a way to try again under it.
 export function ErrorNotice({ error, onRetry }: IProps) {
     const t = useTranslations('errors')
 

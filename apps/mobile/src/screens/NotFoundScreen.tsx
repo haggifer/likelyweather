@@ -4,8 +4,7 @@ import { useTranslations } from 'use-intl'
 import { Button } from '../components/ui/button'
 import { Text } from '../components/ui/text'
 
-// The web's not-found page, for a link into the app that names no screen. The way back pops to the start screen when
-// it is in the stack, so Back never returns here.
+// The way back pops to the start screen when it is in the stack, so Back never returns here.
 export function NotFoundScreen() {
     const t = useTranslations('notFound')
     const router = useRouter()

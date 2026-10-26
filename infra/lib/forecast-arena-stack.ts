@@ -1,4 +1,5 @@
 import {
+    aws_certificatemanager as acm,
     aws_budgets as budgets,
     CfnOutput,
     aws_cloudfront as cloudfront,
@@ -19,13 +20,21 @@ import { Construct } from 'constructs'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 
+interface SiteDomain {
+    // The bare domain; its www name redirects to it.
+    name: string
+    // An ACM certificate for the name and its www name, in us-east-1, the only region CloudFront takes them from.
+    certificateArn: string
+}
+
 export interface ForecastArenaStackProps extends StackProps {
-    // Receives the budget and alarm e-mails.
     alertEmail: string
     // "owner/name"; deploys from GitHub Actions may assume the deploy role only from this repository's branch.
     githubRepo: string
     githubBranch: string
     monthlyBudgetUsd: number
+    // Without it the site answers only on its CloudFront address.
+    domain?: SiteDomain
 }
 
 const SSM_PREFIX = '/forecast-arena'
@@ -41,8 +50,6 @@ const ADAPTER_ENVIRONMENT = {
     PORT: '8080',
 }
 
-// Lambda code comes from what `pnpm build` writes (a directory, or the API's prepared zip); synth fails early if it is
-// missing.
 const bundle = (relative: string) => {
     const asset = path.join(REPO_ROOT, relative)
 
@@ -103,8 +110,32 @@ const addErrorAlarm = (scope: Construct, id: string, fn: lambda.Function, alerts
         alarmDescription: `The ${id.replace('Errors', '').toLowerCase()} function crashed or timed out repeatedly.`,
     }).addAlarmAction(new cloudwatchActions.SnsAction(alerts))
 
-// Pages come from the web function and /api/* from the API function.
-const createDistribution = (scope: Construct, webUrl: lambda.IFunctionUrl, apiUrl: lambda.IFunctionUrl) => {
+// A viewer-request function on the pages: www.<domain>/<path>?<query> answers with a permanent redirect to the bare
+// domain, so the site has one address. CloudFront Functions run their own JavaScript runtime, hence the plain ES5.
+const getWwwRedirectCode = (name: string) => `
+function handler(event) {
+    var request = event.request;
+    if (request.headers.host.value !== 'www.${name}') return request;
+    var query = Object.keys(request.querystring).map(function (key) {
+        var param = request.querystring[key];
+        var values = param.multiValue ? param.multiValue.map(function (v) { return v.value; }) : [param.value];
+        return values.map(function (value) { return value === '' ? key : key + '=' + value; }).join('&');
+    }).join('&');
+    var location = 'https://${name}' + request.uri + (query ? '?' + query : '');
+    return { statusCode: 301, statusDescription: 'Moved Permanently', headers: { location: { value: location } } };
+}`
+
+const getDomainSettings = (scope: Construct, domain: SiteDomain) => ({
+    domainNames: [domain.name, `www.${domain.name}`],
+    certificate: acm.Certificate.fromCertificateArn(scope, 'Certificate', domain.certificateArn),
+})
+
+const createDistribution = (
+    scope: Construct,
+    webUrl: lambda.IFunctionUrl,
+    apiUrl: lambda.IFunctionUrl,
+    domain: SiteDomain | undefined,
+) => {
     // Honors the API's Cache-Control (public reads 5 minutes, everything else no-store).
     const apiCache = new cloudfront.CachePolicy(scope, 'ApiCache', {
         defaultTtl: Duration.seconds(0),
@@ -126,8 +157,15 @@ const createDistribution = (scope: Construct, webUrl: lambda.IFunctionUrl, apiUr
         ),
     })
     const webOrigin = origins.FunctionUrlOrigin.withOriginAccessControl(webUrl)
+    const wwwRedirect =
+        domain &&
+        new cloudfront.Function(scope, 'WwwRedirect', {
+            runtime: cloudfront.FunctionRuntime.JS_2_0,
+            code: cloudfront.FunctionCode.fromInline(getWwwRedirectCode(domain.name)),
+        })
 
     return new cloudfront.Distribution(scope, 'Site', {
+        ...(domain && getDomainSettings(scope, domain)),
         priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
         // Pages depend on the language cookie and the current time, so they are rendered per request.
         defaultBehavior: {
@@ -135,8 +173,11 @@ const createDistribution = (scope: Construct, webUrl: lambda.IFunctionUrl, apiUr
             viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
             cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
             originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
-            // HSTS, nosniff, same-origin framing and a referrer policy; the API sets its own through helmet.
+            // /api/* carries no such policy: the API sets its own headers through helmet.
             responseHeadersPolicy: cloudfront.ResponseHeadersPolicy.SECURITY_HEADERS,
+            functionAssociations: wwwRedirect
+                ? [{ function: wwwRedirect, eventType: cloudfront.FunctionEventType.VIEWER_REQUEST }]
+                : undefined,
         },
         additionalBehaviors: {
             // Content-hashed build assets: cached at the edge for as long as the origin allows.
@@ -219,7 +260,7 @@ export class ForecastArenaStack extends Stack {
             `arn:aws:lambda:${this.region}:753240598075:layer:LambdaAdapterLayerArm64:${WEB_ADAPTER_LAYER_VERSION}`,
         )
 
-        // The standalone Next.js server; Amplify Hosting does not support Next.js 16.
+        // Amplify Hosting does not support Next.js 16, so the standalone server runs on Lambda.
         const web = createAdapterFunction(this, 'Web', bundle('apps/web/.next/lambda.zip'), webAdapter, {
             ...ADAPTER_ENVIRONMENT,
             HOSTNAME: '127.0.0.1',
@@ -244,7 +285,7 @@ export class ForecastArenaStack extends Stack {
         addErrorAlarm(this, 'ApiErrors', api, alerts)
         addErrorAlarm(this, 'WebErrors', web, alerts)
 
-        const distribution = createDistribution(this, webUrl, apiUrl)
+        const distribution = createDistribution(this, webUrl, apiUrl, props.domain)
 
         // Function URLs created since October 2025 also need lambda:InvokeFunction; the OAC origin only grants
         // lambda:InvokeFunctionUrl, so without this CloudFront gets 403 from both functions.
@@ -261,7 +302,11 @@ export class ForecastArenaStack extends Stack {
 
         createMonthlyBudget(this, props)
 
-        new CfnOutput(this, 'SiteUrl', { value: `https://${distribution.distributionDomainName}` })
+        new CfnOutput(this, 'SiteUrl', {
+            value: `https://${props.domain?.name ?? distribution.distributionDomainName}`,
+        })
+        // The target of the domain's DNS records.
+        new CfnOutput(this, 'DistributionDomainName', { value: distribution.distributionDomainName })
         new CfnOutput(this, 'ApiFunctionUrl', { value: apiUrl.url })
         new CfnOutput(this, 'WebFunctionUrl', { value: webUrl.url })
         new CfnOutput(this, 'DeployRoleArn', { value: deployRole.roleArn })

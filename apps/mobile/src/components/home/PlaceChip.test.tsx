@@ -24,7 +24,7 @@ describe('PlaceChip', () => {
         await fireEvent.press(screen.getByRole('button', { name: /Lviv/ }))
 
         expect(onSelect).toHaveBeenCalledWith('city-7')
-        expect(screen.queryByRole('switch', { name: t('unpinCity', { name: PLACE.name }) })).toBeNull()
+        expect(screen.queryByRole('button', { name: t('unpinCity', { name: PLACE.name }) })).toBeNull()
         expect(placesStore.get().favorites).toEqual([PLACE])
     })
 })

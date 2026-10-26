@@ -25,11 +25,8 @@ interface IProps {
     city: City
 }
 
-// The city name doubles as a switcher: the pencil swaps it for a search box holding the current name, selected so
-// typing replaces it. Picking a result opens that city; Escape or clicking away keeps this one. On phones the header
-// matches the app's: the name and region wrap, the star and the pencil sit at the right edge, and the age chip and
-// Refresh form a second line only once the run is outdated (author, 2026-10-14); wider screens keep Refresh disabled
-// with its hint until then.
+// On phones the header matches the app's: the age chip and Refresh form a second line only once the run is outdated;
+// wider screens keep Refresh disabled with its hint until then.
 export function CityHeader({ city }: IProps) {
     const t = useTranslations('city')
     const locale = useLocale()
@@ -43,7 +40,9 @@ export function CityHeader({ city }: IProps) {
     // it failed before any run arrived there is no date, but Refresh must stay available: it is the only way to ask
     // again. A failed refetch with a run on screen keeps the 3-hour rule.
     const { data: latest, isError } = useLatest(city.slug, Variable.Precip)
-    const isFetching = useIsFetching({ queryKey: ['latest', city.slug] }) > 0
+    // Only the queries on screen: the dashboard's background prefetch of the other variables would spin it after every
+    // load.
+    const isFetching = useIsFetching({ queryKey: ['latest', city.slug], type: 'active' }) > 0
 
     const name = getCityName(city, locale)
     const region = getCityRegion(city, locale)

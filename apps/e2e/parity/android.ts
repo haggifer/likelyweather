@@ -94,7 +94,6 @@ export const createAndroid = (device: string) => {
         }
     }
 
-    // A slow drag, so the list scrolls by about the drag's length instead of flinging.
     const drag = ({ width, height }: Display, x: number, from: number, to: number, ms: number) => {
         const left = String(Math.round(width * x))
 
@@ -109,6 +108,7 @@ export const createAndroid = (device: string) => {
         )
     }
 
+    // A slow drag, so the list scrolls by about the drag's length instead of flinging.
     const scrollDown = (display: Display, x: number) => drag(display, x, 0.75, 0.35, 900)
 
     // Fast flings back up: opening a link to the screen already shown keeps where it was scrolled to.

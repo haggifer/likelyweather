@@ -34,7 +34,6 @@ export function FavoriteToggle({ place, className }: IProps) {
             size="icon-sm"
             onClick={handleToggle}
             disabled={!places || !isAvailable}
-            aria-pressed={isPinned}
             aria-label={label}
             title={isAvailable ? label : undefined}
             className={cn('shrink-0 touch:size-9 touch:hit-area', !places && 'invisible', className)}

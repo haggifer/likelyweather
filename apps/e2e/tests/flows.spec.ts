@@ -204,7 +204,6 @@ test('a panel moves by keyboard with its handle, and Escape cancels a move witho
     const handle = page.getByRole('button', { name: 'Reorder Temperature' })
     const rows = page.getByRole('dialog', { name: 'Shown variables' }).getByRole('listitem')
 
-    // The handle reads as pressed while its row is held, and the held row slides down before it is dropped.
     const moveDown = async (finalKey: string) => {
         await page.keyboard.press('Space')
         await expect(handle).toHaveAttribute('aria-pressed', 'true')
@@ -270,7 +269,6 @@ test('the header marks Overview on the landing and Details on a city dashboard',
     await expect(nav.getByRole('link', { name: 'Overview' })).not.toHaveAttribute('aria-current')
 })
 
-// Details opens the city the overview shows, not only the default place.
 test('Details in the header opens the dashboard of the city the overview shows', async ({ page, isMobile }) => {
     test.skip(isMobile, 'phones reach the pages through the menu')
 
@@ -284,7 +282,7 @@ test('Details in the header opens the dashboard of the city the overview shows',
 test('an unknown city page says so and offers the search', async ({ page }) => {
     await page.goto('/city/nowhere-xx-1')
 
-    await expect(page.getByRole('heading', { name: 'This city is not in Forecast Arena' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'This city is not in Likely Weather' })).toBeVisible()
     await expect(page.getByRole('combobox', { name: 'Search any place' })).toBeVisible()
 })
 
@@ -293,7 +291,7 @@ test('the language menu switches the interface to Ukrainian', async ({ page }) =
     await page.getByRole('button', { name: 'Language' }).click()
     await page.getByRole('menuitemradio', { name: 'Українська' }).click()
 
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Forecast Arena: порівняння прогнозів погоди')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Likely Weather: порівняння прогнозів погоди')
 })
 
 for (const path of ['/', `/city/${KYIV}`]) {
@@ -344,10 +342,7 @@ test('a pinned city moves to the front of the chips and opens the landing page',
     await page.goto(`/city/${LONDON}`)
     await page.getByRole('button', { name: 'Add London to favorites' }).click()
 
-    await expect(page.getByRole('button', { name: 'Remove London from favorites' })).toHaveAttribute(
-        'aria-pressed',
-        'true',
-    )
+    await expect(page.getByRole('button', { name: 'Remove London from favorites' })).toBeVisible()
 
     await page.goto('/')
 
@@ -374,7 +369,6 @@ test('the star explains why it is disabled once four places are favorites', asyn
 
     await expect(star).toBeDisabled()
 
-    // A touch screen opens the hint on a tap, a mouse on hover.
     if (isMobile) {
         await star.locator('..').tap()
         await expect(page.getByRole('dialog')).toContainText('You already have 4 favorites')
@@ -408,17 +402,14 @@ test('the star on a chip pins the city to the front and unpins it again', async 
     await chips.getByRole('button', { name: 'Add Paris to favorites' }).click()
 
     await expect.poll(() => getChipNames(page)).toEqual(['Paris', 'New York', 'London', 'Kyiv'])
-    await expect(chips.getByRole('button', { name: 'Remove Paris from favorites' })).toHaveAttribute(
-        'aria-pressed',
-        'true',
-    )
+    await expect(chips.getByRole('button', { name: 'Remove Paris from favorites' })).toBeVisible()
 
     await chips.getByRole('button', { name: 'Remove Paris from favorites' }).click()
 
-    await expect(chips.getByRole('button', { name: 'Add Paris to favorites' })).toHaveAttribute('aria-pressed', 'false')
+    await expect(chips.getByRole('button', { name: 'Add Paris to favorites' })).toBeVisible()
 })
 
-// On phones a tap meant for a city never pins it: the chip shows the star, and the overview card's star pins.
+// On phones a tap meant for a city never pins it, so the chips carry no star button; the overview card's star pins.
 test('a phone chip only shows its star, and a tap on it opens the city', async ({ page, isMobile }) => {
     test.skip(!isMobile, 'phone layout only')
 

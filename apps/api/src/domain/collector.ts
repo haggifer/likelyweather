@@ -95,6 +95,13 @@ const fetchMetnoModel = async (city: City, steps: string[], previous: Snapshot |
 
 const getRunId = (cityId: number, issueTime: string) => `preview-${cityId}-${compactIso(issueTime)}`
 
+// A new issue carrying met.no alone would replace the stored run of an earlier issue, which has every model; that run
+// is served instead. A refetch in the same issue keeps the stored models it does not bring back (`writeSnapshot`).
+const isNewIssueWithoutOpenMeteo = (openMeteo: Models, previous: Snapshot | null, issueTime: string) =>
+    !Object.keys(openMeteo).length &&
+    previous !== null &&
+    new Date(previous.issueTime).getTime() !== new Date(issueTime).getTime()
+
 const checkRunStatus = (rows: number, warnings: string[]): RunStatus => {
     if (rows === 0) return 'FAILED'
 
@@ -104,8 +111,7 @@ const checkRunStatus = (rows: number, warnings: string[]): RunStatus => {
 export const countRows = (snapshot: Pick<Snapshot, 'models'>) =>
     Object.values(snapshot.models).reduce((sum, series) => sum + series.temp.filter((v) => v !== null).length, 0)
 
-// Fetches every source for one city onto the hourly grid and stores it as one run. Source failures never throw:
-// they become warnings, and the run is FAILED only when no model returned data.
+// Source failures never throw: they become warnings, and the run is FAILED only when no model returned data.
 export const collect = async ({ city, now = new Date() }: CollectOptions): Promise<CollectResult> => {
     const issueTime = toIsoMinute(floorToStep(now))
     const runId = getRunId(city.id, issueTime)
@@ -121,9 +127,11 @@ export const collect = async ({ city, now = new Date() }: CollectOptions): Promi
 
     const models: Models = metno.series ? { ...openMeteo.models, [ModelId.Metno]: metno.series } : openMeteo.models
     const warnings = [...openMeteo.warnings, ...metno.warnings]
-    const snapshot: Snapshot | null = Object.keys(models).length
-        ? { cityId: city.id, issueTime, runId, fetchedAt, steps, models, metnoLastModified: metno.lastModified }
-        : null
+    const isMetnoOnlyNewIssue = isNewIssueWithoutOpenMeteo(openMeteo.models, previous, issueTime)
+    const snapshot: Snapshot | null =
+        Object.keys(models).length && !isMetnoOnlyNewIssue
+            ? { cityId: city.id, issueTime, runId, fetchedAt, steps, models, metnoLastModified: metno.lastModified }
+            : null
     const rows = snapshot ? countRows(snapshot) : 0
     const run: Run = {
         id: runId,

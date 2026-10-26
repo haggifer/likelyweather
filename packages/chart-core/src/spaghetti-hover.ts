@@ -10,7 +10,6 @@ export interface TooltipRow {
     value: number
 }
 
-// The hovered span's shade, across the plot.
 interface Shade {
     left: number
     width: number
@@ -53,7 +52,6 @@ export const getHoverLabel = (step: string, span: [Date, Date] | null, timeZone:
         ? formatPeriodLabel(span[0].toISOString(), span[1].toISOString(), timeZone, locale)
         : formatStepLabel(step, timeZone, locale)
 
-// Every model with a value at the step, highest first.
 export const getTooltipRows = (series: Series[], index: number) =>
     series
         .map((s) => ({ modelId: s.modelId, value: s.values[index] }))

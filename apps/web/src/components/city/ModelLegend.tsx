@@ -21,12 +21,12 @@ interface RowProps {
     isHidden: boolean
 }
 
-// Shared elements, so an unchanged icon is not rebuilt on every hover. Touch screens get a 14 px eye in a 36 px button.
+// Shared elements, so an unchanged icon is not rebuilt on every hover.
 const EYE = <Eye className="size-3 max-sm:size-3.5" />
 const EYE_OFF = <EyeOff className="size-3 max-sm:size-3.5" />
 const EYE_BUTTON = 'touch:size-9 touch:hit-area'
 
-// One model's row; a hover re-renders only the rows whose value text changed (author's lag report, 2026-10-12).
+// Memoized, so a hover re-renders only the rows whose value text changed.
 const ModelRow = memo(function ModelRow({ modelId, value, isHidden }: RowProps) {
     const t = useTranslations('legend')
     const dispatch = useAppDispatch()
@@ -76,7 +76,7 @@ interface IProps {
     readoutLabel: string
     variable: Variable
     direction?: number | null
-    // Phones read a pair together, "actual (companion)" (author, 2026-10-14).
+    // Phones read a pair together, "actual (companion)".
     pairedRuns?: PairedRuns | null
 }
 
@@ -121,7 +121,7 @@ export function ModelLegend({
                     <Button
                         variant="link"
                         size="xs"
-                        className="h-auto p-0 text-xs max-sm:text-sm"
+                        className="h-auto p-0 text-xs touch:hit-area max-sm:text-sm"
                         onClick={() => dispatch(showAllModels())}
                     >
                         {t('reset')}
@@ -160,7 +160,6 @@ export function ModelLegend({
                     className={EYE_BUTTON}
                     onClick={() => dispatch(toggleMedian())}
                     aria-label={isMedianHidden ? t('showMedian') : t('hideMedian')}
-                    aria-pressed={isMedianHidden}
                 >
                     {isMedianHidden ? EYE_OFF : EYE}
                 </Button>
@@ -175,7 +174,7 @@ export function ModelLegend({
                     />
                 ))}
             </ul>
-            <p className="text-xs leading-snug text-muted-foreground pointer-coarse:hidden">{t('hint')}</p>
+            <p className="text-xs leading-snug text-muted-foreground touch:hidden">{t('hint')}</p>
         </div>
     )
 }

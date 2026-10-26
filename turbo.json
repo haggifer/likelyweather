@@ -4,6 +4,7 @@
     "tasks": {
         "build": {
             "dependsOn": ["^build"],
+            "inputs": ["$TURBO_DEFAULT$", ".env*"],
             "outputs": [".next/**", "!.next/cache/**", "dist/**", "cdk.out/**", "src/generated/**"]
         },
         "lint": {
@@ -14,18 +15,22 @@
         },
         "test": {
             "dependsOn": ["^build"],
-            "passThroughEnv": ["DATABASE_URL"]
+            "env": ["DATABASE_URL"]
         },
         "@fa/db#typecheck": {
             "dependsOn": ["build"]
         },
         "@fa/db#test": {
             "dependsOn": ["build"],
-            "passThroughEnv": ["DATABASE_URL"]
+            "env": ["DATABASE_URL"]
         },
         "@fa/api#test": {
             "dependsOn": ["^build", "@fa/db#test"],
-            "passThroughEnv": ["DATABASE_URL"]
+            "env": ["DATABASE_URL"]
+        },
+        "@fa/mobile#test": {
+            "dependsOn": ["^build"],
+            "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/apps/web/src/app/globals.css"]
         },
         "@fa/db#lint": {
             "dependsOn": ["build"]

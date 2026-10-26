@@ -23,7 +23,7 @@ describe('apiGet', () => {
 
         await apiGet('/geocode', { q: 'Kyiv', locale: undefined, empty: '' })
 
-        expect(fetch).toHaveBeenCalledWith('https://example.test/api/geocode?q=Kyiv', undefined)
+        expect(fetch).toHaveBeenCalledWith('https://example.test/api/geocode?q=Kyiv', expect.anything())
     })
 
     it('throws the API error code and status', async () => {
@@ -43,6 +43,25 @@ describe('apiGet', () => {
 
         expect(error).toBeInstanceOf(ApiRequestError)
         expect(error).toMatchObject({ status: 403, code: 'http_error' })
+    })
+
+    it('gives up on a request that never answers', async () => {
+        vi.useFakeTimers()
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(
+                (_url: string, init: RequestInit) =>
+                    new Promise((_resolve, reject) =>
+                        init.signal?.addEventListener('abort', () => reject(new Error('aborted'))),
+                    ),
+            ),
+        )
+
+        const pending = apiGet('/cities/x').catch((e: unknown) => e)
+        await vi.advanceTimersByTimeAsync(40_000)
+
+        expect(await pending).toMatchObject({ message: 'aborted' })
+        vi.useRealTimers()
     })
 })
 

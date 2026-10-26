@@ -50,3 +50,5 @@ jobs:
               env:
                   BUDGET_EMAIL: ${{ secrets.BUDGET_EMAIL }}
                   GITHUB_REPO: ${{ github.repository }}
+                  # Without it the deploy would take the site's domain off the distribution.
+                  CERTIFICATE_ARN: ${{ vars.CERTIFICATE_ARN }}

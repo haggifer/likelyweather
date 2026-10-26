@@ -34,7 +34,7 @@ jobs:
         env:
             DATABASE_URL: postgresql://postgres:postgres@localhost:5432/forecastarena
             REDIS_URL: redis://localhost:6379
-            METNO_USER_AGENT: forecast-arena-ci/1.0 github.com/${{ github.repository }}
+            METNO_USER_AGENT: likelyweather-ci/1.0 github.com/${{ github.repository }}
         steps:
             - uses: actions/checkout@v4
             - uses: pnpm/action-setup@v4

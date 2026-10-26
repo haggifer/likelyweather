@@ -10,8 +10,6 @@ interface IProps {
     onChange: (variable: Variable) => void
 }
 
-// The web's phone sub-tabs for a pair, full width above the chart: the actual value and its companion
-// (author, 2026-10-14). Nothing renders for a variable without one.
 export function VariablePairTabs({ value: current, onChange }: IProps) {
     const t = useTranslations('subVariables')
     const tTabs = useTranslations('variableTabs')

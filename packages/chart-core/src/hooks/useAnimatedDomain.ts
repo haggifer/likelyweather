@@ -12,10 +12,9 @@ const DURATION_MS = 180
 
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3)
 
-// Tweens a y-domain with D3 interpolators inside requestAnimationFrame when the same series refreshes. A new
-// `resetKey` (another variable, with other units) jumps straight to the target: tweening between unrelated scales
-// shows nothing and re-renders the whole chart on every frame. Instant under reduced motion, which each app reads
-// from its own platform.
+// A new `resetKey` (another variable, with other units) jumps straight to the target: tweening between unrelated
+// scales shows nothing and re-renders the whole chart on every frame. Each app reads reduced motion from its own
+// platform.
 export function useAnimatedDomain(
     target: UseAnimatedDomainResult,
     resetKey: string,

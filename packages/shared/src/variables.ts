@@ -146,7 +146,7 @@ export const VARIABLE_BY_ID: Record<Variable, VariableInfo> = Object.fromEntries
 ) as Record<Variable, VariableInfo>
 
 // On phones the dashboard's switch names a pair once, and the pair's own sub-tabs pick the actual value or its
-// companion: feels-like under temperature, gusts under wind (author, 2026-10-14).
+// companion: feels-like under temperature, gusts under wind.
 const VARIABLE_PAIRS: [Variable, Variable][] = [
     [Variable.Temp, Variable.Feels],
     [Variable.Wind, Variable.Gusts],
@@ -154,7 +154,6 @@ const VARIABLE_PAIRS: [Variable, Variable][] = [
 
 export const getVariablePair = (variable: Variable) => VARIABLE_PAIRS.find((pair) => pair.includes(variable)) ?? null
 
-// The phone switch's tab that holds a variable: the pair's first one, or the variable itself.
 export const getVariableTab = (variable: Variable) => getVariablePair(variable)?.[0] ?? variable
 
 export const PHONE_VARIABLES = VARIABLES.map((v) => v.id).filter((id) => getVariableTab(id) === id)

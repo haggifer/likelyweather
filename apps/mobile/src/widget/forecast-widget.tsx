@@ -2,7 +2,8 @@
 // Compiler adds (`useMemoCache`) throws and the widget never draws.
 'use no memo'
 
-import { formatNumber } from '@fa/shared/format'
+import { Locale } from '@fa/shared/api'
+import { formatNumber, getCityName } from '@fa/shared/format'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { isDaylight } from '@fa/shared/weather-condition'
 import { FlexWidget, SvgWidget, TextWidget, WidgetRepresentation } from 'react-native-android-widget'
@@ -25,25 +26,28 @@ const WEATHER_ICON_SIZE = 48
 
 // The app's city picker for this widget, the search it was placed with: some launchers never offer to configure a
 // placed widget again.
-const getPickerLink = (widgetId: number) => `forecastarena://widget-city/${widgetId}`
+const getPickerLink = (widgetId: number) => `likelyweather://widget-city/${widgetId}`
 
 interface IProps {
     widgetId: number
     model: WidgetModel | null
     city: WidgetCity | null
     t: Translator
+    locale: Locale
     now: Date
 }
 
 // The drawn half of the clock widget (4 × 2): its left stays empty for the native time and date
 // (`plugins/widget-layouts`), and the weather sits on the right: the sky's icon and condition, then the current
 // temperature with its trend. A tap anywhere on that side, down to the widget's bottom, opens the widget's city picker;
-// the time and date open the Clock app natively.
-const ClockView = ({ widgetId, model, city, t, now }: IProps) => {
+// the time and date open the Clock app natively. A city without numbers yet (placed offline, or its first refresh
+// failed) shows its name over a dash.
+const ClockView = ({ widgetId, model, city, t, locale, now }: IProps) => {
     const temp = model
         ? `${formatNumber(model.current?.temp ?? model.temp, 0)}${VARIABLE_BY_ID[Variable.Temp].unit}`
-        : null
+        : city && formatNumber(null)
     const condition = model?.condition ?? null
+    const label = model ? condition && t(`widget.condition.${condition}`) : city && getCityName(city, locale)
     const trend = model?.trend ?? null
     const isDay = city?.coordinates ? isDaylight(city.coordinates, now) : true
 
@@ -74,9 +78,9 @@ const ClockView = ({ widgetId, model, city, t, now }: IProps) => {
                         style={{ height: WEATHER_ICON_SIZE, width: WEATHER_ICON_SIZE }}
                     />
                 )}
-                {temp && condition && (
+                {label && (
                     <TextWidget
-                        text={t(`widget.condition.${condition}`)}
+                        text={label}
                         maxLines={1}
                         style={{
                             width: 'match_parent',

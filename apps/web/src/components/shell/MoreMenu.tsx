@@ -14,7 +14,7 @@ const ICONS: Record<NavKey, ReactNode> = {
     archive: <Archive />,
     methodology: <BookOpen />,
 }
-// 36 px rows (author, 2026-10-16), like the app's menu and the language options.
+// 36 px rows, like the app's menu and the language options.
 const ITEM = 'min-h-9 gap-2.5 px-4'
 
 // The header's pages on phones, where the inline links (`MainNav`) do not fit.

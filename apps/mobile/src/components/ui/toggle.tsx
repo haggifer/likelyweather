@@ -1,10 +1,6 @@
-import * as TogglePrimitive from '@rn-primitives/toggle'
 import { cva, type VariantProps } from 'class-variance-authority'
-import * as React from 'react'
 import { Platform } from 'react-native'
 import { cn } from '../../lib/cn'
-import { IconClassContext } from './icon'
-import { TextClassContext } from './text'
 
 // The web's sizes and look (apps/web/src/components/ui/toggle.tsx): `bg-muted` when on, which call sites override as
 // the web's do (the variable switch's `bg-accent`). As the web's `touch:h-9`, no toggle is under 36 px tall.
@@ -49,33 +45,4 @@ const toggleTextVariants = cva('text-sm text-foreground font-medium', {
 const getToggleIconClass = (size: VariantProps<typeof toggleVariants>['size']) =>
     size === 'sm' ? 'size-3.5' : 'size-4'
 
-function Toggle({
-    className,
-    variant,
-    size,
-    ...props
-}: React.ComponentProps<typeof TogglePrimitive.Root> & VariantProps<typeof toggleVariants>) {
-    return (
-        <TextClassContext.Provider
-            value={cn(
-                toggleTextVariants({ size }),
-                !props.pressed && Platform.select({ web: 'group-hover:text-muted-foreground' }),
-                className,
-            )}
-        >
-            <IconClassContext.Provider value={getToggleIconClass(size)}>
-                <TogglePrimitive.Root
-                    className={cn(
-                        toggleVariants({ variant, size }),
-                        props.disabled && 'opacity-50',
-                        props.pressed && 'bg-muted',
-                        className,
-                    )}
-                    {...props}
-                />
-            </IconClassContext.Provider>
-        </TextClassContext.Provider>
-    )
-}
-
-export { getToggleIconClass, Toggle, toggleTextVariants, toggleVariants }
+export { getToggleIconClass, toggleTextVariants, toggleVariants }
