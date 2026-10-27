@@ -6,8 +6,8 @@ import { getCityLabel } from '@fa/shared/format'
 import { addRecent, getPlaceList, isFavorite, Place } from '@fa/shared/places'
 import { onlineManager } from '@tanstack/react-query'
 import { Search, Star } from 'lucide-react-native'
-import { ReactNode, useEffect, useRef } from 'react'
-import { ActivityIndicator, BackHandler, Keyboard, ScrollView, TextInput, View } from 'react-native'
+import { ReactNode, useEffect, useRef, useState } from 'react'
+import { ActivityIndicator, BackHandler, Keyboard, LayoutChangeEvent, ScrollView, TextInput, View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
 import { usePlaces } from '../../hooks/usePlaces'
 import { useTheme } from '../../hooks/useTheme'
@@ -52,10 +52,12 @@ export function SearchBox({
     const { colors } = useTheme()
 
     const inputRef = useRef<TextInput>(null)
+    const [listHeight, setListHeight] = useState(0)
 
     const search = useCitySearch({ initialQuery, locale, places, isInitiallyOpen: autoFocus })
 
     const placeList = getPlaceList(places)
+    const listSpace = search.isListShown ? listHeight : 0
 
     const close = () => {
         search.setIsOpen(false)
@@ -90,6 +92,8 @@ export function SearchBox({
             onError: (error) => showSnackbar(te(getErrorKind(error)), [], { kind: 'error' }),
         })
     }
+
+    const handleListLayout = (event: LayoutChangeEvent) => setListHeight(event.nativeEvent.layout.height)
 
     const handleSubmit = () => {
         if (search.isPlacesView && placeList[0]) handleSelectPlace(placeList[0])
@@ -196,49 +200,56 @@ export function SearchBox({
     }, [search.isOpen])
 
     return (
-        // The list floats over what follows, as the web's does, so the search box sits above its siblings.
-        <View className="z-50">
-            <View
-                className={cn(
-                    'h-12 flex-row items-center gap-2.5 rounded-lg border border-border bg-card px-3.5 shadow-sm',
-                    search.isOpen && 'border-ring',
-                )}
-            >
-                <Icon as={Search} className="size-4.5 text-muted-foreground" />
-                <Input
-                    ref={inputRef}
-                    value={search.query}
-                    onChangeText={search.setQuery}
-                    onFocus={() => search.setIsOpen(true)}
-                    onBlur={dismiss}
-                    onSubmitEditing={handleSubmit}
-                    placeholder={t('placeholder')}
-                    accessibilityLabel={t('label')}
-                    autoFocus={autoFocus}
-                    selectTextOnFocus={Boolean(initialQuery)}
-                    autoCorrect={false}
-                    returnKeyType="search"
-                    className="h-full w-auto flex-1 rounded-none border-0 bg-transparent px-0 shadow-none dark:bg-transparent"
-                />
-                {search.isTracking && <ActivityIndicator size="small" color={colors['muted-foreground']} />}
-                {isLocateShown && (
-                    <LocateButton onLocated={handleSelectNew} onSearch={() => inputRef.current?.focus()} />
+        // The list floats over what follows, as the web's does, so the search box sits above its siblings. Android
+        // hands a touch only to views whose bounds hold it, so the list's own scroll needs this view to reach over the
+        // list: no layout rule can size it to an absolute child, hence the measured padding, which the equal negative
+        // margin takes back from the content below.
+        <View className="z-50" style={{ paddingBottom: listSpace, marginBottom: -listSpace }}>
+            <View>
+                <View
+                    className={cn(
+                        'h-12 flex-row items-center gap-2.5 rounded-lg border border-border bg-card px-3.5 shadow-sm',
+                        search.isOpen && 'border-ring',
+                    )}
+                >
+                    <Icon as={Search} className="size-4.5 text-muted-foreground" />
+                    <Input
+                        ref={inputRef}
+                        value={search.query}
+                        onChangeText={search.setQuery}
+                        onFocus={() => search.setIsOpen(true)}
+                        onBlur={dismiss}
+                        onSubmitEditing={handleSubmit}
+                        placeholder={t('placeholder')}
+                        accessibilityLabel={t('label')}
+                        autoFocus={autoFocus}
+                        selectTextOnFocus={Boolean(initialQuery)}
+                        autoCorrect={false}
+                        returnKeyType="search"
+                        className="h-full w-auto flex-1 rounded-none border-0 bg-transparent px-0 shadow-none dark:bg-transparent"
+                    />
+                    {search.isTracking && <ActivityIndicator size="small" color={colors['muted-foreground']} />}
+                    {isLocateShown && (
+                        <LocateButton onLocated={handleSelectNew} onSearch={() => inputRef.current?.focus()} />
+                    )}
+                </View>
+                {search.isListShown && (
+                    <View onLayout={handleListLayout} className="absolute top-full right-0 left-0 pt-1.5">
+                        <View className="overflow-hidden rounded-lg border border-border bg-popover shadow-lg">
+                            {search.isPlacesView
+                                ? renderRows(
+                                      t('places'),
+                                      placeList.map((place) =>
+                                          renderRow(place.id, getCityLabel(place, locale), place.countryCode, () =>
+                                              handleSelectPlace(place),
+                                          ),
+                                      ),
+                                  )
+                                : renderResults()}
+                        </View>
+                    </View>
                 )}
             </View>
-            {search.isListShown && (
-                <View className="absolute top-full right-0 left-0 mt-1.5 overflow-hidden rounded-lg border border-border bg-popover shadow-lg">
-                    {search.isPlacesView
-                        ? renderRows(
-                              t('places'),
-                              placeList.map((place) =>
-                                  renderRow(place.id, getCityLabel(place, locale), place.countryCode, () =>
-                                      handleSelectPlace(place),
-                                  ),
-                              ),
-                          )
-                        : renderResults()}
-                </View>
-            )}
         </View>
     )
 }

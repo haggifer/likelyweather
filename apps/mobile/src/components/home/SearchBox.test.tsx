@@ -49,6 +49,14 @@ const renderSearch = (onSelectCity = jest.fn(), initialQuery?: string) => {
 
 const getField = () => screen.getByLabelText(en.search.label)
 
+const getRootStyle = () => {
+    let element = screen.getByText(en.search.places).parent
+
+    while (element && element.props.style?.marginBottom === undefined) element = element.parent
+
+    return element?.props.style
+}
+
 describe('SearchBox', () => {
     beforeEach(() =>
         placesStore.set(() => ({ favorites: [], recents: Array.from({ length: 20 }, (_, i) => toPlace(i)) })),
@@ -109,6 +117,15 @@ describe('SearchBox', () => {
         await waitFor(() => expect(onSelectCity).toHaveBeenCalledWith('paris-fr-3'))
         expect(apiPost).toHaveBeenCalledWith('/cities/track', { geocodeId: 3 })
         expect(placesStore.get().recents[0]).toMatchObject({ id: 3, slug: 'paris-fr-3' })
+    })
+
+    // Android hands a drag only to views whose bounds hold it, so the list's own scroll needs the box to cover it.
+    it('reaches over the open list without moving what follows', async () => {
+        await renderSearch()
+        await fireEvent(getField(), 'focus')
+        await fireEvent(screen.getByText(en.search.places), 'layout', { nativeEvent: { layout: { height: 180 } } })
+
+        expect(getRootStyle()).toEqual({ paddingBottom: 180, marginBottom: -180 })
     })
 
     it('closes the list when the field loses focus', async () => {
