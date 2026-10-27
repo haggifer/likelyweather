@@ -3,7 +3,7 @@ import { useSendContact } from '@fa/api-client/hooks/useSendContact'
 import { CONTACT_EMAIL_MAX, CONTACT_MESSAGE_MAX } from '@fa/shared/api'
 import { isContactEmailValid, isContactReady } from '@fa/shared/contact'
 import { useState } from 'react'
-import { KeyboardAvoidingView, View } from 'react-native'
+import { View } from 'react-native'
 import { useTranslations } from 'use-intl'
 import { showSnackbar } from '../../lib/snackbar-store'
 import { Button } from '../ui/button'
@@ -58,14 +58,15 @@ const ContactForm = ({ onClose }: { onClose: () => void }) => {
                     </Text>
                 )}
             </View>
-            <View className="flex-1 gap-1">
+            {/* Gives up height first when the keyboard leaves the dialog less than it needs. */}
+            <View className="shrink gap-1">
                 <Textarea
                     value={message}
                     onChangeText={setMessage}
                     placeholder={t('messagePlaceholder')}
                     accessibilityLabel={t('message')}
                     maxLength={CONTACT_MESSAGE_MAX}
-                    className="min-h-32 flex-1"
+                    className="max-h-60 min-h-32 shrink"
                 />
                 <Text className="self-end text-xs text-muted-foreground tabular-nums">
                     {message.length}/{CONTACT_MESSAGE_MAX}
@@ -100,13 +101,11 @@ export function ContactDialog({ isOpen, onOpenChange }: IProps) {
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            {/* The web's phone layout: the whole screen, 1rem in from every side (the overlay's 0.5rem and this margin). */}
-            <DialogContent className="m-2 flex-1 self-stretch p-4">
-                {/* The full-height dialog would otherwise end under the keyboard, Send with it. */}
-                <KeyboardAvoidingView behavior="padding" className="flex-1 gap-3">
-                    <DialogTitle className="text-lg">{t('title')}</DialogTitle>
-                    <ContactForm onClose={() => onOpenChange(false)} />
-                </KeyboardAvoidingView>
+            {/* The web's phone layout: the content's height up to 36rem, and the whole width 1rem in from each side (the
+                overlay's 0.5rem and this margin). */}
+            <DialogContent className="m-2 max-h-[36rem] shrink gap-3 self-stretch p-4">
+                <DialogTitle className="text-lg">{t('title')}</DialogTitle>
+                <ContactForm onClose={() => onOpenChange(false)} />
             </DialogContent>
         </Dialog>
     )

@@ -354,6 +354,26 @@ test('Contact us in the footer sends a message once both fields are filled', asy
     ).toBeVisible()
 })
 
+test('The contact dialog is as tall as its form, at most 36rem, with Send on screen', async ({ page }) => {
+    const maxHeight = 36 * 16
+
+    await page.goto('/methodology')
+    await page.getByRole('contentinfo').getByRole('button', { name: 'Contact us' }).click()
+
+    const dialog = page.getByRole('dialog', { name: 'Contact us' })
+
+    // The project's own screen, then a tablet's, which also gets the phone layout.
+    for (const size of [page.viewportSize(), { width: 768, height: 1024 }]) {
+        if (size) await page.setViewportSize(size)
+
+        const box = await dialog.boundingBox()
+        const sendBox = await dialog.getByRole('button', { name: 'Send' }).boundingBox()
+
+        expect(box?.height).toBeLessThanOrEqual(maxHeight)
+        expect(sendBox && sendBox.y + sendBox.height).toBeLessThanOrEqual(size?.height ?? 0)
+    }
+})
+
 // Holds the contact form's request until the test releases it, so the reader can close the dialog mid-send. The test
 // answers it itself: the API allows three messages per client a day, and the other contact tests use them up.
 const holdContact = async (page: Page, answer: (route: Route) => Promise<void>) => {

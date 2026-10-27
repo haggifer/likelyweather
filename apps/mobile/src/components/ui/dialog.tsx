@@ -1,6 +1,6 @@
 import * as DialogPrimitive from '@rn-primitives/dialog'
 import * as React from 'react'
-import { Platform, StyleSheet } from 'react-native'
+import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
 import { FadeIn, FadeOut, ReduceMotion } from 'react-native-reanimated'
 import { FullWindowOverlay as RNFullWindowOverlay } from 'react-native-screens'
 import { cn } from '../../lib/cn'
@@ -36,15 +36,21 @@ function DialogContent({
                         as="Pressable"
                         className="z-50 items-center justify-center bg-black/50 p-2"
                     >
-                        <TextClassContext.Provider value="text-sm text-popover-foreground">
-                            <DialogPrimitive.Content
-                                className={cn(
-                                    'bg-popover border-border max-h-full rounded-md border p-3 shadow-md',
-                                    className,
-                                )}
-                                {...props}
-                            />
-                        </TextClassContext.Provider>
+                        {/* A dialog with a text field would otherwise end under the keyboard, its buttons with it. */}
+                        <KeyboardAvoidingView
+                            behavior="padding"
+                            className="flex-1 items-center justify-center self-stretch"
+                        >
+                            <TextClassContext.Provider value="text-sm text-popover-foreground">
+                                <DialogPrimitive.Content
+                                    className={cn(
+                                        'bg-popover border-border max-h-full rounded-md border p-3 shadow-md',
+                                        className,
+                                    )}
+                                    {...props}
+                                />
+                            </TextClassContext.Provider>
+                        </KeyboardAvoidingView>
                     </NativeOnlyAnimatedView>
                 </DialogPrimitive.Overlay>
             </FullWindowOverlay>

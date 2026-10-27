@@ -20,9 +20,9 @@ import { FormEvent, useId, useState } from 'react'
 import { toast } from 'sonner'
 
 const BUTTON = 'touch:hit-area'
-// Phones get the whole screen, 1rem in from every side, and the message field takes the height the rest leaves.
+// Phones get the whole width, 1rem in from each side, as in the app.
 const CONTENT =
-    'flex w-[37.5rem] flex-col gap-3 p-4 max-sm:inset-4 max-sm:w-auto max-sm:max-w-none max-sm:max-h-none max-sm:translate-none'
+    'flex max-h-[min(36rem,calc(100dvh-2rem))] w-[37.5rem] flex-col gap-3 p-4 max-sm:w-[calc(100vw-2rem)] max-sm:max-w-none'
 
 // The form lives inside the dialog's content, which unmounts on close, so every opening starts empty.
 const ContactForm = ({ onClose }: { onClose: () => void }) => {
@@ -53,7 +53,7 @@ const ContactForm = ({ onClose }: { onClose: () => void }) => {
     }
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3 max-sm:flex-1">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <DialogDescription>{t('intro')}</DialogDescription>
             <div className="flex flex-col gap-1">
                 <Input
@@ -75,14 +75,14 @@ const ContactForm = ({ onClose }: { onClose: () => void }) => {
                     </p>
                 )}
             </div>
-            <div className="flex flex-col gap-1 max-sm:flex-1">
+            <div className="flex flex-col gap-1">
                 <Textarea
                     maxLength={CONTACT_MESSAGE_MAX}
                     placeholder={t('messagePlaceholder')}
                     aria-label={t('message')}
                     value={message}
                     onChange={(event) => setMessage(event.target.value)}
-                    className="max-h-60 min-h-32 max-sm:max-h-none max-sm:flex-1"
+                    className="max-h-60 min-h-32"
                 />
                 <p className="self-end text-xs text-muted-foreground tabular-nums">
                     {message.length}/{CONTACT_MESSAGE_MAX}
