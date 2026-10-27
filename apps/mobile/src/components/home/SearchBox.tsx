@@ -80,6 +80,7 @@ export function SearchBox({
         handleSelectPlace(place)
     }
 
+    // The list folds at once while the place is stored; a screen with an overview shows it as picked meanwhile.
     const handleSelectResult = (result: GeocodeResult) => {
         // A mutation made offline would wait, spinning, for the network; the web's request fails at once instead.
         if (!onlineManager.isOnline()) {
@@ -87,6 +88,7 @@ export function SearchBox({
             return
         }
 
+        search.setIsOpen(false)
         search.pickResult(result, {
             onPicked: handleSelectNew,
             onError: (error) => showSnackbar(te(getErrorKind(error)), [], { kind: 'error' }),

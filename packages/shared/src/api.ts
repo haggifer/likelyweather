@@ -49,9 +49,6 @@ export const TrackBodySchema = z.strictObject({
     locale: LocaleSchema.optional(),
 })
 
-export const TrackResponseSchema = z.object({ slug: z.string() })
-export type TrackResponse = z.infer<typeof TrackResponseSchema>
-
 export const CitySchema = z.object({
     id: z.number(),
     slug: z.string(),
@@ -69,6 +66,11 @@ export const CitySchema = z.object({
     population: z.number().optional(),
 })
 export type City = z.infer<typeof CitySchema>
+
+// `city` spares the client a request for the record it is about to show. Installed apps read only `slug`, and an app
+// can meet an API that answers without `city`, because the two are released separately.
+export const TrackResponseSchema = z.object({ slug: z.string(), city: CitySchema.optional() })
+export type TrackResponse = z.infer<typeof TrackResponseSchema>
 
 export const StartersResponseSchema = z.object({ items: z.array(CitySchema) })
 export type StartersResponse = z.infer<typeof StartersResponseSchema>

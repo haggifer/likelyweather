@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { usePlaces } from '@/hooks/usePlaces'
 import { cn } from '@/lib/cn'
 import { FILL_HEIGHT_PARENT } from '@/lib/fill-height'
+import { usePendingTrack } from '@fa/api-client/hooks/usePendingTrack'
 import { getPlaceChips } from '@fa/shared/places'
 import { useTranslations } from 'next-intl'
 import { parseAsString, useQueryState } from 'nuqs'
@@ -16,9 +17,11 @@ export function ArchiveView() {
     const t = useTranslations('archive')
     const places = usePlaces()
     const [urlSlug, setSlug] = useQueryState('city', parseAsString)
+    const pending = usePendingTrack()
 
     const chips = places ? getPlaceChips(places) : null
-    const slug = urlSlug ?? chips?.[0]?.slug ?? null
+    // A place being stored is already the picked one: no chip is selected and its card is loading.
+    const slug = pending ? null : (urlSlug ?? chips?.[0]?.slug ?? null)
 
     const handleSelect = (next: string) => void setSlug(next)
 

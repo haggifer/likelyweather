@@ -1,3 +1,4 @@
+import { usePendingTrack } from '@fa/api-client/hooks/usePendingTrack'
 import { useStarters } from '@fa/hooks/useStarters'
 import { DEFAULT_PLACES, getPlaceChips, getStarterPlaces } from '@fa/shared/places'
 import { useLocalSearchParams } from 'expo-router'
@@ -20,6 +21,7 @@ export function HomeScreen() {
     const places = usePlaces()
     const selected = useSelectedCity()
     const params = useLocalSearchParams<{ city?: string }>()
+    const pending = usePendingTrack()
 
     // Nothing stored yet reads back as the shared defaults object itself, which marks a first launch.
     const isFirstVisit = places === DEFAULT_PLACES
@@ -45,8 +47,14 @@ export function HomeScreen() {
             keyboardShouldPersistTaps="handled"
         >
             <SearchBox onSelectCity={setSelectedCity} isLocateShown />
-            <PlaceChips chips={chips} slug={slug} onSelect={setSelectedCity} />
-            {slug ? <CityOverview key={slug} slug={slug} /> : <OverviewCardSkeleton status={t('loading')} />}
+            <PlaceChips chips={chips} slug={pending ? null : slug} onSelect={setSelectedCity} />
+            {pending ? (
+                <OverviewCardSkeleton status={t('fetching', { name: pending.name })} />
+            ) : slug ? (
+                <CityOverview key={slug} slug={slug} />
+            ) : (
+                <OverviewCardSkeleton status={t('loading')} />
+            )}
         </ScreenScroll>
     )
 }

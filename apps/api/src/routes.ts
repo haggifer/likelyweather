@@ -89,7 +89,7 @@ apiRouter.post('/cities/track', rateLimit('read'), async (req, res) => {
         toUpstreamError('The place could not be looked up'),
     )
 
-    sendJson(res, { slug: city.slug } satisfies TrackResponse, { maxAge: null })
+    sendJson(res, { slug: city.slug, city } satisfies TrackResponse, { maxAge: null })
 })
 
 // The viewer's country picks the first visit's chips; the answer depends on the caller, so CloudFront must not share it.

@@ -74,7 +74,7 @@ export function useCitySearch({
     })
 
     const pickResult = (result: GeocodeResult, { onPicked, onError }: PickHandlers) =>
-        track.mutate(result.id, { onSuccess: ({ slug }) => onPicked(toPlace({ ...result, slug })), onError })
+        track.mutate(result, { onSuccess: ({ slug }) => onPicked(toPlace({ ...result, slug })), onError })
 
     return {
         query,

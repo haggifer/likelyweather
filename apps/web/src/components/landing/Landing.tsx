@@ -8,6 +8,7 @@ import { usePlaces } from '@/hooks/usePlaces'
 import { cn } from '@/lib/cn'
 import { FILL_HEIGHT_PARENT } from '@/lib/fill-height'
 import { updatePlaces } from '@/lib/places-store'
+import { usePendingTrack } from '@fa/api-client/hooks/usePendingTrack'
 import { useStarters } from '@fa/hooks/useStarters'
 import { DEFAULT_PLACES, getPlaceChips, getStarterPlaces } from '@fa/shared/places'
 import { useTranslations } from 'next-intl'
@@ -19,6 +20,7 @@ export function Landing() {
     const to = useTranslations('overview')
     const places = usePlaces()
     const [urlSlug, setSlug] = useQueryState('city', parseAsString)
+    const pending = usePendingTrack()
 
     // Nothing stored yet reads back as the shared defaults object itself, which marks a first visit.
     const isFirstVisit = places === DEFAULT_PLACES
@@ -42,11 +44,22 @@ export function Landing() {
                 <h1 className="sr-only">{t('heading')}</h1>
                 <div className="flex w-full flex-col items-center gap-3">
                     <SearchBox isLocateShown onSelectCity={(next) => void setSlug(next)} className="max-w-2xl" />
-                    <PlaceChips places={places} chips={chips} slug={slug} onSelect={(next) => void setSlug(next)} />
+                    <PlaceChips
+                        places={places}
+                        chips={chips}
+                        slug={pending ? null : slug}
+                        onSelect={(next) => void setSlug(next)}
+                    />
                 </div>
             </section>
             <section className={cn('mx-auto w-full max-w-[70rem] max-sm:-mx-4 max-sm:w-auto', FILL_HEIGHT_PARENT)}>
-                {slug ? <CityOverview key={slug} slug={slug} /> : <OverviewCardSkeleton status={to('loading')} />}
+                {pending ? (
+                    <OverviewCardSkeleton status={to('fetching', { name: pending.name })} />
+                ) : slug ? (
+                    <CityOverview key={slug} slug={slug} />
+                ) : (
+                    <OverviewCardSkeleton status={to('loading')} />
+                )}
             </section>
         </div>
     )

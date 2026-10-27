@@ -1,9 +1,11 @@
 import { apiGet, apiPost, ApiRequestError } from '@fa/api-client/api'
+import { usePendingTrack } from '@fa/api-client/hooks/usePendingTrack'
 import en from '@fa/messages/catalogs/en.json'
-import { GeocodeResult } from '@fa/shared/api'
+import { GeocodeResult, TrackResponse } from '@fa/shared/api'
 import { DEFAULT_PLACES, Place } from '@fa/shared/places'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native'
+import { Text } from 'react-native'
 import { IntlProvider } from 'use-intl'
 import { placesStore } from '../../lib/places-store'
 import { SearchBox } from './SearchBox'
@@ -33,6 +35,11 @@ const toResult = (name: string, id: number): GeocodeResult => ({
     population: id,
 })
 
+const toTracked = (result: GeocodeResult, slug: string): TrackResponse => ({ slug, city: { ...result, slug } })
+
+// Stands for a screen's overview, which shows the place being stored as the picked one.
+const PendingName = () => <Text>{`pending: ${usePendingTrack()?.name ?? 'none'}`}</Text>
+
 const renderSearch = (onSelectCity = jest.fn(), initialQuery?: string) => {
     const client = new QueryClient({
         defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { gcTime: Infinity } },
@@ -42,6 +49,7 @@ const renderSearch = (onSelectCity = jest.fn(), initialQuery?: string) => {
         <QueryClientProvider client={client}>
             <IntlProvider locale="en" messages={en}>
                 <SearchBox onSelectCity={onSelectCity} initialQuery={initialQuery} />
+                <PendingName />
             </IntlProvider>
         </QueryClientProvider>,
     )
@@ -102,7 +110,7 @@ describe('SearchBox', () => {
         const onSelectCity = jest.fn()
 
         jest.mocked(apiGet).mockResolvedValue({ results: [toResult('Lyon', 2), toResult('Paris', 3)] })
-        jest.mocked(apiPost).mockResolvedValue({ slug: 'paris-fr-3' })
+        jest.mocked(apiPost).mockResolvedValue(toTracked(toResult('Paris', 3), 'paris-fr-3'))
 
         await renderSearch(onSelectCity)
         await fireEvent(getField(), 'focus')
@@ -117,6 +125,29 @@ describe('SearchBox', () => {
         await waitFor(() => expect(onSelectCity).toHaveBeenCalledWith('paris-fr-3'))
         expect(apiPost).toHaveBeenCalledWith('/cities/track', { geocodeId: 3 })
         expect(placesStore.get().recents[0]).toMatchObject({ id: 3, slug: 'paris-fr-3' })
+    })
+
+    it('folds the list at a pick and shows the place as pending until it is stored', async () => {
+        const onSelectCity = jest.fn()
+        let answer: (value: TrackResponse) => void = () => {}
+
+        jest.mocked(apiGet).mockResolvedValue({ results: [toResult('Paris', 3)] })
+        jest.mocked(apiPost).mockReturnValue(new Promise((resolve) => (answer = resolve)))
+
+        await renderSearch(onSelectCity)
+        await fireEvent(getField(), 'focus')
+        await fireEvent.changeText(getField(), 'Paris')
+        await waitFor(() => expect(screen.getByText('Paris, France')).toBeOnTheScreen())
+        await fireEvent.press(screen.getByText('Paris, France'))
+
+        expect(screen.queryByText('Paris, France')).toBeNull()
+        await waitFor(() => expect(screen.getByText('pending: Paris')).toBeOnTheScreen())
+        expect(onSelectCity).not.toHaveBeenCalled()
+
+        answer(toTracked(toResult('Paris', 3), 'paris-fr-3'))
+
+        await waitFor(() => expect(onSelectCity).toHaveBeenCalledWith('paris-fr-3'))
+        expect(screen.getByText('pending: none')).toBeOnTheScreen()
     })
 
     // Android hands a drag only to views whose bounds hold it, so the list's own scroll needs the box to cover it.

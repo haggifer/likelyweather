@@ -1,3 +1,4 @@
+import { usePendingTrack } from '@fa/api-client/hooks/usePendingTrack'
 import { getPlaceChips } from '@fa/shared/places'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useTranslations } from 'use-intl'
@@ -17,9 +18,11 @@ export function ArchiveScreen() {
     const router = useRouter()
     const places = usePlaces()
     const params = useLocalSearchParams<{ city?: string }>()
+    const pending = usePendingTrack()
 
     const chips = getPlaceChips(places)
-    const slug = params.city ?? chips[0]?.slug ?? null
+    // A place being stored is already the picked one: no chip is selected and its card is loading.
+    const slug = pending ? null : (params.city ?? chips[0]?.slug ?? null)
 
     const handleSelect = (next: string) => router.setParams({ city: next })
 

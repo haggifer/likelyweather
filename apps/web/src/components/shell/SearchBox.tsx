@@ -36,7 +36,7 @@ interface IProps {
     className?: string
 }
 
-// Selecting a place tracks it, records it as the newest recent place, and then hands the slug to `onSelectCity`;
+// Selecting a result tracks it, records it as the newest recent place, and then hands the slug to `onSelectCity`;
 // without a handler the box navigates to the city dashboard. While the text is empty or untouched, the box offers the
 // viewer's places instead. With an `initialQuery` (the current city) the text starts selected, so
 // typing replaces it, and results only appear once it has been edited. `onDismiss` fires on Escape and on blur.
@@ -81,7 +81,9 @@ export function SearchBox({
         handleSelectPlace(place)
     }
 
-    const handleSelectResult = (result: GeocodeResult) =>
+    // The list folds at once while the place is stored; a page with an overview shows it as picked meanwhile.
+    const handleSelectResult = (result: GeocodeResult) => {
+        search.setIsOpen(false)
         search.pickResult(result, {
             onPicked: handleSelectNew,
             onError: (error) => {
@@ -89,6 +91,7 @@ export function SearchBox({
                 toast.error(te(getErrorKind(error)))
             },
         })
+    }
 
     const handleKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
         if (e.key !== 'Escape') return
