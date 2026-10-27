@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { cn } from '@/lib/cn'
 import { getErrorKind } from '@fa/api-client/error-kind'
 import { useSendContact } from '@fa/api-client/hooks/useSendContact'
 import { CONTACT_EMAIL_MAX, CONTACT_MESSAGE_MAX } from '@fa/shared/api'
@@ -20,9 +21,12 @@ import { FormEvent, useId, useState } from 'react'
 import { toast } from 'sonner'
 
 const BUTTON = 'touch:hit-area'
-// Phones get the whole width, 1rem in from each side, as in the app.
+// Phones get the whole width, 1rem in from each side, as in the app. From 480 px down the dialog takes its whole height
+// cap and the message field fills what the rest of the form leaves, as the form's own height leaves a narrow field.
 const CONTENT =
-    'flex max-h-[min(36rem,calc(100dvh-2rem))] w-[37.5rem] flex-col gap-3 p-4 max-sm:w-[calc(100vw-2rem)] max-sm:max-w-none'
+    'flex max-h-[min(36rem,calc(100dvh-2rem))] w-[37.5rem] flex-col gap-3 p-4 max-sm:w-[calc(100vw-2rem)] max-sm:max-w-none [@media(width<=30rem)]:h-[min(36rem,calc(100dvh-2rem))]'
+const NARROW_FILL = '[@media(width<=30rem)]:min-h-0 [@media(width<=30rem)]:flex-1'
+const MESSAGE = 'max-h-60 min-h-32 [@media(width<=30rem)]:max-h-[36rem] [@media(width<=30rem)]:flex-1'
 
 // The form lives inside the dialog's content, which unmounts on close, so every opening starts empty.
 const ContactForm = ({ onClose }: { onClose: () => void }) => {
@@ -53,7 +57,7 @@ const ContactForm = ({ onClose }: { onClose: () => void }) => {
     }
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <form onSubmit={handleSubmit} className={cn('flex flex-col gap-3', NARROW_FILL)}>
             <DialogDescription>{t('intro')}</DialogDescription>
             <div className="flex flex-col gap-1">
                 <Input
@@ -75,14 +79,14 @@ const ContactForm = ({ onClose }: { onClose: () => void }) => {
                     </p>
                 )}
             </div>
-            <div className="flex flex-col gap-1">
+            <div className={cn('flex flex-col gap-1', NARROW_FILL)}>
                 <Textarea
                     maxLength={CONTACT_MESSAGE_MAX}
                     placeholder={t('messagePlaceholder')}
                     aria-label={t('message')}
                     value={message}
                     onChange={(event) => setMessage(event.target.value)}
-                    className="max-h-60 min-h-32"
+                    className={MESSAGE}
                 />
                 <p className="self-end text-xs text-muted-foreground tabular-nums">
                     {message.length}/{CONTACT_MESSAGE_MAX}

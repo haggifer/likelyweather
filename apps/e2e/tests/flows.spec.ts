@@ -354,7 +354,9 @@ test('Contact us in the footer sends a message once both fields are filled', asy
     ).toBeVisible()
 })
 
-test('The contact dialog is as tall as its form, at most 36rem, with Send on screen', async ({ page }) => {
+test('The contact dialog fills its 36rem cap up to 480 px wide and is as tall as its form beyond, with Send on screen', async ({
+    page,
+}) => {
     const maxHeight = 36 * 16
 
     await page.goto('/methodology')
@@ -362,15 +364,22 @@ test('The contact dialog is as tall as its form, at most 36rem, with Send on scr
 
     const dialog = page.getByRole('dialog', { name: 'Contact us' })
 
-    // The project's own screen, then a tablet's, which also gets the phone layout.
-    for (const size of [page.viewportSize(), { width: 768, height: 1024 }]) {
-        if (size) await page.setViewportSize(size)
+    // A phone, the widest width that still fills, and a tablet, which gets the phone layout but its form's height.
+    for (const size of [
+        { width: 375, height: 812 },
+        { width: 480, height: 812 },
+        { width: 768, height: 1024 },
+    ]) {
+        await page.setViewportSize(size)
 
-        const box = await dialog.boundingBox()
+        // The computed height, which the opening animation's scale leaves alone.
+        const height = await dialog.evaluate((element) => parseFloat(getComputedStyle(element).height))
         const sendBox = await dialog.getByRole('button', { name: 'Send' }).boundingBox()
 
-        expect(box?.height).toBeLessThanOrEqual(maxHeight)
-        expect(sendBox && sendBox.y + sendBox.height).toBeLessThanOrEqual(size?.height ?? 0)
+        if (size.width <= 480) expect(height).toBe(maxHeight)
+        else expect(height).toBeLessThan(maxHeight)
+
+        expect(sendBox && sendBox.y + sendBox.height).toBeLessThanOrEqual(size.height)
     }
 })
 

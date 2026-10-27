@@ -12,6 +12,12 @@ import { Input } from '../ui/input'
 import { Text } from '../ui/text'
 import { Textarea } from '../ui/textarea'
 
+// The web's phone layout: the content's height up to 36rem, and the whole width 1rem in from each side (the overlay's
+// 0.5rem and this margin). From 480 px down the dialog takes its whole height cap and the message field fills what the
+// rest of the form leaves, as the form's own height leaves a narrow field.
+const CONTENT = 'm-2 max-h-[36rem] shrink gap-3 self-stretch p-4 [@media(width<=30rem)]:h-[36rem]'
+const MESSAGE = 'max-h-60 min-h-32 shrink [@media(width<=30rem)]:max-h-[36rem] [@media(width<=30rem)]:flex-1'
+
 // The form lives inside the dialog's content, which unmounts on close, so every opening starts empty. No bot fills in
 // the app, so it has no honeypot field.
 const ContactForm = ({ onClose }: { onClose: () => void }) => {
@@ -59,14 +65,14 @@ const ContactForm = ({ onClose }: { onClose: () => void }) => {
                 )}
             </View>
             {/* Gives up height first when the keyboard leaves the dialog less than it needs. */}
-            <View className="shrink gap-1">
+            <View className="shrink gap-1 [@media(width<=30rem)]:flex-1">
                 <Textarea
                     value={message}
                     onChangeText={setMessage}
                     placeholder={t('messagePlaceholder')}
                     accessibilityLabel={t('message')}
                     maxLength={CONTACT_MESSAGE_MAX}
-                    className="max-h-60 min-h-32 shrink"
+                    className={MESSAGE}
                 />
                 <Text className="self-end text-xs text-muted-foreground tabular-nums">
                     {message.length}/{CONTACT_MESSAGE_MAX}
@@ -101,9 +107,7 @@ export function ContactDialog({ isOpen, onOpenChange }: IProps) {
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            {/* The web's phone layout: the content's height up to 36rem, and the whole width 1rem in from each side (the
-                overlay's 0.5rem and this margin). */}
-            <DialogContent className="m-2 max-h-[36rem] shrink gap-3 self-stretch p-4">
+            <DialogContent className={CONTENT}>
                 <DialogTitle className="text-lg">{t('title')}</DialogTitle>
                 <ContactForm onClose={() => onOpenChange(false)} />
             </DialogContent>
