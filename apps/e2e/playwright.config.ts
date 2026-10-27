@@ -32,7 +32,9 @@ const SUFFIXED_DATABASE_URL = getSuffixedDatabaseUrl()
 
 export const E2E_DATABASE_URL = process.env.E2E_DATABASE_URL ?? SUFFIXED_DATABASE_URL
 
-// An empty REDIS_URL keeps the API's quota and caches in memory, so every run starts with a full quota.
+// An empty REDIS_URL keeps the API's quota and caches in memory, so every run starts with a full quota. Empty contact
+// settings make the API log the form's messages instead of mailing the operator through SES, whatever the root .env
+// sets.
 export default defineConfig({
     testDir: 'tests',
     globalSetup: './global-setup.ts',
@@ -57,6 +59,8 @@ export default defineConfig({
                 API_PORT: String(API_PORT),
                 DATABASE_URL: E2E_DATABASE_URL,
                 REDIS_URL: '',
+                CONTACT_EMAIL: '',
+                CONTACT_FROM: '',
                 DISABLE_RATE_LIMITS: '1',
                 OPEN_METEO_FORECAST_BASE: FAKE,
                 OPEN_METEO_GEOCODING_BASE: FAKE,
