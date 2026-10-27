@@ -9,7 +9,7 @@
         "generate": "prisma generate",
         "build": "prisma generate",
         "migrate": "prisma migrate dev",
-        "seed": "tsx src/seed.ts",
+        "seed": "prisma generate && tsx src/seed.ts",
         "lint": "eslint .",
         "typecheck": "tsc --noEmit",
         "test": "vitest run",
