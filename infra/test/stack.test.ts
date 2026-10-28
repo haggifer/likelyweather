@@ -135,9 +135,20 @@ describe('LikelyWeatherStack', () => {
         })
     })
 
-    it('keeps logs for two weeks and stores no files', () => {
+    it('keeps logs for two weeks and stores files only for the app downloads, in a private bucket', () => {
         template.allResourcesProperties('AWS::Logs::LogGroup', { RetentionInDays: 14 })
-        template.resourceCountIs('AWS::S3::Bucket', 0)
+        template.resourceCountIs('AWS::S3::Bucket', 1)
+        template.hasResource('AWS::S3::Bucket', {
+            Properties: Match.objectLike({
+                PublicAccessBlockConfiguration: {
+                    BlockPublicAcls: true,
+                    BlockPublicPolicy: true,
+                    IgnorePublicAcls: true,
+                    RestrictPublicBuckets: true,
+                },
+            }),
+            DeletionPolicy: 'Retain',
+        })
     })
 })
 
@@ -150,6 +161,26 @@ describe('LikelyWeatherStack web', () => {
                 CacheBehaviors: Match.arrayWith([
                     Match.objectLike({ PathPattern: '/_next/static/*' }),
                     Match.objectLike({ PathPattern: '/api/*' }),
+                ]),
+            }),
+        })
+    })
+
+    it('serves the app downloads under /app/ from the bucket through origin access control, with security headers', () => {
+        template.hasResourceProperties('AWS::CloudFront::Distribution', {
+            DistributionConfig: Match.objectLike({
+                CacheBehaviors: Match.arrayWith([
+                    Match.objectLike({ PathPattern: '/app/*', ResponseHeadersPolicyId: Match.anyValue() }),
+                ]),
+            }),
+        })
+        template.hasResourceProperties('AWS::CloudFront::OriginAccessControl', {
+            OriginAccessControlConfig: Match.objectLike({ OriginAccessControlOriginType: 's3' }),
+        })
+        template.hasResourceProperties('AWS::S3::BucketPolicy', {
+            PolicyDocument: Match.objectLike({
+                Statement: Match.arrayWith([
+                    Match.objectLike({ Action: 's3:GetObject', Principal: { Service: 'cloudfront.amazonaws.com' } }),
                 ]),
             }),
         })

@@ -73,7 +73,7 @@ jobs:
         env:
             DATABASE_URL: postgresql://postgres:postgres@localhost:5432/forecastarena
             # The "Get the app" bar is built in only when this is set; the phone suite asserts it when it sees it.
-            NEXT_PUBLIC_APP_PROMO_URL: https://github.com/${{ github.repository }}/releases/latest
+            NEXT_PUBLIC_APP_PROMO_URL: ${{ vars.APP_PROMO_URL }}
         steps:
             - uses: actions/checkout@v4
             - uses: pnpm/action-setup@v4

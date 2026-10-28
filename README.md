@@ -4,7 +4,12 @@ Compare what ten weather models forecast for any city, and see where they disagr
 model, switch between eight variables, turn any chart into a table, and look up a city's past weather back to 1940. An
 Android app with a home-screen widget shows the same.
 
-**[Try it live](https://likelyweather.com)** (no sign-up)
+**[Try it live](https://likelyweather.com)** (no sign-up) · **[Download the Android app](https://likelyweather.com/app/likely-weather.apk)**
+(APK, version 0.1.0; [all releases](https://github.com/haggifer/likelyweather/releases))
+
+The APK installs outside the Play Store: Android asks to allow "Install unknown apps" for the browser, and Play Protect
+may warn about an unknown developer. Each version's SHA-256 checksum sits beside it (`likely-weather-<version>.apk.sha256`
+under `https://likelyweather.com/app/`), and later versions install over it as updates.
 
 [![CI](https://github.com/haggifer/likelyweather/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/haggifer/likelyweather/actions/workflows/ci.yml)
 [![License: PolyForm Noncommercial](https://img.shields.io/badge/license-PolyForm%20Noncommercial-blue)](LICENSE)

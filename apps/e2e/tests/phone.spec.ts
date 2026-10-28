@@ -4,6 +4,7 @@ const KYIV = 'kyiv-ua-703448'
 const PAGES = ['/', `/city/${KYIV}`, '/methodology', '/privacy', '/terms']
 const WEEKDAY = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)/
 const PHONE_LEGEND_WIDTHS = [360, 412]
+const PROMO_URL = process.env.NEXT_PUBLIC_APP_PROMO_URL ?? ''
 
 const expectNoSideScroll = async (page: Page) => {
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
@@ -38,13 +39,13 @@ test('an Android phone sees the "Get the app" bar on the landing and city pages 
     isMobile,
 }) => {
     test.skip(!isMobile, 'phone layout only')
-    test.skip(!process.env.NEXT_PUBLIC_APP_PROMO_URL, 'the build has no app promo link')
+    test.skip(!PROMO_URL, 'the build has no app promo link')
 
     const bar = page.getByRole('region', { name: 'Get the Android app' })
 
     await page.goto('/')
     await expect(bar).toBeVisible()
-    await expect(bar.getByRole('link', { name: 'Get the app' })).toHaveAttribute('href', /releases/)
+    await expect(bar.getByRole('link', { name: 'Get the app' })).toHaveAttribute('href', PROMO_URL)
     await page.goto(`/city/${KYIV}`)
     await expect(bar).toBeVisible()
     await page.getByRole('contentinfo').getByRole('link', { name: 'Privacy Policy' }).scrollIntoViewIfNeeded()

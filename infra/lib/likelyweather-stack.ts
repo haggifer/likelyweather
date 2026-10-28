@@ -11,6 +11,7 @@ import {
     aws_logs as logs,
     aws_cloudfront_origins as origins,
     RemovalPolicy,
+    aws_s3 as s3,
     aws_sns as sns,
     Stack,
     StackProps,
@@ -154,6 +155,7 @@ const createDistribution = (
     scope: Construct,
     webUrl: lambda.IFunctionUrl,
     apiUrl: lambda.IFunctionUrl,
+    downloads: s3.IBucket,
     domain: SiteDomain | undefined,
 ) => {
     // Honors the API's Cache-Control (public reads 5 minutes, everything else no-store).
@@ -175,6 +177,13 @@ const createDistribution = (
             'CloudFront-Viewer-Country',
             'Content-Type',
         ),
+    })
+    // Each download carries its own Cache-Control from the upload: minutes for the name that always means the latest
+    // APK, a year for a versioned file that never changes.
+    const downloadsCache = new cloudfront.CachePolicy(scope, 'DownloadsCache', {
+        defaultTtl: Duration.minutes(5),
+        minTtl: Duration.seconds(0),
+        maxTtl: Duration.days(365),
     })
     const webOrigin = origins.FunctionUrlOrigin.withOriginAccessControl(webUrl)
     const wwwRedirect =
@@ -213,6 +222,13 @@ const createDistribution = (
                 allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
                 cachePolicy: apiCache,
                 originRequestPolicy: apiRequest,
+            },
+            // The Android app's APKs: the key is the path, so /app/<file> is app/<file> in the bucket.
+            '/app/*': {
+                origin: origins.S3BucketOrigin.withOriginAccessControl(downloads),
+                viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+                cachePolicy: downloadsCache,
+                responseHeadersPolicy: cloudfront.ResponseHeadersPolicy.SECURITY_HEADERS,
             },
         },
     })
@@ -316,7 +332,14 @@ export class LikelyWeatherStack extends Stack {
         addErrorAlarm(this, 'ApiErrors', api, alerts)
         addErrorAlarm(this, 'WebErrors', web, alerts)
 
-        const distribution = createDistribution(this, webUrl, apiUrl, props.domain)
+        // Kept if the stack is ever removed, since the shared APKs' links point into it.
+        const downloads = new s3.Bucket(this, 'Downloads', {
+            blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+            encryption: s3.BucketEncryption.S3_MANAGED,
+            enforceSSL: true,
+            removalPolicy: RemovalPolicy.RETAIN,
+        })
+        const distribution = createDistribution(this, webUrl, apiUrl, downloads, props.domain)
 
         // Function URLs created since October 2025 also need lambda:InvokeFunction; the OAC origin only grants
         // lambda:InvokeFunctionUrl, so without this CloudFront gets 403 from both functions.
@@ -341,5 +364,6 @@ export class LikelyWeatherStack extends Stack {
         new CfnOutput(this, 'ApiFunctionUrl', { value: apiUrl.url })
         new CfnOutput(this, 'WebFunctionUrl', { value: webUrl.url })
         new CfnOutput(this, 'DeployRoleArn', { value: deployRole.roleArn })
+        new CfnOutput(this, 'DownloadsBucketName', { value: downloads.bucketName })
     }
 }

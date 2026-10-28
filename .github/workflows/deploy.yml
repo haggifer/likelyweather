@@ -42,6 +42,9 @@ jobs:
                   cache: pnpm
             - run: pnpm install --frozen-lockfile
             - run: pnpm build
+              env:
+                  # The "Get the app" bar on Android phones links here; without it the bar is left out of the build.
+                  NEXT_PUBLIC_APP_PROMO_URL: ${{ vars.APP_PROMO_URL }}
             # The deploy ships its own build, so it is started once more before it can reach production.
             - run: bash apps/web/check-lambda.sh
             - uses: aws-actions/configure-aws-credentials@v4
