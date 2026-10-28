@@ -75,7 +75,8 @@
                     ]
                 }
             ],
-            "./plugins/with-widget-layouts"
+            "./plugins/with-widget-layouts",
+            "./plugins/with-release-signing"
         ],
         "experiments": {
             "typedRoutes": true,

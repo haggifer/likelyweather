@@ -63,6 +63,14 @@ pnpm --filter @fa/mobile tokens    # regenerate src/theme/tokens.ts and src/glob
 pnpm --filter @fa/mobile icons     # regenerate the app icons and splash from the web's cloud-sun logo, and the widget picker's preview
 ```
 
+A release APK (`npx expo prebuild --platform android`, then `gradlew app:assembleRelease` in `apps/mobile/android`) is
+signed with the template's debug key unless the machine's Gradle properties (`~/.gradle/gradle.properties`) name the
+release keystore: `LIKELYWEATHER_RELEASE_STORE_FILE`, `LIKELYWEATHER_RELEASE_STORE_PASSWORD`,
+`LIKELYWEATHER_RELEASE_KEY_ALIAS` and `LIKELYWEATHER_RELEASE_KEY_PASSWORD` (`plugins/with-release-signing.js`). Every APK
+given out must come from that one key, because Android installs an update only over an app signed with the same key.
+Set `EXPO_PUBLIC_API_ORIGIN` to the live site for a release build, since `.env.local` would otherwise point it at
+`localhost`.
+
 iOS builds run only in the cloud (`eas build --profile simulator --platform ios`) and are checked in a simulator.
 
 ## Highlights
