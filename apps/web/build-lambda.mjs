@@ -23,14 +23,16 @@ const zip = new yazl.ZipFile()
 let files = 0
 let links = 0
 
-// With pnpm, the standalone output links back to the repository's node_modules (absolutely, on Windows) instead of
-// to its own traced copy. Each link becomes a relative symlink entry to the traced copy inside the package, which
-// keeps pnpm's layout (a package finds its dependencies next to itself) and ships only traced files. Lambda unpacks
-// symlinks from the zip.
+// With pnpm, the standalone output's links point back to the repository's node_modules on Windows and to its own
+// traced copy on Linux. Each link becomes a relative symlink entry to the traced copy inside the package, which keeps
+// pnpm's layout (a package finds its dependencies next to itself) and ships only traced files: copied in place, a
+// linked package would lose the dependencies beside it. Lambda unpacks symlinks from the zip.
 const toTracedEntry = (file) => {
-    const traced = path.join(STANDALONE, path.relative(REPO_ROOT, realpathSync(file)))
+    const real = realpathSync(file)
+    const standalone = realpathSync(STANDALONE)
+    const traced = real.startsWith(standalone + path.sep) ? real : path.join(standalone, path.relative(REPO_ROOT, real))
 
-    return existsSync(traced) ? path.relative(STANDALONE, traced).split(path.sep).join('/') : null
+    return existsSync(traced) ? path.relative(standalone, traced).split(path.sep).join('/') : null
 }
 
 // Follows symlinked directories; `seen` stops a cycle through them.

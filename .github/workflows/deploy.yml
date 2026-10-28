@@ -42,6 +42,8 @@ jobs:
                   cache: pnpm
             - run: pnpm install --frozen-lockfile
             - run: pnpm build
+            # The deploy ships its own build, so it is started once more before it can reach production.
+            - run: bash apps/web/check-lambda.sh
             - uses: aws-actions/configure-aws-credentials@v4
               with:
                   role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}

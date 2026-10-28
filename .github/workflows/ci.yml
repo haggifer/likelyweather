@@ -52,6 +52,7 @@ jobs:
             - run: pnpm typecheck
             - run: pnpm test
             - run: pnpm build
+            - run: bash apps/web/check-lambda.sh
             # Synthesizes the stack from the fresh bundles; no AWS credentials are needed.
             - run: pnpm cdk:synth
 
