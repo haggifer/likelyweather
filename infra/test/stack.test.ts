@@ -7,7 +7,7 @@ const CERTIFICATE_ARN = 'arn:aws:acm:us-east-1:111111111111:certificate/00000000
 const PROPS: LikelyWeatherStackProps = {
     env: { account: '111111111111', region: 'eu-central-1' },
     contactEmail: 'alerts@example.com',
-    githubRepo: 'owner/likelyweather',
+    githubRepo: 'owner@1/likelyweather@2',
     githubBranch: 'main',
     monthlyBudgetUsd: 5,
     contactSender: 'Likely Weather <noreply@likelyweather.com>',
@@ -126,7 +126,7 @@ describe('LikelyWeatherStack', () => {
                             StringEquals: {
                                 'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
                                 'token.actions.githubusercontent.com:sub':
-                                    'repo:owner/likelyweather:ref:refs/heads/main',
+                                    'repo:owner@1/likelyweather@2:ref:refs/heads/main',
                             },
                         },
                     }),

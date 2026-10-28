@@ -160,7 +160,10 @@ role and a monthly budget alarm. Postgres (Neon) and Redis (Upstash) are externa
    (deploys never migrate), then `pnpm db:seed` with the same variables. On a live stack, a migration that only adds
    runs before the deploy; one that drops columns the running code reads runs after it.
 4. Once per account and region: `pnpm build && pnpm cdk:bootstrap --profile <profile>`.
-5. Deploy: `pnpm build && pnpm cdk:deploy --profile <profile> -c contactEmail=<address> -c githubRepo=<owner>/<repo>`.
+5. Deploy: `pnpm build && pnpm cdk:deploy --profile <profile> -c contactEmail=<address> -c githubRepo=<repository>`.
+   `<repository>` is the repository as GitHub's OIDC tokens name it, `<owner>@<owner id>/<repo>@<repo id>` (the
+   `sub_claim_prefix` of `gh api repos/<owner>/<repo>/actions/oidc/customization/sub`, without `repo:`), or
+   `<owner>/<repo>` for a repository without immutable subjects.
    `contactEmail` is the operator's address: it receives the budget warnings, the error alarms and the contact form's
    messages (the stack hands it to the API as `CONTACT_EMAIL`). A deploy without it or `githubRepo` stops rather
    than fall back to the placeholders `cdk synth` uses. The stack output `SiteUrl` is the site. Confirm the SNS

@@ -49,6 +49,7 @@ jobs:
             - run: pnpm cdk:deploy --require-approval never
               env:
                   CONTACT_EMAIL: ${{ vars.CONTACT_EMAIL }}
-                  GITHUB_REPO: ${{ github.repository }}
+                  # The repository as this token's immutable subject names it, which the deploy role trusts.
+                  GITHUB_REPO: ${{ github.repository_owner }}@${{ github.repository_owner_id }}/${{ github.event.repository.name }}@${{ github.repository_id }}
                   # Without it the deploy would take the site's domain off the distribution.
                   CERTIFICATE_ARN: ${{ vars.CERTIFICATE_ARN }}

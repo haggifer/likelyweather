@@ -30,7 +30,10 @@ interface SiteDomain {
 export interface LikelyWeatherStackProps extends StackProps {
     // The operator: budget warnings, error alarms and the contact form's messages all go here.
     contactEmail: string
-    // "owner/name"; deploys from GitHub Actions may assume the deploy role only from this repository's branch.
+    // The repository as GitHub's OIDC tokens name it: "owner@ownerId/name@repoId" where it issues immutable subjects
+    // (`gh api repos/<owner>/<name>/actions/oidc/customization/sub`), "owner/name" where it does not. Deploys from
+    // GitHub Actions may assume the deploy role only from this repository's branch, so a repository later created
+    // under the same name cannot.
     githubRepo: string
     githubBranch: string
     monthlyBudgetUsd: number
