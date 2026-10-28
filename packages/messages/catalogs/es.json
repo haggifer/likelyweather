@@ -231,7 +231,7 @@
     },
     "promo": {
         "label": "Obtener la app para Android",
-        "body": "Un widget para tu pantalla de inicio",
+        "body": "Widget de inicio, va sin conexión",
         "cta": "Obtener la app",
         "dismiss": "Cerrar"
     },

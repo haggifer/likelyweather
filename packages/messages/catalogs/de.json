@@ -231,7 +231,7 @@
     },
     "promo": {
         "label": "Android-App holen",
-        "body": "Die App bringt ein Startbildschirm-Widget",
+        "body": "Startbildschirm-Widget, auch offline",
         "cta": "App holen",
         "dismiss": "Schließen"
     },
