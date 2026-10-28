@@ -5,7 +5,7 @@ model, switch between eight variables, turn any chart into a table, and look up 
 Android app with a home-screen widget shows the same.
 
 **[Try it live](https://likelyweather.com)** (no sign-up) · **[Download the Android app](https://likelyweather.com/app/likely-weather.apk)**
-(APK, version 0.1.0; [all releases](https://github.com/haggifer/likelyweather/releases))
+(APK, version 1.0.0; [all releases](https://github.com/haggifer/likelyweather/releases))
 
 The APK installs outside the Play Store: Android asks to allow "Install unknown apps" for the browser, and Play Protect
 may warn about an unknown developer. Each version's SHA-256 checksum sits beside it (`likely-weather-<version>.apk.sha256`

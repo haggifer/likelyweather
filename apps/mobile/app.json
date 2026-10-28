@@ -2,7 +2,7 @@
     "expo": {
         "name": "Likely Weather",
         "slug": "likelyweather",
-        "version": "0.1.0",
+        "version": "1.0.0",
         "orientation": "portrait",
         "icon": "./assets/images/icon.png",
         "scheme": "likelyweather",
@@ -13,6 +13,7 @@
         },
         "android": {
             "package": "com.likelyweather.app",
+            "versionCode": 2,
             "adaptiveIcon": {
                 "backgroundColor": "#ffffff",
                 "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -21,7 +22,12 @@
             },
             "predictiveBackGestureEnabled": false,
             "permissions": ["ACCESS_COARSE_LOCATION"],
-            "blockedPermissions": ["android.permission.ACCESS_FINE_LOCATION"]
+            "blockedPermissions": [
+                "android.permission.ACCESS_FINE_LOCATION",
+                "android.permission.SYSTEM_ALERT_WINDOW",
+                "android.permission.READ_EXTERNAL_STORAGE",
+                "android.permission.WRITE_EXTERNAL_STORAGE"
+            ]
         },
         "plugins": [
             "expo-router",
