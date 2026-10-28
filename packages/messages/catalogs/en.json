@@ -235,7 +235,7 @@
         "body": "Your location, home-screen widget, works offline",
         "cta": "Get the app",
         "dismiss": "Dismiss",
-        "note": "An APK from the project’s GitHub releases; Android asks you to allow installs from that source."
+        "note": "An APK straight from likelyweather.com; Android asks you to allow installs from your browser."
     },
     "mobile": {
         "settings": "Settings",

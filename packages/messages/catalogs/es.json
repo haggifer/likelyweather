@@ -235,7 +235,7 @@
         "body": "Tu ubicación, widget en la pantalla de inicio, funciona sin conexión",
         "cta": "Obtener la app",
         "dismiss": "Cerrar",
-        "note": "Un APK de las versiones del proyecto en GitHub; Android te pedirá que autorices la instalación desde esa fuente."
+        "note": "Un APK directamente de likelyweather.com; Android te pedirá que autorices la instalación desde tu navegador."
     },
     "mobile": {
         "settings": "Ajustes",

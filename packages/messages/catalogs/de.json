@@ -235,7 +235,7 @@
         "body": "Dein Standort, Startbildschirm-Widget, funktioniert offline",
         "cta": "App holen",
         "dismiss": "Schließen",
-        "note": "Eine APK aus den GitHub-Releases des Projekts; Android fordert dich auf, Installationen aus dieser Quelle zuzulassen."
+        "note": "Eine APK direkt von likelyweather.com; Android fordert dich auf, Installationen über deinen Browser zuzulassen."
     },
     "mobile": {
         "settings": "Einstellungen",

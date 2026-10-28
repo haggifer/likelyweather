@@ -235,7 +235,7 @@
         "body": "Votre position, widget d’écran d’accueil, fonctionne hors ligne",
         "cta": "Obtenir l’app",
         "dismiss": "Fermer",
-        "note": "Un APK issu des versions GitHub du projet ; Android demande d’autoriser les installations depuis cette source."
+        "note": "Un APK téléchargé directement depuis likelyweather.com ; Android demande d’autoriser les installations depuis le navigateur."
     },
     "mobile": {
         "settings": "Réglages",
