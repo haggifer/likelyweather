@@ -1,33 +1,43 @@
 import { CityShell } from '@/components/city/CityShell'
-import { getCountryName } from '@fa/shared/format'
+import { JsonLd } from '@/components/shell/JsonLd'
+import { getSlugPlace, getSlugTitle } from '@/lib/city-slug'
+import { getPageMetadata } from '@/lib/page-metadata'
+import { getCityPlace, getWebPageStructuredData } from '@/lib/structured-data'
 import type { Metadata } from 'next'
-import { getLocale } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 
-// "new-york-us-5128581" → "New York, United States". The slug carries the name and the country code, so the page
-// title needs no request to the API: on Lambda the web function cannot call the IAM-protected API URL.
-const toTitle = (slug: string, locale: string) => {
-    const match = /^(.+)-([a-z]{2})-\d+$/.exec(slug)
+const getCityPage = async (slug: string) => {
+    const t = await getTranslations('seo')
+    const locale = await getLocale()
 
-    if (!match) return slug
+    const city = getSlugTitle(slug, locale)
 
-    const [, name, countryCode] = match
-    const cityName = name
-        .split('-')
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ')
-
-    return `${cityName}, ${getCountryName(countryCode, countryCode.toUpperCase(), locale)}`
+    return {
+        title: t('cityTitle', { city }),
+        description: t('cityDescription', { city }),
+        path: `/city/${slug}`,
+        locale,
+        place: getSlugPlace(slug, locale),
+    }
 }
 
 export const generateMetadata = async ({ params }: LayoutProps<'/city/[slug]'>): Promise<Metadata> => {
     const { slug } = await params
-    const locale = await getLocale()
+    const page = await getCityPage(slug)
 
-    return { title: toTitle(slug, locale) }
+    return { ...getPageMetadata(page), title: page.title }
 }
 
 export default async function CityLayout({ children, params }: LayoutProps<'/city/[slug]'>) {
     const { slug } = await params
+    const page = await getCityPage(slug)
 
-    return <CityShell slug={slug}>{children}</CityShell>
+    const about = page.place ? getCityPlace(page.place) : undefined
+
+    return (
+        <>
+            <JsonLd data={getWebPageStructuredData({ ...page, about })} />
+            <CityShell slug={slug}>{children}</CityShell>
+        </>
+    )
 }

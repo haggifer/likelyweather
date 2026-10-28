@@ -1,13 +1,30 @@
 import { ArchiveView } from '@/components/archive/ArchiveView'
+import { JsonLd } from '@/components/shell/JsonLd'
+import { getPageMetadata } from '@/lib/page-metadata'
+import { getWebPageStructuredData } from '@/lib/structured-data'
 import type { Metadata } from 'next'
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 
-export const generateMetadata = async (): Promise<Metadata> => {
-    const t = await getTranslations('archive')
+const getArchivePage = async () => {
+    const t = await getTranslations()
+    const locale = await getLocale()
 
-    return { title: t('title') }
+    return { title: t('archive.title'), description: t('seo.archiveDescription'), path: '/archive', locale }
 }
 
-export default function ArchivePage() {
-    return <ArchiveView />
+export const generateMetadata = async (): Promise<Metadata> => {
+    const page = await getArchivePage()
+
+    return { ...getPageMetadata(page), title: page.title }
+}
+
+export default async function ArchivePage() {
+    const page = await getArchivePage()
+
+    return (
+        <>
+            <JsonLd data={getWebPageStructuredData(page)} />
+            <ArchiveView />
+        </>
+    )
 }

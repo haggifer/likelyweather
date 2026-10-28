@@ -1,15 +1,21 @@
 import { LineSwatch } from '@/components/shell/LineSwatch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { getPageMetadata } from '@/lib/page-metadata'
 import { METHODOLOGY_SECTIONS, METHODOLOGY_VALUES, toParagraphs } from '@fa/shared/methodology'
 import { MODELS } from '@fa/shared/models'
 import { VARIABLES } from '@fa/shared/variables'
 import type { Metadata } from 'next'
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 
 export const generateMetadata = async (): Promise<Metadata> => {
+    const t = await getTranslations('methodology')
     const tNav = await getTranslations('nav')
+    const locale = await getLocale()
 
-    return { title: tNav('methodology') }
+    const title = tNav('methodology')
+    const description = t('intro')
+
+    return { ...getPageMetadata({ title, description, path: '/methodology', locale }), title }
 }
 
 export default async function MethodologyPage() {

@@ -2,6 +2,15 @@
     "app": {
         "tagline": "Ten weather models, any city, and how much they disagree."
     },
+    "seo": {
+        "homeTitle": "Ten weather models compared for any city",
+        "homeDescription": "Compare ten weather models for any city: a 10-day forecast with their median, their spread and how much they agree.",
+        "cityTitle": "{city}: 10-day forecast from ten weather models",
+        "cityDescription": "The 10-day forecast for {city} from ten weather models, with their median, their spread and the days they agree or split on.",
+        "archiveDescription": "The past weather of any city, hour by hour, for up to 12 days: temperature, wind, pressure, rain, humidity and cloud.",
+        "imageAlt": "Likely Weather: ten weather models, one forecast",
+        "imageSubtitle": "10-day forecast from ten weather models"
+    },
     "shell": {
         "switchMode": "Switch to {mode} mode",
         "modes": {

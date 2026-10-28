@@ -2,6 +2,15 @@
     "app": {
         "tagline": "Diez modelos meteorológicos, cualquier ciudad y cuánto discrepan."
     },
+    "seo": {
+        "homeTitle": "Diez modelos meteorológicos comparados para cualquier ciudad",
+        "homeDescription": "Compara diez modelos meteorológicos para cualquier ciudad: un pronóstico de 10 días con su mediana, su dispersión y cuánto coinciden.",
+        "cityTitle": "{city}: pronóstico de 10 días de diez modelos meteorológicos",
+        "cityDescription": "El pronóstico de 10 días para {city} de diez modelos meteorológicos, con su mediana, su dispersión y los días en que coinciden o discrepan.",
+        "archiveDescription": "El tiempo pasado de cualquier ciudad, hora a hora, hasta 12 días: temperatura, viento, presión, precipitación, humedad y nubosidad.",
+        "imageAlt": "Likely Weather: diez modelos meteorológicos, un pronóstico",
+        "imageSubtitle": "Pronóstico de 10 días de diez modelos meteorológicos"
+    },
     "shell": {
         "switchMode": "Cambiar al modo {mode}",
         "modes": {

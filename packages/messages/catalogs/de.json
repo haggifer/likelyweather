@@ -2,6 +2,15 @@
     "app": {
         "tagline": "Zehn Wettermodelle, jede Stadt und wie stark sie voneinander abweichen."
     },
+    "seo": {
+        "homeTitle": "Zehn Wettermodelle im Vergleich für jede Stadt",
+        "homeDescription": "Vergleiche zehn Wettermodelle für jede Stadt: eine 10-Tage-Vorhersage mit Median, Streuung und wie sehr sie übereinstimmen.",
+        "cityTitle": "{city}: 10-Tage-Vorhersage aus zehn Wettermodellen",
+        "cityDescription": "Die 10-Tage-Vorhersage für {city} aus zehn Wettermodellen, mit Median, Streuung und den Tagen, an denen sie übereinstimmen oder auseinandergehen.",
+        "archiveDescription": "Das vergangene Wetter jeder Stadt, Stunde für Stunde, für bis zu 12 Tage: Temperatur, Wind, Luftdruck, Niederschlag, Luftfeuchtigkeit und Bewölkung.",
+        "imageAlt": "Likely Weather: zehn Wettermodelle, eine Vorhersage",
+        "imageSubtitle": "10-Tage-Vorhersage aus zehn Wettermodellen"
+    },
     "shell": {
         "switchMode": "Zum {mode} Modus wechseln",
         "modes": {

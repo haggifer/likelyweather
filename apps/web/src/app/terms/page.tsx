@@ -1,12 +1,17 @@
 import { LegalPage } from '@/components/legal/LegalPage'
 import Terms from '@/content/legal/terms.mdx'
+import { getPageMetadata } from '@/lib/page-metadata'
 import type { Metadata } from 'next'
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 
 export const generateMetadata = async (): Promise<Metadata> => {
     const t = await getTranslations('legal')
+    const tApp = await getTranslations('app')
+    const locale = await getLocale()
 
-    return { title: t('terms') }
+    const title = t('terms')
+
+    return { ...getPageMetadata({ title, description: tApp('tagline'), path: '/terms', locale }), title }
 }
 
 export default async function TermsPage() {

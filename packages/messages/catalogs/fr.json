@@ -2,6 +2,15 @@
     "app": {
         "tagline": "Dix modèles météo, n’importe quelle ville et leur désaccord."
     },
+    "seo": {
+        "homeTitle": "Dix modèles météo comparés pour n’importe quelle ville",
+        "homeDescription": "Comparez dix modèles météo pour n’importe quelle ville : une prévision à 10 jours avec leur médiane, leur dispersion et leur degré d’accord.",
+        "cityTitle": "{city} : prévision à 10 jours de dix modèles météo",
+        "cityDescription": "La prévision à 10 jours pour {city} de dix modèles météo, avec leur médiane, leur dispersion et les jours où ils s’accordent ou divergent.",
+        "archiveDescription": "La météo passée de n’importe quelle ville, heure par heure, sur 12 jours au plus : température, vent, pression, précipitations, humidité et nébulosité.",
+        "imageAlt": "Likely Weather : dix modèles météo, une prévision",
+        "imageSubtitle": "Prévision à 10 jours de dix modèles météo"
+    },
     "shell": {
         "switchMode": "Passer en mode {mode}",
         "modes": {

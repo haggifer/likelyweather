@@ -207,6 +207,12 @@ The ones a newcomer is most likely to undo by accident:
   one /64 rotate through endless fresh quotas; a global daily cap protects the free upstream tiers.
 - **The mobile app and the web's phone layout stay in sync.** Every change to what a phone shows or does lands in both
   apps; only platform features (the widget, the "Get the app" bar, the landing page's pitch) stay one-sided.
+- **Search and share metadata come from the URL alone.** The web function cannot call the IAM-protected API on Lambda,
+  so a city page's title, description, structured data and share image (`opengraph-image.tsx`) are built from its slug
+  (`new-york-us-5128581`); the client retitles the page with the city's own names once its record loads. The language
+  lives in a cookie, so crawlers see English and there are no per-language URLs or `hreflang`; the sitemap lists the
+  seed cities. Every page sets its full Open Graph block through `getPageMetadata`, since Next.js merges metadata
+  shallowly.
 - **Shared code, two UI kits from one family.** Components can't be shared without react-native-web (Radix renders DOM),
   which needed a `className` bridge and a patch in a spike, so the web uses shadcn/ui and the app React Native Reusables,
   with the same names, variants and props. Both apps run the React version the Expo SDK pins; upgrade them together.

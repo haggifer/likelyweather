@@ -6,6 +6,7 @@ import { cn } from '@/lib/cn'
 import { MODE_RESTORE } from '@/lib/color-mode'
 import { FILL_HEIGHT_PARENT } from '@/lib/fill-height'
 import { getPageTitle } from '@/lib/page-title'
+import { SITE_NAME, SITE_ORIGIN } from '@fa/shared/site'
 import type { Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getTranslations } from 'next-intl/server'
@@ -18,10 +19,16 @@ const jetbrainsMono = JetBrains_Mono({ variable: '--font-jetbrains-mono', subset
 const lexend = Lexend({ variable: '--font-lexend', subsets: ['latin'], weight: '600' })
 const FONT_VARIABLES = `${inter.variable} ${jetbrainsMono.variable} ${lexend.variable}`
 
+// Pages set their own canonical address and Open Graph fields (`getPageMetadata`); these hold for the rest.
 export const generateMetadata = async (): Promise<Metadata> => {
     const t = await getTranslations('app')
 
-    return { title: { default: 'Likely Weather', template: getPageTitle('%s') }, description: t('tagline') }
+    return {
+        metadataBase: new URL(SITE_ORIGIN),
+        applicationName: SITE_NAME,
+        title: { default: SITE_NAME, template: getPageTitle('%s') },
+        description: t('tagline'),
+    }
 }
 
 export default async function RootLayout({ children }: LayoutProps<'/'>) {

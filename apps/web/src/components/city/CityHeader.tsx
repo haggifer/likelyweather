@@ -31,6 +31,7 @@ interface IProps {
 // wider screens keep Refresh disabled with its hint until then.
 export function CityHeader({ city }: IProps) {
     const t = useTranslations('city')
+    const tSeo = useTranslations('seo')
     const locale = useLocale()
     const now = useNow()
     const queryClient = useQueryClient()
@@ -49,7 +50,10 @@ export function CityHeader({ city }: IProps) {
     const name = getCityName(city, locale)
     const region = getCityRegion(city, locale)
     const isOutdated = (isError && !latest) || isRefreshOffered(latest?.fetchedAt, now)
-    const title = getPageTitle(`${name}, ${getCountryName(city.countryCode, city.country, locale)}`)
+    // The server's title in the city's own names (search engines that run scripts read this one).
+    const title = getPageTitle(
+        tSeo('cityTitle', { city: `${name}, ${getCountryName(city.countryCode, city.country, locale)}` }),
+    )
 
     // Refetching moves the dashboard chart only when a newer run arrives.
     const handleRefresh = () => void queryClient.refetchQueries({ queryKey: ['latest', city.slug], type: 'active' })
