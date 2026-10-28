@@ -4,12 +4,11 @@ import { Button } from '@/components/ui/button'
 import { useAppPromo } from '@/hooks/useAppPromo'
 import { X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import Image from 'next/image'
 import { useEffect } from 'react'
 
 // Set on <html> while the banner is up, so the page's bottom padding keeps the footer reachable above it.
 const HEIGHT_VARIABLE = '--app-promo-h'
-const HEIGHT = 'calc(4.5rem + env(safe-area-inset-bottom))'
+const HEIGHT = 'calc(4rem + env(safe-area-inset-bottom))'
 
 export function AppPromoBanner() {
     const t = useTranslations('promo')
@@ -31,30 +30,23 @@ export function AppPromoBanner() {
         <section
             role="region"
             aria-label={t('label')}
-            className="fixed inset-x-0 bottom-0 z-40 rounded-t-(--radius) border-t bg-card pb-[env(safe-area-inset-bottom)] text-card-foreground shadow-lg motion-safe:animate-in motion-safe:slide-in-from-bottom motion-safe:duration-200 motion-safe:ease-out"
+            className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t bg-card px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] text-card-foreground motion-safe:animate-in motion-safe:slide-in-from-bottom motion-safe:duration-200 motion-safe:ease-out"
         >
-            <div className="flex items-center gap-3 px-4 py-2.5">
-                <Image src="/icon.svg" alt="" width={32} height={32} className="size-8 shrink-0" unoptimized />
-                <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold">{t('title')}</p>
-                    <p className="truncate text-xs text-muted-foreground">{t('body')}</p>
-                </div>
-                <Button asChild size="sm">
-                    <a href={url} target="_blank" rel="noopener noreferrer">
-                        {t('cta')}
-                    </a>
-                </Button>
-                <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    className="touch:size-9"
-                    onClick={dismiss}
-                    aria-label={t('dismiss')}
-                >
-                    <X />
-                </Button>
-            </div>
-            <p className="px-4 pb-2 text-xs leading-snug text-muted-foreground">{t('note')}</p>
+            <p className="line-clamp-2 min-w-0 flex-1 text-sm leading-snug text-balance">{t('body')}</p>
+            <Button asChild className="h-10 px-4 text-base font-semibold">
+                <a href={url} target="_blank" rel="noopener noreferrer">
+                    {t('cta')}
+                </a>
+            </Button>
+            <Button
+                variant="ghost"
+                size="icon"
+                className="-mr-2 touch:size-10"
+                onClick={dismiss}
+                aria-label={t('dismiss')}
+            >
+                <X />
+            </Button>
         </section>
     )
 }

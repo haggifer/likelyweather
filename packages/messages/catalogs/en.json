@@ -231,11 +231,9 @@
     },
     "promo": {
         "label": "Get the Android app",
-        "title": "Likely Weather for Android",
-        "body": "Your location, home-screen widget, works offline",
+        "body": "Android app with a home-screen widget",
         "cta": "Get the app",
-        "dismiss": "Dismiss",
-        "note": "An APK straight from likelyweather.com; Android asks you to allow installs from your browser."
+        "dismiss": "Dismiss"
     },
     "mobile": {
         "settings": "Settings",

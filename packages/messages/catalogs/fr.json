@@ -231,11 +231,9 @@
     },
     "promo": {
         "label": "Obtenir l’application Android",
-        "title": "Likely Weather pour Android",
-        "body": "Votre position, widget d’écran d’accueil, fonctionne hors ligne",
+        "body": "Appli Android avec widget",
         "cta": "Obtenir l’app",
-        "dismiss": "Fermer",
-        "note": "Un APK téléchargé directement depuis likelyweather.com ; Android demande d’autoriser les installations depuis le navigateur."
+        "dismiss": "Fermer"
     },
     "mobile": {
         "settings": "Réglages",

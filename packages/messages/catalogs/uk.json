@@ -231,11 +231,9 @@
     },
     "promo": {
         "label": "Застосунок для Android",
-        "title": "Likely Weather для Android",
-        "body": "Ваше місцезнаходження, віджет на головному екрані, працює офлайн",
+        "body": "Застосунок для Android з віджетом",
         "cta": "Завантажити",
-        "dismiss": "Закрити",
-        "note": "APK просто з likelyweather.com; Android попросить дозволити встановлення з браузера."
+        "dismiss": "Закрити"
     },
     "mobile": {
         "settings": "Налаштування",

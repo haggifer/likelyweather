@@ -231,11 +231,9 @@
     },
     "promo": {
         "label": "Android-App holen",
-        "title": "Likely Weather für Android",
-        "body": "Dein Standort, Startbildschirm-Widget, funktioniert offline",
+        "body": "Android-App mit Widget",
         "cta": "App holen",
-        "dismiss": "Schließen",
-        "note": "Eine APK direkt von likelyweather.com; Android fordert dich auf, Installationen über deinen Browser zuzulassen."
+        "dismiss": "Schließen"
     },
     "mobile": {
         "settings": "Einstellungen",
