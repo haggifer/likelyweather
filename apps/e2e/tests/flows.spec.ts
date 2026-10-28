@@ -204,20 +204,27 @@ test('a panel moves by keyboard with its handle, and Escape cancels a move witho
     const handle = page.getByRole('button', { name: 'Reorder Temperature' })
     const rows = page.getByRole('dialog', { name: 'Shown variables' }).getByRole('listitem')
 
-    const moveDown = async (finalKey: string) => {
+    // dnd-kit measures the rows and settles the row under the held one a render or two after each key, and ignores or
+    // misplaces a key that comes sooner. Its live region announces the position once it has, so each key waits for it.
+    const expectAnnouncedAt = (position: number) =>
+        expect(page.getByRole('status').filter({ hasText: `Temperature is at position ${position} of` })).toBeAttached()
+
+    const moveDown = async (position: number, finalKey: string) => {
         await page.keyboard.press('Space')
         await expect(handle).toHaveAttribute('aria-pressed', 'true')
+        await expectAnnouncedAt(position)
         await page.keyboard.press('ArrowDown')
         await expect(handle.locator('xpath=ancestor::li')).toHaveAttribute('style', /translate3d\(0px, [1-9]/)
+        await expectAnnouncedAt(position + 1)
         await page.keyboard.press(finalKey)
         await expect(handle).not.toHaveAttribute('aria-pressed')
     }
 
     await handle.focus()
-    await moveDown('Space')
+    await moveDown(1, 'Space')
     await expect(rows.nth(1)).toContainText('Temperature')
     await expect(handle).toBeFocused()
-    await moveDown('Escape')
+    await moveDown(2, 'Escape')
     await expect(rows.nth(1)).toContainText('Temperature')
     await expect(page.getByRole('dialog', { name: 'Shown variables' })).toBeVisible()
     await page.getByRole('button', { name: 'Hide Temperature' }).click()
