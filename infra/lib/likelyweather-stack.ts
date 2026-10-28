@@ -28,7 +28,8 @@ interface SiteDomain {
 }
 
 export interface LikelyWeatherStackProps extends StackProps {
-    alertEmail: string
+    // The operator: budget warnings, error alarms and the contact form's messages all go here.
+    contactEmail: string
     // "owner/name"; deploys from GitHub Actions may assume the deploy role only from this repository's branch.
     githubRepo: string
     githubBranch: string
@@ -242,7 +243,7 @@ const createDeployRole = (stack: Stack, { githubRepo, githubBranch }: LikelyWeat
     return deployRole
 }
 
-const createMonthlyBudget = (scope: Construct, { monthlyBudgetUsd, alertEmail }: LikelyWeatherStackProps) =>
+const createMonthlyBudget = (scope: Construct, { monthlyBudgetUsd, contactEmail }: LikelyWeatherStackProps) =>
     new budgets.CfnBudget(scope, 'MonthlyBudget', {
         budget: {
             budgetType: 'COST',
@@ -259,7 +260,7 @@ const createMonthlyBudget = (scope: Construct, { monthlyBudgetUsd, alertEmail }:
                 thresholdType: 'PERCENTAGE',
                 notificationType,
             },
-            subscribers: [{ subscriptionType: 'EMAIL', address: alertEmail }],
+            subscribers: [{ subscriptionType: 'EMAIL', address: contactEmail }],
         })),
     })
 
@@ -295,7 +296,7 @@ export class LikelyWeatherStack extends Stack {
                 SSM_PREFIX,
                 // One small pool per instance; Neon's pooler multiplexes the instances.
                 PG_POOL_MAX: '2',
-                // The recipient is CONTACT_EMAIL under SSM_PREFIX, which keeps the operator's address out of the template.
+                CONTACT_EMAIL: props.contactEmail,
                 CONTACT_FROM: props.contactSender,
                 ...ADAPTER_ENVIRONMENT,
                 AWS_LWA_READINESS_CHECK_PATH: '/api/models',
@@ -308,7 +309,7 @@ export class LikelyWeatherStack extends Stack {
         const apiUrl = api.addFunctionUrl({ authType: lambda.FunctionUrlAuthType.AWS_IAM })
 
         const alerts = new sns.Topic(this, 'Alerts')
-        alerts.addSubscription(new subscriptions.EmailSubscription(props.alertEmail))
+        alerts.addSubscription(new subscriptions.EmailSubscription(props.contactEmail))
         addErrorAlarm(this, 'ApiErrors', api, alerts)
         addErrorAlarm(this, 'WebErrors', web, alerts)
 

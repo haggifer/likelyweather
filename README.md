@@ -152,8 +152,7 @@ role and a monthly budget alarm. Postgres (Neon) and Redis (Upstash) are externa
 
 1. Create three SecureString parameters the functions read at cold start: `/forecast-arena/DATABASE_URL` (the pooled
    connection string), `/forecast-arena/REDIS_URL` (`rediss://…`) and `/forecast-arena/METNO_USER_AGENT`. The API
-   refuses to start on AWS without `METNO_USER_AGENT`, and logs a warning without `REDIS_URL`. A fourth,
-   `/forecast-arena/CONTACT_EMAIL`, is where the contact form delivers; without it the form answers 502.
+   refuses to start on AWS without `METNO_USER_AGENT`, and logs a warning without `REDIS_URL`.
 2. For the contact form, in SES in the stack's region: create the domain identity with Easy DKIM, add its three CNAME
    records at the DNS host (not proxied), and, while the account is in the SES sandbox, verify the recipient too. The
    stack sets `CONTACT_FROM` to `Likely Weather <noreply@<domainName>>` (`-c contactSender=<address>` for another).
@@ -161,8 +160,11 @@ role and a monthly budget alarm. Postgres (Neon) and Redis (Upstash) are externa
    (deploys never migrate), then `pnpm db:seed` with the same variables. On a live stack, a migration that only adds
    runs before the deploy; one that drops columns the running code reads runs after it.
 4. Once per account and region: `pnpm build && pnpm cdk:bootstrap --profile <profile>`.
-5. Deploy: `pnpm build && pnpm cdk:deploy --profile <profile> -c budgetEmail=<address> -c githubRepo=<owner>/<repo>`.
-   The stack output `SiteUrl` is the site. Confirm the SNS subscription e-mail once, or the error alarm reaches nobody.
+5. Deploy: `pnpm build && pnpm cdk:deploy --profile <profile> -c contactEmail=<address> -c githubRepo=<owner>/<repo>`.
+   `contactEmail` is the operator's address: it receives the budget warnings, the error alarms and the contact form's
+   messages (the stack hands it to the API as `CONTACT_EMAIL`). A deploy without it or `githubRepo` stops rather
+   than fall back to the placeholders `cdk synth` uses. The stack output `SiteUrl` is the site. Confirm the SNS
+   subscription e-mail once, or the error alarm reaches nobody.
 6. Optionally, a domain of your own: request an ACM certificate in **us-east-1** (CloudFront takes certificates from no
    other region) for the domain and its `www` name, validate it through DNS, and deploy with `-c certificateArn=<arn>`
    (and `-c domainName=<domain>` for a domain other than `likelyweather.com`). Both names then answer, `www` redirecting
@@ -170,8 +172,9 @@ role and a monthly budget alarm. Postgres (Neon) and Redis (Upstash) are externa
    Cloudflare orange cloud), because the API reads the viewer's own address and country from CloudFront.
 
 After that, pushes to `main` deploy through GitHub OIDC once CI has passed on them (`.github/workflows/deploy.yml`), as
-soon as the repository has the variables `AWS_DEPLOY_ROLE_ARN` (stack output `DeployRoleArn`) and `AWS_REGION`, the
-secret `BUDGET_EMAIL`, and, with a domain, the variable `CERTIFICATE_ARN`.
+soon as the repository has the variables `AWS_DEPLOY_ROLE_ARN` (stack output `DeployRoleArn`), `AWS_REGION` and
+`CONTACT_EMAIL`, and, with a domain, `CERTIFICATE_ARN`. None of them is a secret: the workflow signs in to AWS through
+OIDC and stores no keys.
 
 ## Design decisions
 

@@ -48,7 +48,7 @@ jobs:
                   aws-region: ${{ vars.AWS_REGION }}
             - run: pnpm cdk:deploy --require-approval never
               env:
-                  BUDGET_EMAIL: ${{ secrets.BUDGET_EMAIL }}
+                  CONTACT_EMAIL: ${{ vars.CONTACT_EMAIL }}
                   GITHUB_REPO: ${{ github.repository }}
                   # Without it the deploy would take the site's domain off the distribution.
                   CERTIFICATE_ARN: ${{ vars.CERTIFICATE_ARN }}

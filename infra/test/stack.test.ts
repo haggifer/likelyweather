@@ -6,7 +6,7 @@ const CERTIFICATE_ARN = 'arn:aws:acm:us-east-1:111111111111:certificate/00000000
 
 const PROPS: LikelyWeatherStackProps = {
     env: { account: '111111111111', region: 'eu-central-1' },
-    alertEmail: 'alerts@example.com',
+    contactEmail: 'alerts@example.com',
     githubRepo: 'owner/likelyweather',
     githubBranch: 'main',
     monthlyBudgetUsd: 5,
@@ -98,7 +98,10 @@ describe('LikelyWeatherStack', () => {
     it('lets the API send the contact form through SES from the configured sender', () => {
         template.hasResourceProperties('AWS::Lambda::Function', {
             Environment: {
-                Variables: Match.objectLike({ CONTACT_FROM: 'Likely Weather <noreply@likelyweather.com>' }),
+                Variables: Match.objectLike({
+                    CONTACT_EMAIL: 'alerts@example.com',
+                    CONTACT_FROM: 'Likely Weather <noreply@likelyweather.com>',
+                }),
             },
         })
         template.hasResourceProperties('AWS::IAM::Policy', {

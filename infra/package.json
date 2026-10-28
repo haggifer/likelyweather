@@ -5,7 +5,7 @@
     "scripts": {
         "synth": "cdk synth --quiet",
         "diff": "cdk diff",
-        "deploy": "cdk deploy",
+        "deploy": "cdk deploy -c deploying=true",
         "bootstrap": "cdk bootstrap",
         "lint": "eslint .",
         "typecheck": "tsc --noEmit",
