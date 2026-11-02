@@ -1,5 +1,6 @@
 import { useLatest } from '@fa/api-client/hooks/useLatest'
 import { isRefreshOffered } from '@fa/api-client/refresh-due'
+import { useAutoRefresh } from '@fa/hooks/useAutoRefresh'
 import { City } from '@fa/shared/api'
 import { getCityRegion } from '@fa/shared/city-region'
 import { getCityName } from '@fa/shared/format'
@@ -9,6 +10,7 @@ import { Pencil } from 'lucide-react-native'
 import { useState } from 'react'
 import { View } from 'react-native'
 import { useLocale, useTranslations } from 'use-intl'
+import { useIsAppActive } from '../../hooks/useIsAppActive'
 import { useNow } from '../../hooks/useNow'
 import { SearchBox } from '../home/SearchBox'
 import { Button } from '../ui/button'
@@ -30,6 +32,7 @@ export function CityHeader({ city, onSelectCity }: IProps) {
     const t = useTranslations('city')
     const locale = useLocale()
     const now = useNow()
+    const isAppActive = useIsAppActive()
     const queryClient = useQueryClient()
 
     const [isSwitching, setIsSwitching] = useState(false)
@@ -46,6 +49,8 @@ export function CityHeader({ city, onSelectCity }: IProps) {
 
     const handleRefresh = () => void queryClient.refetchQueries({ queryKey: ['latest', city.slug], type: 'active' })
     const handleClose = () => setIsSwitching(false)
+
+    useAutoRefresh(latest?.fetchedAt, now, isAppActive, handleRefresh)
 
     if (isSwitching) {
         return <SearchBox initialQuery={name} autoFocus onDismiss={handleClose} onSelectCity={onSelectCity} />

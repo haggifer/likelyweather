@@ -7,11 +7,13 @@ import { FlagIcon } from '@/components/shell/FlagIcon'
 import { SearchBox } from '@/components/shell/SearchBox'
 import { Button } from '@/components/ui/button'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { useIsPageVisible } from '@/hooks/useIsPageVisible'
 import { useNow } from '@/hooks/useNow'
 import { cn } from '@/lib/cn'
 import { getPageTitle } from '@/lib/page-title'
 import { useLatest } from '@fa/api-client/hooks/useLatest'
 import { isRefreshOffered } from '@fa/api-client/refresh-due'
+import { useAutoRefresh } from '@fa/hooks/useAutoRefresh'
 import { City } from '@fa/shared/api'
 import { getCityRegion } from '@fa/shared/city-region'
 import { getCityName, getCountryName } from '@fa/shared/format'
@@ -34,6 +36,7 @@ export function CityHeader({ city }: IProps) {
     const tSeo = useTranslations('seo')
     const locale = useLocale()
     const now = useNow()
+    const isPageVisible = useIsPageVisible()
     const queryClient = useQueryClient()
 
     const pencilRef = useRef<HTMLButtonElement>(null)
@@ -66,6 +69,7 @@ export function CityHeader({ city }: IProps) {
     }
 
     useDocumentTitle(title)
+    useAutoRefresh(latest?.fetchedAt, now, isPageVisible, handleRefresh)
 
     return (
         <div className="mb-2 flex flex-col gap-2 sm:gap-3">

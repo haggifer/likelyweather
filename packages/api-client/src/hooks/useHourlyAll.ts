@@ -9,8 +9,8 @@ const keepResults = (results: UseQueryResult<LatestResponse, Error>[]) => result
 
 // Every overview variable is asked for together, whichever panels the reader shows, so all panels draw one run.
 // Showing a hidden panel later would ask for its series alone, and with the stored run 3 hours old that request
-// collects the city, spends a unit and draws that panel from a newer run than the rest. They are never refetched in the
-// background, so a newer run never replaces the chart under the reader: only an explicit refresh does. No placeholder
+// collects the city, spends a unit and draws that panel from a newer run than the rest. They have no background refetch
+// of their own: a newer run replaces the chart only through Refresh, pressed or automatic (`useAutoRefresh`). No placeholder
 // data either, because switching cities must never show the previous one.
 export function useHourlyAll(slug: string, enabled = true): UseQueryResult<LatestResponse, Error>[] {
     return useQueries({

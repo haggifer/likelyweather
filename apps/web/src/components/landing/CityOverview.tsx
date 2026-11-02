@@ -3,9 +3,12 @@
 import { OverviewCard, OverviewCardSkeleton } from '@/components/city/OverviewCard'
 import { ErrorNotice } from '@/components/shell/ErrorNotice'
 import { Card, CardContent } from '@/components/ui/card'
+import { useIsPageVisible } from '@/hooks/useIsPageVisible'
 import { useNow } from '@/hooks/useNow'
 import { useOverviewPanels } from '@/hooks/useOverviewPanels'
 import { getErrorKind } from '@fa/api-client/error-kind'
+import { getOverviewRun } from '@fa/chart-core/overview-stats'
+import { useAutoRefresh } from '@fa/hooks/useAutoRefresh'
 import { useCityOverview } from '@fa/hooks/useCityOverview'
 import { getCityName } from '@fa/shared/format'
 import { getVisiblePanels } from '@fa/shared/overview-panels'
@@ -22,6 +25,7 @@ export function CityOverview({ slug }: IProps) {
     const te = useTranslations('errors')
     const locale = useLocale()
     const now = useNow()
+    const isPageVisible = useIsPageVisible()
     const { panels } = useOverviewPanels()
 
     const visible = useMemo(() => getVisiblePanels(panels), [panels])
@@ -31,11 +35,17 @@ export function CityOverview({ slug }: IProps) {
         visible,
     )
 
+    // The run the card dates its Refresh by.
+    const fetchedAt = readyPanels.length ? getOverviewRun(hourly, readyPanels)?.fetchedAt : undefined
+
     const handleRefresh = async () => {
         const failure = await refresh()
 
         if (failure) toast.error(te(getErrorKind(failure)))
     }
+
+    // A failed automatic refresh says nothing: the age chip and Refresh stay on screen.
+    useAutoRefresh(fetchedAt, now, isPageVisible, () => void refresh())
 
     if (error || isEmpty) {
         return (

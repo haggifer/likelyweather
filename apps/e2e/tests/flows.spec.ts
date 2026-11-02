@@ -264,6 +264,36 @@ test('the archive picks its period on a range calendar, capped at twelve days, a
     }
 })
 
+// Only the page's clock moves: the server still sees a fresh run, answers the automatic refresh with it, and isn't asked
+// again. Earlier tests may have fetched the run, so the clock moves from its fetch time.
+test('an overview refreshes by itself once its run is 3 hours old, and only once', async ({ page }) => {
+    await page.clock.install()
+
+    const firstRun = page.waitForResponse((response) => response.url().includes('/latest'))
+
+    await page.goto(`/?city=${LONDON}`)
+    await expect(page.getByRole('img', { name: /^Median forecast for London/ })).toBeVisible()
+
+    const { fetchedAt } = (await (await firstRun).json()) as { fetchedAt: string }
+    const pageNow = await page.evaluate(() => Date.now())
+    const untilDue = new Date(fetchedAt).getTime() + 3 * 60 * 60_000 - pageNow
+    const requests: string[] = []
+
+    page.on('request', (request) => {
+        if (request.url().includes('/latest')) requests.push(request.url())
+    })
+    await page.clock.fastForward(untilDue - 2 * 60_000)
+    expect(requests).toEqual([])
+
+    await page.clock.fastForward('00:03:00')
+    await expect.poll(() => requests.length).toBeGreaterThan(0)
+
+    const count = requests.length
+
+    await page.clock.fastForward('00:10:00')
+    expect(requests).toHaveLength(count)
+})
+
 test('the header marks Overview on the landing and Details on a city dashboard', async ({ page, isMobile }) => {
     test.skip(isMobile, 'phones reach the pages through the menu')
 
