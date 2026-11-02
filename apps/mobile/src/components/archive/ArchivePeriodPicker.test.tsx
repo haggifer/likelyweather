@@ -2,7 +2,7 @@ import en from '@fa/messages/catalogs/en.json'
 import uk from '@fa/messages/catalogs/uk.json'
 import { ArchiveRange, formatArchiveRange } from '@fa/shared/archive'
 import { PortalHost } from '@rn-primitives/portal'
-import { fireEvent, render, screen } from '@testing-library/react-native'
+import { act, fireEvent, render, screen } from '@testing-library/react-native'
 import { IntlProvider } from 'use-intl'
 import { ArchivePeriodPicker } from './ArchivePeriodPicker'
 
@@ -32,7 +32,8 @@ describe('ArchivePeriodPicker', () => {
         expect(screen.getByText('05.10.2026 – 11.10.2026')).toBeOnTheScreen()
     })
 
-    it('starts the period on the first tap and applies it on the second, closing the calendar', async () => {
+    it('starts the period on the first tap, draws it whole on the second, then applies it and closes', async () => {
+        jest.useFakeTimers()
         const onChange = jest.fn()
         await openPicker(onChange)
 
@@ -44,8 +45,15 @@ describe('ArchivePeriodPicker', () => {
 
         await fireEvent.press(screen.getByRole('button', { name: 'Saturday, October 3, 2026' }))
 
+        expect(screen.getByRole('button', { name: 'Friday, October 2, 2026' })).toBeSelected()
+        expect(screen.getByRole('button', { name: 'Saturday, October 3, 2026' })).toBeSelected()
+        expect(onChange).not.toHaveBeenCalled()
+
+        await act(() => jest.runAllTimers())
+
         expect(onChange).toHaveBeenCalledWith({ from: '2026-10-01', to: '2026-10-03' })
         expect(screen.queryByText('October 2026')).toBeNull()
+        jest.useRealTimers()
     })
 
     it('ends a period within 12 days of its first day and never before it', async () => {
@@ -71,6 +79,21 @@ describe('ArchivePeriodPicker', () => {
         await fireEvent.press(screen.getByRole('button', { name: en.archive.nextYear }))
 
         expect(screen.getByText('October 2026')).toBeOnTheScreen()
+    })
+
+    it('opens a list of years from the title, which shows the month in the year picked', async () => {
+        await openPicker(jest.fn())
+        await fireEvent.press(screen.getByRole('button', { name: 'October 2026' }))
+
+        expect(screen.getByRole('button', { name: '1940' })).toBeOnTheScreen()
+        expect(screen.getByRole('button', { name: '2026' })).toBeSelected()
+        expect(screen.getByRole('button', { name: en.archive.previousMonth })).toBeDisabled()
+
+        await fireEvent.press(screen.getByRole('button', { name: '1999' }))
+
+        expect(screen.getByText('October 1999')).toBeOnTheScreen()
+        expect(screen.queryByRole('button', { name: '1940' })).toBeNull()
+        expect(screen.getByRole('button', { name: 'Friday, October 1, 1999' })).toBeEnabled()
     })
 
     it('offers nothing after yesterday', async () => {

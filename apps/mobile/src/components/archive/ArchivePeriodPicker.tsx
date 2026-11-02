@@ -1,3 +1,4 @@
+import { usePendingValue } from '@fa/hooks/usePendingValue'
 import { ArchiveRange, formatArchiveRange } from '@fa/shared/archive'
 import { CalendarDays } from 'lucide-react-native'
 import { useState } from 'react'
@@ -14,7 +15,9 @@ interface IProps {
     onChange: (range: ArchiveRange) => void
 }
 
-// The second tap of a period applies it and closes the calendar, so each period costs at most one request.
+// The second tap of a period applies it and closes the calendar, so each period costs at most one request. The dialog
+// fades out the last frame it drew, so the calendar draws the whole period first and closes once that frame is painted;
+// closing in the tap's own render would fade out the half-picked period instead.
 export function ArchivePeriodPicker({ range, latest, onChange }: IProps) {
     const t = useTranslations('archive')
 
@@ -26,6 +29,7 @@ export function ArchivePeriodPicker({ range, latest, onChange }: IProps) {
         setIsOpen(false)
         onChange(next)
     }
+    const { value: shownRange, setValue: pickRange } = usePendingValue(range, handleChange)
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -41,7 +45,7 @@ export function ArchivePeriodPicker({ range, latest, onChange }: IProps) {
                 </Button>
             </DialogTrigger>
             <DialogContent accessibilityLabel={t('period')}>
-                <ArchiveRangeCalendar range={range} latest={latest} onChange={handleChange} />
+                <ArchiveRangeCalendar range={shownRange} latest={latest} onChange={pickRange} />
             </DialogContent>
         </Dialog>
     )

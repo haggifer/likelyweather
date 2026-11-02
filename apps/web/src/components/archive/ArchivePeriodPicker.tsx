@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Popover, PopoverPanel, PopoverTrigger } from '@/components/ui/popover'
 import { useIsPhone } from '@/hooks/useIsPhone'
+import { usePendingValue } from '@fa/hooks/usePendingValue'
 import { ArchiveRange, formatArchiveRange } from '@fa/shared/archive'
 import { CalendarDays } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
@@ -21,8 +22,9 @@ interface IProps {
 }
 
 // The second tap of a period applies it and closes the calendar, so each period costs at most one request and nothing
-// waits for the reader to settle. Phones open it in a dialog, which has the window's whole height: beside the button it
-// doesn't fit a phone held sideways.
+// waits for the reader to settle; the calendar draws the whole period first and closes once that frame is painted.
+// Phones open it in a dialog, which has the window's whole height: beside the button it doesn't fit a phone held
+// sideways.
 export function ArchivePeriodPicker({ range, latest, onChange }: IProps) {
     const t = useTranslations('archive')
     const locale = useLocale()
@@ -36,6 +38,7 @@ export function ArchivePeriodPicker({ range, latest, onChange }: IProps) {
         setIsOpen(false)
         onChange(next)
     }
+    const { value: shownRange, setValue: pickRange } = usePendingValue(range, handleChange)
 
     const trigger = (
         <Button
@@ -50,7 +53,7 @@ export function ArchivePeriodPicker({ range, latest, onChange }: IProps) {
     )
     const calendar = (
         <I18nProvider locale={locale}>
-            <ArchiveRangeCalendar range={range} latest={latest} onChange={handleChange} />
+            <ArchiveRangeCalendar range={shownRange} latest={latest} onChange={pickRange} />
         </I18nProvider>
     )
 

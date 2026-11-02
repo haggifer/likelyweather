@@ -274,6 +274,7 @@
         "nextMonth": "Mes siguiente",
         "previousYear": "Año anterior",
         "nextYear": "Año siguiente",
+        "chooseYear": "Elegir año",
         "limit": "Hasta {days} días, desde 1940 hasta ayer.",
         "fetching": "Cargando el tiempo pasado de {name}…",
         "unavailable": "No hay datos del tiempo pasado para este periodo.",

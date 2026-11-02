@@ -243,7 +243,7 @@ test('the archive picks its period on a range calendar, capped at twelve days, a
 
     await trigger.click()
 
-    for (let i = 0; i < 36 && !(await page.getByRole('heading', { name: 'January 2026' }).isVisible()); i++) {
+    for (let i = 0; i < 36 && !(await page.getByRole('button', { name: 'January 2026' }).isVisible()); i++) {
         await page.getByRole('button', { name: 'Previous month' }).click()
     }
 
@@ -262,6 +262,54 @@ test('the archive picks its period on a range calendar, capped at twelve days, a
             page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Archive' }),
         ).toHaveAttribute('aria-current', 'page')
     }
+})
+
+// Months span 4 to 6 weeks; the calendar always draws 6, so the arrows stay under the finger while paging.
+test('the archive calendar keeps its size and its arrows in place from month to month', async ({ page }) => {
+    await page.goto(`/archive?city=${LONDON}`)
+    await page.getByRole('button', { name: /^Period: / }).click()
+
+    const previous = page.getByRole('button', { name: 'Previous month' })
+    const grid = page.getByRole('grid')
+    const places = new Set<string>()
+
+    // The opening animation scales the calendar, which would distort the first measurement.
+    await page.waitForFunction(() => document.getAnimations().length === 0)
+
+    for (let i = 0; i < 12; i++) {
+        const arrow = await previous.boundingBox()
+        const days = await grid.boundingBox()
+
+        places.add(`${arrow?.x},${arrow?.y},${days?.height}`)
+        await previous.click()
+    }
+
+    expect(places.size).toBe(1)
+})
+
+test('the archive calendar jumps to a year from its title and back to its days', async ({ page }) => {
+    await page.goto(`/archive?city=${LONDON}`)
+    await page.getByRole('button', { name: /^Period: / }).click()
+    await page.getByTitle('Choose a year').click()
+
+    const years = page.getByRole('group', { name: 'Choose a year' })
+
+    await expect(years.getByRole('button', { name: '1940' })).toBeAttached()
+    await expect(page.getByRole('button', { name: 'Previous month' })).toBeDisabled()
+    await years.getByRole('button', { name: '1999' }).click()
+
+    await expect(years).toBeHidden()
+    await expect(page.getByTitle('Choose a year')).toHaveAccessibleName(/1999$/)
+    await expect(page.getByTitle('Choose a year')).toBeFocused()
+    await page
+        .getByRole('button', { name: /1, 1999/ })
+        .first()
+        .click()
+    await page
+        .getByRole('button', { name: /3, 1999/ })
+        .first()
+        .click()
+    await expect(page.getByRole('button', { name: /^Period: 01\.\d\d\.1999 – 03\.\d\d\.1999$/ })).toBeVisible()
 })
 
 // Only the page's clock moves: the server still sees a fresh run, answers the automatic refresh with it, and isn't asked

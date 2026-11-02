@@ -274,6 +274,7 @@
         "nextMonth": "Nächster Monat",
         "previousYear": "Vorheriges Jahr",
         "nextYear": "Nächstes Jahr",
+        "chooseYear": "Jahr wählen",
         "limit": "Bis zu {days} Tage, von 1940 bis gestern.",
         "fetching": "Vergangenes Wetter für {name} wird geladen…",
         "unavailable": "Für diesen Zeitraum gibt es keine Daten zum vergangenen Wetter.",

@@ -274,6 +274,7 @@
         "nextMonth": "Next month",
         "previousYear": "Previous year",
         "nextYear": "Next year",
+        "chooseYear": "Choose a year",
         "limit": "Up to {days} days, from 1940 to yesterday.",
         "fetching": "Loading past weather for {name}…",
         "unavailable": "No past weather is available for this period.",

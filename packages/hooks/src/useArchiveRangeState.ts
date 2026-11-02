@@ -8,7 +8,7 @@ import {
     parseDate,
     startOfWeek,
 } from '@internationalized/date'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import {
     RangeCalendarState,
     RangeCalendarStateOptions,
@@ -17,8 +17,12 @@ import {
 import {
     ARCHIVE_FIRST_DAY_OF_WEEK,
     CalendarRange,
+    DAYS_IN_WEEK,
+    getYears,
     isCityToday,
     isOutsideArchiveSpan,
+    moveToYear,
+    padWeeks,
     toArchiveRange,
     toCalendarRange,
 } from './archive-calendar'
@@ -48,13 +52,20 @@ export interface UseArchiveRangeStateResult {
     options: RangeCalendarStateOptions<CalendarDate>
     title: string
     weekDays: string[]
+    // Always `CALENDAR_WEEKS` rows, the missing ones empty.
     weeks: (CalendarDate | null)[][]
+    // The year list the title opens instead of the days, from 1940 to this year.
+    years: number[]
+    shownYear: number
+    isChoosingYear: boolean
+    toggleYears: () => void
+    // Shows the days of the shown month in that year.
+    selectYear: (year: number) => void
     getDayState: (date: CalendarDate) => ArchiveDayState
     getDayLabel: (date: CalendarDate) => string
 }
 
 const FIRST_DATE = parseDate(ARCHIVE_FIRST_DATE)
-const DAYS_IN_WEEK = 7
 
 // Only the Gregorian calendar, so the bundle carries none of the others.
 const createCalendar = () => new GregorianCalendar()
@@ -77,7 +88,7 @@ const getWeekDays = (state: RangeCalendarState, locale: string, formatter: DateF
 }
 
 const getWeeks = (state: RangeCalendarState) =>
-    Array.from({ length: state.getWeeksInMonth() }, (_, i) => state.getDatesInWeek(i))
+    padWeeks(Array.from({ length: state.getWeeksInMonth() }, (_, i) => state.getDatesInWeek(i)))
 
 const getDayState = (state: RangeCalendarState, date: CalendarDate, latest: string): ArchiveDayState => {
     const range = state.highlightedRange
@@ -100,6 +111,8 @@ export function useArchiveRangeState({
     autoFocus,
 }: ArchiveRangeStateOptions): UseArchiveRangeStateResult {
     const { from, to } = range
+    const [isChoosingYear, setIsChoosingYear] = useState(false)
+
     const value = useMemo(() => toCalendarRange({ from, to }), [from, to])
     const maxValue = useMemo(() => parseDate(latest), [latest])
 
@@ -122,6 +135,12 @@ export function useArchiveRangeState({
     const title = toTitle(formatters.title.format(state.visibleRange.start.toDate(state.timeZone)), locale)
     const weekDays = getWeekDays(state, locale, formatters.weekDay)
     const weeks = getWeeks(state)
+    const years = useMemo(() => getYears(FIRST_DATE, maxValue), [maxValue])
+
+    const selectYear = (year: number) => {
+        state.setFocusedDate(moveToYear(state.focusedDate, year, maxValue))
+        setIsChoosingYear(false)
+    }
 
     return {
         state,
@@ -129,6 +148,11 @@ export function useArchiveRangeState({
         title,
         weekDays,
         weeks,
+        years,
+        shownYear: state.visibleRange.start.year,
+        isChoosingYear,
+        toggleYears: () => setIsChoosingYear((is) => !is),
+        selectYear,
         getDayState: (date) => getDayState(state, date, latest),
         getDayLabel: (date) => formatters.day.format(date.toDate(state.timeZone)),
     }

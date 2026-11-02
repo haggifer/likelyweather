@@ -6,9 +6,9 @@ import { ArchiveDayState, useArchiveRangeState } from '@fa/hooks/useArchiveRange
 import { ARCHIVE_MAX_DAYS, ArchiveRange } from '@fa/shared/archive'
 import { CalendarDate } from '@internationalized/date'
 import { cn } from 'cn'
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, LucideIcon } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, LucideIcon } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useCalendarCell, useCalendarGrid, useRangeCalendar } from 'react-aria/useRangeCalendar'
 import type { RangeCalendarState } from 'react-stately/useRangeCalendarState'
 
@@ -74,6 +74,58 @@ const PageButton = ({ label, icon: PageIcon, isDisabled, onPress }: PageButtonPr
     </Button>
 )
 
+interface YearListProps {
+    years: number[]
+    shownYear: number
+    label: string
+    onSelect: (year: number) => void
+}
+
+// Laid over the day grid, which keeps its place, so the calendar's size doesn't change. It opens on the shown year,
+// scrolled to the middle and focused, as the grid opens on the period's day; the scroll position is set from the
+// button's offset because CSS has no way to start a scroll box at an element.
+const YearList = ({ years, shownYear, label, onSelect }: YearListProps) => {
+    const listRef = useRef<HTMLDivElement>(null)
+    const shownRef = useRef<HTMLButtonElement>(null)
+
+    useEffect(() => {
+        const list = listRef.current
+        const shown = shownRef.current
+
+        if (!list || !shown) return
+
+        list.scrollTop = shown.offsetTop - (list.clientHeight - shown.offsetHeight) / 2
+        shown.focus({ preventScroll: true })
+    }, [])
+
+    return (
+        <div
+            ref={listRef}
+            role="group"
+            aria-label={label}
+            className="absolute inset-0 flex flex-wrap content-start overflow-y-auto"
+        >
+            {years.map((year) => {
+                const isShown = year === shownYear
+
+                return (
+                    <Button
+                        key={year}
+                        ref={isShown ? shownRef : undefined}
+                        type="button"
+                        variant={isShown ? 'default' : 'ghost'}
+                        aria-pressed={isShown}
+                        onClick={() => onSelect(year)}
+                        className="h-9 basis-1/4 font-normal tabular-nums touch:h-10"
+                    >
+                        {year}
+                    </Button>
+                )
+            })}
+        </div>
+    )
+}
+
 interface IProps {
     range: ArchiveRange
     latest: string
@@ -86,8 +138,21 @@ export function ArchiveRangeCalendar({ range, latest, onChange }: IProps) {
     const locale = useLocale()
 
     const ref = useRef<HTMLDivElement>(null)
+    const titleRef = useRef<HTMLButtonElement>(null)
 
-    const { state, options, title, weekDays, weeks, getDayState } = useArchiveRangeState({
+    const {
+        state,
+        options,
+        title,
+        weekDays,
+        weeks,
+        years,
+        shownYear,
+        isChoosingYear,
+        toggleYears,
+        selectYear,
+        getDayState,
+    } = useArchiveRangeState({
         range,
         latest,
         locale,
@@ -102,9 +167,15 @@ export function ArchiveRangeCalendar({ range, latest, onChange }: IProps) {
     )
     const { gridProps, headerProps } = useCalendarGrid({ firstDayOfWeek: ARCHIVE_FIRST_DAY_OF_WEEK }, state)
 
-    // A year step stops at 1940-01-01 or at yesterday, so it is offered as long as a month step is.
-    const isPreviousInvalid = state.isPreviousVisibleRangeInvalid()
-    const isNextInvalid = state.isNextVisibleRangeInvalid()
+    // A year step stops at 1940-01-01 or at yesterday, so it is offered as long as a month step is. The year list
+    // keeps the arrows in place but off.
+    const isPreviousOff = isChoosingYear || state.isPreviousVisibleRangeInvalid()
+    const isNextOff = isChoosingYear || state.isNextVisibleRangeInvalid()
+
+    const handleYear = (year: number) => {
+        selectYear(year)
+        titleRef.current?.focus()
+    }
 
     return (
         <div {...calendarProps} ref={ref} className="flex flex-col gap-2">
@@ -114,56 +185,76 @@ export function ArchiveRangeCalendar({ range, latest, onChange }: IProps) {
                     <PageButton
                         label={t('previousYear')}
                         icon={ChevronsLeft}
-                        isDisabled={isPreviousInvalid}
+                        isDisabled={isPreviousOff}
                         onPress={() => state.focusPreviousSection(true)}
                     />
                     <PageButton
                         label={t('previousMonth')}
                         icon={ChevronLeft}
-                        isDisabled={isPreviousInvalid}
+                        isDisabled={isPreviousOff}
                         onPress={() => state.focusPreviousPage()}
                     />
                 </div>
-                <h2 className="min-w-0 flex-1 text-center text-sm leading-4 font-medium text-balance">{title}</h2>
+                <Button
+                    ref={titleRef}
+                    type="button"
+                    variant="ghost"
+                    aria-expanded={isChoosingYear}
+                    title={t('chooseYear')}
+                    onClick={toggleYears}
+                    className="h-auto min-h-9 min-w-0 flex-1 gap-1 px-1 whitespace-normal touch:min-h-10"
+                >
+                    <span className="text-sm leading-4 font-medium text-balance">{title}</span>
+                    <ChevronDown className={cn('motion-safe:transition-transform', isChoosingYear && 'rotate-180')} />
+                </Button>
                 <div className="flex">
                     <PageButton
                         label={t('nextMonth')}
                         icon={ChevronRight}
-                        isDisabled={isNextInvalid}
+                        isDisabled={isNextOff}
                         onPress={() => state.focusNextPage()}
                     />
                     <PageButton
                         label={t('nextYear')}
                         icon={ChevronsRight}
-                        isDisabled={isNextInvalid}
+                        isDisabled={isNextOff}
                         onPress={() => state.focusNextSection(true)}
                     />
                 </div>
             </div>
-            <table {...gridProps} className="border-collapse">
-                <thead {...headerProps}>
-                    <tr>
-                        {weekDays.map((weekDay, i) => (
-                            <th key={i} className="pb-1 text-xs font-normal text-muted-foreground">
-                                {weekDay}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {weeks.map((week, i) => (
-                        <tr key={i}>
-                            {week.map((date, j) =>
-                                date ? (
-                                    <ArchiveDay key={j} state={state} date={date} day={getDayState(date)} />
-                                ) : (
-                                    <td key={j} />
-                                ),
-                            )}
+            <div className="relative">
+                <table
+                    {...gridProps}
+                    inert={isChoosingYear}
+                    className={cn('border-collapse', isChoosingYear && 'opacity-0')}
+                >
+                    <thead {...headerProps}>
+                        <tr>
+                            {weekDays.map((weekDay, i) => (
+                                <th key={i} className="pb-1 text-xs font-normal text-muted-foreground">
+                                    {weekDay}
+                                </th>
+                            ))}
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {weeks.map((week, i) => (
+                            <tr key={i} className="h-9 touch:h-10">
+                                {week.map((date, j) =>
+                                    date ? (
+                                        <ArchiveDay key={j} state={state} date={date} day={getDayState(date)} />
+                                    ) : (
+                                        <td key={j} />
+                                    ),
+                                )}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+                {isChoosingYear && (
+                    <YearList years={years} shownYear={shownYear} label={t('chooseYear')} onSelect={handleYear} />
+                )}
+            </div>
             <p className="max-w-72 text-xs text-muted-foreground max-sm:text-sm">
                 {t('limit', { days: ARCHIVE_MAX_DAYS })}
             </p>

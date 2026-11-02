@@ -11,6 +11,11 @@ export interface CalendarRange {
 // app has no week-start setting, and its places, like the DD.MM.YYYY period, are mostly European.
 export const ARCHIVE_FIRST_DAY_OF_WEEK: DayOfWeek = 'mon'
 
+export const DAYS_IN_WEEK = 7
+// The most weeks a month can touch. Every month draws this many rows, so paging between a 4-week February and a
+// 6-week month never changes the calendar's height or moves its arrows.
+export const CALENDAR_WEEKS = 6
+
 export const toCalendarRange = ({ from, to }: ArchiveRange): CalendarRange => ({
     start: parseDate(from),
     end: parseDate(to),
@@ -33,3 +38,18 @@ export const isOutsideArchiveSpan = (date: DateValue, anchor: CalendarDate | nul
 
 // Today in the city, not on the viewer's clock: the archive ends yesterday in the city (`getLatestArchiveDate`).
 export const isCityToday = (date: CalendarDate, latest: string) => isSameDay(date, parseDate(latest).add({ days: 1 }))
+
+export const padWeeks = <T>(weeks: (T | null)[][]): (T | null)[][] => [
+    ...weeks,
+    ...Array.from({ length: CALENDAR_WEEKS - weeks.length }, () => Array<T | null>(DAYS_IN_WEEK).fill(null)),
+]
+
+export const getYears = (first: CalendarDate, last: CalendarDate) =>
+    Array.from({ length: last.year - first.year + 1 }, (_, i) => first.year + i)
+
+// The same month and day in another year; in this year a day after yesterday lands on yesterday, the archive's end.
+export const moveToYear = (date: CalendarDate, year: number, last: CalendarDate) => {
+    const moved = date.set({ year })
+
+    return moved.compare(last) > 0 ? last : moved
+}

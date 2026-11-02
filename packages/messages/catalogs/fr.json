@@ -274,6 +274,7 @@
         "nextMonth": "Mois suivant",
         "previousYear": "Année précédente",
         "nextYear": "Année suivante",
+        "chooseYear": "Choisir l’année",
         "limit": "Jusqu’à {days} jours, de 1940 à hier.",
         "fetching": "Chargement de la météo passée pour {name}…",
         "unavailable": "Aucune donnée de météo passée pour cette période.",
