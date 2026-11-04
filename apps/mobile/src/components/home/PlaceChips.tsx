@@ -26,7 +26,8 @@ export function PlaceChips({ chips, slug, onSelect }: IProps) {
             {chips?.map((place) => (
                 <PlaceChip key={place.id} place={place} isSelected={slug === place.slug} onSelect={onSelect} />
             ))}
-            {!chips && CHIP_PLACEHOLDERS.map((i) => <Skeleton key={i} className="h-9 w-24 rounded-full" />)}
+            {/* As tall as a chip: its button and the pill's border, so the rows below don't move when the chips arrive. */}
+            {!chips && CHIP_PLACEHOLDERS.map((i) => <Skeleton key={i} className="h-[38px] w-24 rounded-full" />)}
         </View>
     )
 }

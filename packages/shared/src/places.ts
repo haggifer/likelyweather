@@ -85,6 +85,9 @@ export const getDefaultPlace = (places: Places): Place | null => getPlaceChips(p
 export const getPlaceList = ({ favorites, recents }: Places): Place[] =>
     [...favorites, ...recents].slice(0, MAX_RECENTS)
 
+export const findPlace = (places: Places, slug: string): Place | null =>
+    getPlaceList(places).find((place) => place.slug === slug) ?? null
+
 export const isFavorite = (places: Places, id: number) => hasPlace(places.favorites, id)
 
 export const isPinnable = (places: Places, id: number) => isFavorite(places, id) || places.favorites.length < MAX_PLACES

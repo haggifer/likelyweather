@@ -29,7 +29,11 @@ export function PlaceChips({ places, chips, slug, onSelect }: IProps) {
                     onSelect={onSelect}
                 />
             ))}
-            {!chips && CHIP_PLACEHOLDERS.map((i) => <Skeleton key={i} className="h-7 w-24 rounded-full touch:h-9" />)}
+            {/* As tall as a chip: its parts and the pill's border, so the rows below don't move when the chips arrive. */}
+            {!chips &&
+                CHIP_PLACEHOLDERS.map((i) => (
+                    <Skeleton key={i} className="h-[calc(1.75rem+2px)] w-24 rounded-full touch:h-[calc(2.25rem+2px)]" />
+                ))}
         </div>
     )
 }

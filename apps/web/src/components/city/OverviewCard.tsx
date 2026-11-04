@@ -23,6 +23,7 @@ import { City } from '@fa/shared/api'
 import { getCityRegion } from '@fa/shared/city-region'
 import { getCityName } from '@fa/shared/format'
 import { PanelVariable } from '@fa/shared/overview-panels'
+import { Place } from '@fa/shared/places'
 import { ArrowRight, Loader2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
@@ -39,7 +40,18 @@ const CONTENT = 'relative sm:mt-2'
 const PHONE_BUTTON = 'touch:h-9 max-sm:flex-1 max-sm:text-sm max-sm:[&_svg]:size-4'
 const TITLE = 'flex min-w-0 flex-1 items-center gap-2.5 text-lg tracking-tight sm:text-xl'
 
-// Same header and panel structure as the loaded card, so nothing moves when the data arrives.
+const ActionsSkeleton = () => (
+    <CardAction className={ACTIONS}>
+        <Skeleton className="hidden h-7 w-28 rounded-full lg:block" />
+        <Skeleton className="h-7 w-22 touch:h-9 max-sm:w-9" />
+        <Skeleton className="h-7 w-20 touch:h-9 max-sm:w-9" />
+        <Skeleton className="h-7 w-18 touch:h-9 max-sm:w-9" />
+        <Skeleton className="h-7 w-30 touch:h-9 max-sm:flex-1" />
+    </CardAction>
+)
+
+// Same header and panel structure as the loaded card, so nothing moves when the data arrives. Shown only until the
+// place is known: from then on the card itself draws, with its title.
 export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
     <Card data-bleed className={CARD}>
         <CardHeader>
@@ -47,13 +59,7 @@ export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
                 <Loader2 className="size-4 animate-spin" />
                 <span className="text-sm">{status}</span>
             </CardTitle>
-            <CardAction className={ACTIONS}>
-                <Skeleton className="hidden h-7 w-28 rounded-full lg:block" />
-                <Skeleton className="h-7 w-22 touch:h-9 max-sm:w-9" />
-                <Skeleton className="h-7 w-20 touch:h-9 max-sm:w-9" />
-                <Skeleton className="h-7 w-18 touch:h-9 max-sm:w-9" />
-                <Skeleton className="h-7 w-30 touch:h-9 max-sm:flex-1" />
-            </CardAction>
+            <ActionsSkeleton />
         </CardHeader>
         <CardContent className={CONTENT}>
             <MedianOverviewSkeleton />
@@ -62,79 +68,94 @@ export const OverviewCardSkeleton = ({ status }: SkeletonProps) => (
 )
 
 interface IProps {
-    city: City
+    // The title's place: a stored one draws it before the city's record arrives.
+    place: Place
+    city: City | undefined
     panels: PanelVariable[]
     hourly: OverviewHourly
-    anchor: Date
+    // The local 3-hour slot the run was fetched in, where the chart starts; null until every shown panel's run has
+    // arrived, and until then the card keeps the skeleton's actions and panels.
+    anchor: Date | null
+    // Read out while the panels load.
+    status: string
     now: Date | null
     isFetching?: boolean
     onRefresh?: () => void
 }
 
-// `anchor` is the local 3-hour slot the run was fetched in, where the chart starts.
-export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, onRefresh }: IProps) {
+// The title draws as soon as the place is known and stays the same element when the panels arrive, so the page's
+// largest text is painted once, early; the panels wait for each other, so none pushes the next one down.
+export function OverviewCard({ place, city, panels, hourly, anchor, status, now, isFetching, onRefresh }: IProps) {
     const t = useTranslations('overview')
     const locale = useLocale()
     const { panels: storedPanels, setPanels } = useOverviewPanels()
 
     const { isTable } = useViewMode()
 
-    const name = getCityName(city, locale)
-    const region = getCityRegion(city, locale)
-    // The card is drawn once the first shown panel's run has arrived.
-    const run = getOverviewRun(hourly, panels)!
-    const isOutdated = isRefreshOffered(run.fetchedAt, now)
-    const modelCount = run.series.length
-    const { medians, directions, chance } = useMemo(() => getOverviewSeries(hourly, anchor), [hourly, anchor])
-    const hasData = useMemo(() => hasOverviewValues(medians), [medians])
+    const name = getCityName(place, locale)
+    const region = getCityRegion(place, locale)
+    const overview = useMemo(() => (anchor ? getOverviewSeries(hourly, anchor) : null), [hourly, anchor])
+    const hasData = useMemo(() => !overview || hasOverviewValues(overview.medians), [overview])
+    const run = overview ? getOverviewRun(hourly, panels) : undefined
 
     return (
         <Card data-bleed className={cn(CARD, 'transition-opacity', FILL_HEIGHT_PARENT, isFetching && 'opacity-70')}>
             <CardHeader>
                 <CardTitle className={TITLE}>
-                    <FlagIcon countryCode={city.countryCode} className="h-4 w-6 shrink-0" />
+                    <FlagIcon countryCode={place.countryCode} className="h-4 w-6 shrink-0" />
                     <span className="min-w-0">
                         <span className="font-bold">{name}</span>
                         {region && <span className="font-medium text-muted-foreground">, {region}</span>}
                     </span>
-                    <FavoriteToggle place={city} className="-ml-1 max-sm:ml-auto" />
+                    <FavoriteToggle place={place} className="-ml-1 max-sm:ml-auto" />
                 </CardTitle>
-                <CardAction className={ACTIONS}>
-                    <UpdatedChip
-                        issueTime={run.issueTime}
-                        fetchedAt={run.fetchedAt}
-                        timeZone={city.timezone}
-                        now={now}
-                        isIconOnPhones
-                    />
-                    <RefreshButton
-                        isAvailable={isOutdated}
-                        isFetching={isFetching}
-                        onRefresh={onRefresh}
-                        isIconOnPhones
-                        className={PHONE_ICON}
-                        wrapperClassName="shrink-0"
-                    />
-                    <OverviewPanelsMenu
-                        panels={storedPanels}
-                        onChange={setPanels}
-                        isLabelHiddenOnPhones
-                        className={PHONE_ICON}
-                    />
-                    <ViewModeToggle className={PHONE_ICON} />
-                    <Button asChild variant="outline-primary" size="sm" className={PHONE_BUTTON}>
-                        <Link href={`/city/${city.slug}`}>
-                            {t('details')} <ArrowRight />
-                        </Link>
-                    </Button>
-                </CardAction>
+                {city && run && overview ? (
+                    <CardAction className={ACTIONS}>
+                        <UpdatedChip
+                            issueTime={run.issueTime}
+                            fetchedAt={run.fetchedAt}
+                            timeZone={city.timezone}
+                            now={now}
+                            isIconOnPhones
+                        />
+                        <RefreshButton
+                            isAvailable={isRefreshOffered(run.fetchedAt, now)}
+                            isFetching={isFetching}
+                            onRefresh={onRefresh}
+                            isIconOnPhones
+                            className={PHONE_ICON}
+                            wrapperClassName="shrink-0"
+                        />
+                        <OverviewPanelsMenu
+                            panels={storedPanels}
+                            onChange={setPanels}
+                            isLabelHiddenOnPhones
+                            className={PHONE_ICON}
+                        />
+                        <ViewModeToggle className={PHONE_ICON} />
+                        <Button asChild variant="outline-primary" size="sm" className={PHONE_BUTTON}>
+                            <Link href={`/city/${city.slug}`}>
+                                {t('details')} <ArrowRight />
+                            </Link>
+                        </Button>
+                    </CardAction>
+                ) : (
+                    <ActionsSkeleton />
+                )}
             </CardHeader>
             <CardContent className={cn(CONTENT, FILL_HEIGHT_PARENT)}>
-                {isTable ? (
+                {!city || !run || !overview ? (
+                    <>
+                        <MedianOverviewSkeleton panels={panels} />
+                        <p role="status" className="sr-only">
+                            {status}
+                        </p>
+                    </>
+                ) : isTable ? (
                     <OverviewTable
                         panels={panels}
-                        series={medians}
-                        chance={chance}
+                        series={overview.medians}
+                        chance={overview.chance}
                         timeZone={city.timezone}
                         locale={locale}
                     />
@@ -142,13 +163,13 @@ export function OverviewCard({ city, panels, hourly, anchor, now, isFetching, on
                     <MedianOverview
                         key={city.slug}
                         panels={panels}
-                        series={medians}
-                        directions={directions}
-                        chance={chance}
+                        series={overview.medians}
+                        directions={overview.directions}
+                        chance={overview.chance}
                         timeZone={city.timezone}
                         locale={locale}
                         now={now}
-                        ariaLabel={t('aria', { name, count: modelCount })}
+                        ariaLabel={t('aria', { name, count: run.series.length })}
                     />
                 )}
                 {!hasData && <NoDataOverlay message={t('noData')} />}

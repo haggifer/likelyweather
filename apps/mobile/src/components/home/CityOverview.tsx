@@ -4,11 +4,13 @@ import { useAutoRefresh } from '@fa/hooks/useAutoRefresh'
 import { useCityOverview } from '@fa/hooks/useCityOverview'
 import { getCityName } from '@fa/shared/format'
 import { getVisiblePanels } from '@fa/shared/overview-panels'
+import { findPlace } from '@fa/shared/places'
 import { useEffect, useMemo } from 'react'
 import { useLocale, useTranslations } from 'use-intl'
 import { useIsAppActive } from '../../hooks/useIsAppActive'
 import { useNow } from '../../hooks/useNow'
 import { useOverviewPanels } from '../../hooks/useOverviewPanels'
+import { usePlaces } from '../../hooks/usePlaces'
 import { showSnackbar } from '../../lib/snackbar-store'
 import { updateWidgetsForCity } from '../../widget/widget-updates'
 import { Card, CardContent } from '../ui/card'
@@ -28,6 +30,7 @@ export function CityOverview({ slug }: IProps) {
     const now = useNow()
     const isAppActive = useIsAppActive()
     const { panels } = useOverviewPanels()
+    const places = usePlaces()
 
     const visible = useMemo(() => getVisiblePanels(panels), [panels])
 
@@ -39,8 +42,12 @@ export function CityOverview({ slug }: IProps) {
     // nothing is fetching and follows every fetch time rather than `hourly`, whose identity changes every render.
     const isSettled = !results.some((r) => r.isFetching)
     const fetchedAts = results.map((r) => r.data?.fetchedAt).join('|')
+    // The title needs only the place: a stored one has it before the city's record arrives.
+    const place = city ?? findPlace(places, slug)
+    // The panels draw together once every shown one's run is in.
+    const isDrawn = Boolean(anchor) && readyPanels.length === visible.length
     // The run the card dates its Refresh by.
-    const fetchedAt = readyPanels.length ? getOverviewRun(hourly, readyPanels)?.fetchedAt : undefined
+    const fetchedAt = isDrawn ? getOverviewRun(hourly, visible)?.fetchedAt : undefined
 
     const handleRefresh = async () => {
         const failure = await refresh()
@@ -73,18 +80,16 @@ export function CityOverview({ slug }: IProps) {
         )
     }
 
-    if (!city || !readyPanels.length || !anchor) {
-        return (
-            <OverviewCardSkeleton status={city ? t('fetching', { name: getCityName(city, locale) }) : t('loading')} />
-        )
-    }
+    if (!place) return <OverviewCardSkeleton status={t('loading')} />
 
     return (
         <OverviewCard
+            place={place}
             city={city}
-            panels={readyPanels}
+            panels={visible}
             hourly={hourly}
-            anchor={anchor}
+            anchor={isDrawn ? anchor : null}
+            status={t('fetching', { name: getCityName(place, locale) })}
             now={now}
             isFetching={isRefreshing}
             onRefresh={handleRefresh}
