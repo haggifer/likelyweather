@@ -29,7 +29,8 @@ export interface UseCityOverviewResult {
 
 export function useCityOverview(slug: string, visible: PanelVariable[]): UseCityOverviewResult {
     const { data: city, error: cityError, refetch: refetchCity, fetchStatus: cityFetchStatus } = useCity(slug)
-    const results = useHourlyAll(slug, Boolean(city))
+    // The runs are asked for with the city, not after it: they need only the slug, and an unknown one fails both.
+    const results = useHourlyAll(slug)
 
     // An error with data still in place is a failed Refresh: the chart stays and the caller reports the failure.
     const failed = results.find((r) => r.isError && !r.data)

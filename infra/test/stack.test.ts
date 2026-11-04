@@ -224,6 +224,25 @@ describe('LikelyWeatherStack web', () => {
         template.resourceCountIs('AWS::CloudFront::Function', 0)
     })
 
+    it("shares a first visit's chips per country at the edge, ahead of the other API routes", () => {
+        template.hasResourceProperties('AWS::CloudFront::CachePolicy', {
+            CachePolicyConfig: Match.objectLike({
+                MaxTTL: 86400,
+                ParametersInCacheKeyAndForwardedToOrigin: Match.objectLike({
+                    HeadersConfig: { HeaderBehavior: 'whitelist', Headers: ['CloudFront-Viewer-Country'] },
+                }),
+            }),
+        })
+        template.hasResourceProperties('AWS::CloudFront::Distribution', {
+            DistributionConfig: Match.objectLike({
+                CacheBehaviors: Match.arrayWith([
+                    Match.objectLike({ PathPattern: '/api/starters' }),
+                    Match.objectLike({ PathPattern: '/api/*' }),
+                ]),
+            }),
+        })
+    })
+
     it('forwards the viewer address to the API without headers CloudFront reserves for signing', () => {
         template.hasResourceProperties('AWS::CloudFront::OriginRequestPolicy', {
             OriginRequestPolicyConfig: Match.objectLike({

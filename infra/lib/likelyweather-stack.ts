@@ -178,6 +178,20 @@ const createDistribution = (
             'Content-Type',
         ),
     })
+    // A first visit's chips depend only on the viewer's country, so each country's answer is shared at the edge for as
+    // long as the API allows. The country is in the cache key, which also hands it to the API; the address still keys the
+    // rate limit on a miss.
+    const startersCache = new cloudfront.CachePolicy(scope, 'StartersCache', {
+        defaultTtl: Duration.seconds(0),
+        minTtl: Duration.seconds(0),
+        maxTtl: Duration.days(1),
+        headerBehavior: cloudfront.CacheHeaderBehavior.allowList('CloudFront-Viewer-Country'),
+        enableAcceptEncodingGzip: true,
+        enableAcceptEncodingBrotli: true,
+    })
+    const startersRequest = new cloudfront.OriginRequestPolicy(scope, 'StartersRequest', {
+        headerBehavior: cloudfront.OriginRequestHeaderBehavior.allowList('CloudFront-Viewer-Address'),
+    })
     // Each download carries its own Cache-Control from the upload: minutes for the name that always means the latest
     // APK, a year for a versioned file that never changes.
     const downloadsCache = new cloudfront.CachePolicy(scope, 'DownloadsCache', {
@@ -186,6 +200,7 @@ const createDistribution = (
         maxTtl: Duration.days(365),
     })
     const webOrigin = origins.FunctionUrlOrigin.withOriginAccessControl(webUrl)
+    const apiOrigin = origins.FunctionUrlOrigin.withOriginAccessControl(apiUrl)
     const wwwRedirect =
         domain &&
         new cloudfront.Function(scope, 'WwwRedirect', {
@@ -216,8 +231,15 @@ const createDistribution = (
                 cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
                 responseHeadersPolicy: cloudfront.ResponseHeadersPolicy.SECURITY_HEADERS,
             },
+            // Before /api/*, which CloudFront would match first.
+            '/api/starters': {
+                origin: apiOrigin,
+                viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+                cachePolicy: startersCache,
+                originRequestPolicy: startersRequest,
+            },
             '/api/*': {
-                origin: origins.FunctionUrlOrigin.withOriginAccessControl(apiUrl),
+                origin: apiOrigin,
                 viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
                 allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
                 cachePolicy: apiCache,

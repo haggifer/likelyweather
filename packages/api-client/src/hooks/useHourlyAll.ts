@@ -12,11 +12,11 @@ const keepResults = (results: UseQueryResult<LatestResponse, Error>[]) => result
 // collects the city, spends a unit and draws that panel from a newer run than the rest. They have no background refetch
 // of their own: a newer run replaces the chart only through Refresh, pressed or automatic (`useAutoRefresh`). No placeholder
 // data either, because switching cities must never show the previous one.
-export function useHourlyAll(slug: string, enabled = true): UseQueryResult<LatestResponse, Error>[] {
+export function useHourlyAll(slug: string): UseQueryResult<LatestResponse, Error>[] {
     return useQueries({
         queries: OVERVIEW_VARIABLES.map((variable) => ({
             ...getLatestQuery(slug, variable),
-            enabled: Boolean(slug) && enabled,
+            enabled: Boolean(slug),
             staleTime: Infinity,
             refetchOnWindowFocus: false,
         })),

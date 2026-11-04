@@ -92,11 +92,14 @@ apiRouter.post('/cities/track', rateLimit('read'), async (req, res) => {
     sendJson(res, { slug: city.slug, city } satisfies TrackResponse, { maxAge: null })
 })
 
-// The viewer's country picks the first visit's chips; the answer depends on the caller, so CloudFront must not share it.
+// The viewer's country picks the first visit's chips, and nothing else does: CloudFront keeps one answer per country
+// (its own behaviour, with the country in the cache key) and shares it for a day.
+const STARTERS_MAX_AGE_SECONDS = 24 * 60 * 60
+
 apiRouter.get('/starters', rateLimit('read'), async (req, res) => {
     const items = await getStarterCities(getViewerCountry(req))
 
-    sendJson(res, { items } satisfies StartersResponse, { maxAge: null })
+    sendJson(res, { items } satisfies StartersResponse, { maxAge: STARTERS_MAX_AGE_SECONDS })
 })
 
 // Clients round the coordinates to two decimals first, so CloudFront can share the answer; nothing is stored, no
