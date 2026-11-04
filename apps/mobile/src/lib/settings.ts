@@ -1,4 +1,4 @@
-import { DEFAULT_LOCALE, Locale, LOCALES } from '@fa/shared/api'
+import { DEFAULT_LOCALE, Locale, LOCALES } from '@fa/shared/locale'
 import { DEFAULT_OVERVIEW_PANELS, normalizeOverviewPanels, OverviewPanels } from '@fa/shared/overview-panels'
 import { createStoredValue } from './stored-value'
 

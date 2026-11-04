@@ -1,4 +1,4 @@
-import { Locale } from '@fa/shared/api'
+import { Locale } from '@fa/shared/locale'
 import { getLocales } from 'expo-localization'
 import { createTranslator } from 'use-intl'
 import { CATALOGS } from '../lib/catalogs'

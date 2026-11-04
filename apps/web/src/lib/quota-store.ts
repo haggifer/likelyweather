@@ -1,5 +1,5 @@
-import { QuotaResponse, QuotaResponseSchema } from '@fa/shared/api'
-import { isQuotaCurrent } from '@fa/shared/quota'
+import { QuotaResponse } from '@fa/shared/api'
+import { isQuotaCurrent, isQuotaResponse } from '@fa/shared/quota'
 
 const STORAGE_KEY = 'fa.quota'
 const QUOTA_EVENT = 'quotachange'
@@ -8,9 +8,9 @@ let current: QuotaResponse | null | undefined
 
 const readQuota = (): QuotaResponse | null => {
     try {
-        const parsed = QuotaResponseSchema.safeParse(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null'))
+        const stored: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null')
 
-        return parsed.success && isQuotaCurrent(parsed.data, new Date()) ? parsed.data : null
+        return isQuotaResponse(stored) && isQuotaCurrent(stored, new Date()) ? stored : null
     } catch {
         return null
     }

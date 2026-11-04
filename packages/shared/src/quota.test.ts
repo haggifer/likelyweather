@@ -1,4 +1,4 @@
-import { getQuotaStatus, isQuotaCurrent, LOW_QUOTA_SHARE } from './quota'
+import { getQuotaStatus, isQuotaCurrent, isQuotaResponse, LOW_QUOTA_SHARE } from './quota'
 
 const RESETS_AT = '2026-10-14T00:00:00Z'
 
@@ -27,5 +27,15 @@ describe('isQuotaCurrent', () => {
 
         expect(isQuotaCurrent(quota, new Date('2026-10-13T23:59:59Z'))).toBe(true)
         expect(isQuotaCurrent(quota, new Date(RESETS_AT))).toBe(false)
+    })
+})
+
+describe('isQuotaResponse', () => {
+    it('accepts a stored answer of the API and nothing else', () => {
+        expect(isQuotaResponse({ limit: 60, used: 3, resetsAt: '2026-11-05T00:00:00.000Z' })).toBe(true)
+        expect(isQuotaResponse({ limit: '60', used: 3, resetsAt: '2026-11-05T00:00:00.000Z' })).toBe(false)
+        expect(isQuotaResponse({ limit: 60, used: 3 })).toBe(false)
+        expect(isQuotaResponse(null)).toBe(false)
+        expect(isQuotaResponse('60')).toBe(false)
     })
 })

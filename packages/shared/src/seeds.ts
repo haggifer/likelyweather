@@ -1,4 +1,4 @@
-import { Locale } from './api'
+import { Locale } from './locale'
 
 export interface SeedCity {
     id: number

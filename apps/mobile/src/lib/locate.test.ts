@@ -1,5 +1,5 @@
 import { apiGet, apiPost } from '@fa/api-client/api'
-import { Locale } from '@fa/shared/api'
+import { Locale } from '@fa/shared/locale'
 import { locateCity } from './locate'
 import { getPlaceName, getRoundedPosition } from './position'
 

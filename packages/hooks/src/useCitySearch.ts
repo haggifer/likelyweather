@@ -1,6 +1,6 @@
 import { useGeocode } from '@fa/api-client/hooks/useGeocode'
 import { useTrackCity } from '@fa/api-client/hooks/useTrackCity'
-import { GeocodeResponse, GeocodeResult, Locale } from '@fa/shared/api'
+import { GeocodeResponse, GeocodeResult } from '@fa/shared/api'
 import {
     getSearchStatus,
     getSearchTerm,
@@ -10,6 +10,7 @@ import {
     SearchStatus,
 } from '@fa/shared/city-search'
 import { SEARCH_DEBOUNCE_MS } from '@fa/shared/constants'
+import { Locale } from '@fa/shared/locale'
 import { Place, Places, toPlace } from '@fa/shared/places'
 import { useState } from 'react'
 import { useDebouncedValue } from './useDebouncedValue'

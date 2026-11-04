@@ -1,6 +1,7 @@
-import { City, GeocodeResult, Locale, LOCALES, NearestResponse } from '@fa/shared/api'
+import { City, GeocodeResult, NearestResponse } from '@fa/shared/api'
 import { HOUR_MS, REFRESH_AFTER_HOURS } from '@fa/shared/constants'
 import { Coordinates, getDistanceKm } from '@fa/shared/geo'
+import { Locale, LOCALES } from '@fa/shared/locale'
 import { slugify } from '@fa/shared/seeds'
 import { delay } from 'es-toolkit'
 import { claim, dedupe, isMarked, mark, releaseClaim, unmark } from './cache'

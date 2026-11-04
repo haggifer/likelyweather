@@ -1,5 +1,5 @@
 import en from '@fa/messages/catalogs/en.json'
-import { Locale } from '@fa/shared/api'
+import { Locale } from '@fa/shared/locale'
 import { SITE_NAME } from '@fa/shared/site'
 import type { Metadata } from 'next'
 

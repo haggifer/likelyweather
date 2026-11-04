@@ -1,4 +1,4 @@
-import { Locale } from '@fa/shared/api'
+import { Locale } from '@fa/shared/locale'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { isValidElement, ReactElement, ReactNode } from 'react'

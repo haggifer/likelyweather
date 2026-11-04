@@ -1,5 +1,6 @@
-import { City, Locale } from './api'
+import { City } from './api'
 import { DAY_MS, HOUR_MS } from './constants'
+import { Locale } from './locale'
 import { getOrCreate } from './memo'
 
 export type DayLabelStyle = 'long' | 'short' | 'narrow'

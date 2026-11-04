@@ -1,4 +1,5 @@
-import { GeocodeResult, Locale } from '@fa/shared/api'
+import { GeocodeResult } from '@fa/shared/api'
+import { Locale } from '@fa/shared/locale'
 import { cached } from '../cache'
 import { env } from '../env'
 import { fetchJson } from './fetch-with-retry'

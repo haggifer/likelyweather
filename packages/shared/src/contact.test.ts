@@ -1,5 +1,12 @@
-import { CONTACT_EMAIL_MAX, CONTACT_MESSAGE_MAX, ContactRequestSchema } from './api'
-import { isContactEmailValid, isContactReady } from './contact'
+import { z } from 'zod'
+import { ContactRequestSchema } from './api'
+import {
+    CONTACT_EMAIL_MAX,
+    CONTACT_EMAIL_PATTERN,
+    CONTACT_MESSAGE_MAX,
+    isContactEmailValid,
+    isContactReady,
+} from './contact'
 
 const VALID = { email: 'reader@example.com', message: 'The chart is great.' }
 
@@ -52,5 +59,19 @@ describe('isContactEmailValid', () => {
         expect(isContactEmailValid(' reader@example.com ')).toBe(true)
         expect(isContactEmailValid('reader@example')).toBe(false)
         expect(isContactEmailValid('reader')).toBe(false)
+    })
+})
+
+describe('CONTACT_EMAIL_PATTERN', () => {
+    it("is zod's own address pattern, so the apps accept what the API accepts", () => {
+        expect(CONTACT_EMAIL_PATTERN.source).toBe(z.regexes.email.source)
+        expect(CONTACT_EMAIL_PATTERN.flags).toBe(z.regexes.email.flags)
+    })
+
+    it('refuses a long address in the apps as the API does', () => {
+        const longAddress = `${'a'.repeat(CONTACT_EMAIL_MAX)}@example.com`
+
+        expect(isContactEmailValid(longAddress)).toBe(false)
+        expect(ContactRequestSchema.shape.email.safeParse(longAddress).success).toBe(false)
     })
 })

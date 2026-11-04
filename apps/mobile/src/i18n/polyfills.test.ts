@@ -1,4 +1,4 @@
-import { LOCALES } from '@fa/shared/api'
+import { LOCALES } from '@fa/shared/locale'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 

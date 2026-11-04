@@ -1,5 +1,5 @@
-import { LOCALES } from './api'
 import { LANGUAGE_NAMES } from './languages'
+import { LOCALES } from './locale'
 
 describe('LANGUAGE_NAMES', () => {
     it('names every locale, each in a different name', () => {

@@ -1,19 +1,8 @@
 import { z } from 'zod'
+import { CONTACT_EMAIL_MAX, CONTACT_EMAIL_PATTERN, CONTACT_MESSAGE_MAX } from './contact'
+import { Locale } from './locale'
 import { ModelId } from './models'
 import { Variable } from './variables'
-
-// In the language menus' order: English first, Ukrainian last.
-export enum Locale {
-    En = 'en',
-    Es = 'es',
-    De = 'de',
-    Fr = 'fr',
-    Ru = 'ru',
-    Uk = 'uk',
-}
-
-export const LOCALES: Locale[] = Object.values(Locale)
-export const DEFAULT_LOCALE = Locale.En
 
 const NumberList = z.array(z.number().nullable())
 
@@ -139,12 +128,8 @@ export const ArchiveResponseSchema = z.object({
 })
 export type ArchiveResponse = z.infer<typeof ArchiveResponseSchema>
 
-// The longest address SMTP delivers to.
-export const CONTACT_EMAIL_MAX = 254
-export const CONTACT_MESSAGE_MAX = 1000
-
 export const ContactRequestSchema = z.strictObject({
-    email: z.email().max(CONTACT_EMAIL_MAX),
+    email: z.email({ pattern: CONTACT_EMAIL_PATTERN }).max(CONTACT_EMAIL_MAX),
     message: z.string().trim().min(1).max(CONTACT_MESSAGE_MAX),
     // A field no person sees or fills in (the web form hides it); a bot that fills every field is refused.
     website: z.string().max(0).optional(),

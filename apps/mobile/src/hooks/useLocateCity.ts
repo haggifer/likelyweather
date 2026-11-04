@@ -1,4 +1,4 @@
-import { Locale } from '@fa/shared/api'
+import { Locale } from '@fa/shared/locale'
 import { LocateResult } from '@fa/shared/locate'
 import { useMutation, UseMutationResult } from '@tanstack/react-query'
 import { locateCity } from '../lib/locate'

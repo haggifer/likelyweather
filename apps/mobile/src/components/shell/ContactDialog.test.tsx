@@ -1,6 +1,6 @@
 import { apiPost, ApiRequestError } from '@fa/api-client/api'
 import en from '@fa/messages/catalogs/en.json'
-import { CONTACT_MESSAGE_MAX } from '@fa/shared/api'
+import { CONTACT_MESSAGE_MAX } from '@fa/shared/contact'
 import { PortalHost } from '@rn-primitives/portal'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native'

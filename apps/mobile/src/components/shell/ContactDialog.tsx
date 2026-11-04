@@ -1,7 +1,6 @@
 import { getErrorKind } from '@fa/api-client/error-kind'
 import { useSendContact } from '@fa/api-client/hooks/useSendContact'
-import { CONTACT_EMAIL_MAX, CONTACT_MESSAGE_MAX } from '@fa/shared/api'
-import { isContactEmailValid, isContactReady } from '@fa/shared/contact'
+import { CONTACT_EMAIL_MAX, CONTACT_MESSAGE_MAX, isContactEmailValid, isContactReady } from '@fa/shared/contact'
 import { useState } from 'react'
 import { View } from 'react-native'
 import { useTranslations } from 'use-intl'

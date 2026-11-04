@@ -1,5 +1,5 @@
 import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE_S } from '@/i18n/locale-cookie'
-import { Locale, LOCALES } from '@fa/shared/api'
+import { Locale, LOCALES } from '@fa/shared/locale'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 

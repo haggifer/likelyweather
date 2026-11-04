@@ -1,4 +1,4 @@
-import { Locale, LOCALES } from './api'
+import { Locale, LOCALES } from './locale'
 import { SEEDS } from './seeds'
 
 const LOCAL_LOCALES = LOCALES.filter((locale) => locale !== Locale.En)

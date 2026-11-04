@@ -3,7 +3,6 @@ import {
     ContactRequestSchema,
     ContactResponse,
     CurrentResponse,
-    DEFAULT_LOCALE,
     GeocodeQuerySchema,
     GeocodeResponse,
     HealthResponse,
@@ -14,6 +13,7 @@ import {
     TrackBodySchema,
     TrackResponse,
 } from '@fa/shared/api'
+import { DEFAULT_LOCALE } from '@fa/shared/locale'
 import { MODELS } from '@fa/shared/models'
 import { Router } from 'express'
 import { getArchivePayload, isCompleteArchive } from './domain/archive'

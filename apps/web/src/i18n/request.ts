@@ -1,6 +1,6 @@
 import { LOCALE_COOKIE } from '@/i18n/locale-cookie'
 import { loadMessages } from '@fa/messages/load'
-import { DEFAULT_LOCALE, Locale, LOCALES } from '@fa/shared/api'
+import { DEFAULT_LOCALE, Locale, LOCALES } from '@fa/shared/locale'
 import { getRequestConfig } from 'next-intl/server'
 import { cookies } from 'next/headers'
 

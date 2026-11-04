@@ -1,5 +1,5 @@
 import { getErrorKind } from '@fa/api-client/error-kind'
-import { Locale } from '@fa/shared/api'
+import { Locale } from '@fa/shared/locale'
 import { getLocateFarValues } from '@fa/shared/locate'
 import { Place, toPlace } from '@fa/shared/places'
 import { onlineManager } from '@tanstack/react-query'

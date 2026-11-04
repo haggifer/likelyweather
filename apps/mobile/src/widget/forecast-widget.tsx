@@ -2,8 +2,8 @@
 // Compiler adds (`useMemoCache`) throws and the widget never draws.
 'use no memo'
 
-import { Locale } from '@fa/shared/api'
 import { formatNumber, getCityName } from '@fa/shared/format'
+import { Locale } from '@fa/shared/locale'
 import { Variable, VARIABLE_BY_ID } from '@fa/shared/variables'
 import { isDaylight } from '@fa/shared/weather-condition'
 import { FlexWidget, SvgWidget, TextWidget, WidgetRepresentation } from 'react-native-android-widget'

@@ -1,4 +1,4 @@
-import { Locale } from './api'
+import { Locale } from './locale'
 
 // Endonyms: each language is listed in its own name, so a reader can always find theirs. The web's language menu and
 // the app's Settings show the same names.

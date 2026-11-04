@@ -1,4 +1,4 @@
-import { Locale } from '@fa/shared/api'
+import { Locale } from '@fa/shared/locale'
 import { resolveLocale, toLocale } from './settings'
 
 describe('toLocale', () => {

@@ -1,4 +1,4 @@
-import { Locale, LOCALES } from '@fa/shared/api'
+import { Locale, LOCALES } from '@fa/shared/locale'
 import { loadMessages } from './load'
 
 describe('loadMessages', () => {

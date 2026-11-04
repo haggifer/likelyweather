@@ -1,4 +1,5 @@
-import { GeocodeResponse, Locale } from '@fa/shared/api'
+import { GeocodeResponse } from '@fa/shared/api'
+import { Locale } from '@fa/shared/locale'
 import { keepPreviousData, useQuery, UseQueryResult } from '@tanstack/react-query'
 import { apiGet } from '../api'
 import { MINUTE } from '../latest-query'
