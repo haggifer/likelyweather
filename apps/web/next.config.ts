@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
     // Workspace packages ship TypeScript source.
     transpilePackages: ['@fa/shared', '@fa/messages', '@fa/api-client', '@fa/chart-core', '@fa/hooks'],
     poweredByHeader: false,
+    // The stylesheet (about 15 KB compressed) goes into each page's HTML instead of a request that blocks the first
+    // paint; every page then carries it rather than the browser caching it once, which costs less on a phone's first visit.
+    experimental: { inlineCss: true },
 }
 
 export default withNextIntl(withMDX(nextConfig))

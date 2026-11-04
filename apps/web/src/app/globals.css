@@ -8,6 +8,16 @@
    buttons. Every `sm:` / `max-sm:` utility and the media queries below follow this value. */
 @theme {
     --breakpoint-sm: 62rem;
+
+    /* A bar rising from the screen's bottom edge. tw-animate's `slide-in-from-bottom` also animates a blur filter,
+       which the compositor can't run on its own. */
+    --animate-slide-up: slide-up 200ms ease-out;
+
+    @keyframes slide-up {
+        from {
+            transform: translateY(100%);
+        }
+    }
 }
 
 /* Where a finger may tap: the phone layout, whatever the pointer, and any touch screen. Controls there are at least

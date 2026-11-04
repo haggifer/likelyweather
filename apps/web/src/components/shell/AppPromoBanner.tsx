@@ -30,7 +30,7 @@ export function AppPromoBanner() {
         <section
             role="region"
             aria-label={t('label')}
-            className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t bg-card px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] text-card-foreground motion-safe:animate-in motion-safe:slide-in-from-bottom motion-safe:duration-200 motion-safe:ease-out"
+            className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t bg-card px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] text-card-foreground motion-safe:animate-slide-up"
         >
             <p className="line-clamp-2 min-w-0 flex-1 text-sm leading-snug text-balance">{t('body')}</p>
             <Button asChild className="h-10 px-4 text-[1rem] font-semibold">
